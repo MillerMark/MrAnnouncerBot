@@ -97,7 +97,7 @@ namespace DHDM
 		void TriggerCardPlayed(StreamlootsCard card, Creature creature)
 		{
 			string cardId = AllKnownCards.GetCardId(card);
-			CardEventData cardEventData = AllKnownCards.Get(cardId);
+			RedemptionEventsDto cardEventData = AllKnownCards.Get(cardId);
 			if (string.IsNullOrWhiteSpace(cardEventData.CardPlayed))
 				return;
 

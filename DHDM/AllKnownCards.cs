@@ -14,23 +14,23 @@ namespace DHDM
 			return GoogleSheets.Get<T>();
 		}
 
-		public static CardEventData Get(string cardId)
+		public static RedemptionEventsDto Get(string cardId)
 		{
 			return Cards.FirstOrDefault(x => x.ID == cardId);
 		}
 
 		static void Load()
 		{
-			allKnownCards = LoadData<CardEventData>();
+			allKnownCards = LoadData<RedemptionEventsDto>();
 		}
-		static List<CardEventData> allKnownCards;
+		static List<RedemptionEventsDto> allKnownCards;
 
 		public static void Invalidate()
 		{
 			allKnownCards = null;
 		}
 
-		public static CardEventData Get(CardDto cardDto)
+		public static RedemptionEventsDto Get(CardDto cardDto)
 		{
 			string cardId = GetCardId(cardDto.Card); // Yeah, I know. But trust me. This is the only way to round trip our CardDto.
 			return Get(cardId);
@@ -41,7 +41,7 @@ namespace DHDM
 			return card.soundUrl;
 		}
 
-		public static List<CardEventData> Cards
+		public static List<RedemptionEventsDto> Cards
 		{
 			get
 			{

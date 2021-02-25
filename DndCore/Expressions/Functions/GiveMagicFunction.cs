@@ -65,7 +65,7 @@ namespace DndCore
 			return null;
 		}
 
-		private static object GetData(string arg, Creature player, Target target, CastedSpell spell)
+		public static object GetData(string arg, Creature player, Target target, CastedSpell spell)
 		{
 			arg = arg.Trim();
 			if (arg.StartsWith("\""))

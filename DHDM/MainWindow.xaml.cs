@@ -53,8 +53,6 @@ namespace DHDM
 		MySecureString dragonHumpersClientId;
 		MySecureString dragonHumpersAccessToken;
 		bool _changingInternally;
-		PlateManager plateManager;
-		WeatherManager weatherManager;
 		LeapCalibrator leapCalibrator;
 		PlayerStatManager allPlayerStats;
 		Dictionary<Creature, List<AskUI>> askUIs = new Dictionary<Creature, List<AskUI>>();
@@ -66,11 +64,10 @@ namespace DHDM
 
 
 		const int INT_TimeToDropDragonDice = 1800;
-		const string STR_PlayerScene = "Players";
 		const string STR_RepeatSpell = "[Again]";
 
 
-		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
+		private readonly ObsManager obsManager = new ObsManager();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
 		TwitchClient dhClient;
@@ -91,9 +88,7 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
-		DispatcherTimer sceneReturnTimer;
 		DispatcherTimer delayRollTimer;
-		DispatcherTimer playSceneTimer;
 		DispatcherTimer reconnectToTwitchDungeonMasterTimer;
 		DispatcherTimer reconnectToTwitchDragonHumpersTimer;
 		DispatcherTimer showClearPlayerDiceButtonTimer;
@@ -143,15 +138,6 @@ namespace DHDM
 			DeueueNextAction();
 		}
 
-		void PlaySceneHandler(object sender, EventArgs e)
-		{
-			playSceneTimer.Stop();
-			if (nextSceneToPlay == null)
-				return;
-			PlayScene(nextSceneToPlay, nextReturnMs);
-			nextSceneToPlay = null;
-		}
-
 		Character viewerSpellcaster;
 
 		void CreateViewerSpellcaster()
@@ -182,24 +168,17 @@ namespace DHDM
 		{
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
-			plateManager = new PlateManager(obsWebsocket);
 			game = new DndGame();
+			obsManager.Initialize(game, this);
 			CreateViewerSpellcaster();
-			weatherManager = new WeatherManager(obsWebsocket, game);
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
 
-			sceneReturnTimer = new DispatcherTimer(DispatcherPriority.Send);
-			sceneReturnTimer.Tick += new EventHandler(ReturnToSceneHandler);
-
 			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
 			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
-
-			playSceneTimer = new DispatcherTimer(DispatcherPriority.Send);
-			playSceneTimer.Tick += new EventHandler(PlaySceneHandler);
 
 			reconnectToTwitchDungeonMasterTimer = new DispatcherTimer(DispatcherPriority.Send);
 			reconnectToTwitchDungeonMasterTimer.Tick += new EventHandler(ReconnectToTwitchDungeonMasterHandler);
@@ -421,18 +400,6 @@ namespace DHDM
 		}
 
 
-		void SetObsSourceVisibiltyNow(object sender, EventArgs e)
-		{
-			if (!(sender is DispatcherTimer dispatcherTimer))
-				return;
-
-			dispatcherTimer.Stop();
-
-			if (!(dispatcherTimer.Tag is SetObsSourceVisibilityEventArgs ea))
-				return;
-			SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(this, ea);
-		}
-
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
 		{
 			if (game.InCombat)
@@ -512,6 +479,7 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			QueueEffect.RequestCardEventQueuing += QueueEffect_RequestCardEventQueuing;
 			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
 			RevealCard.RequestCardReveal += RevealCard_RequestCardReveal;
 			AddViewerChargeFunction.RequestAddViewerCharge += AddViewerChargeFunction_RequestAddViewerCharge;
@@ -594,25 +562,7 @@ namespace DHDM
 
 		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
 		{
-			if (ea.DelaySeconds > 0)
-			{
-				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
-				delayFloatTextTimer.Interval = TimeSpan.FromSeconds(ea.DelaySeconds);
-				ea.DelaySeconds = 0;
-				delayFloatTextTimer.Tick += new EventHandler(SetObsSourceVisibiltyNow);
-				delayFloatTextTimer.Tag = ea;
-				delayFloatTextTimer.Start();
-				return;
-			}
-
-			try
-			{
-				obsWebsocket.SetSourceRender(ea.SourceName, ea.Visible, ea.SceneName);
-			}
-			catch (Exception ex)
-			{
-
-			}
+			obsManager.SetSourceVisibility(ea);
 		}
 
 		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
@@ -738,17 +688,9 @@ namespace DHDM
 		//	}
 		//}
 
-		// TODO: Consider stacking scene play requests.
-		string nextSceneToPlay;
-		int nextReturnMs;
-
 		void PlaySceneAfter(string sceneName, int delayMs, int returnMs = -1)
 		{
-			playSceneTimer.Stop();
-			nextSceneToPlay = sceneName;
-			nextReturnMs = returnMs;
-			playSceneTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
-			playSceneTimer.Start();
+			obsManager.PlaySceneAfter(sceneName, delayMs, returnMs);
 		}
 
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
@@ -756,7 +698,7 @@ namespace DHDM
 			if (ea.DelayMs > 0)
 				PlaySceneAfter(ea.SceneName, ea.DelayMs, ea.ReturnMs);
 			else
-				PlayScene(ea.SceneName, ea.ReturnMs);
+				obsManager.PlayScene(ea.SceneName, ea.ReturnMs);
 		}
 
 		void AddBooleanAsk(AskUI askUI)
@@ -1369,17 +1311,27 @@ namespace DHDM
 			History.Log($"Connection error for \"{e.BotUsername}\" with message \"{e.Error.Message}\"");
 		}
 
+		void PlayScene(string sceneName)
+		{
+			obsManager.PlayScene(sceneName);
+		}
+
+		public void PlayScene(string sceneName, int returnMs = -1)
+		{
+			obsManager.PlayScene(sceneName, returnMs);
+		}
+
 		private void Feature_FeatureDeactivated(object sender, FeatureEventArgs ea)
 		{
 			if (ea.Feature.Name == "WildSurgeRage")
 			{
-				if (lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive")
+				if (obsManager.lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive")
 				{
 					PlayScene("DH.WildSurge.PlantGrowth.Leave");
 					BackToPlayersIn(10);
 				}
 				else
-					PlayScene(STR_PlayerScene);
+					PlayScene(ObsManager.STR_PlayerScene);
 			}
 		}
 
@@ -1536,20 +1488,7 @@ namespace DHDM
 
 		private void ConnectToObs()
 		{
-			if (obsWebsocket.IsConnected)
-				return;
-			try
-			{
-				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
-			}
-			catch (AuthFailureException)
-			{
-				Console.WriteLine("Authentication failed.");
-			}
-			catch (ErrorResponseException ex)
-			{
-				Console.WriteLine($"Connect failed. {ex.Message}");
-			}
+			obsManager.Connect();
 		}
 
 		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
@@ -5350,7 +5289,7 @@ namespace DHDM
 			switchBackToPlayersTimer.Stop();
 			SafeInvoke(() =>
 			{
-				PlayScene(STR_PlayerScene);
+				PlayScene(ObsManager.STR_PlayerScene);
 			});
 		}
 
@@ -6223,7 +6162,6 @@ namespace DHDM
 			game.Clock.SetTime(saveTime);
 			game.Start();
 			SendPlayerData();
-			weatherManager.Load();
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
@@ -6699,7 +6637,6 @@ namespace DHDM
 		}
 
 		bool checkingInternally;
-		string lastScenePlayed;
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		DiceRoll lastRoll;
 		DiceRoll secondToLastRoll;
@@ -7061,66 +6998,6 @@ namespace DHDM
 				}
 			}
 			HubtasticBaseStation.MoveFred(movement);
-		}
-
-		bool IsFoundationScene(string name)
-		{
-			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels") || name.SameLetters("DH.Nebula") ||
-				name.ToLower().StartsWith("DH.TheVoid.".ToLower());
-		}
-
-		string GetFoundationalScene()
-		{
-			try
-			{
-				OBSScene currentScene = obsWebsocket.GetCurrentScene();
-				if (IsFoundationScene(currentScene.Name))
-					return currentScene.Name;
-				return STR_PlayerScene;
-			}
-			catch (Exception ex)
-			{
-				return STR_PlayerScene;
-			}
-		}
-
-		string foundationalScene;
-
-		void ReturnToSceneHandler(object sender, EventArgs e)
-		{
-			sceneReturnTimer.Stop();
-			if (foundationalScene == null)
-				return;
-			PlayScene(foundationalScene);
-			foundationalScene = null;
-		}
-
-		public void PlayScene(string sceneName, int returnMs = -1)
-		{
-			lastScenePlayed = sceneName;
-			string dmMessage = $"Playing scene: {sceneName}";
-
-			try
-			{
-				if (obsWebsocket.IsConnected)
-				{
-					if (returnMs > 0)
-						foundationalScene = GetFoundationalScene();
-
-					obsWebsocket.SetCurrentScene(sceneName);
-
-					if (returnMs > 0)
-					{
-						sceneReturnTimer.Interval = TimeSpan.FromMilliseconds(returnMs);
-						sceneReturnTimer.Start();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				dmMessage = $"{Icons.WarningSign} Unable to play {sceneName}: {ex.Message}";
-			}
-			TellDungeonMaster(dmMessage);
 		}
 
 		public void PlaySound(string soundFileName)
@@ -9680,8 +9557,8 @@ namespace DHDM
 		public void PrepareSkillCheck(string skillCheck)
 		{
 			spellToCastOnRoll = null;
-			PlayScene($"DH.Skill.{skillCheck}");
-			PlaySceneAfter(STR_PlayerScene, 14000);
+			obsManager.PlayScene($"DH.Skill.{skillCheck}");
+			PlaySceneAfter(ObsManager.STR_PlayerScene, 14000);
 			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
@@ -9705,8 +9582,8 @@ namespace DHDM
 		public void PrepareSavingThrow(string savingThrow)
 		{
 			spellToCastOnRoll = null;
-			PlayScene($"DH.Save.{savingThrow}");
-			PlaySceneAfter(STR_PlayerScene, 12000);
+			obsManager.PlayScene($"DH.Save.{savingThrow}");
+			PlaySceneAfter(ObsManager.STR_PlayerScene, 12000);
 			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
@@ -9980,15 +9857,15 @@ namespace DHDM
 		}
 		public void ShowBackground(string sourceName)
 		{
-			plateManager.ShowBackground(sourceName);
+			obsManager.ShowPlateBackground(sourceName);
 		}
 		public void ShowForeground(string sourceName)
 		{
-			plateManager.ShowForeground(sourceName);
+			obsManager.ShowPlateForeground(sourceName);
 		}
 		public void ShowWeather(string weatherKeyword)
 		{
-			weatherManager.ShowWeather(weatherKeyword);
+			obsManager.ShowWeather(weatherKeyword);
 		}
 		public void LaunchHandTrackingEffect(string launchCommand, string dataValue)
 		{
@@ -10126,12 +10003,12 @@ namespace DHDM
 
 		private void TriggerCardPlayedEvent(CardEventArgs ea, int targetCharacterId = int.MinValue)
 		{
-			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
+			RedemptionEventsDto cardEventData = AllKnownCards.Get(ea.CardDto);
 			if (cardEventData != null)
 				TriggerCardPlayedEvent(ea.CardDto.Card.CardName, targetCharacterId, cardEventData);
 		}
 
-		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, CardEventData cardEventData)
+		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, RedemptionEventsDto cardEventData)
 		{
 			// TODO: Figure out how to store the AttackTargetType in the card itself.
 			CastedSpell castedSpell = GetCastedSpell(cardName);
@@ -10173,7 +10050,7 @@ namespace DHDM
 			Target recipientTarget = GetTarget(recipientCreature);
 			SystemVariables.CardRecipient = recipientTarget;
 			SystemVariables.ThisCard = ea.CardDto.Card;
-			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
+			RedemptionEventsDto cardEventData = AllKnownCards.Get(ea.CardDto);
 			Expressions.Do(cardEventData.CardReceived, viewerSpellcaster, recipientTarget, null, null, recipientCreature);
 		}
 
@@ -10271,7 +10148,7 @@ namespace DHDM
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
 			ApplyDamageFromRoll(ea.StopRollingData, ea.Card.TargetCharacterIds);
-			CardEventData cardEventData = AllKnownCards.Get(ea.Card);
+			RedemptionEventsDto cardEventData = AllKnownCards.Get(ea.Card);
 			SystemVariables.ViewerDieRollTotal = rollTotal;
 			SystemVariables.CardUserName = ea.Card.GetUserName();
 			if (ea.Card.TargetCharacterIds.Count == 0)
@@ -10534,7 +10411,11 @@ namespace DHDM
 						numTargetsSelected++;
 					}
 			}
-			
+		}
+
+		private void QueueEffect_RequestCardEventQueuing(object sender, QueueEffectEventArgs ea)
+		{
+			CardEventManager.QueueCardEvent(ea, obsManager, this);
 		}
 	}
 }

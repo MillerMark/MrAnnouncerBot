@@ -1,13 +1,14 @@
 ﻿//#define profiling
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using GoogleHelper;
 
 namespace DHDM
 {
 	[SheetName("D&D Deck Data")]
 	[TabName("Cards")]
-	public class CardEventData
+	public class RedemptionEventsDto
 	{
 		[Indexer]
 		[Column]
@@ -20,7 +21,7 @@ namespace DHDM
 		[Column]
 		public string CardPlayed { get; set; }
 
-		public CardEventData()
+		public RedemptionEventsDto()
 		{
 
 		}

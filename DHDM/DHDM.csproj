@@ -321,7 +321,14 @@
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="AllKnownCards.cs" />
     <Compile Include="AllViewers.cs" />
-    <Compile Include="CardEventData.cs" />
+    <Compile Include="CardEvents\CardEvent.cs" />
+    <Compile Include="CardEvents\CardEventManager.cs" />
+    <Compile Include="CardEvents\CardEventQueue.cs" />
+    <Compile Include="CardEvents\ChangeWeatherCardEvent.cs" />
+    <Compile Include="CardEvents\StampedeCardEvent.cs" />
+    <Compile Include="IObsManager.cs" />
+    <Compile Include="ObsManager.cs" />
+    <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
