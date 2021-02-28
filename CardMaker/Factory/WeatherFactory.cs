@@ -70,7 +70,7 @@ namespace CardMaker
 			card.Description = $"{weatherSpecialist.GetDescription(weatherLevel)}";
 			card.AdditionalInstructions = "Lasts one minute if this card is played out of battle, or one round if played during battle.";
 			card.AlertMessage = weatherSpecialist.GetAlertMessage(weatherLevel);
-			card.CardPlayed = $"QueueEffect(\"Weather\", CardUserName, \"{weatherSpecialist.GetCardName(weatherLevel)}\", \"{weatherSpecialist.GetEffectKeyword(weatherLevel)}\");\n" +
+			card.CardPlayed = $"QueueEffect(\"Weather\", CardUserName, \"{weatherSpecialist.GetCardName(weatherLevel)}\", \"{weatherSpecialist.GetEffectKeyword(weatherLevel)}\", \"{weatherSpecialist.GetDamageModifier(weatherLevel)}\");\n" +
 											$"TellAll($\"{weatherSpecialist.GetCardPlayedMessage(weatherLevel)}\");";
 			CardFactory.QuickAddAllLayerDetails(card);
 			SetWeatherLayerVisibilities(card, weatherSpecialist.GetImageLayerName(), (int)weatherLevel);

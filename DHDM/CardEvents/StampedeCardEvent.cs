@@ -10,7 +10,7 @@ namespace DHDM
 		{
 		}
 
-		public override void Activate(IObsManager obsManager, IDungeonMasterApp dungeonMasterApp)
+		public override void Activate()
 		{
 			// TODO: Start the video... hook game events, 
 		}

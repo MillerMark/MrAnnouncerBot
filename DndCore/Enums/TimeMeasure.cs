@@ -15,6 +15,7 @@ namespace DndCore
 		never = 7,
 		round = 8,
 		bonusActions = 9,
-		reaction = 10
+		reaction = 10,
+		turns = 11
 	}
 }

@@ -325,6 +325,8 @@
     <Compile Include="CardEvents\CardEventManager.cs" />
     <Compile Include="CardEvents\CardEventQueue.cs" />
     <Compile Include="CardEvents\ChangeWeatherCardEvent.cs" />
+    <Compile Include="CardEvents\DamageModifier.cs" />
+    <Compile Include="CardEvents\RegexHelper.cs" />
     <Compile Include="CardEvents\StampedeCardEvent.cs" />
     <Compile Include="IObsManager.cs" />
     <Compile Include="ObsManager.cs" />

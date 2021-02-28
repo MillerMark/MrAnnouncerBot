@@ -41,6 +41,13 @@ namespace CardMaker
 		public string EffectKeywordHeavy { get; set; }
 
 		[Column]
+		public string DamageModifierLight { get; set; }
+		[Column]
+		public string DamageModifierMedium { get; set; }
+		[Column]
+		public string DamageModifierHeavy { get; set; }
+
+		[Column]
 		public string DescriptionLight { get; set; }
 		[Column]
 		public string DescriptionMedium { get; set; }
@@ -105,6 +112,18 @@ namespace CardMaker
 					return EffectKeywordHeavy;
 				default:
 					return EffectKeywordLight;
+			}
+		}
+		public override string GetDamageModifier(WeatherLevel weatherLevel)
+		{
+			switch (weatherLevel)
+			{
+				case WeatherLevel.Medium:
+					return DamageModifierMedium;
+				case WeatherLevel.Heavy:
+					return DamageModifierHeavy;
+				default:
+					return DamageModifierLight;
 			}
 		}
 

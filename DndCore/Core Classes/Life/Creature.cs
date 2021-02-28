@@ -769,7 +769,7 @@ namespace DndCore
 		public void DieRollStoppedForTestCases(int score, int damage = 0)
 		{
 			DiceStoppedRollingData diceStoppedRollingData = new DiceStoppedRollingData();
-			diceStoppedRollingData.damage = damage;
+			diceStoppedRollingData.totalDamagePlusModifiers = damage;
 			Game.DieRollStopped(this, score, diceStoppedRollingData);
 		}
 

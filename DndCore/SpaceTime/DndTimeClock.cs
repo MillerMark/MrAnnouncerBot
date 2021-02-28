@@ -255,7 +255,7 @@ namespace DndCore
 
 		List<DndAlarm> alarmsToRemove = new List<DndAlarm>();
 		bool triggeringAlarms;
-		void TriggerAlarms(DateTime futureTime, int currentTurnIndex, Character player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
+		void TriggerAlarms(DateTime futureTime, int currentTurnIndex, Character player = null, TurnSpecifier turnSpecifier = TurnSpecifier.None)
 		{
 			triggeringAlarms = true;
 			try
@@ -270,7 +270,7 @@ namespace DndCore
 						if (alarm.TurnIndex >= 0 && alarm.TurnIndex > currentTurnIndex)
 							break;
 
-					TriggerAlarm(alarm, player, roundSpecifier);
+					TriggerAlarm(alarm, player, turnSpecifier);
 				}
 
 				for (int i = 0; i < dailyAlarms.Count; i++)
@@ -293,12 +293,12 @@ namespace DndCore
 			RemoveExpiredAlarms();
 		}
 
-		private void TriggerAlarm(DndAlarm alarm, Creature player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
+		private void TriggerAlarm(DndAlarm alarm, Creature player = null, TurnSpecifier turnSpecifier = TurnSpecifier.None)
 		{
-			if (roundSpecifier != alarm.RoundSpecifier)
+			if (turnSpecifier != alarm.TurnSpecifier)
 				return;
 
-			if (Time == alarm.TriggerTime && alarm.RoundSpecifier != RoundSpecifier.None)
+			if (Time == alarm.TriggerTime && alarm.TurnSpecifier != TurnSpecifier.None)
 			{
 				if (player != alarm.Creature)
 					return;
@@ -412,12 +412,12 @@ namespace DndCore
 
 		public void CheckAlarmsPlayerStartsTurn(Character character, DndGame game)
 		{
-			TriggerAlarms(Time, game.InitiativeIndex, character, RoundSpecifier.StartOfTurn);
+			TriggerAlarms(Time, game.InitiativeIndex, character, TurnSpecifier.StartOfTurn);
 		}
 
 		public void CheckAlarmsPlayerEndsTurn(Character character, DndGame game)
 		{
-			TriggerAlarms(Time, game.InitiativeIndex, character, RoundSpecifier.EndOfTurn);
+			TriggerAlarms(Time, game.InitiativeIndex, character, TurnSpecifier.EndOfTurn);
 		}
 		
 		public bool IsDaytime()

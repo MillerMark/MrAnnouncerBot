@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds the specified mod to the next roll.")]
-	[Param(1, typeof(string), "modType", "The type of mod to add (e.g., \"Skill\", \"Save\", \"Attack\", etc.).", ParameterIs.Required)]
+	[Param(1, typeof(string), "modType", "The type of card mod to add (e.g., TotalDamage, TotalScore, or TotalScorePlusDamage).", ParameterIs.Required)]
 	[Param(2, typeof(int), "valueOffset", "The value of the mod (e.g., -1, 1, 2, 3, etc.).", ParameterIs.Required)]
 	[Param(3, typeof(int), "multiplier", "The multiplier of the mod (e.g., 1, 2, etc.).", ParameterIs.Optional)]
 	[Param(4, typeof(string), "userName", "The name of the user responsible for this mod.", ParameterIs.Optional)]
@@ -18,7 +18,8 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 2, 4);
 
-			string modType = args[0].Trim();
+			CardModType modType = DndUtils.ToCardModType(args[0].Trim());
+			
 			int valueOffset;
 			double multiplier = 1;
 			int.TryParse(args[1], out valueOffset);

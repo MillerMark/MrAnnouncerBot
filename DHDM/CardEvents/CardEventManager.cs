@@ -29,11 +29,17 @@ namespace DHDM
 
 		public static void QueueCardEvent(QueueEffectEventArgs ea, IObsManager obsManager, IDungeonMasterApp iDungeonMasterApp)
 		{
-			CardEventQueue queue = allCardEventQueues.FirstOrDefault(x => x.Name == ea.cardEventName);
+			CardEventQueue queue = allCardEventQueues.FirstOrDefault(x => x.Name == ea.CardEventName);
 			if (queue == null)
 				allCardEventQueues.Add(new CardEventQueue(ea, obsManager, iDungeonMasterApp));
 			else
-				queue.QueueEvent(ea);
+				queue.QueueEvent(ea, obsManager, iDungeonMasterApp);
+		}
+
+		public static void ConditionRoll(DiceRoll diceRoll)
+		{
+			foreach (CardEventQueue cardEventQueue in allCardEventQueues)
+				cardEventQueue.ConditionRoll(diceRoll);
 		}
 	}
 }

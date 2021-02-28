@@ -7,6 +7,7 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
+		DndGame Game { get; }
 		void ToggleTarget(int targetNum);
 		void TogglePlayerTarget(string playerName);
 		void ChangePlayerStateCommand(string command, string data);

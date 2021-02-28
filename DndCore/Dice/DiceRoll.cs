@@ -271,6 +271,25 @@ namespace DndCore
 			return result;
 			
 		}
+
+		public bool HasDamage(DamageType damage)
+		{
+			if (DamageHealthExtraDice != null)
+			{
+				DieRollDetails dieRollDetails = DieRollDetails.From(DamageHealthExtraDice);
+				foreach (Roll roll in dieRollDetails.Rolls)
+					if (DndUtils.ToDamage(roll.Descriptor) == damage)
+						return true;
+			}
+
+			if (DiceDtos?.Any() == true)
+				foreach (DiceDto diceDto in DiceDtos)
+					if (diceDto.DamageType == damage)
+						return true;
+
+			return false;
+		}
+
 		public bool IsOnePlayer
 		{
 			get

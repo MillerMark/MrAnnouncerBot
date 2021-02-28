@@ -3282,6 +3282,7 @@ namespace DHDM
 		DateTime lastDieRollTime;
 		private void SeriouslyRollTheDice(DiceRoll diceRoll)
 		{
+			CardEventManager.ConditionRoll(diceRoll);
 			lastDieRollTime = DateTime.Now;
 			if (dynamicThrottling)
 			{
@@ -4558,7 +4559,7 @@ namespace DHDM
 		private void ApplyDamageToTargets(DiceStoppedRollingData stopRollingData)
 		{
 			if (stopRollingData.type == DiceRollType.Attack && stopRollingData.success)
-				ApplyDamageToTargets(stopRollingData.damage);
+				ApplyDamageToTargets(stopRollingData.totalDamagePlusModifiers);
 
 			if (DiceDto.IsSavingThrow(stopRollingData.type))
 				ApplySavingThrowDamage(stopRollingData);
@@ -4601,7 +4602,7 @@ namespace DHDM
 			if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
 			{
 				// TODO: Store last damage type...
-				lastDamage = stopRollingData.damage;
+				lastDamage = stopRollingData.totalDamagePlusModifiers;
 			}
 			else if (stopRollingData.type == DiceRollType.HealthOnly)
 			{
@@ -4712,7 +4713,7 @@ namespace DHDM
 					string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
 					if (emoticon == "Player ")
 						emoticon = "";
-					int rollValue = playerRoll.modifier + playerRoll.cardModifierTotal + playerRoll.roll;
+					int rollValue = playerRoll.GetTotalRollValue();
 					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
 					lastInitiativeResults.Add(initiativeLine);
@@ -4777,8 +4778,8 @@ namespace DHDM
 					break;
 				case DiceRollType.Attack:
 					rollTitle = "Attack: ";
-					if (stopRollingData.damage > 0)
-						damageStr = ", Damage: " + stopRollingData.damage.ToString();
+					if (stopRollingData.totalDamagePlusModifiers > 0)
+						damageStr = ", Damage: " + stopRollingData.totalDamagePlusModifiers.ToString();
 					break;
 				case DiceRollType.SavingThrow:
 					rollTitle = GetAbilityStr(stopRollingData.savingThrow) + " Saving Throw: ";
@@ -4809,7 +4810,7 @@ namespace DHDM
 					break;
 				case DiceRollType.DamageOnly:
 					rollTitle = "Damage: ";
-					rollValue = stopRollingData.damage;
+					rollValue = stopRollingData.totalDamagePlusModifiers;
 					break;
 				case DiceRollType.HealthOnly:
 					rollTitle = "Health: ";
@@ -4821,8 +4822,8 @@ namespace DHDM
 					break;
 				case DiceRollType.ChaosBolt:
 					rollTitle = "Chaos Bolt: ";
-					if (stopRollingData.damage > 0)
-						damageStr = ", Damage: " + stopRollingData.damage.ToString();
+					if (stopRollingData.totalDamagePlusModifiers > 0)
+						damageStr = ", Damage: " + stopRollingData.totalDamagePlusModifiers.ToString();
 					break;
 				case DiceRollType.Initiative:
 					rollTitle = "Initiative: ";
@@ -4849,7 +4850,7 @@ namespace DHDM
 					if (playerName != "")
 						playerName = playerName + "'s ";
 
-					rollValue = playerRoll.modifier + playerRoll.cardModifierTotal + playerRoll.roll;
+					rollValue = playerRoll.skillSaveInitiativeScoreModifier + playerRoll.cardModifierDamageOffset + playerRoll.rawTotalScore;
 					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					successStr = GetSuccessStr(success, stopRollingData.type);
 					string localDamageStr;
@@ -6764,7 +6765,7 @@ namespace DHDM
 			});
 		}
 
-
+		bool forceRepeatNextSpellShortcut;
 		// TODO: Rename substring.
 		async Task RepeatSpell(int playerId, string substring)
 		{
@@ -6775,6 +6776,7 @@ namespace DHDM
 			{
 				PlayerActionShortcut playerActionShortcut = PlayerActionShortcut.FromSpell(substring, player, player.concentratedSpell.SpellSlotLevel);
 				await ActivateSpellShortcut(playerActionShortcut, true);
+				forceRepeatNextSpellShortcut = true;
 				NextDieRollType = DiceRollType.DamageOnly;
 			}
 		}
@@ -7371,7 +7373,9 @@ namespace DHDM
 
 				try
 				{
-					if (!await ActivateSpellShortcut(localSpellToCastOnRoll))
+					bool forceRepeat = forceRepeatNextSpellShortcut;
+					forceRepeatNextSpellShortcut = false;
+					if (!await ActivateSpellShortcut(localSpellToCastOnRoll, forceRepeat))
 						return;
 				}
 				catch (Exception ex)
@@ -8272,6 +8276,8 @@ namespace DHDM
 						codeEditor.EndUpdate();
 			}
 		}
+
+		public DndGame Game { get => game; set => game = value; }
 
 		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -9979,7 +9985,10 @@ namespace DHDM
 			}
 
 			if (!waitingOnDieRoll)
+			{
+				SystemVariables.CardUserName = ea.CardDto.GetUserName();
 				TriggerCardPlayedEventIfNecessary(ea);
+			}
 		}
 
 		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea)

@@ -1323,7 +1323,7 @@ class DiceLayer {
 		let line: AnimatedLine = null;
 		for (let i = 0; i < rollSummary.length; i++) {
 			const playerRoll: PlayerRoll = rollSummary[i];
-			if (playerRoll.roll + playerRoll.modifier + playerRoll.cardModifierTotal < hiddenThreshold && lastRollWasHigherThanThreshold) {
+			if (playerRoll.rawTotalScore + playerRoll.skillSaveInitiativeScoreModifier + playerRoll.cardModifierDamageOffset < hiddenThreshold && lastRollWasHigherThanThreshold) {
 				if (hiddenThreshold !== 0) {
 					const separatorHeight = 20;
 					line = this.addSeparatorHorizontalLine(x, y, 10, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
@@ -1374,14 +1374,14 @@ class DiceLayer {
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
 			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
-		const modifier: number = playerRoll.modifier + playerRoll.cardModifierTotal;
-		let message = `${playerRoll.name}: ${playerRoll.roll + modifier}`;
-		if (playerRoll.modifier > 0)
-			message += ` (+${playerRoll.modifier}${playerRoll.cardModifiersStr})`;
-		else if (playerRoll.modifier < 0)
-			message += ` (${playerRoll.modifier}${playerRoll.cardModifiersStr})`;
-		else if (playerRoll.cardModifierTotal !== 0)
-			message += ` (${playerRoll.cardModifiersStr})`;
+		const modifier: number = playerRoll.skillSaveInitiativeScoreModifier + playerRoll.cardModifierDamageOffset;
+		let message = `${playerRoll.name}: ${playerRoll.rawTotalScore + modifier}`;
+		if (playerRoll.skillSaveInitiativeScoreModifier > 0)
+			message += ` (+${playerRoll.skillSaveInitiativeScoreModifier}${playerRoll.cardModifiersDamageStr})`;
+		else if (playerRoll.skillSaveInitiativeScoreModifier < 0)
+			message += ` (${playerRoll.skillSaveInitiativeScoreModifier}${playerRoll.cardModifiersDamageStr})`;
+		else if (playerRoll.cardModifierDamageOffset !== 0)
+			message += ` (${playerRoll.cardModifiersDamageStr})`;
 
 		const textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
 		textEffect.data = DiceGroup.Players;
@@ -1445,15 +1445,17 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDamageHealthModifier(modifier: number, success: boolean, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players): void {
-		if (modifier === 0)
-			return;
-		let totalDamage: string;
+	getModStr(modifier: number): string {
 		if (modifier < 0)
-			totalDamage = modifier.toString();
-		else
-			totalDamage = '+' + modifier.toString();
+			return modifier.toString();
+		if (modifier > 0)
+			return '+' + modifier;
+		return '';
+	}
 
+	showDamageHealthModifier(modifierStr: string, success: boolean, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players): void {
+		if (!modifierStr)
+			return;
 		let damageTime: number = this.damageModifierTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
@@ -1471,7 +1473,7 @@ class DiceLayer {
 			velocityY = 0.5;
 			yPos = 810;
 		}
-		const textEffect: TextEffect = this.animations.addText(new Vector(960, yPos), `(${totalDamage})`, damageTime);
+		const textEffect: TextEffect = this.animations.addText(new Vector(960, yPos), `(${modifierStr})`, damageTime);
 		textEffect.data = diceGroup;
 		textEffect.targetScale = targetScale;
 		textEffect.fontColor = fontColor;
@@ -1564,7 +1566,7 @@ class DiceLayer {
 	}
 
 	showRollModifier(playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players, allModStrs: Array<string> = null, nat20 = false): void {
-		const rollModStr = this.getModStr(allModStrs, nat20);
+		const rollModStr = this.getRollModifierStr(allModStrs, nat20);
 		if (!rollModStr)
 			return;
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr})`, this.rollModifierTime);
@@ -1579,7 +1581,7 @@ class DiceLayer {
 		textEffect.fadeInTime = 500;
 	}
 
-	getModStr(allModStrs: string[], nat20: boolean): string {
+	getRollModifierStr(allModStrs: string[], nat20: boolean): string {
 		let totalMod = 0;
 		let rollModStr = '';
 		// rollModStr = this.addMod(rollModStr, rollModifier);
@@ -2997,11 +2999,18 @@ class BonusRoll {
 	}
 }
 
+enum CardModType {
+	TotalDamage,
+	TotalScore,
+	TotalScorePlusDamage
+}
+
 class CardModifier {
 	CreatureId = Character.invalidCreatureId;
 	BlameName: string;
 	Offset = 0;
 	Multiplier = 1;
+	CardModType = CardModType.TotalScorePlusDamage;
 	constructor() {
 
 	}
@@ -3062,7 +3071,6 @@ class DiceRollData {
 	numInspirationDiceCreated = 0;
 	hasMultiPlayerDice = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
-	hasSingleIndividual = false;
 	secondRollTitle: string;
 	minDamage = 0;
 	onFirstContactEffect: string;
@@ -3073,24 +3081,16 @@ class DiceRollData {
 	effectSaturation = 100;
 	onStopRollingSound: string;
 
-	getCardModifier(creatureId: number, cardModsList: Map<number, Array<string>>): number {
-		let totalModifier = 0;
+	getCardModifierOffset(creatureId: number, cardModsList: Map<number, Array<string>>, cardModType: CardModType): number {
+		let totalModifierOffset = 0;
 
-		if (cardModsList)
-			if (!cardModsList.has(creatureId)) {
-				cardModsList.set(creatureId, new Array<string>());
-			}
-
-		let modList: Array<string> = null;
-		if (cardModsList)
-			modList = cardModsList.get(creatureId);
+		const modList: Array<string> = this.getCreatureModList(cardModsList, creatureId);
 
 		if (this.cardModifiers) {
-			// Process addition first...
 			this.cardModifiers.forEach((cardModifier: CardModifier) => {
-				if (cardModifier.CreatureId === creatureId)
-					if (cardModifier.Multiplier === 1) {
-						totalModifier += cardModifier.Offset;
+				if (cardModifier.CardModType === cardModType || cardModifier.CardModType === CardModType.TotalScorePlusDamage)
+					if (cardModifier.CreatureId === creatureId) {
+						totalModifierOffset += cardModifier.Offset;
 						if (modList)
 							if (cardModifier.Offset > 0)
 								modList.push(`+${cardModifier.Offset}`);
@@ -3098,19 +3098,42 @@ class DiceRollData {
 								modList.push(`${cardModifier.Offset}`);
 					}
 			});
+		}
 
-			// Then multiplication...
+		return totalModifierOffset;
+	}
+
+	getCardModifierMultiplier(creatureId: number, cardModsList: Map<number, Array<string>>, cardModType: CardModType): number {
+		let totalModifierMultiplier = 1;
+
+		const modList: Array<string> = this.getCreatureModList(cardModsList, creatureId);
+
+		if (this.cardModifiers) {
 			this.cardModifiers.forEach((cardModifier: CardModifier) => {
-				if (cardModifier.CreatureId === creatureId)
-					if (cardModifier.Multiplier !== 1) {
-						totalModifier *= cardModifier.Multiplier;
-						if (modList)
-							modList.push(`x${cardModifier.Multiplier}`);
-					}
+				if (cardModifier.CardModType === cardModType || cardModifier.CardModType === CardModType.TotalScorePlusDamage)
+					if (cardModifier.CreatureId === creatureId)
+						if (cardModifier.Multiplier !== 1 && cardModifier.Multiplier !== 0) {
+							totalModifierMultiplier *= cardModifier.Multiplier;
+							if (modList)
+								modList.push(`x${cardModifier.Multiplier}`);
+						}
 			});
 		}
 
-		return totalModifier;
+		return totalModifierMultiplier;
+	}
+
+	private getCreatureModList(cardModsList: Map<number, string[]>, creatureId: number) {
+		let modList: Array<string> = null;
+
+		if (cardModsList) {
+			if (!cardModsList.has(creatureId)) {
+				cardModsList.set(creatureId, new Array<string>());
+			}
+
+			modList = cardModsList.get(creatureId);
+		}
+		return modList;
 	}
 
 	getFirstBonusRollDescription(): string {

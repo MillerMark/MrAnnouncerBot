@@ -648,11 +648,11 @@ namespace DndCore
 			return dndAlarm;
 		}
 
-		public DndAlarm CreateAlarm(string name, DndTimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Creature player = null)
+		public DndAlarm CreateAlarm(string name, DndTimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Creature player = null, int turnIndex = -1)
 		{
-			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow.GetTimeSpan(), name, player, data);
-			if (fromNow.RoundSpecifier != RoundSpecifier.None)
-				dndAlarm.RoundSpecifier = fromNow.RoundSpecifier;
+			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow.GetTimeSpan(), name, player, data, turnIndex);
+			if (fromNow.TurnSpecifier != TurnSpecifier.None)
+				dndAlarm.TurnSpecifier = fromNow.TurnSpecifier;
 			if (alarmHandler != null)
 				dndAlarm.AlarmFired += alarmHandler;
 			return dndAlarm;
@@ -756,6 +756,12 @@ namespace DndCore
 		{
 			timeClock.ClearAllAlarms();
 		}
+
+		public void RemoveAlarmByName(string alarmName)
+		{
+			timeClock.RemoveAlarm(alarmName);
+		}
+
 		public void RechargePlayersAfterLongRest()
 		{
 			foreach (Character player in Players)
@@ -763,6 +769,7 @@ namespace DndCore
 				player.RechargeAfterLongRest();
 			}
 		}
+		
 		public void RechargePlayersAfterShortRest()
 		{
 			foreach (Character player in Players)

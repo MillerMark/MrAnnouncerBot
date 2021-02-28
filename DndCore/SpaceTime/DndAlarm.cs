@@ -23,7 +23,7 @@ namespace DndCore
 		public string Name { get; set; }
 		public object Data { get; set; }
 		public Creature Creature { get; set; }
-		public RoundSpecifier RoundSpecifier { get; set; } = RoundSpecifier.None;
+		public TurnSpecifier TurnSpecifier { get; set; } = TurnSpecifier.None;
 		
 		public void FireAlarm(DndTimeClock dndTimeClock)
 		{

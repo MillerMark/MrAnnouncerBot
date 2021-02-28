@@ -7,6 +7,8 @@ namespace DndCore
 {
 	[Tooltip("Queues up a CardEvent to be played in the D&D game.")]
 	[Param(1, typeof(string), "cardEventName", "The category of the card event to queue.", ParameterIs.Required)]
+	[Param(2, typeof(string), "cardUserName", "The name of the user who played this card.", ParameterIs.Required)]
+
 	public class QueueEffect : DndFunction
 	{
 		public static event QueueEffectEventHandler RequestCardEventQueuing;
@@ -19,8 +21,9 @@ namespace DndCore
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
-			ExpectingArguments(args, 1, 10);
+			ExpectingArguments(args, 2, 10);
 			string cardEventName = Expressions.GetStr(args[0]);
+			string cardUserName = Expressions.GetStr(args[1]);
 
 			object data1 = null;
 			object data2 = null;
@@ -48,7 +51,7 @@ namespace DndCore
 			if (args.Count > 9)
 				data8 = GiveMagicFunction.GetData(args[9], player, target, spell);
 
-			OnRequestCardEventQueuing(new QueueEffectEventArgs(cardEventName, data1, data2, data3, data4, data5, data6, data7, data8));
+			OnRequestCardEventQueuing(new QueueEffectEventArgs(cardEventName, cardUserName, data1, data2, data3, data4, data5, data6, data7, data8));
 			return null;
 		}
 	}

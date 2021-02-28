@@ -65,10 +65,17 @@ enum WildMagic {
 	regainSorceryPoints
 }
 
+class OffsetMultiplier {
+	constructor(public offset: number, public multiplier = 1) {
+		
+	}
+}
+
 class RollResults {
 	//
 	constructor(public totalScoringDice: Map<number, number>, public blessBaneLuckMods: Map<number, number>,
-		public cardMods: Map<number, number>, public cardModsList: Map<number, Array<string>>,
+		public cardDamageMods: Map<number, OffsetMultiplier>, public cardDamageModsList: Map<number, Array<string>>,
+		public cardScoreMods: Map<number, OffsetMultiplier>, public cardScoreModsList: Map<number, Array<string>>,
 		public nat20s: Map<number, boolean>, public toHitModifier: number, public singlePlayerId: number,
 		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
 		public totalHealth: number, public totalExtra: number, public maxDamage: number,
@@ -77,7 +84,9 @@ class RollResults {
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false, public isCrit: boolean = false, public isCompleteFail: boolean = false, public cardModifierTotal: number, public cardModifiersStr: string) {
+	constructor(public rawTotalScore: number, public name: string, public id: number, public data: string, public skillSaveInitiativeScoreModifier: number = 0, public success: boolean = false, public isCrit: boolean = false, public isCompleteFail: boolean = false,
+		public cardModifierDamageOffset: number, public cardModifierDamageMultiplier: number, public cardModifiersDamageStr: string,
+		public cardModifierScoreOffset: number, public cardModifierScoreMultiplier: number, public cardModifiersScoreStr: string) {
 	}
 }
 
@@ -184,7 +193,10 @@ class DieRoller {
 	}
 	//const showDieValues = false;
 	diceRollData: DiceRollData;
-	totalDamagePlusModifier = 0;
+	totalDamagePlusModifiers = 0;
+	rawDamageRoll = 0;
+	damageModOffset = 0;
+	damageModMultiplier = 1;
 	totalHealthPlusModifier = 0;
 	totalExtraPlusModifier = 0;
 	totalBonus = 0;
@@ -279,7 +291,7 @@ class DieRoller {
 		this.waitingForBonusRollToComplete = false;
 		this.onBonusThrow = false;
 		this.diceValues = [];
-		this.totalDamagePlusModifier = 0;
+		this.totalDamagePlusModifiers = 0;
 		this.totalHealthPlusModifier = 0;
 		this.totalExtraPlusModifier = 0;
 		this.diceRollData.totalRoll = 0;
@@ -875,7 +887,7 @@ class DieRoller {
 		//this.hasNat20ForTestingPurposes = true;
 	}
 
-	getModifier(diceRollData: DiceRollData, player: Character): number {
+	getSkillSaveOrInitiativeModifier(diceRollData: DiceRollData, player: Character): number {
 		if (player)
 			if (diceRollData.type === DiceRollType.Initiative)
 				return player.initiative;
@@ -906,7 +918,7 @@ class DieRoller {
 	//	}
 	//}
 
-	addDieToMultiPlayerSummary(die: IDie, topNumber: number, cardModsList: Map<number, Array<string>>) {
+	addDieToMultiPlayerSummary(die: IDie, topNumber: number, cardDamageModsList: Map<number, Array<string>>, cardScoreModsList: Map<number, Array<string>>) {
 		const logProgress = true;
 		if (this.diceRollData.multiplayerSummary === null)
 			this.diceRollData.multiplayerSummary = [];
@@ -914,10 +926,10 @@ class DieRoller {
 		const playerRoll: PlayerRoll = this.diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
 
 		if (playerRoll) {
-			playerRoll.roll += topNumber;
-			playerRoll.success = playerRoll.roll + playerRoll.modifier + playerRoll.cardModifierTotal >= this.diceRollData.hiddenThreshold;
+			playerRoll.rawTotalScore += topNumber;
+			playerRoll.success = playerRoll.rawTotalScore + playerRoll.skillSaveInitiativeScoreModifier + playerRoll.cardModifierDamageOffset >= this.diceRollData.hiddenThreshold;
 			if (logProgress) {
-				console.log(`Found playerRoll for ${die.playerName}. Roll: ${playerRoll.roll}`);
+				console.log(`Found playerRoll for ${die.playerName}. Roll: ${playerRoll.rawTotalScore}`);
 			}
 		}
 		else {
@@ -925,21 +937,37 @@ class DieRoller {
 				console.log(`playerRoll not found for ${die.playerName}.`);
 			}
 
-			let cardModifierTotal = 0;
+			let cardModifierDamageOffset = 0;
+			let cardModifierScoreOffset = 0;
+			let cardModifierDamageMultiplier = 1;
+			let cardModifierScoreMultiplier = 1;
 
-			if (!cardModsList.has(die.creatureID)) {
-				cardModsList.set(die.creatureID, new Array<string>());
-				cardModifierTotal = this.diceRollData.getCardModifier(die.creatureID, cardModsList);
+			if (!cardDamageModsList.has(die.creatureID)) {
+				cardDamageModsList.set(die.creatureID, new Array<string>());
+				cardModifierDamageOffset = this.diceRollData.getCardModifierOffset(die.creatureID, cardDamageModsList, CardModType.TotalDamage);
+				cardModifierDamageMultiplier = this.diceRollData.getCardModifierMultiplier(die.creatureID, cardDamageModsList, CardModType.TotalDamage);
 			}
 
-			let cardModifiersStr = '';
-			const modList: Array<string> = cardModsList.get(die.creatureID);
-			modList.forEach((modStr) => {
-				cardModifiersStr += modStr;
+			if (!cardScoreModsList.has(die.creatureID)) {
+				cardScoreModsList.set(die.creatureID, new Array<string>());
+				cardModifierScoreOffset = this.diceRollData.getCardModifierOffset(die.creatureID, cardScoreModsList, CardModType.TotalScore);
+				cardModifierScoreMultiplier = this.diceRollData.getCardModifierMultiplier(die.creatureID, cardScoreModsList, CardModType.TotalScore);
+			}
+
+			let cardModifiersDamageStr = '';
+			let cardModifiersScoreStr = '';
+			const damageModList: Array<string> = cardDamageModsList.get(die.creatureID);
+			damageModList.forEach((modStr) => {
+				cardModifiersDamageStr += modStr;
+			});
+
+			const scoreModList: Array<string> = cardScoreModsList.get(die.creatureID);
+			scoreModList.forEach((modStr) => {
+				cardModifiersScoreStr += modStr;
 			});
 
 
-			let modifier = 0;
+			let scoreModifier = 0;
 
 
 
@@ -954,26 +982,28 @@ class DieRoller {
 						if (logProgress) {
 							console.log(`Found modifier.`);
 						}
-						modifier = this.diceRollData.diceDtos[i].Modifier;
+						scoreModifier = this.diceRollData.diceDtos[i].Modifier;
 						//break;
 					}
 				}
 			}
 			else if (diceLayer.players && diceLayer.players.length > 0) {
 				const player: Character = diceLayer.getPlayer(die.creatureID);
-				modifier = this.getModifier(this.diceRollData, player);
+				scoreModifier = this.getSkillSaveOrInitiativeModifier(this.diceRollData, player);
 			}
 
-			const success: boolean = topNumber + modifier >= this.diceRollData.hiddenThreshold;
+			const success: boolean = topNumber + scoreModifier >= this.diceRollData.hiddenThreshold;
 			let critHit: boolean;
 			if (this.diceRollData && this.diceRollData.minCrit)
 				critHit = topNumber >= this.diceRollData.minCrit;
 			else
 				critHit = topNumber >= DieRoller.Nat20;
 			const critFail: boolean = topNumber === 1;
-			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.creatureID, die.dataStr, modifier, success, critHit, critFail, cardModifierTotal, cardModifiersStr));
+			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.creatureID, die.dataStr, scoreModifier, success, critHit, critFail,
+				cardModifierDamageOffset, cardModifierDamageMultiplier, cardModifiersDamageStr,
+				cardModifierScoreOffset, cardModifierScoreMultiplier, cardModifiersScoreStr));
 			if (logProgress) {
-				console.log(this.diceRollData.multiplayerSummary[0].roll);
+				console.log(this.diceRollData.multiplayerSummary[0].rawTotalScore);
 			}
 		}
 
@@ -1015,11 +1045,13 @@ class DieRoller {
 		const totalScoringDice: Map<number, number> = new Map<number, number>();
 		const nat20s: Map<number, boolean> = new Map<number, boolean>();
 		const blessBaneLuckMods: Map<number, number> = new Map<number, number>();
-		const cardMods: Map<number, number> = new Map<number, number>();
-		const cardModsList: Map<number, Array<string>> = new Map<number, Array<string>>();
+		const cardDamageMods: Map<number, OffsetMultiplier> = new Map<number, OffsetMultiplier>();
+		const cardScoreMods: Map<number, OffsetMultiplier> = new Map<number, OffsetMultiplier>();
+		const cardDamageModsList: Map<number, Array<string>> = new Map<number, Array<string>>();
+		const cardScoreModsList: Map<number, Array<string>> = new Map<number, Array<string>>();
 		const inspirationValue: Map<number, number> = new Map<number, number>();
 		const damageMap: Map<DamageType, number> = new Map<DamageType, number>();
-		let totalDamage = 0;
+		let rawDamageRoll = 0;
 		let totalHealth = 0;
 		let totalExtra = 0;
 		this.diceRollData.totalRoll = 0;
@@ -1034,8 +1066,22 @@ class DieRoller {
 			if (!blessBaneLuckMods.has(playerID))
 				blessBaneLuckMods.set(playerID, 0);
 
-			if (!cardMods.has(playerID))
-				cardMods.set(playerID, this.diceRollData.getCardModifier(playerID, cardModsList));
+			if (!cardDamageMods.has(playerID)) {
+				const damageOffsetForPlayer: number = this.diceRollData.getCardModifierOffset(playerID, cardDamageModsList, CardModType.TotalDamage);
+				const damageMultiplierForPlayer = this.diceRollData.getCardModifierMultiplier(playerID, cardDamageModsList, CardModType.TotalDamage);
+				if (logProgress) {
+					console.log(`Adding a +${damageOffsetForPlayer} card DAMAGE bonus for playerId ${playerID}.`);
+				}
+				cardDamageMods.set(playerID, new OffsetMultiplier(damageOffsetForPlayer, damageMultiplierForPlayer));
+			}
+
+			if (!cardScoreMods.has(playerID)) {
+				const scoreModForPlayer: number = this.diceRollData.getCardModifierOffset(playerID, cardScoreModsList, CardModType.TotalScore);
+				if (logProgress) {
+					console.log(`Adding a +${scoreModForPlayer} card SCORE bonus for playerId ${playerID}.`);
+				}
+				cardScoreMods.set(playerID, new OffsetMultiplier(scoreModForPlayer));
+			}
 
 			if (!inspirationValue.has(playerID))
 				inspirationValue.set(playerID, 0);
@@ -1137,7 +1183,7 @@ class DieRoller {
 							extraDamage = 0;
 						}
 
-						totalDamage += topNumber;
+						rawDamageRoll += topNumber;
 						break;
 					}
 				case DieCountsAs.health:
@@ -1194,7 +1240,7 @@ class DieRoller {
 			const topNumber: number = die.getTopNumber();
 
 			if (this.diceRollData.hasMultiPlayerDice) {
-				this.addDieToMultiPlayerSummary(die, topNumber, cardModsList);
+				this.addDieToMultiPlayerSummary(die, topNumber, cardDamageModsList, cardScoreModsList);
 				this.attachDieLabel(die);
 			}
 
@@ -1212,7 +1258,11 @@ class DieRoller {
 				continue;
 			}
 
-			if (this.diceRollData.hasSingleIndividual) {
+			if (logProgress) {
+				console.log('this.diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
+			}
+
+			if (!this.diceRollData.hasMultiPlayerDice) {
 				singlePlayerId = playerID;
 				playerIdForTextMessages = playerID;
 			}
@@ -1224,7 +1274,7 @@ class DieRoller {
 		let skillSavingModifier = 0;
 		if (this.diceRollData.type === DiceRollType.SkillCheck || this.diceRollData.type === DiceRollType.SavingThrow) {
 			const player: Character = diceLayer.getPlayer(singlePlayerId);
-			skillSavingModifier = this.getModifier(this.diceRollData, player);
+			skillSavingModifier = this.getSkillSaveOrInitiativeModifier(this.diceRollData, player);
 		}
 
 		let toHitModifier = 0;
@@ -1240,10 +1290,11 @@ class DieRoller {
 			console.log('diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
 		}
 
-		if (totalScoringDice.get(singlePlayerId)) {
+		if (totalScoringDice.has(singlePlayerId)) {
 			let cardMod = 0;
-			if (cardMods.has(singlePlayerId))
-				cardMod = cardMods.get(singlePlayerId);
+			// TODO: This logic doesn't feel right. Shouldn't Card Mods also have impact on multi-player rolls?
+			if (cardScoreMods.has(singlePlayerId))
+				cardMod = cardScoreMods.get(singlePlayerId).offset;
 			this.diceRollData.totalRoll += totalScoringDice.get(singlePlayerId) + toHitModifier + cardMod;
 		}
 		else {
@@ -1273,11 +1324,17 @@ class DieRoller {
 		if (logProgress) {
 			console.log('damageModifierThisRoll: ' + this.damageModifierThisRoll);
 		}
-		this.totalDamagePlusModifier = totalDamage + this.damageModifierThisRoll;
+		const damageModOffset: number = this.GetModOffsetForPlayer(cardDamageMods, singlePlayerId);
+		const damageModMultiplier: number = this.GetModMultiplierForPlayer(cardDamageMods, singlePlayerId);
+
+		this.totalDamagePlusModifiers = (rawDamageRoll + this.damageModifierThisRoll + damageModOffset) * damageModMultiplier;
+		this.rawDamageRoll = rawDamageRoll;
+		this.damageModOffset = damageModOffset;
+		this.damageModMultiplier = damageModMultiplier;
 		this.totalHealthPlusModifier = totalHealth + this.healthModifierThisRoll;
 		this.totalExtraPlusModifier = totalExtra + this.extraModifierThisRoll;
 
-		return new RollResults(totalScoringDice, blessBaneLuckMods, cardMods, cardModsList, nat20s, toHitModifier, singlePlayerId, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
+		return new RollResults(totalScoringDice, blessBaneLuckMods, cardDamageMods, cardDamageModsList, cardScoreMods, cardScoreModsList, nat20s, toHitModifier, singlePlayerId, playerIdForTextMessages, skillSavingModifier, rawDamageRoll, totalHealth, totalExtra, maxDamage, damageMap);
 	}
 
 	bonusRollDealsDamage(damageStr: string, description = '', playerID = Character.invalidCreatureId): void {
@@ -2149,15 +2206,18 @@ class DieRoller {
 	}
 
 	reportRollResults(rollResults: RollResults) {
+		console.log(rollResults);
 		const totalScoringDice: Map<number, number> = rollResults.totalScoringDice;
 		const nat20s: Map<number, boolean> = rollResults.nat20s;
 		const blessBaneLuckMods: Map<number, number> = rollResults.blessBaneLuckMods;
-		const cardMods: Map<number, number> = rollResults.cardMods;
-		const cardModsList: Map<number, Array<string>> = rollResults.cardModsList;
+		const cardDamageMods: Map<number, OffsetMultiplier> = rollResults.cardDamageMods;
+		const cardScoreMods: Map<number, OffsetMultiplier> = rollResults.cardScoreMods;
+		const cardDamageModsList: Map<number, Array<string>> = rollResults.cardDamageModsList;
+		const cardScoreModsList: Map<number, Array<string>> = rollResults.cardScoreModsList;
 		const singlePlayerId: number = rollResults.singlePlayerId;
 		const playerIdForTextMessages: number = rollResults.playerIdForTextMessages;
 		const skillSavingModifier: number = rollResults.skillSavingModifier;
-		const totalDamage: number = rollResults.totalDamage;
+		const totalDamage: number = this.totalDamagePlusModifiers;
 		const totalHealth: number = rollResults.totalHealth;
 		const totalExtra: number = rollResults.totalExtra;
 		let maxDamage: number = rollResults.maxDamage;
@@ -2165,14 +2225,14 @@ class DieRoller {
 		const title = this.getDieRollTitle(this.diceRollData.type);
 
 		if (this.diceRollData.multiplayerSummary) {
-			this.diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier + b.cardModifierTotal) - (a.roll + a.modifier + a.cardModifierTotal));
+			this.diceRollData.multiplayerSummary.sort((a, b) => (b.rawTotalScore + b.skillSaveInitiativeScoreModifier + b.cardModifierDamageOffset) - (a.rawTotalScore + a.skillSaveInitiativeScoreModifier + a.cardModifierDamageOffset));
 			diceLayer.showMultiplayerResults(title, this.diceRollData.multiplayerSummary, this.diceRollData.hiddenThreshold);
 		}
 
 		//console.log('d20RollValue.get(singlePlayerId): ' + d20RollValue.get(singlePlayerId));
 		//console.log('this.diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
 
-		const additionalModValue: number = this.getAdditionalMods(singlePlayerId, blessBaneLuckMods, cardMods);
+		const additionalModValue: number = this.getAdditionalScoreMods(singlePlayerId, blessBaneLuckMods, cardScoreMods);
 
 		const rollMod: number = this.diceRollData.modifier;
 		const singlePlayerTotalScoringDice = totalScoringDice.get(singlePlayerId);
@@ -2183,18 +2243,16 @@ class DieRoller {
 		let modTotal: number = additionalModValue;
 
 		if (singlePlayerRoll && (singlePlayerTotalScoringDice > 0 || hasBaneBlessOrLuck)) {
-			const cardModStrs: Array<string> = cardModsList.get(singlePlayerId);
-			//if (blessBaneMods.has(singlePlayerId))
-			//	this.insertCardModStr(cardModStrs, blessBaneMods.get(singlePlayerId));
+			const cardScoreModStrs: Array<string> = cardScoreModsList.get(singlePlayerId);
 
-			this.insertCardModStr(cardModStrs, skillSavingModifier);
-			this.insertCardModStr(cardModStrs, rollMod);
-			//overrideModifier = 
-			console.log('playerIdForTextMessages: ' + playerIdForTextMessages);
-			this.reportDieTotalsAndMods(nat20s, singlePlayerId, playerIdForTextMessages, cardModStrs);
+			this.insertCardModStr(cardScoreModStrs, skillSavingModifier);
+			this.insertCardModStr(cardScoreModStrs, rollMod);
+
+			//console.log('playerIdForTextMessages: ' + playerIdForTextMessages);
+			this.reportDieTotalsAndMods(nat20s, singlePlayerId, playerIdForTextMessages, cardScoreModStrs);
 
 			const nat20: boolean = nat20s.has(singlePlayerId) && nat20s.get(singlePlayerId);
-			modTotal = diceLayer.getModTotal(cardModStrs, nat20);
+			modTotal = diceLayer.getModTotal(cardScoreModStrs, nat20);
 		}
 		else {
 			if (this.diceRollData.diceGroup === DiceGroup.Players && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow) {
@@ -2211,7 +2269,9 @@ class DieRoller {
 		//console.log('totalDamage: ' + totalDamage);
 		//console.log('totalHealth: ' + totalHealth);
 		//console.log('totalExtra: ' + totalExtra);
-		this.reportDamageHealthExtra(totalDamage, textCenter, totalHealth, totalExtra);
+		console.log('singlePlayerId: ' + singlePlayerId);
+
+		this.reportDamageHealthExtra(totalDamage, textCenter, totalHealth, totalExtra, cardDamageModsList.get(singlePlayerId));
 
 		console.log('singlePlayerTotalScoringDice: ' + singlePlayerTotalScoringDice);
 		this.showSuccessFailMessages(title, singlePlayerTotalScoringDice, this.diceRollData.diceGroup);
@@ -2231,16 +2291,26 @@ class DieRoller {
 		}
 	}
 
-	private getAdditionalMods(singlePlayerId: number, blessBaneLuckMods: Map<number, number>, cardMods: Map<number, number>) {
+	private getAdditionalScoreMods(singlePlayerId: number, blessBaneLuckMods: Map<number, number>, cardScoreMods: Map<number, OffsetMultiplier>) {
 		let blessBaneValue = 0;
 		if (blessBaneLuckMods.has(singlePlayerId))
 			blessBaneValue = blessBaneLuckMods.get(singlePlayerId);
 
+		return blessBaneValue + this.GetModOffsetForPlayer(cardScoreMods, singlePlayerId);
+	}
+
+	private GetModOffsetForPlayer(cardMods: Map<number, OffsetMultiplier>, singlePlayerId: number) {
 		let cardModValue = 0;
 		if (cardMods.has(singlePlayerId))
-			cardModValue = cardMods.get(singlePlayerId);
+			cardModValue = cardMods.get(singlePlayerId).offset;
+		return cardModValue;
+	}
 
-		return blessBaneValue + cardModValue;
+	private GetModMultiplierForPlayer(cardMods: Map<number, OffsetMultiplier>, singlePlayerId: number) {
+		let cardModValue = 1;
+		if (cardMods.has(singlePlayerId))
+			cardModValue = cardMods.get(singlePlayerId).multiplier;
+		return cardModValue;
 	}
 
 	private getDieRollTitle(rollType: DiceRollType) {
@@ -2258,25 +2328,52 @@ class DieRoller {
 
 	private announceRollCommentary(singlePlayerTotalScore: number, maxDamage: number, rollResults: RollResults, modTotal: number) {
 		if (this.diceRollData.secondRollData)
-			this.playSecondaryAnnouncerCommentary(this.diceRollData.secondRollData.type, singlePlayerTotalScore, this.totalDamagePlusModifier, maxDamage);
+			this.playSecondaryAnnouncerCommentary(this.diceRollData.secondRollData.type, singlePlayerTotalScore, this.totalDamagePlusModifiers, maxDamage);
 		else {
-			this.playAnnouncerCommentary(this.diceRollData.type, singlePlayerTotalScore, modTotal, this.totalDamagePlusModifier, maxDamage, this.diceRollData.damageType, rollResults.damageSummary);
+			this.playAnnouncerCommentary(this.diceRollData.type, singlePlayerTotalScore, modTotal, this.totalDamagePlusModifiers, maxDamage, this.diceRollData.damageType, rollResults.damageSummary);
 		}
 	}
 
-	private reportDamageHealthExtra(totalDamage: number, textCenter: Vector, totalHealth: number, totalExtra: number) {
+	private reportDamageHealthExtra(totalDamage: number, textCenter: Vector, totalHealth: number, totalExtra: number, cardDamageModsForPlayer: Array<string>) {
+		console.log(`reportDamageHealthExtra.....`);
+		console.log(cardDamageModsForPlayer);
+		let totalDamageHealthExtraStr: string;
+		let reportLabel: string;
+		let fontColor: string;
+		let outlineColor: string;
+		let modifierStr: string;
 		if (totalDamage > 0) {
-			diceLayer.showTotalHealthDamage(this.totalDamagePlusModifier.toString(), this.attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup, textCenter);
-			diceLayer.showDamageHealthModifier(this.damageModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup);
+			reportLabel = 'Damage: ';
+			fontColor = DiceLayer.damageDieBackgroundColor;  // Die background is red, so font color will be red.
+			outlineColor = DiceLayer.damageDieFontColor;
+			totalDamageHealthExtraStr = totalDamage.toString();
+			modifierStr = diceLayer.getModStr(this.damageModifierThisRoll);
+			if (cardDamageModsForPlayer) {
+				cardDamageModsForPlayer.forEach((damageMod) => {
+					modifierStr += damageMod;
+				});
+				console.log('modifierStr: ' + modifierStr);
+			}
 		}
-		if (totalHealth > 0) {
-			diceLayer.showTotalHealthDamage('+' + this.totalHealthPlusModifier.toString(), this.attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup, textCenter);
-			diceLayer.showDamageHealthModifier(this.healthModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup);
+		else if (totalHealth > 0) {
+			reportLabel = 'Health: ';
+			fontColor = DiceLayer.healthDieBackgroundColor;  // Die background is red, so font color will be red.
+			outlineColor = DiceLayer.healthDieFontColor;
+			totalDamageHealthExtraStr = '+' + this.totalHealthPlusModifier.toString();
+			modifierStr = diceLayer.getModStr(this.healthModifierThisRoll);
 		}
-		if (totalExtra > 0) {
-			diceLayer.showTotalHealthDamage(this.totalExtraPlusModifier.toString(), this.attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup, textCenter);
-			diceLayer.showDamageHealthModifier(this.extraModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup);
+		else if (totalExtra > 0) {
+			reportLabel = '';
+			fontColor = DiceLayer.extraDieBackgroundColor;  // Die background is red, so font color will be red.
+			outlineColor = DiceLayer.extraDieFontColor;
+			totalDamageHealthExtraStr = this.totalExtraPlusModifier.toString();
+			modifierStr = diceLayer.getModStr(this.extraModifierThisRoll);
 		}
+		else 
+			return;
+
+		diceLayer.showTotalHealthDamage(totalDamageHealthExtraStr, this.attemptedRollWasSuccessful, reportLabel, fontColor, outlineColor, this.diceRollData.diceGroup, textCenter);
+		diceLayer.showDamageHealthModifier(modifierStr, this.attemptedRollWasSuccessful, fontColor, outlineColor, this.diceRollData.diceGroup);
 	}
 
 	private getTextCenter() {
@@ -2620,7 +2717,10 @@ class DieRoller {
 			'roll': this.diceRollData.totalRoll,
 			'hiddenThreshold': this.diceRollData.hiddenThreshold,
 			'spellName': this.diceRollData.spellName,
-			'damage': this.totalDamagePlusModifier,
+			'totalDamagePlusModifiers': this.totalDamagePlusModifiers,
+			'rawDamageRoll': this.rawDamageRoll,
+			'damageModOffset': this.damageModOffset,
+			'damageModMultiplier': this.damageModMultiplier,
 			'health': this.totalHealthPlusModifier,
 			'extra': this.totalExtraPlusModifier,
 			'multiplayerSummary': this.diceRollData.multiplayerSummary,
@@ -4136,7 +4236,6 @@ class DieRoller {
 		}
 
 		this.diceRollData.hasMultiPlayerDice = this.hasMultiPlayerDice(diceRollDto);  // Any DiceDtos (even one) will go in a multiplayerSummary!
-		this.diceRollData.hasSingleIndividual = !this.diceRollData.hasMultiPlayerDice;
 
 		//console.log('prepareDiceDtoRoll - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 	}
@@ -4158,16 +4257,13 @@ class DieRoller {
 			this.diceRollData.itsAD20Roll = false;
 			if (this.diceRollData.rollScope === RollScope.ActivePlayer) {
 				this.addD100(this.diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, this.diceRollData.throwPower, xPositionModifier);
-				this.diceRollData.hasSingleIndividual = true;
+				this.diceRollData.hasMultiPlayerDice = false;
 			}
 			else if (this.diceRollData.rollScope === RollScope.Individuals) {
 				this.diceRollData.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
 					this.addD100(this.diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, this.diceRollData.throwPower, xPositionModifier);
 				});
 				this.diceRollData.hasMultiPlayerDice = this.diceRollData.playerRollOptions.length > 1;
-				//console.log('prepareLegacyRoll, RollScope.Individuals - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
-
-				this.diceRollData.hasSingleIndividual = this.diceRollData.playerRollOptions.length === 1;
 			}
 		}
 		else if (this.diceRollData.type === DiceRollType.Initiative || this.diceRollData.type === DiceRollType.NonCombatInitiative) {
@@ -4246,15 +4342,13 @@ class DieRoller {
 				if (activePlayerRollOptions)
 					playerId = activePlayerRollOptions.PlayerID;
 				this.addD20sForPlayer(playerId, xPositionModifier, vantageKind, this.diceRollData.groupInspiration, numD20s, dieLabel);
-				this.diceRollData.hasSingleIndividual = true;
+				this.diceRollData.hasMultiPlayerDice = false;
 			}
 			else if (this.diceRollData.rollScope === RollScope.Individuals) {
 				this.diceRollData.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
 					this.addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
 				});
 				this.diceRollData.hasMultiPlayerDice = this.diceRollData.playerRollOptions.length > 1;
-				//console.log('prepareLegacyRoll, RollScope.Individuals (2) - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
-				this.diceRollData.hasSingleIndividual = this.diceRollData.playerRollOptions.length === 1;
 			}
 			if (this.isAttack(this.diceRollData)) {
 				this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, false, dieHueVariancePercent);
@@ -4279,6 +4373,8 @@ class DieRoller {
 		this.animationsShouldBeDone = false;
 		this.throwHasStarted = false;
 		this.rollingOnlyAddOnDice = false;
+		this.damageModMultiplier = 1;
+		this.damageModOffset = 0;
 
 		if (diceRollDto.type === DiceRollType.BendLuckAdd || diceRollDto.type === DiceRollType.LuckRollHigh) {
 			this.needToRollAddOnDice(diceRollDto, +1);

@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace DndCore
 {
-	public enum RoundSpecifier
+	public enum TurnSpecifier
 	{
 		None,
 		StartOfTurn,
@@ -51,13 +51,13 @@ namespace DndCore
 		{
 			Count = count;
 			TimeMeasure = timeMeasure;
-			RoundSpecifier = RoundSpecifier.None;
+			TurnSpecifier = TurnSpecifier.None;
 		}
 
 		public int Count { get; set; }
 
 		public TimeMeasure TimeMeasure { get; set; }
-		public RoundSpecifier RoundSpecifier { get; set; }
+		public TurnSpecifier TurnSpecifier { get; set; }
 
 		public static DndTimeSpan FromActions(int actionCount)
 		{
@@ -82,6 +82,11 @@ namespace DndCore
 		public static DndTimeSpan FromMinutes(int minutes)
 		{
 			return new DndTimeSpan(TimeMeasure.minutes, minutes);
+		}
+
+		public static DndTimeSpan FromTurns(int turns)
+		{
+			return new DndTimeSpan(TimeMeasure.turns, turns);
 		}
 
 		public static DndTimeSpan FromRounds(int rounds)
@@ -213,18 +218,24 @@ namespace DndCore
 			if (duration.IndexOf("round") > 0)
 			{
 				DndTimeSpan dndTimeSpan = FromRounds(duration.GetFirstInt(1));
-				dndTimeSpan.RoundSpecifier = DndUtils.GetRoundSpecifier(duration);
+				dndTimeSpan.TurnSpecifier = DndUtils.GetTurnSpecifier(duration);
 				return dndTimeSpan;
 			}
 
 			if (duration == "day" || duration == "dawn")
 				return FromDays(1);
+
 			if (duration == "hour")
 				return FromHours(1);
+
 			if (duration == "minute")
 				return FromMinutes(1);
+
 			if (duration == "second")
 				return FromSeconds(1);
+
+			if (duration == "turn")
+				return FromTurns(1);
 
 			return Zero;
 
@@ -274,6 +285,7 @@ namespace DndCore
 
 		public static readonly DndTimeSpan Zero = FromActions(0);
 		public static readonly DndTimeSpan OneAction = FromActions(1);
+		public static readonly DndTimeSpan OneRound = FromRounds(1);
 		public static readonly DndTimeSpan OneBonusAction = new DndTimeSpan(TimeMeasure.bonusActions, 1);
 		public static readonly DndTimeSpan OneReaction = new DndTimeSpan(TimeMeasure.reaction, 1);
 

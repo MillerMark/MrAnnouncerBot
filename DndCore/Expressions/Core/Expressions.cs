@@ -480,6 +480,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<Conditions>());
 			AddVariable(new DndEnumValue<CreatureKinds>());
 			AddVariable(new DndEnumValue<CreatureSize>());
+			AddVariable(new DndEnumValue<CardModType>());
 			AddVariable(new DndEnumValue<DamageType>());
 			AddVariable(new DndEnumValue<DiceRollType>());
 			AddVariable(new DndEnumValue<ExhaustionLevels>());

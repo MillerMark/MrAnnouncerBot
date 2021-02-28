@@ -17,7 +17,10 @@ namespace DndCore
 		public DiceGroup diceGroup { get; set; }
 		public int roll { get; set; }
 		public int hiddenThreshold { get; set; }
-		public int damage { get; set; }
+		public int rawDamageRoll { get; set; }
+		public int totalDamagePlusModifiers { get; set; }
+		public int damageModOffset { get; set; }
+		public int damageModMultiplier { get; set; }
 		public int health { get; set; }
 		public int extra { get; set; }
 		public List<PlayerRoll> multiplayerSummary { get; set; }

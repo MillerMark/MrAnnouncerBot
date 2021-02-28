@@ -195,6 +195,11 @@ namespace DndCore
 			return GetElement<DamageType>(damageStr);
 		}
 
+		public static CardModType ToCardModType(string cardModType)
+		{
+			return GetElement<CardModType>(cardModType);
+		}
+
 		public static Conditions ToCondition(string condition)
 		{
 			return GetElement<Conditions>(condition);
@@ -599,13 +604,13 @@ namespace DndCore
 			return CreatureKinds.None;
 		}
 
-		public static RoundSpecifier GetRoundSpecifier(string duration)
+		public static TurnSpecifier GetTurnSpecifier(string duration)
 		{
 			if (duration.Contains("start of turn"))
-				return RoundSpecifier.StartOfTurn;
+				return TurnSpecifier.StartOfTurn;
 			if (duration.Contains("end of turn"))
-				return RoundSpecifier.EndOfTurn;
-			return RoundSpecifier.None;
+				return TurnSpecifier.EndOfTurn;
+			return TurnSpecifier.None;
 		}
 
 		public static bool IsSkillAGenericAbility(Skills matchSkill)

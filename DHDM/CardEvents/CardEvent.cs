@@ -8,8 +8,15 @@ namespace DHDM
 {
 	public abstract class CardEvent
 	{
+		public string UserName { get; set; }
 		public object[] Args { get; set; }
 		public bool IsDone { get; set; }
+		public IObsManager ObsManager { get; set; }
+		public IDungeonMasterApp DungeonMasterApp { get; set; }
+		public virtual void ConditionRoll(DiceRoll diceRoll)
+		{
+			
+		}
 		public CardEvent()
 		{
 
@@ -19,17 +26,27 @@ namespace DHDM
 		{
 			Args = data;
 		}
-		public abstract void Activate(IObsManager obsManager, IDungeonMasterApp dungeonMasterApp);
+		
+		public abstract void Activate();
 
-		public static CardEvent Create(string cardEventName, object[] args)
+		public static CardEvent Create(string cardEventName, string cardUserName, object[] args, IObsManager obsManager, IDungeonMasterApp iDungeonMasterApp)
 		{
 			// TODO: Create an instance of the correct CardEvent descendant.
 			// TODO: Consider an elegant architecture.
+			CardEvent result = null;
+
 			if (cardEventName == "Weather")
-				return new ChangeWeatherCardEvent(args);
+				result = new ChangeWeatherCardEvent(args);
 			else if (cardEventName == "Stampede")
-				return new StampedeCardEvent(args);
-			return null;
+				result = new StampedeCardEvent(args);
+
+			if (result != null)
+			{
+				result.UserName = cardUserName;
+				result.ObsManager = obsManager;
+				result.DungeonMasterApp = iDungeonMasterApp;
+			}
+			return result;
 		}
 	}
 }

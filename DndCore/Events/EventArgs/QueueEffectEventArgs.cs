@@ -5,13 +5,15 @@ namespace DndCore
 {
 	public class QueueEffectEventArgs : EventArgs
 	{
-		public string cardEventName { get; private set; }
+		public string CardEventName { get; private set; }
 
+		public string CardUserName { get; set; }
 		public object[] Args { get; set; }
 
-		public QueueEffectEventArgs(string cardEventName, params object[] data)
+		public QueueEffectEventArgs(string cardEventName, string cardUserName, params object[] data)
 		{
-			this.cardEventName = cardEventName;
+			CardUserName = cardUserName;
+			CardEventName = cardEventName;
 			Args = data;
 		}
 		public QueueEffectEventArgs()
