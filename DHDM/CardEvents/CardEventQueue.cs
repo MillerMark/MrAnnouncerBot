@@ -50,6 +50,7 @@ namespace DHDM
 
 			DequeueNow();
 		}
+
 		public void ConditionRoll(DiceRoll diceRoll)
 		{
 			if (ActiveCardEvent != null)

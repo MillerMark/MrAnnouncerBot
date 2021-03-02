@@ -78,23 +78,24 @@ namespace CardMaker
 
 		private static void AddCardIfMatching(List<Card> result, CardData cardData, Deck activeDeck, StampedeSpecialist stampedeSpecialist, Rarity rarity, string diceStrToMatch)
 		{
-			if (diceStrToMatch == stampedeSpecialist.DiceDamageStr)
-				result.Add(CreateStampedeCard(stampedeSpecialist.CardName, stampedeSpecialist.Description, stampedeSpecialist.AlertMessage, stampedeSpecialist.CardPlayedMessage, stampedeSpecialist.ImageLayerName, stampedeSpecialist.DiceDamageStr, rarity, cardData, activeDeck));
+			if (diceStrToMatch == stampedeSpecialist.TotalDamage)
+				result.Add(CreateStampedeCard(stampedeSpecialist.CardName, stampedeSpecialist.Description, stampedeSpecialist.AlertMessage, stampedeSpecialist.CardPlayedMessage, stampedeSpecialist.ImageLayerName, stampedeSpecialist.TotalDamage, stampedeSpecialist.DiceDamageStr, rarity, cardData, activeDeck));
 		}
 
-		public static Card CreateStampedeCard(string cardName, string description, string alertMessage, string cardPlayedMessage, string imageLayerName, string damageStr, Rarity rarity, CardData CardData, Deck ActiveDeck)
+		public static Card CreateStampedeCard(string cardName, string description, string alertMessage, string cardPlayedMessage, string imageLayerName, string totalDamage, string damageDiceStr, Rarity rarity, CardData CardData, Deck ActiveDeck)
 		{
 			Card card = CardData.AddCard(ActiveDeck);
 			card.Rarity = rarity;
 			card.Name = cardName;
 			card.StylePath = "PreMade";
 			card.Description = description;
-			card.AdditionalInstructions = "Everyone in the path must roll a dexterity saving throw. Heroes have advantage!";
+			card.AdditionalInstructions = "Everyone in the path must roll a dexterity saving throw.!";
 			card.AlertMessage = alertMessage;
-			card.CardPlayed = $"QueueEffect(\"Stampede\", CardUserName, \"{cardName}\", \"{imageLayerName}\", \"{damageStr}\");\n" +
-											$"TellAll($\"{cardPlayedMessage}\");";
+			card.CardPlayed = $"QueueEffect(\"Stampede\", CardUserName, \"{cardName}\", \"{imageLayerName}\", \"{damageDiceStr}\");\n" +
+											$"TellAll($\"{cardPlayedMessage}\");\n" +
+											$"TellDm(\"caulfielder: Target NPCs, Monsters and Players, and press the Stampede button when ready to roll!\");";
 			CardFactory.QuickAddAllLayerDetails(card);
-			SetStampedeLayerVisibilities(card, imageLayerName, damageStr);
+			SetStampedeLayerVisibilities(card, imageLayerName, totalDamage);
 			card.Cooldown = 5;
 			card.CooldownUnits = CooldownUnits.Minutes;
 			return card;

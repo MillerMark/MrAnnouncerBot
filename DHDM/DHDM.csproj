@@ -332,6 +332,7 @@
     <Compile Include="ObsManager.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
+    <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
     <Compile Include="Events\ViewerDieRollStoppedEventArgs.cs" />

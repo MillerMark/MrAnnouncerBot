@@ -14,10 +14,15 @@ namespace CardMaker
 
 		[Column]
 		[Indexer]
+		public string TotalDamage { get; set; }
+
+		[Column]
 		public string DiceDamageStr { get; set; }
 
 		[Column]
 		public string CardName { get; set; }
+		[Column]
+		public string VideoName { get; set; }
 
 		[Column]
 		public string Description { get; set; }

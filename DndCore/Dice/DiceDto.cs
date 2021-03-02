@@ -61,7 +61,7 @@ namespace DndCore
 			else
 				label = inGameCreature.Name;
 
-			return AddD20ForCreature(inGameCreature, label, modifier, dieCountsAs);
+			return AddD20ForInGameCreature(inGameCreature, label, modifier, dieCountsAs);
 		}
 
 		public static bool IsSavingThrow(DiceRollType diceRollType)
@@ -69,7 +69,7 @@ namespace DndCore
 			return diceRollType == DiceRollType.SavingThrow || diceRollType == DiceRollType.DamagePlusSavingThrow || diceRollType == DiceRollType.OnlyTargetsSavingThrow;
 		}
 
-		private static DiceDto AddD20ForCreature(InGameCreature inGameCreature, string label, double modifier, DieCountsAs dieCountsAs)
+		public static DiceDto AddD20ForInGameCreature(InGameCreature inGameCreature, string label, double modifier, DieCountsAs dieCountsAs)
 		{
 			return new DiceDto()
 			{
@@ -82,6 +82,23 @@ namespace DndCore
 				DamageType = DamageType.None,
 				BackColor = inGameCreature.BackgroundHex,
 				FontColor = inGameCreature.ForegroundHex,
+				DieCountsAs = dieCountsAs
+			};
+		}
+
+		public static DiceDto AddD20ForCharacter(Character player, string label, double modifier, DieCountsAs dieCountsAs)
+		{
+			return new DiceDto()
+			{
+				PlayerName = player.Name,
+				CreatureId = player.Index,
+				Sides = 20,
+				Quantity = 1,
+				Label = label,
+				Modifier = modifier,
+				DamageType = DamageType.None,
+				BackColor = player.dieBackColor,
+				FontColor = player.dieFontColor,
 				DieCountsAs = dieCountsAs
 			};
 		}

@@ -75,5 +75,7 @@ namespace DHDM
 		void LaunchHandTrackingEffect(string launchCommand, string dataValue);
 		void NpcScrollsToggle();
 		void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "");
+		void SetNextStampedeRoll(string damageStr, string guid);
+		void StampedeNow();
 	}
 }

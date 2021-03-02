@@ -373,7 +373,7 @@ namespace DHDM
 
 			string outlineColor = ea.OutlineColor;
 			string fillColor = ea.FillColor;
-			
+
 			if (outlineColor == "player")
 				outlineColor = ea.Player.dieFontColor;
 			if (fillColor == "player")
@@ -1741,7 +1741,7 @@ namespace DHDM
 					message = message.Trim('“');
 					message = message.Trim('”');
 				}
-				
+
 				if (DateTime.Now.Hour < 15)
 				{
 					ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
@@ -3077,7 +3077,7 @@ namespace DHDM
 		}
 
 		bool rollInspirationAfterwards;
-		
+
 
 		void TriggerMagicEvents(DiceRoll diceRoll)
 		{
@@ -3238,7 +3238,7 @@ namespace DHDM
 			}
 
 			ProcessAddOnsForDtos(diceRoll);
-			
+
 
 			if (diceRoll.IsOnePlayer && player != null)
 			{
@@ -3274,7 +3274,7 @@ namespace DHDM
 
 			if (!string.IsNullOrWhiteSpace(creature.dieRollEffectsThisRoll))
 				diceRoll.AddDieRollEffects(creature.dieRollEffectsThisRoll);
-		
+
 			if (!string.IsNullOrWhiteSpace(creature.trailingEffectsThisRoll))
 				diceRoll.AddTrailingEffects(creature.trailingEffectsThisRoll);
 		}
@@ -9940,7 +9940,7 @@ namespace DHDM
 			if (AllViewers.RandomlyReplaceDragonHumpersViewerWithOthers)
 			{
 				// For testing. Replaces dragonhumpers with random found viewer.
-				ea.CardDto.Card.UserName = viewer.UserName;  
+				ea.CardDto.Card.UserName = viewer.UserName;
 				msg = msg.Replace("dragonhumpers", viewer.UserName);
 			}
 
@@ -10006,7 +10006,7 @@ namespace DHDM
 		{
 			if (targetCharacterId == int.MinValue || ea.CardDto.Command != CardDto.CMD_PlayCardNow)
 				return;
-			
+
 			TriggerCardPlayedEvent(ea, targetCharacterId);
 		}
 
@@ -10137,7 +10137,7 @@ namespace DHDM
 			List<string> names = new List<string>();
 			foreach (DamageType damageType in damage.Keys)
 				if (IsActualDamage(damageType))
-				names.Add(GetDamageDescription(damageType, damage[damageType], multiplier));
+					names.Add(GetDamageDescription(damageType, damage[damageType], multiplier));
 
 			string damageStr = string.Empty;
 
@@ -10153,7 +10153,7 @@ namespace DHDM
 		{
 			int rollTotal = ea.StopRollingData.roll;
 			ea.Card.Command = "DiceRollForCardFinished";
-			
+
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
 			ApplyDamageFromRoll(ea.StopRollingData, ea.Card.TargetCharacterIds);
@@ -10169,6 +10169,10 @@ namespace DHDM
 
 		private void ApplyDamageFromRoll(DiceStoppedRollingData stopRollingData, List<int> targetCharacterIds)
 		{
+			bool isStampede = stopRollingData.rollId == nextStampedeGuid;
+			if (isStampede)
+				nextStampedeGuid = null;
+
 			Dictionary<DamageType, int> damage = CalculateDamageByType(stopRollingData.individualRolls);
 			if (damage.Keys.Count <= 0)
 				return;
@@ -10180,7 +10184,7 @@ namespace DHDM
 			foreach (int targetId in targetCharacterIds)
 			{
 				Creature targetCreature = DndUtils.GetCreatureById(targetId);
-				ApplyRollDamageToCreature(stopRollingData, targetId, targetCreature, results, damage, ref whatTargetChanged);
+				ApplyRollDamageToCreature(stopRollingData, targetId, targetCreature, results, damage, isStampede, ref whatTargetChanged);
 			}
 
 			// TODO: Incorporate this consolidation logic into normal saving throws for multiple people.
@@ -10308,7 +10312,7 @@ namespace DHDM
 			return damageDieTotal * multiplier;
 		}
 
-		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, ref WhatTargetChanged whatTargetChanged)
+		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool isStampede, ref WhatTargetChanged whatTargetChanged)
 		{
 			if (targetCreature == null)
 				return;
@@ -10320,7 +10324,12 @@ namespace DHDM
 			{
 				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId);
 				double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
+				
+				if (isStampede && savingThrowResult == SavingThrowResult.Save)
+					multiplier = 0;
+
 				AddSavingThrowResult(results, targetCreature, savingThrowResult);
+				
 				inGameCreature.TakeDamage(game, damage, AttackKind.Magical, multiplier);
 				whatTargetChanged |= WhatTargetChanged.NpcMonster;
 			}
@@ -10328,6 +10337,10 @@ namespace DHDM
 				foreach (DamageType key in damage.Keys)
 				{
 					double damageForPlayer = GetSavingThrowDamage(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, damage[key], out SavingThrowResult savingThrowResult);
+
+					if (isStampede && savingThrowResult == SavingThrowResult.Save)
+						damageForPlayer = 0;
+
 					if (!showedSavingThrowResultsForPlayer)
 					{
 						showedSavingThrowResultsForPlayer = true;
@@ -10425,6 +10438,67 @@ namespace DHDM
 		private void QueueEffect_RequestCardEventQueuing(object sender, QueueEffectEventArgs ea)
 		{
 			CardEventManager.QueueCardEvent(ea, obsManager, this);
+		}
+
+		string nextStampedeDamage;
+		string nextStampedeGuid;
+
+		public void SetNextStampedeRoll(string damageStr, string guid)
+		{
+			nextStampedeDamage = damageStr;
+			nextStampedeGuid = guid;
+		}
+
+		public void StampedeNow()
+		{
+			if (nextStampedeGuid == null)
+				return;
+			Dispatcher.Invoke(() =>
+			{
+				RollStampede();
+			});
+			nextStampedeGuid = null;
+		}
+
+		void AddStampedeSavingThrowsForAllTargetedCreatures(DiceRoll diceRoll)
+		{
+			diceRoll.HiddenThreshold = 12;
+			diceRoll.SavingThrow = Ability.dexterity;
+			diceRoll.Type = DiceRollType.DamagePlusSavingThrow;
+
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreature.IsTargeted)
+				{
+					DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, diceRoll.Type);
+					//if (inGameCreature.IsAlly)
+					//	diceDto.Vantage = VantageKind.Advantage;
+					//else if (inGameCreature.IsEnemy)
+					//	diceDto.Vantage = VantageKind.Disadvantage;
+
+					diceRoll.DiceDtos.Add(diceDto);
+					inGameCreature.CreatureRollingSavingThrow();
+				}
+
+			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+			{
+				if (playerStats.IsTargeted)
+				{
+					Character player = AllPlayers.GetFromId(playerStats.CreatureId);
+					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, "", player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
+					//diceDto.Vantage = VantageKind.Advantage;
+					diceRoll.DiceDtos.Add(diceDto);
+					player.RollingSavingThrowNow();
+				}
+			}
+		}
+
+		private void RollStampede()
+		{
+			DiceRoll roll = new DiceRoll(DiceRollType.DamagePlusSavingThrow, VantageKind.Normal, nextStampedeDamage);
+			//roll.SuppressLegacyRoll = true;
+			AddStampedeSavingThrowsForAllTargetedCreatures(roll);
+			roll.RollID = nextStampedeGuid;
+			RollTheDice(roll);
 		}
 	}
 }
