@@ -8,7 +8,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	parchmentBackground: Sprites;
 	deathX: Sprites;
 	scrollAppear: Sprites;
-	creatureTalking: Sprites;
+	creatureSelection: Sprites;
 	scrollDisappear: Sprites;
 	parchmentShadow: Sprites;
 	target: Sprites;
@@ -70,9 +70,9 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.scrollDisappear.originX = 49;
 		this.scrollDisappear.originY = 2;
 
-		this.creatureTalking = new Sprites('Scroll/InGameCreatures/CreatureTalks/PlayerTalks', 88, fps30, AnimationStyle.Loop, true);
-		this.creatureTalking.originX = 102;
-		this.creatureTalking.originY = 93;
+		this.creatureSelection = new Sprites('Scroll/InGameCreatures/Selection/PlayerTalks', 88, fps30, AnimationStyle.Loop, true);
+		this.creatureSelection.originX = 102;
+		this.creatureSelection.originY = 93;
 
 
 		this.parchmentBackground.disableGravity();
@@ -81,7 +81,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.target.disableGravity();
 		this.activeTurnIndicator.disableGravity();
 		this.scrollAppear.disableGravity();
-		this.creatureTalking.disableGravity();
+		this.creatureSelection.disableGravity();
 		this.scrollDisappear.disableGravity();
 
 		globalBypassFrameSkip = saveBypassFrameSkip;
@@ -94,7 +94,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.target.updatePositionsForFreeElements(timestamp);
 		this.activeTurnIndicator.updatePositionsForFreeElements(timestamp);
 		this.scrollAppear.updatePositionsForFreeElements(timestamp);
-		this.creatureTalking.updatePositionsForFreeElements(timestamp);
+		this.creatureSelection.updatePositionsForFreeElements(timestamp);
 		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
 		this.conditionManager.update(timestamp);
 	}
@@ -243,7 +243,7 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
 		this.activeTurnIndicator.draw(context, nowMs);
-		this.creatureTalking.draw(context, nowMs);
+		this.creatureSelection.draw(context, nowMs);
 		this.parchmentBackground.draw(context, nowMs);
 
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
@@ -315,8 +315,8 @@ class InGameCreatureManager implements IGetCreatureX {
 		return this.getSpriteForCreature(this.activeTurnIndicator.spriteProxies, inGameCreature);
 	}
 
-	getTalkingIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.creatureTalking.spriteProxies, inGameCreature);
+	getSelectionIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
+		return this.getSpriteForCreature(this.creatureSelection.spriteProxies, inGameCreature);
 	}
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
@@ -361,7 +361,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.deathX.spriteProxies = [];
 		this.target.spriteProxies = [];
 		this.activeTurnIndicator.spriteProxies = [];
-		this.creatureTalking.spriteProxies = [];
+		this.creatureSelection.spriteProxies = [];
 
 		let delayMs = 0;
 		let timeBetweenArrivals = 300;
@@ -618,46 +618,42 @@ class InGameCreatureManager implements IGetCreatureX {
 		}
 	}
 
-	updateInGameCreatureTalkIndicator(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
+	updateInGameCreatureSelectionIndicator(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
 		for (let i = 0; i < inGameCreatureDtos.length; i++) {
 			const updatedGameCreature: InGameCreature = inGameCreatureDtos[i];
 			const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
 			if (!existingCreature)
 				continue;
 
-			existingCreature.IsTalking = updatedGameCreature.IsTalking;
+			existingCreature.IsSelected = updatedGameCreature.IsSelected;
 
-			if (existingCreature.IsTalking) {
-				console.log('someone is talking!');
-				this.showCreatureTalkingIndicator(existingCreature, soundManager);
+			if (existingCreature.IsSelected) {
+				this.showCreatureSelectionIndicator(existingCreature, soundManager);
 			}
 			else
-				this.clearCreatureTalkingIndicator(existingCreature, soundManager);
+				this.clearCreatureSelectionIndicator(existingCreature, soundManager);
 		}
 	}
 
-	showCreatureTalkingIndicator(creature: InGameCreature, soundManager: SoundManager) {
-		const existingSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(creature);
+	showCreatureSelectionIndicator(creature: InGameCreature, soundManager: SoundManager) {
+		const existingSprite: SpriteProxy = this.getSelectionIndicatorSpriteForCreature(creature);
 		if (existingSprite)
 			return;
-		console.log('creating sprite to indicate talking...');
 		const hueShift = this.getHueShift(creature);
 		const x: number = this.getX(creature);
-		const activeTurnIndicatorSprite: SpriteProxy = this.creatureTalking.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
+		const activeTurnIndicatorSprite: SpriteProxy = this.creatureSelection.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
-		activeTurnIndicatorSprite.fadeInTime = 500;
-		if (creature.NumAhems > 0)
-			soundManager.safePlayMp3(`Announcer/Ahems/${creature.Name}[${creature.NumAhems}]`);
+		activeTurnIndicatorSprite.fadeInTime = 100;
+		//if (creature.NumAhems > 0)
+		//	soundManager.safePlayMp3(`Announcer/Ahems/${creature.Name}[${creature.NumAhems}]`);
 	}
 
-	clearCreatureTalkingIndicator(creature: InGameCreature, soundManager: SoundManager) {
-		console.log('clearCreatureTalkingIndicator');
-		const existingSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(creature);
+	clearCreatureSelectionIndicator(creature: InGameCreature, soundManager: SoundManager) {
+		const existingSprite: SpriteProxy = this.getSelectionIndicatorSpriteForCreature(creature);
 		if (!existingSprite)
 			return;
 
-		console.log('clearing sprite to indicate talking in NOT happening here...');
-		existingSprite.fadeOutNow(500);
+		existingSprite.fadeOutNow(100);
 	}
 
 	private addInGameCreature(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
@@ -761,8 +757,8 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.removeInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Add')
 			this.addInGameCreatures(inGameCreatures, soundManager);
-		else if (command === 'Talks')
-			this.updateInGameCreatureTalkIndicator(inGameCreatures, soundManager);
+		else if (command === 'UpdateSelection')
+			this.updateInGameCreatureSelectionIndicator(inGameCreatures, soundManager);
 		else if (command === 'Hide')
 			this.hideInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Show')
@@ -806,7 +802,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			const shadowSprite: SpriteProxy = this.getParchmentShadowForCreature(inGameCreature);
 			const targetSprite: SpriteProxy = this.getTargetSpriteForCreature(inGameCreature);
 			const activeTurnIndicatorSprite: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(inGameCreature);
-			const creatureTalkingIndicatorSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(inGameCreature);
+			const creatureSelectionIndicatorSprite: SpriteProxy = this.getSelectionIndicatorSpriteForCreature(inGameCreature);
 			const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(inGameCreature);
 			creatureSprite.logData = true;
 			const fadeOutTimeMs = 800;
@@ -819,8 +815,8 @@ class InGameCreatureManager implements IGetCreatureX {
 			if (activeTurnIndicatorSprite)
 				activeTurnIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 
-			if (creatureTalkingIndicatorSprite)
-				creatureTalkingIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+			if (creatureSelectionIndicatorSprite)
+				creatureSelectionIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 
 			if (deathXSprite)
 				deathXSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
@@ -873,7 +869,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
 		this.moveSpriteTo(this.target, creature, targetX, delayMs);
 		this.moveSpriteTo(this.activeTurnIndicator, creature, targetX, delayMs);
-		this.moveSpriteTo(this.creatureTalking, creature, targetX, delayMs);
+		this.moveSpriteTo(this.creatureSelection, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
 		if (parchmentSprite) {

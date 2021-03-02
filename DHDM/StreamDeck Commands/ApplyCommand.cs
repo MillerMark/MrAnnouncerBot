@@ -8,146 +8,34 @@ namespace DHDM
 {
 	public class ApplyCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		public static DateTime lastDigitSetTime
-		{
-			get
-			{
-				if (activeKeyword == null)
-					return DateTime.MinValue;
-				if (!_lastDigitSetTimes.ContainsKey(activeKeyword))
-					_lastDigitSetTimes.Add(activeKeyword, DateTime.MinValue);
-				return _lastDigitSetTimes[activeKeyword];
-			}
-			set
-			{
-				if (activeKeyword == null)
-					return;
-				if (!_lastDigitSetTimes.ContainsKey(activeKeyword))
-					_lastDigitSetTimes.Add(activeKeyword, value);
-				else
-					_lastDigitSetTimes[activeKeyword] = value;
-			}
-		}
-
-		static Dictionary<string, decimal> _digitsEntered = new Dictionary<string, decimal>();
-		static Dictionary<string, decimal> _decimalMultipliers = new Dictionary<string, decimal>();
-		static Dictionary<string, DateTime> _lastDigitSetTimes = new Dictionary<string, DateTime>();
-		static string activeKeyword;
-		
-		public static decimal digitsEntered
-		{
-			get
-			{
-				if (activeKeyword == null)
-					return decimal.MinValue;
-				if (!_digitsEntered.ContainsKey(activeKeyword))
-					_digitsEntered.Add(activeKeyword, decimal.MinValue);
-				return _digitsEntered[activeKeyword];
-			}
-			set
-			{
-				if (activeKeyword == null)
-					return;
-				if (!_digitsEntered.ContainsKey(activeKeyword))
-					_digitsEntered.Add(activeKeyword, value);
-				else
-					_digitsEntered[activeKeyword] = value;
-			}
-		}
-
-		public static decimal decimalMultiplier
-		{
-			get
-			{
-				if (activeKeyword == null)
-					return 1m;
-				if (!_decimalMultipliers.ContainsKey(activeKeyword))
-					_decimalMultipliers.Add(activeKeyword, 1m);
-				return _decimalMultipliers[activeKeyword];
-			}
-			set
-			{
-				if (activeKeyword == null)
-					return;
-				if (!_decimalMultipliers.ContainsKey(activeKeyword))
-					_decimalMultipliers.Add(activeKeyword, value);
-				else
-					_decimalMultipliers[activeKeyword] = value;
-			}
-		}
-
-		public static void AddDigit(string keyword, string value)
-		{
-			activeKeyword = keyword;
-			if (lastDigitSetTime == DateTime.MinValue || (DateTime.Now - lastDigitSetTime).TotalSeconds > 12)
-			{
-				digitsEntered = decimal.MinValue;
-			}
-
-			lastDigitSetTime = DateTime.Now;
-			if (value == ".")
-			{
-				decimalMultiplier = 0.1m;
-				if (digitsEntered == decimal.MinValue)
-					digitsEntered = 0;
-			}
-			else
-			{
-				if (int.TryParse(value, out int asInt))
-					if (digitsEntered == decimal.MinValue)
-						digitsEntered = asInt;
-					else
-					{
-						if (decimalMultiplier == 1m)
-						{
-							digitsEntered *= 10m;
-							digitsEntered += asInt;
-						}
-						else
-						{
-							digitsEntered += asInt * decimalMultiplier;
-							decimalMultiplier *= 0.1m;
-						}
-					}
-			}
-		}
-
-		public static decimal GetValue(string keyword)
-		{
-			activeKeyword = keyword;
-			return digitsEntered;
-		}
-
-		public static void ResetValue(string keyword)
-		{
-			activeKeyword = keyword;
-			digitsEntered = decimal.MinValue;
-			decimalMultiplier = 1m;
-		}
-
-		void SetActiveKeyword()
+		string GetActiveKeyword()
 		{
 			switch (applyCommand)
 			{
 				case "DamageToTargetedCreatures":
+				case "DamageToAllCreatures":
+				case "DamageToSelected":
 				case "Damage":
 				case "Health":
 				case "HealthToTargetedCreatures":
+				case "HealthToAllCreatures":
+				case "HealthToSelected":
 				case "TempHpToTargetedCreatures":
+				case "TempHpToAllCreatures":
+				case "TempHpToSelected":
 				case "TempHp":
-					activeKeyword = "health";
-					break;
+					return "health";
 
 				case "RemoveCoins":
 				case "AddCoins":
-					activeKeyword = "wealth";
-					break;
+					return "wealth";
+
 				case "SkillThreshold":
 				case "SaveThreshold":
 				case "AttackThreshold":
-					activeKeyword = "threshold";
-					break;
+					return "threshold";
 			}
+			return null;
 		}
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
@@ -157,37 +45,53 @@ namespace DHDM
 				dungeonMasterApp.ApplyToTargetedCreatures(applyCommand);
 				return;
 			}
-			SetActiveKeyword();
-			decimal value = GetValue(activeKeyword);
+
+			string keyword = GetActiveKeyword();
+			decimal value = DigitManager.GetValue(keyword);
+
+			if (applyToOnScreenCreatures && value != decimal.MinValue)
+			{
+				dungeonMasterApp.ApplyToOnScreenCreatures(applyCommand, (int)value);
+				return;
+			}
+
+			if (applyToSelectedCreature && value != decimal.MinValue)
+			{
+				dungeonMasterApp.ApplyToSelectedCreature(applyCommand, (int)value);
+				return;
+			}
+
 			if (value == decimal.MinValue)
 			{
 				dungeonMasterApp.TellDungeonMaster($"Set numeric value first before applying {applyCommand}.");
 				return;
 			}
 			dungeonMasterApp.Apply(applyCommand, value, GetPlayerIds(dungeonMasterApp, applyToAllPlayers));
-			ResetValue(activeKeyword);
+			DigitManager.ResetValue(keyword);
 		}
 
 		string applyCommand;
 		bool applyToAllPlayers;
 		bool applyToTargetedCreatures;
-		
+		bool applyToOnScreenCreatures;
+		bool applyToSelectedCreature;
+
 		public bool Matches(string message)
 		{
 			applyToTargetedCreatures = false;
+			applyToOnScreenCreatures = false;
+			applyToSelectedCreature = false;
 			applyToAllPlayers = false;
 			if (message == "Apply LastHealth [TargetedCreatures]")
 			{
 				applyToTargetedCreatures = true;
 				applyCommand = "LastHealth";
-				activeKeyword = "health";
 				return true;
 			}
 			if (message == "Apply LastDamage [TargetedCreatures]")
 			{
 				applyToTargetedCreatures = true;
 				applyCommand = "LastDamage";
-				activeKeyword = "health";
 				return true;
 			}
 			Match match = Regex.Match(message, @"^Apply\s+(\w+)" + PlayerSpecifier);
@@ -207,11 +111,21 @@ namespace DHDM
 				}
 
 				applyCommand = match.Groups[1].Value;
+				if (applyCommand == "DamageToAllCreatures" || applyCommand == "HealthToAllCreatures" || applyCommand == "TempHpToAllCreatures")
+				{
+					applyToAllPlayers = false;
+					applyToOnScreenCreatures = true;
+				}
+				if (applyCommand == "DamageToSelected" || applyCommand == "HealthToSelected" || applyCommand == "TempHpToSelected")
+				{
+					applyToAllPlayers = false;
+					applyToSelectedCreature = true;
+				}
 				if (applyCommand == "LastDamage" || applyCommand == "LastHealth")
-					digitsEntered = -1;
+					DigitManager.SetValue("health", -1);
 				return true;
 			}
-			
+
 			return false;
 		}
 	}

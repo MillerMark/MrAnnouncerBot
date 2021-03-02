@@ -195,6 +195,9 @@ namespace DHDM
 			if (hand.Cards.Count == 0)
 				return;
 
+			if (!hand.IsShown)
+				hand.IsShown = true;
+
 			UpdateLastInteraction(creatureId);
 
 			int selectedCardIndex = hand.GetSelectedCardIndex();
@@ -278,8 +281,17 @@ namespace DHDM
 			if (!Hands.ContainsKey(creatureId))
 				return;
 			StreamlootsHand hand = Hands[creatureId];
+			if (!hand.IsShown)
+			{
+				hand.IsShown = true;
+			}
 			if (hand.SelectedCard == null)
+			{
+				SelectFirstAvailableCard(hand);
+				UpdateLastInteraction(creatureId);
+				StateHasChanged();
 				return;
+			}
 
 			UpdateLastInteraction(creatureId);
 			hand.PlaySelectedCard(creature);

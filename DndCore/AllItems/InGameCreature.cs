@@ -26,7 +26,7 @@ namespace DndCore
 		[JsonIgnore]
 		public string ImageUrlOverride { get; set; }
 
-		public bool IsTalking { get; set; }
+		public bool IsSelected { get; set; }
 
 		public Conditions Conditions { get; set; }
 

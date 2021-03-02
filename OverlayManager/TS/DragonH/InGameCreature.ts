@@ -20,7 +20,7 @@
 	PercentDamageJustInflicted: number;
 	PercentHealthJustGiven: number;
 	IsEnemy: boolean;
-	IsTalking: boolean;
+	IsSelected: boolean;
 	IsAlly: boolean;
 	FriendFoeStatusUnknown: boolean;
 	imageLoaded: boolean;

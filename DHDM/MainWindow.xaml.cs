@@ -479,6 +479,7 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			DigitManager.DigitChanged += DigitManager_DigitChanged;
 			QueueEffect.RequestCardEventQueuing += QueueEffect_RequestCardEventQueuing;
 			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
 			RevealCard.RequestCardReveal += RevealCard_RequestCardReveal;
@@ -8158,6 +8159,15 @@ namespace DHDM
 				case "TempHpToAllCreatures":
 					ChangeInGameCreatureTempHp(intValue, InGameCreatureFilter.All);
 					break;
+				case "HealthToSelected":
+					ChangeTargetedCreatureHealth(intValue, InGameCreatureFilter.SelectedOnly);
+					break;
+				case "DamageToSelected":
+					ChangeTargetedCreatureHealth(-intValue, InGameCreatureFilter.SelectedOnly);
+					break;
+				case "TempHpToSelected":
+					ChangeInGameCreatureTempHp(intValue, InGameCreatureFilter.SelectedOnly);
+					break;
 				case "Damage":
 					ApplyPlayerDamage(playerIds, intValue);
 					break;
@@ -8819,6 +8829,7 @@ namespace DHDM
 
 		public void ToggleTarget(int targetNum)
 		{
+			CreatureDigitsUsed();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
 				return;
@@ -8826,6 +8837,11 @@ namespace DHDM
 			if (inGameCreature.IsTargeted)
 				inGameCreature.OnScreen = true;
 			UpdateInGameCreatures();
+		}
+
+		private static void CreatureDigitsUsed()
+		{
+			DigitManager.ClearOnNextDigit("creature");
 		}
 
 		public void TogglePlayerTarget(string playerName)
@@ -8856,6 +8872,8 @@ namespace DHDM
 				ToggleTargetedCreatureConditions(conditions);
 			else if (data == "players")
 				ToggleTargetedPlayerConditions(conditions);
+			else if (data == "selected")
+				ToggleSelectedCreatureConditions(conditions);
 			else
 				TogglePlayerCondition(data, conditions);
 		}
@@ -8935,10 +8953,26 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
+		private void ToggleSelectedCreatureConditions(Conditions conditions)
+		{
+			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
+			foreach (InGameCreature creature in selectedCreatures)
+				creature.ToggleCondition(conditions);
+			UpdateInGameCreatures();
+		}
+
 		private void ClearTargetedCreatureConditions()
 		{
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
+				creature.ClearAllConditions();
+			UpdateInGameCreatures();
+		}
+
+		private void ClearSelectedCreatureConditions()
+		{
+			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
+			foreach (InGameCreature creature in selectedCreatures)
 				creature.ClearAllConditions();
 			UpdateInGameCreatures();
 		}
@@ -9015,16 +9049,18 @@ namespace DHDM
 			HubtasticBaseStation.UpdateInGameCreatures("Remove", new List<InGameCreature>() { inGameCreature });
 		}
 
-		void InGameCreatureTalks(InGameCreature inGameCreature, List<InGameCreature> creaturesChanged)
+		void UpdateInGameCreatureSelection(InGameCreature inGameCreature, List<InGameCreature> creaturesChanged)
 		{
-			HubtasticBaseStation.UpdateInGameCreatures("Talks", creaturesChanged);
+			HubtasticBaseStation.UpdateInGameCreatures("UpdateSelection", creaturesChanged);
 		}
 
 		public void ToggleInGameCreature(int targetNum)
 		{
+			CreatureDigitsUsed();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
 				return;
+
 			if (inGameCreature.OnScreen)
 			{
 				HideInGameCreature(inGameCreature);
@@ -9033,33 +9069,27 @@ namespace DHDM
 			{
 				inGameCreature.OnScreen = true;
 				AddInGameCreature(inGameCreature);
+				UpdateInGameCreatureSelection(inGameCreature, AllInGameCreatures.Select(inGameCreature));
 			}
 		}
 
-		public void TalkInGameCreature(int targetNum)
+		public void SelectInGameCreature(int targetNum)
 		{
-			if (targetNum == 0)
-				NoCreaturesTalk();
-			else
-				OneCreatureTalks(targetNum);
-		}
-
-		private void NoCreaturesTalk()
-		{
-			InGameCreatureTalks(null, AllInGameCreatures.ClearTalking());
-		}
-
-		private void OneCreatureTalks(int targetNum)
-		{
+			ClearAllInGameCreatureSelection();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
-			if (inGameCreature != null && !inGameCreature.IsTalking && !inGameCreature.OnScreen)
-			{
-				inGameCreature.OnScreen = true;
-				AddInGameCreature(inGameCreature);
-			}
+			if (inGameCreature == null)
+				return;
 
-			List<InGameCreature> creaturesChanged = AllInGameCreatures.ToggleTalking(inGameCreature);
-			InGameCreatureTalks(inGameCreature, creaturesChanged);
+			if (!inGameCreature.OnScreen)
+				return;  // Cannot select if not on screen!!!
+
+			List<InGameCreature> creaturesChanged = AllInGameCreatures.Select(inGameCreature);
+			UpdateInGameCreatureSelection(inGameCreature, creaturesChanged);
+		}
+
+		private void ClearAllInGameCreatureSelection()
+		{
+			UpdateInGameCreatureSelection(null, AllInGameCreatures.ClearSelection());
 		}
 
 		private void HideInGameCreature(InGameCreature inGameCreature)
@@ -9067,7 +9097,7 @@ namespace DHDM
 			if (inGameCreature == null)
 				return;
 			inGameCreature.OnScreen = false;
-			inGameCreature.IsTalking = false;
+			inGameCreature.IsSelected = false;
 			RemoveInGameCreature(inGameCreature);
 		}
 
@@ -9161,22 +9191,21 @@ namespace DHDM
 					}
 					UpdateInGameCreatures();
 					return;
-				case "TargetFriends":
+				case "TargetOnScreenFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
-						inGameCreature.IsTargeted = inGameCreature.IsAlly;
-						if (inGameCreature.IsTargeted)
-							inGameCreature.OnScreen = true;
-					}
-					break;
-				case "TargetEnemies":
+						inGameCreature.IsTargeted = inGameCreature.OnScreen && inGameCreature.IsAlly;
+					UpdateInGameCreatures();
+					return;
+				case "TargetOnScreenNeutrals":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
-						inGameCreature.IsTargeted = inGameCreature.IsEnemy;
-						if (inGameCreature.IsTargeted)
-							inGameCreature.OnScreen = true;
-					}
-					break;
+						inGameCreature.IsTargeted = inGameCreature.OnScreen && !inGameCreature.IsAlly && !inGameCreature.IsEnemy;
+					UpdateInGameCreatures();
+					return;
+				case "TargetOnScreenEnemies":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsTargeted = inGameCreature.OnScreen && inGameCreature.IsEnemy;
+					UpdateInGameCreatures();
+					return;
 				case "ShowFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.OnScreen = !inGameCreature.IsAlly;
@@ -9273,12 +9302,19 @@ namespace DHDM
 		void ChangeTargetedCreatureHealth(int amount, InGameCreatureFilter inGameCreatureFilter)
 		{
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreatureFilter == InGameCreatureFilter.All || inGameCreature.IsTargeted)
+				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter))
 				{
 					inGameCreature.ChangeHealth(amount);
 					TellDmCreatureHp(inGameCreature);
 				}
 			UpdateInGameCreatures();
+		}
+
+		private static bool CreatureMatchesFilter(InGameCreature inGameCreature, InGameCreatureFilter inGameCreatureFilter)
+		{
+			return inGameCreatureFilter == InGameCreatureFilter.All ||
+								(inGameCreatureFilter == InGameCreatureFilter.TargetedOnly && inGameCreature.IsTargeted) ||
+								(inGameCreatureFilter == InGameCreatureFilter.SelectedOnly && inGameCreature.IsSelected);
 		}
 
 		private void TellDmCreatureHp(InGameCreature inGameCreature)
@@ -9292,7 +9328,7 @@ namespace DHDM
 		void ChangeInGameCreatureTempHp(int amount, InGameCreatureFilter inGameCreatureFilter)
 		{
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreatureFilter == InGameCreatureFilter.All || inGameCreature.IsTargeted)
+				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter))
 				{
 					inGameCreature.Creature.ChangeTempHP(amount);
 					TellDmCreatureHp(inGameCreature);
@@ -9303,7 +9339,8 @@ namespace DHDM
 		public enum InGameCreatureFilter
 		{
 			All,
-			TargetedOnly
+			TargetedOnly,
+			SelectedOnly
 		}
 
 		private void LogOptionsChanged(object sender, RoutedEventArgs e)
@@ -9614,13 +9651,15 @@ namespace DHDM
 		{
 			if (targetName == "targets")
 				ClearTargetedCreatureConditions();
+			else if (targetName == "selected")
+				ClearSelectedCreatureConditions();
 			else if (targetName == "players")
 				ClearTargetedPlayerConditions();
 			else
 				ClearPlayerCondition(targetName);
 		}
 
-		public void ApplyToTargetedCreatures(string applyCommand)
+		public void ApplyToTargetedCreatures(string command)
 		{
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			if (targetedCreatures.Count == 0)
@@ -9628,19 +9667,60 @@ namespace DHDM
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures targeted.");
 				return;
 			}
-			switch (applyCommand)
+			ApplyDamageToCreatures(command, targetedCreatures);
+		}
+
+		public void ApplyToOnScreenCreatures(string command, int value)
+		{
+			List<InGameCreature> onScreenCreatures = AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList();
+			if (onScreenCreatures.Count == 0)
+			{
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures on screen.");
+				return;
+			}
+			ApplyDamageToCreatures(command, onScreenCreatures, value);
+		}
+
+		public void ApplyToSelectedCreature(string command, int value)
+		{
+			List<InGameCreature> selectedCreature = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
+			if (selectedCreature.Count == 0)
+			{
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures selected.");
+				return;
+			}
+			ApplyDamageToCreatures(command, selectedCreature, value);
+		}
+
+		private void ApplyDamageToCreatures(string command, List<InGameCreature> onScreenCreatures, int value = 0)
+		{
+			switch (command)
 			{
 				case "LastDamage":
-					foreach (InGameCreature inGameCreature in targetedCreatures)
-					{
+					foreach (InGameCreature inGameCreature in onScreenCreatures)
 						inGameCreature.TakeDamage(ActivePlayer?.Game, latestDamage, AttackKind.Any);
-					}
 					break;
 				case "LastHealth":
-					foreach (InGameCreature inGameCreature in targetedCreatures)
-					{
+					foreach (InGameCreature inGameCreature in onScreenCreatures)
 						inGameCreature.ChangeHealth(lastHealth);
-					}
+					break;
+				case "HealthToAllCreatures":
+					ChangeTargetedCreatureHealth(value, InGameCreatureFilter.All);
+					break;
+				case "DamageToAllCreatures":
+					ChangeTargetedCreatureHealth(-value, InGameCreatureFilter.All);
+					break;
+				case "TempHpToAllCreatures":
+					ChangeInGameCreatureTempHp(value, InGameCreatureFilter.All);
+					break;
+				case "HealthToSelected":
+					ChangeTargetedCreatureHealth(value, InGameCreatureFilter.SelectedOnly);
+					break;
+				case "DamageToSelected":
+					ChangeTargetedCreatureHealth(-value, InGameCreatureFilter.SelectedOnly);
+					break;
+				case "TempHpToSelected":
+					ChangeInGameCreatureTempHp(value, InGameCreatureFilter.SelectedOnly);
 					break;
 			}
 			UpdateInGameCreatures();
@@ -9895,6 +9975,8 @@ namespace DHDM
 
 		public void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "")
 		{
+			if (-creatureId == DigitManager.GetValue("creature"))
+				CreatureDigitsUsed();
 			switch (cardCommandType)
 			{
 				case CardCommandType.ToggleHandVisibility:
@@ -10500,5 +10582,52 @@ namespace DHDM
 			roll.RollID = nextStampedeGuid;
 			RollTheDice(roll);
 		}
+
+		private void DigitManager_DigitChanged(object sender, DigitChangedEventArgs ea)
+		{
+			if (ea.Keyword != "creature")
+				return;
+
+			if (ea.Value == decimal.MinValue)
+				ClearAllInGameCreatureSelection();
+			else
+				SelectInGameCreature((int)ea.Value);
+		}
+
+
+		public void SelectPreviousInGameCreature()
+		{
+			SelectInGameCreature("Previous");
+		}
+
+		public void SelectInGameCreature(string targetingCommand)
+		{
+			CreatureDigitsUsed();
+			List<InGameCreature> onScreenCreatures = AllInGameCreatures.GetOnScreen();
+			if (!onScreenCreatures.Any())
+				return;
+			InGameCreature firstSelected = onScreenCreatures.FirstOrDefault(x => x.IsSelected);
+
+			InGameCreature creatureToSelect;
+			if (targetingCommand.Contains("Previous"))
+				creatureToSelect = onScreenCreatures.Previous(firstSelected);
+			else
+				creatureToSelect = onScreenCreatures.Next(firstSelected);
+
+			if (creatureToSelect == null)
+				return;
+
+			List<InGameCreature> creaturesChanged = AllInGameCreatures.ClearSelection();
+			creatureToSelect.IsSelected = true;
+			DigitManager.SetValue("creature", creatureToSelect.Index);
+			creaturesChanged.Add(creatureToSelect);
+			UpdateInGameCreatureSelection(creatureToSelect, creaturesChanged);
+		}
+
+		public void SelectNextInGameCreature()
+		{
+			SelectInGameCreature("Next");
+		}
+
 	}
 }

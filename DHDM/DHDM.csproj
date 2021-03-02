@@ -328,10 +328,14 @@
     <Compile Include="CardEvents\DamageModifier.cs" />
     <Compile Include="CardEvents\RegexHelper.cs" />
     <Compile Include="CardEvents\StampedeCardEvent.cs" />
+    <Compile Include="Events\DigitChangedEventArgs.cs" />
     <Compile Include="IObsManager.cs" />
     <Compile Include="ObsManager.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
+    <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
+    <Compile Include="StreamDeck Commands\Debouncer.cs" />
+    <Compile Include="StreamDeck Commands\DigitManager.cs" />
     <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />

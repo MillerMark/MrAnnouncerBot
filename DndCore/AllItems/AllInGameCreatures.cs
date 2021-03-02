@@ -67,33 +67,56 @@ namespace DndCore
 				creature.TurnIsActive = false;
 		}
 
-		public static List<InGameCreature> ToggleTalking(InGameCreature inGameCreature)
+		public static List<InGameCreature> ToggleSelected(InGameCreature inGameCreature)
 		{
 			List<InGameCreature> changedCreatures = new List<InGameCreature>();
 			
 			foreach (InGameCreature creature in Creatures)
 				if (creature == inGameCreature)
 				{
-					creature.IsTalking = !creature.IsTalking;
+					creature.IsSelected = !creature.IsSelected;
 					changedCreatures.Add(creature);
 				}
-				else if (creature.IsTalking)
+				else if (creature.IsSelected)
 				{
 					changedCreatures.Add(creature);
-					creature.IsTalking = false;
+					creature.IsSelected = false;
 				}
 
 			return changedCreatures;
 		}
 
-		public static List<InGameCreature> ClearTalking()
+		public static List<InGameCreature> Select(InGameCreature inGameCreature)
 		{
 			List<InGameCreature> changedCreatures = new List<InGameCreature>();
 
 			foreach (InGameCreature creature in Creatures)
-				if (creature.IsTalking)
+				if (creature == inGameCreature)
 				{
-					creature.IsTalking = false;
+					if (!creature.IsSelected)
+					{
+						creature.IsSelected = true;
+						changedCreatures.Add(creature);
+					}
+				}
+				else if (creature.IsSelected)
+				{
+					changedCreatures.Add(creature);
+					creature.IsSelected = false;
+				}
+
+			return changedCreatures;
+		}
+
+
+		public static List<InGameCreature> ClearSelection()
+		{
+			List<InGameCreature> changedCreatures = new List<InGameCreature>();
+
+			foreach (InGameCreature creature in Creatures)
+				if (creature.IsSelected)
+				{
+					creature.IsSelected = false;
 					changedCreatures.Add(creature);
 				}
 

@@ -96,18 +96,20 @@ namespace DHDM
 			return message;
 		}
 
+		static object messageHandlingLock = new object();
 		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient, Character activePlayer)
 		{
-			foreach (IDungeonMasterCommand dungeonMasterCommand in Commands)
-			{
-				string streamDeckCommand = StripCommandsFromMessage(chatMessage.Message, out string commands);
-				if (dungeonMasterCommand.Matches(streamDeckCommand))
+			lock (messageHandlingLock)
+				foreach (IDungeonMasterCommand dungeonMasterCommand in Commands)
 				{
-					Expressions.Do(commands, activePlayer);
-					dungeonMasterCommand.Execute(DungeonMasterApp, chatMessage);
-					return;
+					string streamDeckCommand = StripCommandsFromMessage(chatMessage.Message, out string commands);
+					if (dungeonMasterCommand.Matches(streamDeckCommand))
+					{
+						Expressions.Do(commands, activePlayer);
+						dungeonMasterCommand.Execute(DungeonMasterApp, chatMessage);
+						return;
+					}
 				}
-			}
 		}
 
 		public void Initialize(IDungeonMasterApp dungeonMasterApp)

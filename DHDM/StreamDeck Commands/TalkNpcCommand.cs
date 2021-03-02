@@ -9,17 +9,19 @@ namespace DHDM
 	{
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			if (int.TryParse(targetNumStr, out int targetNum))
-				dungeonMasterApp.TalkInGameCreature(targetNum);
+			if (directionStr == "Previous")
+				dungeonMasterApp.SelectPreviousInGameCreature();
+			else
+				dungeonMasterApp.SelectNextInGameCreature();
 		}
 
-		string targetNumStr;
+		string directionStr;
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"^TalkInGameCreature\s+(\d+)");
+			Match match = Regex.Match(message, @"^SelectInGameCreature\s+(\w+)");
 			if (match.Success)
 			{
-				targetNumStr = match.Groups[1].Value;
+				directionStr = match.Groups[1].Value;
 				return true;
 			}
 

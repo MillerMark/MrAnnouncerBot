@@ -1022,6 +1022,11 @@ namespace DndCore
 
 		public virtual void ChangeTempHP(double deltaTempHp)
 		{
+			if (deltaTempHp > 1000)
+			{
+				//System.Diagnostics.Debugger.Break();
+				return;
+			}
 			tempHitPoints += deltaTempHp;
 			if (tempHitPoints < 0)
 				tempHitPoints = 0;

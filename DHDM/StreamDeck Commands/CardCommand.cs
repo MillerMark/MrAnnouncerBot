@@ -81,6 +81,8 @@ namespace DHDM
 			{
 				cardCommandType = CardCommandType.ToggleHandVisibility;
 				string creatureIdStr = message.Substring(STR_ToggleHandVisibility.Length);
+				if (creatureIdStr.Contains("{creature.count}"))
+					creatureIdStr = creatureIdStr.Replace("{creature.count}", DigitManager.GetValue("creature").ToString());
 				creatureId = GetCreatureId(creatureIdStr);
 				if (creatureId == int.MinValue)
 				{

@@ -13,7 +13,8 @@ namespace DHDM
 		void ChangePlayerStateCommand(string command, string data);
 		void ToggleCondition(string data, string condition);
 		void ToggleInGameCreature(int targetNum);
-		void TalkInGameCreature(int targetNum);
+		void SelectPreviousInGameCreature();
+		void SelectNextInGameCreature();
 		void TargetCommand(string command);
 		void Apply(string command, decimal value, List<int> playerIds);
 		string GetPlayFirstNameFromId(int playerId);
@@ -64,6 +65,8 @@ namespace DHDM
 		void PrepareTargetSavingThrow(string savingThrow);
 		void ClearAllConditions(string targetName);
 		void ApplyToTargetedCreatures(string applyCommand);
+		void ApplyToOnScreenCreatures(string applyCommand, int value);
+		void ApplyToSelectedCreature(string applyCommand, int value);
 		void ClearPlayerDice();
 		void MoveTarget(string targetingCommand);
 		void SpellScrollsToggle();

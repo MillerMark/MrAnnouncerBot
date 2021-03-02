@@ -11,7 +11,7 @@ namespace DHDM
 	{
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			ApplyCommand.AddDigit(keyword, digit);
+			DigitManager.AddDigit(keyword, digit);
 		}
 
 		string digit;

@@ -19,7 +19,7 @@ namespace DHDM
 			if (dieStr.Contains("{dice.count}"))
 			{
 				const int MaxDiceAllowed = 50;
-				decimal value = ApplyCommand.GetValue("dice");
+				decimal value = DigitManager.GetValue("dice");
 				if (value == decimal.MinValue)
 					value = 1;
 				if (value > MaxDiceAllowed)
@@ -28,7 +28,7 @@ namespace DHDM
 					dungeonMasterApp.TellDungeonMaster($"Unable to roll {value} dice at once. Maximum on-screen dice is limited to {MaxDiceAllowed}.");
 				}
 				dieStr = dieStr.Replace("{dice.count}", value.ToString());
-				ApplyCommand.ResetValue("dice");
+				DigitManager.ResetValue("dice");
 			}
 			dungeonMasterApp.InstantDice(diceRollType, dieStr.Trim(), playerIds);
 		}

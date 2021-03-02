@@ -10,7 +10,7 @@ namespace DHDM
 		string keyword;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			ApplyCommand.ResetValue(keyword);
+			DigitManager.ResetValue(keyword);
 		}
 
 		public bool Matches(string message)
