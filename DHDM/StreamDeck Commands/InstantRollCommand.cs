@@ -11,16 +11,15 @@ namespace DHDM
 	{
 		string dieStr;
 		bool testAllPlayers;
-		bool rollForTargets;
 		DiceRollType diceRollType;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			List<int> playerIds = GetPlayerIds(dungeonMasterApp, testAllPlayers);
-			if (dieStr.Contains("{count}"))
+			if (dieStr.Contains("{dice.count}"))
 			{
 				const int MaxDiceAllowed = 50;
-				decimal value = ApplyCommand.GetValue();
+				decimal value = ApplyCommand.GetValue("dice");
 				if (value == decimal.MinValue)
 					value = 1;
 				if (value > MaxDiceAllowed)
@@ -28,8 +27,8 @@ namespace DHDM
 					value = MaxDiceAllowed;
 					dungeonMasterApp.TellDungeonMaster($"Unable to roll {value} dice at once. Maximum on-screen dice is limited to {MaxDiceAllowed}.");
 				}
-				dieStr = dieStr.Replace("{count}", value.ToString());
-				ApplyCommand.ResetValue();
+				dieStr = dieStr.Replace("{dice.count}", value.ToString());
+				ApplyCommand.ResetValue("dice");
 			}
 			dungeonMasterApp.InstantDice(diceRollType, dieStr.Trim(), playerIds);
 		}
@@ -37,11 +36,11 @@ namespace DHDM
 		public bool Matches(string message)
 		{
 			testAllPlayers = false;
-			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\[\]\(\)\{\}\:""\s]+)" + PlayerSpecifier);
+			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\.\[\]\(\)\{\}\:""\s]+)" + PlayerSpecifier);
 			if (!match.Success)
 			{
 				testAllPlayers = true;
-				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\[\]\(\)\{\}\:""\s]+)");
+				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\.\[\]\(\)\{\}\:""\s]+)");
 			}
 			if (match.Success)
 			{
