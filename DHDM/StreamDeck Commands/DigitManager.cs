@@ -24,6 +24,8 @@ namespace DHDM
 
 		public static void AddDigit(string keyword, string digit)
 		{
+			if (!Debouncer.IsGood($"{keyword}.{digit}"))
+				return;
 			CreateIfNeeded(keyword);
 			allNumbers[keyword].AddDigit(digit);
 			TriggerNumberChanged(keyword);

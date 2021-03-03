@@ -8844,6 +8844,11 @@ namespace DHDM
 			DigitManager.ClearOnNextDigit("creature");
 		}
 
+		private static void HealthDigitsUsed()
+		{
+			DigitManager.ClearOnNextDigit("health");
+		}
+
 		public void TogglePlayerTarget(string playerName)
 		{
 			// 
@@ -9724,6 +9729,7 @@ namespace DHDM
 					break;
 			}
 			UpdateInGameCreatures();
+			HealthDigitsUsed();
 		}
 
 		public void ClearPlayerDice()

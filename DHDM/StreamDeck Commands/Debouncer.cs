@@ -6,22 +6,32 @@ namespace DHDM
 {
 	public static class Debouncer
 	{
-		static Dictionary<int, DateTime> secondsSinceLastToggle;
-		public static bool CanToggle(int targetNum)
+		static Dictionary<string, DateTime> secondsSinceLastToggle;
+		public static bool IsGood(string keyword, int digit)
 		{
 			if (secondsSinceLastToggle == null)
-				secondsSinceLastToggle = new Dictionary<int, DateTime>();
-			if (!secondsSinceLastToggle.ContainsKey(targetNum))
+				secondsSinceLastToggle = new Dictionary<string, DateTime>();
+			string key = $"{keyword}.{digit}";
+			return IsGood(key);
+		}
+
+		public static bool IsGood(string key)
+		{
+			if (secondsSinceLastToggle == null)
+				secondsSinceLastToggle = new Dictionary<string, DateTime>();
+			if (!secondsSinceLastToggle.ContainsKey(key))
 			{
-				secondsSinceLastToggle.Add(targetNum, DateTime.Now);
+				secondsSinceLastToggle.Add(key, DateTime.Now);
 				return true;
 			}
-			if (DateTime.Now - secondsSinceLastToggle[targetNum] < TimeSpan.FromMilliseconds(200))
+
+			double spanSinceLastKeyPressMs = (DateTime.Now - secondsSinceLastToggle[key]).TotalMilliseconds;
+			if (spanSinceLastKeyPressMs < 110)
 			{
 				return false;
 				// De-bounce it. Could be a bug in the stream deck sending two commands at once.
 			}
-			secondsSinceLastToggle[targetNum] = DateTime.Now;
+			secondsSinceLastToggle[key] = DateTime.Now;
 			return true;
 		}
 	}

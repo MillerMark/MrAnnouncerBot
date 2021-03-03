@@ -26,7 +26,7 @@ namespace DHDM
 			{
 				if (!int.TryParse(targetNumStr, out targetNum))
 					return int.MinValue;
-				else if (!Debouncer.CanToggle(targetNum))
+				else if (!Debouncer.IsGood("creature", targetNum))
 					return int.MinValue;
 			}
 

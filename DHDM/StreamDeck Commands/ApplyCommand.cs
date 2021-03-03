@@ -48,6 +48,13 @@ namespace DHDM
 
 			string keyword = GetActiveKeyword();
 			decimal value = DigitManager.GetValue(keyword);
+			if (value > 10000)
+			{
+				System.Diagnostics.Debugger.Break();
+				dungeonMasterApp.TellDungeonMaster($"{keyword} value unreasonably high - {value}. Resetting it to zero. Please try again.");
+				DigitManager.SetValue(keyword, 0);
+				return;
+			}
 
 			if (applyToOnScreenCreatures && value != decimal.MinValue)
 			{
