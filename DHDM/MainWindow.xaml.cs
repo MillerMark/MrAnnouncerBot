@@ -1513,7 +1513,7 @@ namespace DHDM
 				{
 					if (inGameCreature.IsTargeted)
 					{
-						DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, DiceRollType.SavingThrow);
+						DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, DiceRollType.SavingThrow, diceRoll.SavingThrow);
 						diceRoll.DiceDtos.Add(diceDto);
 					}
 				}
@@ -4252,6 +4252,8 @@ namespace DHDM
 					{
 						foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
 						{
+							if (individualRoll.damageType == DamageType.None || individualRoll.damageType == DamageType.Condition)
+								continue;
 							if (!latestDamage.ContainsKey(individualRoll.damageType))
 								latestDamage.Add(individualRoll.damageType, individualRoll.value);
 							else
@@ -4303,6 +4305,8 @@ namespace DHDM
 			{
 				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
 				{
+					if (individualRoll.damageType == DamageType.None || individualRoll.damageType == DamageType.Condition)
+						continue;
 					if (!latestDamage.ContainsKey(chaosBoltDamageType))
 						latestDamage.Add(chaosBoltDamageType, individualRoll.value);
 					else
@@ -4341,12 +4345,10 @@ namespace DHDM
 			if (playerRolls.Count == 0)
 				return;
 			Spell spell = AllSpells.Get(spellName);
-			if (spell == null)
-				return;
 
 			Target target = new Target(playerRolls);
 
-			if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
+			if (string.IsNullOrWhiteSpace(spell?.OnTargetFailsSave))
 				Expressions.Do(damageExpression, ActivePlayer, target, null, null, latestDamage);
 			else // TODO: See if I need to save and pass in the CastedSpell that got us here.
 				spell.TriggerTargetFailsSave(ActivePlayer, target, null, latestDamage);
@@ -4431,7 +4433,7 @@ namespace DHDM
 					if (creature == null)
 					{
 						History.Log("Error: stopRollingData.singleOwnerId not set!");
-						System.Diagnostics.Debugger.Break();
+						//System.Diagnostics.Debugger.Break();
 						return;
 					}
 
@@ -4642,13 +4644,15 @@ namespace DHDM
 
 		private void ApplySavingThrowDamage(DiceStoppedRollingData stopRollingData)
 		{
-			if (stopRollingData.multiplayerSummary != null)
-				ApplyMultiplayerSavingThrowDamage(stopRollingData);
-			else
-			{
-				List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
-				ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
-			}
+			List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
+			ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
+			//if (stopRollingData.multiplayerSummary != null)
+			//	ApplyMultiplayerSavingThrowDamage(stopRollingData);
+			//else
+			//{
+			//	List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
+			//	ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
+			//}
 		}
 
 		private void ApplyMultiplayerSavingThrowDamage(DiceStoppedRollingData stopRollingData)
@@ -7353,7 +7357,7 @@ namespace DHDM
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				if (inGameCreature.IsTargeted)
 				{
-					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType));
+					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType, diceRoll.SavingThrow));
 					inGameCreature.CreatureRollingSavingThrow();
 				}
 		}
@@ -9102,6 +9106,7 @@ namespace DHDM
 			if (inGameCreature == null)
 				return;
 			inGameCreature.OnScreen = false;
+			inGameCreature.IsTargeted = false;
 			inGameCreature.IsSelected = false;
 			RemoveInGameCreature(inGameCreature);
 		}
@@ -10257,9 +10262,9 @@ namespace DHDM
 
 		private void ApplyDamageFromRoll(DiceStoppedRollingData stopRollingData, List<int> targetCharacterIds)
 		{
-			bool isStampede = stopRollingData.rollId == nextStampedeGuid;
+			bool isStampede = stopRollingData.rollId == lastStampedeGuid;
 			if (isStampede)
-				nextStampedeGuid = null;
+				lastStampedeGuid = null;
 
 			Dictionary<DamageType, int> damage = CalculateDamageByType(stopRollingData.individualRolls);
 			if (damage.Keys.Count <= 0)
@@ -10323,6 +10328,9 @@ namespace DHDM
 					case SavingThrowResult.CompleteSuccess:
 						TellAll($"{combinedPlayerListPhrase} critically {Plural(count, "saves", "save")} and {BothAll(count)}{Plural(count, "takes", "take")} zero damage!");
 						break;
+					case SavingThrowResult.SaveWithZeroDamage:
+						TellAll($"{combinedPlayerListPhrase} {Plural(count, "saves", "save")} and {BothAll(count)}{Plural(count, "takes", "take")} zero damage!");
+						break;
 				}
 			}
 		}
@@ -10332,10 +10340,11 @@ namespace DHDM
 			CompleteFailure,
 			Failure,
 			Save,
+			SaveWithZeroDamage,
 			CompleteSuccess
 		}
 
-		SavingThrowResult GetSavingThrowResult(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId)
+		SavingThrowResult GetSavingThrowResult(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, bool saveTakesZeroDamage)
 		{
 			int totalScore = 0;
 			int modifier = 0;
@@ -10365,7 +10374,10 @@ namespace DHDM
 				if (individualRoll.numSides == 20)
 				{
 					if (individualRoll.value == 20)
-						return SavingThrowResult.CompleteSuccess;
+						if (saveTakesZeroDamage)
+							return SavingThrowResult.SaveWithZeroDamage;
+						else
+							return SavingThrowResult.CompleteSuccess;
 					if (individualRoll.value == 1)
 						return SavingThrowResult.CompleteFailure;
 				}
@@ -10373,7 +10385,10 @@ namespace DHDM
 					modifier = individualRoll.modifier;
 			}
 			if (totalScore + modifier + baneModifier + blessModifier >= hiddenThreshold)
-				return SavingThrowResult.Save;
+				if (saveTakesZeroDamage)
+					return SavingThrowResult.SaveWithZeroDamage;
+				else
+					return SavingThrowResult.Save;
 			return SavingThrowResult.Failure;
 		}
 
@@ -10388,19 +10403,20 @@ namespace DHDM
 				case SavingThrowResult.Save:
 					return 0.5;
 				case SavingThrowResult.CompleteSuccess:
+				case SavingThrowResult.SaveWithZeroDamage:
 					return 0;  // Homegrown rule - zero damage for nat 20s.
 			}
 			return 1;
 		}
 
-		double GetSavingThrowDamage(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, int damageDieTotal, out SavingThrowResult savingThrowResult)
+		double GetSavingThrowDamage(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, int damageDieTotal, bool saveTakesZeroDamage, out SavingThrowResult savingThrowResult)
 		{
-			savingThrowResult = GetSavingThrowResult(individualRolls, hiddenThreshold, creatureId);
+			savingThrowResult = GetSavingThrowResult(individualRolls, hiddenThreshold, creatureId, saveTakesZeroDamage);
 			double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
 			return damageDieTotal * multiplier;
 		}
 
-		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool isStampede, ref WhatTargetChanged whatTargetChanged)
+		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool saveTakesZeroDamage, ref WhatTargetChanged whatTargetChanged)
 		{
 			if (targetCreature == null)
 				return;
@@ -10410,10 +10426,10 @@ namespace DHDM
 
 			if (inGameCreature != null)
 			{
-				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId);
+				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, saveTakesZeroDamage);
 				double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
 				
-				if (isStampede && savingThrowResult == SavingThrowResult.Save)
+				if (saveTakesZeroDamage && savingThrowResult == SavingThrowResult.Save)
 					multiplier = 0;
 
 				AddSavingThrowResult(results, targetCreature, savingThrowResult);
@@ -10424,9 +10440,9 @@ namespace DHDM
 			else
 				foreach (DamageType key in damage.Keys)
 				{
-					double damageForPlayer = GetSavingThrowDamage(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, damage[key], out SavingThrowResult savingThrowResult);
+					double damageForPlayer = GetSavingThrowDamage(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, damage[key], saveTakesZeroDamage, out SavingThrowResult savingThrowResult);
 
-					if (isStampede && savingThrowResult == SavingThrowResult.Save)
+					if (saveTakesZeroDamage && savingThrowResult == SavingThrowResult.Save)
 						damageForPlayer = 0;
 
 					if (!showedSavingThrowResultsForPlayer)
@@ -10530,21 +10546,28 @@ namespace DHDM
 
 		string nextStampedeDamage;
 		string nextStampedeGuid;
+		string nextStampedeUserName;
+		string nextStampedeCardName;
+		string lastStampedeGuid;
 
-		public void SetNextStampedeRoll(string damageStr, string guid)
+		public void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid)
 		{
 			nextStampedeDamage = damageStr;
 			nextStampedeGuid = guid;
+			nextStampedeCardName = cardName;
+			nextStampedeUserName = userName;
 		}
 
 		public void StampedeNow()
 		{
 			if (nextStampedeGuid == null)
 				return;
+			TellAll($"Rolling damage and saving throws for {nextStampedeUserName}'s \"{nextStampedeCardName}\" stampede...");
 			Dispatcher.Invoke(() =>
 			{
 				RollStampede();
 			});
+			lastStampedeGuid = nextStampedeGuid;
 			nextStampedeGuid = null;
 		}
 
@@ -10557,12 +10580,12 @@ namespace DHDM
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				if (inGameCreature.IsTargeted)
 				{
-					DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, diceRoll.Type);
-					//if (inGameCreature.IsAlly)
-					//	diceDto.Vantage = VantageKind.Advantage;
-					//else if (inGameCreature.IsEnemy)
-					//	diceDto.Vantage = VantageKind.Disadvantage;
-
+					DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, diceRoll.Type, Ability.dexterity);
+					if (inGameCreature.IsAlly)
+						diceDto.Vantage = VantageKind.Advantage;
+					else if (inGameCreature.IsEnemy)
+						diceDto.Vantage = VantageKind.Disadvantage;
+					diceDto.Scale = 0.75;
 					diceRoll.DiceDtos.Add(diceDto);
 					inGameCreature.CreatureRollingSavingThrow();
 				}
@@ -10573,7 +10596,8 @@ namespace DHDM
 				{
 					Character player = AllPlayers.GetFromId(playerStats.CreatureId);
 					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, "", player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
-					//diceDto.Vantage = VantageKind.Advantage;
+					diceDto.Vantage = VantageKind.Advantage;
+					diceDto.Scale = 0.9;
 					diceRoll.DiceDtos.Add(diceDto);
 					player.RollingSavingThrowNow();
 				}
@@ -10582,7 +10606,15 @@ namespace DHDM
 
 		private void RollStampede()
 		{
-			DiceRoll roll = new DiceRoll(DiceRollType.DamagePlusSavingThrow, VantageKind.Normal, nextStampedeDamage);
+			DiceRoll roll = new DiceRoll(DiceRollType.DamagePlusSavingThrow, VantageKind.Normal);
+			DiceDto.AddDtosFromDieStr(roll.DiceDtos, nextStampedeDamage, "#aa0000", "#ffffff", Creature.invalidCreatureId, "");
+
+			foreach (DiceDto diceDto in roll.DiceDtos)
+			{
+				diceDto.DieCountsAs = DieCountsAs.damage;
+				diceDto.Scale = 1.15;
+			}
+
 			//roll.SuppressLegacyRoll = true;
 			AddStampedeSavingThrowsForAllTargetedCreatures(roll);
 			roll.RollID = nextStampedeGuid;

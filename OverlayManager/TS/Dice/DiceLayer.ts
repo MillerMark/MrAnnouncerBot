@@ -1302,6 +1302,7 @@ class DiceLayer {
 	}
 
 	showMultiplayerResults(title: string, rollSummary: PlayerRoll[], hiddenThreshold = 0): void {
+		//console.log(rollSummary);
 		let x = 10;
 		let y = 10;
 		const lineHeight = 70;
@@ -1506,7 +1507,7 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDieTotal(thisRollStr: string, playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players): void {
+	showDieTotal(thisRollStr: string, playerId = Creature.invalidCreatureId, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
 		textEffect.data = diceGroup;
 		this.setTextColorToPlayer(textEffect, playerId);
@@ -1558,14 +1559,14 @@ class DiceLayer {
 	}
 
 
-	private setTextColorToPlayer(textEffect: TextEffect, playerID = Character.invalidCreatureId) {
-		if (playerID === Character.invalidCreatureId)
+	private setTextColorToPlayer(textEffect: TextEffect, playerID = Creature.invalidCreatureId) {
+		if (playerID === Creature.invalidCreatureId)
 			playerID = this.playerID;
 		textEffect.fontColor = this.getDieColor(playerID);
 		textEffect.outlineColor = this.getDieFontColor(playerID);
 	}
 
-	showRollModifier(playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players, allModStrs: Array<string> = null, nat20 = false): void {
+	showRollModifier(playerId = Creature.invalidCreatureId, diceGroup = DiceGroup.Players, allModStrs: Array<string> = null, nat20 = false): void {
 		const rollModStr = this.getRollModifierStr(allModStrs, nat20);
 		if (!rollModStr)
 			return;
@@ -2883,7 +2884,7 @@ class DiceLayer {
 
 	rollDice(diceRollDto: string): void {
 		const diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
-		console.log(diceRollData);
+		//console.log(diceRollData);
 		if (diceRollData.diceGroup === DiceGroup.Players)
 			diceRollerPlayers.pleaseRollDice(diceRollData);
 		else
@@ -2945,7 +2946,7 @@ class DiceLayer {
 	}
 
 	showSmallerMessageAt(centerDicePos: Vector, message: string, diceGroup: DiceGroup, fontColor: string, outlineColor: string) {
-		console.log(`showSmallerMessageAt(${centerDicePos}, ${message}`);
+		//console.log(`showSmallerMessageAt(${centerDicePos}, ${message}`);
 		const textEffect: TextEffect = this.animations.addText(centerDicePos, message, this.totalDamageTime);
 		textEffect.data = diceGroup;
 		textEffect.targetScale = 3;
@@ -2969,7 +2970,7 @@ class DiceLayer {
 class IndividualRoll {
 	constructor(public value: number, public numSides: number, public type: string, public damageType: DamageType, public dieCountsAs: DieCountsAs, public creatureId: number, public modifier: number) {
 		if (creatureId === Number.MIN_VALUE)
-			creatureId = Character.invalidCreatureId;
+			creatureId = Creature.invalidCreatureId;
 	}
 }
 
@@ -3006,7 +3007,7 @@ enum CardModType {
 }
 
 class CardModifier {
-	CreatureId = Character.invalidCreatureId;
+	CreatureId = Creature.invalidCreatureId;
 	BlameName: string;
 	Offset = 0;
 	Multiplier = 1;
@@ -3142,7 +3143,7 @@ class DiceRollData {
 		return this.bonusRolls[0].description;
 	}
 
-	addBonusRoll(diceStr: string, description: string, playerID = Character.invalidCreatureId, dieBackColor: string = DiceLayer.bonusRollDieColor, dieTextColor: string = DiceLayer.bonusRollFontColor, playerName = ''): BonusRoll {
+	addBonusRoll(diceStr: string, description: string, playerID = Creature.invalidCreatureId, dieBackColor: string = DiceLayer.bonusRollDieColor, dieTextColor: string = DiceLayer.bonusRollFontColor, playerName = ''): BonusRoll {
 		if (!this.bonusRolls)
 			this.bonusRolls = [];
 		const bonusRoll: BonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor, playerName);
@@ -3151,7 +3152,7 @@ class DiceRollData {
 		return bonusRoll;
 	}
 
-	addBonusDamageRoll(diceStr: string, description: string, playerID = Character.invalidCreatureId, dieBackColor: string = DiceLayer.damageDieBackgroundColor, dieTextColor: string = DiceLayer.damageDieFontColor): BonusRoll {
+	addBonusDamageRoll(diceStr: string, description: string, playerID = Creature.invalidCreatureId, dieBackColor: string = DiceLayer.damageDieBackgroundColor, dieTextColor: string = DiceLayer.damageDieFontColor): BonusRoll {
 		if (!this.bonusRolls)
 			this.bonusRolls = [];
 		const bonusRoll: BonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor);

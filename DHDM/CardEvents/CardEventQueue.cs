@@ -54,9 +54,7 @@ namespace DHDM
 		public void ConditionRoll(DiceRoll diceRoll)
 		{
 			if (ActiveCardEvent != null)
-			{
 				ActiveCardEvent.ConditionRoll(diceRoll);
-			}
 		}
 
 		public CardEventQueue(QueueEffectEventArgs ea, IObsManager obsManager, IDungeonMasterApp iDungeonMasterApp)

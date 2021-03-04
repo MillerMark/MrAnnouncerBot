@@ -25,21 +25,40 @@ namespace DndCore
 			foreach (Creature creature in target.Creatures)
 			{
 				InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(creature);
-				inGameCreature.StartTakingDamage();
 				if (inGameCreature != null)
-					foreach (DamageType damageType in latestDamage.Keys)
+				{
+					inGameCreature.StartTakingDamage();
+					if (inGameCreature != null)
+						foreach (DamageType damageType in latestDamage.Keys)
+						{
+							// TODO: pass in AttackKind with the custom data
+							ReportOnVulnerabilitiesAndResistance(player?.Game, creature, inGameCreature.Name, damageType);
+							inGameCreature.TakeSomeDamage(player?.Game, damageType, AttackKind.Magical, (int)Math.Floor(latestDamage[damageType] * multiplier));
+						}
+					inGameCreature.FinishTakingDamage();
+				}
+				else
+				{
+					if (creature is Character thisPlayer)
 					{
-						// TODO: pass in AttackKind with the custom data
-						if (creature.IsVulnerableTo(damageType, AttackKind.Magical))
-							player?.Game.TellDungeonMaster($"{inGameCreature.Name} is vulnerable to {damageType} damage.");
-						else if (creature.IsResistantTo(damageType, AttackKind.Magical))
-							player?.Game.TellDungeonMaster($"{inGameCreature.Name} is resistant to {damageType} damage.");
-						inGameCreature.TakeSomeDamage(player?.Game, damageType, AttackKind.Magical, (int)Math.Floor(latestDamage[damageType] * multiplier));
+						foreach (DamageType damageType in latestDamage.Keys)
+						{
+							// TODO: pass in AttackKind with the custom data
+							thisPlayer.TakeDamage(damageType, AttackKind.Any, latestDamage[damageType]);
+							ReportOnVulnerabilitiesAndResistance(thisPlayer.Game, creature, thisPlayer.firstName, damageType);
+						}
 					}
-				inGameCreature.FinishTakingDamage();
-				// TODO: Also get players from the target and work with them.
+				}
 			}
 			return null;
+		}
+
+		private static void ReportOnVulnerabilitiesAndResistance(DndGame game, Creature creature, string name, DamageType damageType)
+		{
+			if (creature.IsVulnerableTo(damageType, AttackKind.Magical))
+				game?.TellDungeonMaster($"{name} is vulnerable to {damageType} damage.");
+			else if (creature.IsResistantTo(damageType, AttackKind.Magical))
+				game?.TellDungeonMaster($"{name} is resistant to {damageType} damage.");
 		}
 	}
 }

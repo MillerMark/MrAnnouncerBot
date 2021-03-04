@@ -132,7 +132,7 @@ class SpeechBubbleManager {
 
 		console.log('sayOrThinkSomething - colorStr: ' + colorStr);
 
-		if (playerId === Number.MIN_VALUE || playerId === Character.invalidCreatureId || speechType === SpeechType.None)
+		if (playerId === Number.MIN_VALUE || playerId === Creature.invalidCreatureId || speechType === SpeechType.None)
 			return;
 
 		//if (layerLevel === LayerLevel.Back)
@@ -417,7 +417,7 @@ class SpeechBubbleManager {
 	private getSpeechCommandParts(speechStr: string) {
 		let spaceIndex = 0;
 		let textToShow = null;
-		let playerId: number = Character.invalidCreatureId;
+		let playerId: number = Creature.invalidCreatureId;
 		let speechType: SpeechType = SpeechType.None;
 		let colorStr = '#000000';
 

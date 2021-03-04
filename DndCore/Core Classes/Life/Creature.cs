@@ -6,11 +6,14 @@ using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using GoogleHelper;
+using System.Diagnostics;
 
 namespace DndCore
 {
+	[DebuggerDisplay("{Name}")]
 	public abstract class Creature
 	{
+		public const int invalidCreatureId = -2147483648;
 		string _dieBackColor = "#ffffff";
 		string _dieFontColor = "#000000";
 		public virtual string dieBackColor { get => _dieBackColor; set => _dieBackColor = value; }
@@ -26,6 +29,7 @@ namespace DndCore
 		{
 			get
 			{
+				
 				if (this is Character)
 					return Math.Abs(IntId);
 				return -Math.Abs(IntId);  // In game creatures all have negative creature indices.
@@ -679,6 +683,9 @@ namespace DndCore
 
 		public void TakeDamage(DamageType damageType, AttackKind attackKind, double points)
 		{
+			if (points == 0)
+				return;
+
 			if (IsImmuneTo(damageType, attackKind))
 			{
 				LastDamageTaken = DamageType.None;

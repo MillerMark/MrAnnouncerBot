@@ -48,7 +48,7 @@ namespace DndCore
 				DieCountsAs = DieCountsAs.totalScore;
 		}
 
-		public static DiceDto D20FromInGameCreature(InGameCreature inGameCreature, DiceRollType diceRollType)
+		public static DiceDto D20FromInGameCreature(InGameCreature inGameCreature, DiceRollType diceRollType, Ability savingAbility = Ability.none)
 		{
 			DieCountsAs dieCountsAs = DieCountsAs.totalScore;
 			double modifier = 0;
@@ -57,6 +57,7 @@ namespace DndCore
 			{
 				dieCountsAs = DieCountsAs.savingThrow;
 				label = $"{inGameCreature.Name}'s Save";
+				modifier = inGameCreature.Creature.GetSavingThrowModifier(savingAbility);
 			}
 			else
 				label = inGameCreature.Name;
@@ -91,7 +92,7 @@ namespace DndCore
 			return new DiceDto()
 			{
 				PlayerName = player.Name,
-				CreatureId = player.Index,
+				CreatureId = player.IntId,
 				Sides = 20,
 				Quantity = 1,
 				Label = label,

@@ -231,7 +231,7 @@ namespace DndCore
 			player.PickAmmunition += Player_PickAmmunition;
 			player.PlayerShowState += Player_PlayerShowState;
 			player.StateChanged += Player_StateChanged;
-			player.Damaged += Player_Damaged; ;
+			player.Damaged += Player_Damaged;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;

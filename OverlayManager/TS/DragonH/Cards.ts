@@ -1118,11 +1118,11 @@ class CardManager {
 		const yPos: number = sprite.y + this.knownCards.originY;
 		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
 		const cardImageName: string = this.getCardImageName(card);
-		this.playCard(cardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, Character.invalidCreatureId, card.FillColor, card.OutlineColor);
+		this.playCard(cardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, Creature.invalidCreatureId, card.FillColor, card.OutlineColor);
 	}
 
 	playCardNow(card: StreamlootsCard) {
-		const sprite: SpriteProxy = this.dealCard(card, Character.invalidCreatureId);
+		const sprite: SpriteProxy = this.dealCard(card, Creature.invalidCreatureId);
 		sprite.fadeOutTime = 50;
 		const dealtCardPauseTimeBeforePlay = 3000;
 		sprite.expirationDate = performance.now() + dealtCardPauseTimeBeforePlay;

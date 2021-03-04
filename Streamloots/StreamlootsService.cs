@@ -140,6 +140,7 @@ namespace Streamloots
 				}
 				catch (Exception ex)
 				{
+					System.Diagnostics.Debugger.Break();
 					Console.WriteLine(ex.ToString());
 				}
 			}
