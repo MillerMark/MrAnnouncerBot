@@ -834,5 +834,39 @@ namespace DndCore
 			}
 			return string.Empty;
 		}
+		public static string ToSkillItemName(string skillCheck)
+		{
+			Skills skill = ToSkill(skillCheck);
+			switch (skill)
+			{
+				case Skills.strength:
+				case Skills.dexterity:
+				case Skills.constitution:
+				case Skills.intelligence:
+				case Skills.wisdom:
+				case Skills.charisma:
+					return skill.ToString().InitialCap();
+				case Skills.acrobatics:
+				case Skills.animalHandling:
+				case Skills.arcana:
+				case Skills.athletics:
+				case Skills.deception:
+				case Skills.history:
+				case Skills.insight:
+				case Skills.intimidation:
+				case Skills.investigation:
+				case Skills.medicine:
+				case Skills.nature:
+				case Skills.perception:
+				case Skills.performance:
+				case Skills.persuasion:
+				case Skills.religion:
+				case Skills.sleightOfHand:
+				case Skills.stealth:
+				case Skills.survival:
+					return "Skills" + skill.ToString().InitialCap();
+			}
+			return string.Empty;
+		}
 	}
 }

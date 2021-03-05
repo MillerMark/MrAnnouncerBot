@@ -136,6 +136,17 @@ namespace DHDM
 			}
 		}
 
+		public void ShowHandIfHidden(int creatureId)
+		{
+			if (!Hands.ContainsKey(creatureId))
+				return;
+			if (!Hands[creatureId].IsShown && Hands[creatureId].ContainsAtLeastOnePlayableCard())
+			{
+				ShowHand(creatureId);
+				StateHasChanged();
+			}
+		}
+
 		private void ShowHand(int creatureId)
 		{
 			Hands[creatureId].IsShown = true;

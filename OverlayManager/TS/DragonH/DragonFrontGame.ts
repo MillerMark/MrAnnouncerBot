@@ -58,9 +58,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	bloodGushE: BloodSprites;  // Totally contained, 700 pixels high.
 
 	sparkTrailBurst: Sprites;
-	swirlSmokeA: Sprites;
-	swirlSmokeB: Sprites;
-	swirlSmokeC: Sprites;
 
 	dndTimeDatePanel: SpriteProxy;
 	clockPanel: Sprites;
@@ -472,10 +469,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.magicSparksD = this.loadMagicSparks('D');
 		this.magicSparksE = this.loadMagicSparks('E');
 
-		this.swirlSmokeA = this.loadSwirlSmoke('A', 136, 395, 397);
-		this.swirlSmokeB = this.loadSwirlSmoke('B', 131, 415, 363);
-		this.swirlSmokeC = this.loadSwirlSmoke('C', 129, 410, 476);
-
 		this.sparkTrailBurst = new Sprites('SpellEffects/SparkTrailBurst/SparkTrailBurst', 54, fps30, AnimationStyle.Sequential, true);
 		this.sparkTrailBurst.name = 'SparkTrailBurst';
 		this.sparkTrailBurst.originX = 508;
@@ -741,15 +734,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		magicSparks.originX = 364;
 		magicSparks.originY = 484;
 		return magicSparks;
-	}
-
-
-	loadSwirlSmoke(path: string, frameCount: number, originX: number, originY: number): Sprites {
-		const swirlSmoke: Sprites = new Sprites(`SpellEffects/SwirlSmoke/${path}/SwirlSmoke${path}`, frameCount, fps30, AnimationStyle.Sequential, true);
-		swirlSmoke.name = `SwirlSmoke${path}`;
-		swirlSmoke.originX = originX;
-		swirlSmoke.originY = originY;
-		return swirlSmoke;
 	}
 
 	private createFireBallBehindClock(hue: number): any {
@@ -1730,6 +1714,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			const cardHandDto: CardHandDto = JSON.parse(cardStr);
 			this.cardManager.revealCards(cardHandDto.Hands);
 		}
+	}
+
+	showDmSetThresholdFeedback(hueShift: number) {
+		this.createSmokeSwirls(400, 0, hueShift, 0.4);
+		this.createSmokeSwirls(1620, 220, hueShift, 0.50);
+		//this.createSmokeSwirls(960, 540, 300, 2);
 	}
 }
 

@@ -13,6 +13,19 @@ enum HandSide {
 	Right
 }
 
+enum DmEvent {
+	SkillCheckThresholdChanged,
+	SavingThresholdChanged,
+	AttackThresholdChanged
+}
+
+class DmDataDto {
+	Event: DmEvent;
+	constructor() {
+
+	}
+}
+
 interface ThrownObject {
 	Position: ScaledPoint;
 	Index: number;
@@ -297,6 +310,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	smokeColumnBack: Sprites;
 	smokeColumnFront: Sprites;
 
+	swirlSmokeA: Sprites;
+	swirlSmokeB: Sprites;
+	swirlSmokeC: Sprites;
+
 	handEffectsCollection: SpriteCollection = new SpriteCollection();
 	handHeldFireball: Sprites;
 	handHeldSmoke: Sprites;
@@ -318,6 +335,14 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	players: Array<Character> = [];
 
 	dragonSharedSounds: SoundManager;
+
+	loadSwirlSmoke(path: string, frameCount: number, originX: number, originY: number): Sprites {
+		const swirlSmoke: Sprites = new Sprites(`SpellEffects/SwirlSmoke/${path}/SwirlSmoke${path}`, frameCount, fps30, AnimationStyle.Sequential, true);
+		swirlSmoke.name = `SwirlSmoke${path}`;
+		swirlSmoke.originX = originX;
+		swirlSmoke.originY = originY;
+		return swirlSmoke;
+	}
 
 	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, players: Array<Character>) {
 		const player: Character = players[playerIndex];
@@ -621,6 +646,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.fireBallFront.name = 'FireBallFront';
 		this.fireBallFront.originX = 190;
 		this.fireBallFront.originY = 1080;
+
+		this.swirlSmokeA = this.loadSwirlSmoke('A', 136, 395, 397);
+		this.swirlSmokeB = this.loadSwirlSmoke('B', 131, 415, 363);
+		this.swirlSmokeC = this.loadSwirlSmoke('C', 129, 410, 476);
 
 		// TODO: Consider adding fireballs to another SpriteCollection. Not really windups.
 		this.backLayerEffects.add(this.fireBallBack);
@@ -1544,5 +1573,60 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		childSprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
 		childSprite.fadeInTime = 300;
 		return childSprite;
+	}
+
+	getRandomSwirl(): Sprites {
+		if (Random.chancePercent(33))
+			return this.swirlSmokeA;
+		else if (Random.chancePercent(50))
+			return this.swirlSmokeB;
+		return this.swirlSmokeC;
+	}
+
+	createSmokeSwirls(x: number, y: number, hueShift: number, scaleMultiplier = 1) {
+		const swirl1: Sprites = this.getRandomSwirl();
+		let swirl2: Sprites = this.getRandomSwirl();
+		let attempts = 0;
+		while (attempts < 10 && swirl1 === swirl2) {
+			swirl2 = this.getRandomSwirl();
+			attempts++;
+		}
+		let spinMultiplier: number;
+		if (Random.chancePercent(50))
+			spinMultiplier = 1;
+		else
+			spinMultiplier = -1;
+		this.createSmokeSwirl(swirl1, x, y, hueShift, spinMultiplier, scaleMultiplier);
+		this.createSmokeSwirl(swirl2, x, y, hueShift, spinMultiplier, scaleMultiplier);
+	}
+
+	createSmokeSwirl(swirl: Sprites, x: number, y: number, hueShift: number, spinMultiplier: number, scaleMultiplier: number) {
+		const sprite: SpriteProxy = swirl.addShifted(x, y, 0, hueShift + Random.plusMinus(30));
+		sprite.autoRotationDegeesPerSecond = spinMultiplier * Random.between(40, 90);
+		sprite.fadeInTime = 0;
+		sprite.fadeOutTime = 0;
+		sprite.scale = Random.between(0.5, 0.75) * scaleMultiplier;
+	}
+
+	showDmSetThresholdFeedback(hueShift: number) {
+		
+	}
+
+	dmDataChanged(dmData: string) {
+		const dmDataDto: DmDataDto = JSON.parse(dmData);
+		switch (dmDataDto.Event) {
+			case DmEvent.SkillCheckThresholdChanged:
+				// blue 
+				this.showDmSetThresholdFeedback(220);
+				break;
+			case DmEvent.SavingThresholdChanged:
+				// Teal green
+				this.showDmSetThresholdFeedback(150);
+				break;
+			case DmEvent.AttackThresholdChanged:
+				// red 
+				this.showDmSetThresholdFeedback(0);
+				break;
+		}
 	}
 }

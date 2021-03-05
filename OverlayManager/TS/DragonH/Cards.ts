@@ -1101,7 +1101,7 @@ class CardManager {
 	}
 
 	getElementByGuid(elements: AnimatedElement[], cardGuid: string) {
-		return elements.find((value: AnimatedElement) => value.data === cardGuid; );
+		return elements.find((value: AnimatedElement) => value.data === cardGuid);
 
 		//for (let i = 0; i < elements.length; i++) {
 		//	if (elements[i].data === cardGuid)

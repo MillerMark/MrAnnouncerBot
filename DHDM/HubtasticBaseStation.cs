@@ -131,9 +131,9 @@ namespace DHDM
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, -1, playerData);
 		}
 
-		public static void MapDataChanged(string mapData)
+		public static void DmDataChanged(string dmData)
 		{
-			HubConnection.InvokeAsync("MapDataChanged", mapData);
+			HubConnection.InvokeAsync("DmDataChanged", dmData);
 		}
 
 		public static void CalibrateLeapMotion(string calibrationData)

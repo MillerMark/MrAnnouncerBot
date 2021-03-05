@@ -229,8 +229,13 @@ function unfocusItem(playerID: number, pageID: number, itemID: string) {
 	}
 }
 
-function mapDataChanged(mapData: string) {
-
+function dmDataChanged(dmData: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.dmDataChanged(dmData);
+	}
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.dmDataChanged(dmData);
+	}
 }
 
 function calibrateLeapMotion(calibrationData: string) {
@@ -363,7 +368,7 @@ function connectToSignalR(signalR) {
 		connection.on("ExecuteSoundCommand", executeSoundCommand);
 		connection.on("ShowValidationIssue", showValidationIssue);
 		connection.on("PlayerDataChanged", playerDataChanged);
-		connection.on("MapDataChanged", mapDataChanged);
+		connection.on("DmDataChanged", dmDataChanged);
 		connection.on("CalibrateLeapMotion", calibrateLeapMotion);
 		connection.on("UpdateSkeletalData", updateSkeletalData);
 		connection.on("SpeechBubble", speechBubble);

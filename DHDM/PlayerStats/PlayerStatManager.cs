@@ -158,6 +158,16 @@ namespace DHDM
 		{
 			return Players.Where(x => x.IsTargeted).ToList();
 		}
+
+		public bool HasOnlyOnePlayerReadyToRollDice()
+		{
+			return Players.Count(x => x.ReadyToRollDice) == 1;
+		}
+
+		public int GetFirstPlayerIdWhoIsReadyToRoll()
+		{
+			return Players.FirstOrDefault(x => x.ReadyToRollDice).CreatureId;
+		}
 	}
 }
 

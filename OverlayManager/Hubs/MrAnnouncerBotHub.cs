@@ -26,9 +26,9 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
 
-		public void MapDataChanged(string mapData)
+		public void DmDataChanged(string dmData)
 		{
-			coderushedHub.Clients.All.MapDataChanged(mapData);
+			coderushedHub.Clients.All.DmDataChanged(dmData);
 		}
 
 		public void CalibrateLeapMotion(string calibrationData)

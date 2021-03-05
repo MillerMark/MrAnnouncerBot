@@ -8,6 +8,7 @@ namespace DHDM
 	public enum CardCommandType
 	{
 		ToggleHandVisibility,
+		ShowHandIfHidden,
 		HideAllNpcCards,
 		SelectNextCard,
 		SelectPreviousCard,

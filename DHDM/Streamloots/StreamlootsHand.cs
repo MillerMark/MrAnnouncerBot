@@ -133,6 +133,10 @@ namespace DHDM
 		{
 			CardsToReveal.Clear();
 		}
+		public bool ContainsAtLeastOnePlayableCard()
+		{
+			return Cards.Any(x => !x.IsSecret);
+		}
 
 	}
 }

@@ -154,6 +154,11 @@ namespace DndUI
 			remove { RemoveHandler(PreviewPageChangedEvent, value); }
 		}
 
+		public void ChangePage(ScrollPage newPage)
+		{
+			OnPageChanged(newPage);
+		}
+
 		protected virtual void OnPageChanged(ScrollPage newPage)
 		{
 			if (Page == newPage)

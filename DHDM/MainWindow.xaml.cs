@@ -5953,12 +5953,7 @@ namespace DHDM
 			}
 
 			InvokeSavingThrow(ability, playerIds, delayRollMs);
-
-			if (activePage != ScrollPage.main)
-			{
-				activePage = ScrollPage.main;
-				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
-			}
+			ChangeScrollPage(ActivePlayerId, ScrollPage.main);
 
 			SafeInvoke(() =>
 			{
@@ -5977,6 +5972,15 @@ namespace DHDM
 			string firstPart = $"Rolling {abilityStr} saving throw for {who}";
 			TellDungeonMaster($"{Icons.SavingThrow} {firstPart}{PlusHiddenThresholdDisplayStr(tbxSaveThreshold)}...");
 			TellViewers($"{firstPart}...");
+		}
+
+		private void ChangeScrollPage(int playerId, ScrollPage page)
+		{
+			if (activePage != page)
+			{
+				activePage = page;
+				HubtasticBaseStation.PlayerDataChanged(playerId, activePage, string.Empty);
+			}
 		}
 
 		private void SelectedPlayersAboutToRoll()
@@ -8111,6 +8115,12 @@ namespace DHDM
 			ApplyDamageHealthChange(NewDamageHealthChange(playerIds, -value));
 		}
 
+		void TriggerDmEvent(DmEvent dmEvent)
+		{
+			string serializedObject = JsonConvert.SerializeObject(new DmDataDto(dmEvent));
+			HubtasticBaseStation.DmDataChanged(serializedObject);
+		}
+
 		void SetAttackThreshold(int value)
 		{
 			SafeInvoke(() =>
@@ -8118,7 +8128,10 @@ namespace DHDM
 				tbxAttackThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden ATTACK threshold");
+
+			TriggerDmEvent(DmEvent.AttackThresholdChanged);
 		}
+
 		void SetSavingThrowThreshold(int value)
 		{
 			SafeInvoke(() =>
@@ -8126,6 +8139,7 @@ namespace DHDM
 				tbxSaveThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SAVE threshold");
+			TriggerDmEvent(DmEvent.SavingThresholdChanged);
 		}
 
 		void SetSkillCheckThreshold(int value)
@@ -8135,6 +8149,7 @@ namespace DHDM
 				tbxSkillCheckThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SKILL CHECK threshold");
+			TriggerDmEvent(DmEvent.SkillCheckThresholdChanged);
 		}
 
 		public void Apply(string command, decimal value, List<int> playerIds)
@@ -9403,6 +9418,7 @@ namespace DHDM
 			{
 				AllInGameCreatures.SetActiveTurn(inGameCreature);
 				PlayerStatsManager.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+				SelectTheActiveNpc();
 			}
 
 			if (activeTurnCreature is Character character)
@@ -9414,6 +9430,17 @@ namespace DHDM
 			UpdateInGameCreatures();
 			UpdatePlayerStatsInGame();
 			UpdateConcentratedSpells();
+			ShowCardsForActivePlayer();
+		}
+
+		void SelectTheActiveNpc()
+		{
+			SelectInGameCreature(-PlayerStatsManager.ActiveTurnCreatureID);
+		}
+
+		private void ShowCardsForActivePlayer()
+		{
+			CardCommand(CardCommandType.ShowHandIfHidden, PlayerStatsManager.ActiveTurnCreatureID);
 		}
 
 		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
@@ -9617,7 +9644,27 @@ namespace DHDM
 				ckbUseMagic.IsChecked = false;
 				SelectSkill(DndUtils.ToSkill(skillCheck));
 				NextDieRollType = DiceRollType.SkillCheck;
+				if (ActivePlayer != null)
+				{
+					CharacterSheets characterSheet = GetSheetForCharacter(ActivePlayer.playerID);
+					if (characterSheet != null)
+					{
+						characterSheet.ChangePage(ScrollPage.skills);
+						string itemID = DndUtils.ToSkillItemName(skillCheck);
+						int playerId = ActivePlayerId;
+						if (PlayerStatsManager.HasOnlyOnePlayerReadyToRollDice())
+						{
+							playerId = PlayerStatsManager.GetFirstPlayerIdWhoIsReadyToRoll();
+						}
+						//HubtasticBaseStation.ChangePlayerStats();
+						SelectCharacter(playerId);
+						ChangeScrollPage(playerId, ScrollPage.skills);
+						HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
+						HubtasticBaseStation.FocusItem(playerId, activePage, itemID);
+					}
+				}
 			});
+			
 		}
 		public void PrepareTargetSkillCheck(string skillCheck)
 		{
@@ -9992,6 +10039,9 @@ namespace DHDM
 			{
 				case CardCommandType.ToggleHandVisibility:
 					cardHandManager.ToggleHandVisibility(creatureId);
+					return;
+				case CardCommandType.ShowHandIfHidden:
+					cardHandManager.ShowHandIfHidden(creatureId);
 					return;
 				case CardCommandType.HideAllNpcCards:
 					cardHandManager.HideAllNpcCards();

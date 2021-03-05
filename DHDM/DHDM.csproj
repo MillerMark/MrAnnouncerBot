@@ -328,6 +328,8 @@
     <Compile Include="CardEvents\DamageModifier.cs" />
     <Compile Include="CardEvents\RegexHelper.cs" />
     <Compile Include="CardEvents\StampedeCardEvent.cs" />
+    <Compile Include="DmDataDto.cs" />
+    <Compile Include="DmEvent.cs" />
     <Compile Include="Events\DigitChangedEventArgs.cs" />
     <Compile Include="IObsManager.cs" />
     <Compile Include="ObsManager.cs" />

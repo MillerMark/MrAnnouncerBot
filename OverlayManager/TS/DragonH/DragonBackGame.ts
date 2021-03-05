@@ -196,6 +196,10 @@ class DragonBackGame extends DragonGame {
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		this.swirlSmokeA.draw(context, nowMs);
+		this.swirlSmokeB.draw(context, nowMs);
+		this.swirlSmokeC.draw(context, nowMs);
+
 		this.drawSprinkles(context, nowMs, Layer.Back);
 
 		this.drawClockLayerEffects(context, nowMs);
@@ -810,5 +814,10 @@ class DragonBackGame extends DragonGame {
 
 	inGameUICommand(commandData: string) {
 		this.messageBox.executeCommand(commandData, this.world.ctx, this.dragonBackSounds);
+	}
+
+	showDmSetThresholdFeedback(hueShift: number) {
+		this.createSmokeSwirls(400, 0, hueShift);
+		this.createSmokeSwirls(1620, 220, hueShift);
 	}
 } 
