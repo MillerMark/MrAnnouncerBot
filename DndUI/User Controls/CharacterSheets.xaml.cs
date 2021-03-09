@@ -225,6 +225,7 @@ namespace DndUI
 		public CharacterSheets()
 		{
 			InitializeComponent();
+			pageSkills.Visibility = Visibility.Visible;
 		}
 
 		private void PageSkills_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -573,6 +574,9 @@ namespace DndUI
 				//character.flyingSpeed = 
 				statGoldPieces.Text = character.goldPieces.ToString();
 				statHitPoints.Text = character.HitPoints.ToString();
+				statMaxHitPoints.Text = character.maxHitPoints.ToString();
+				statResistancesVulnerabilitiesImmunities.Text = character.GetResistancesVulnerabilitiesImmunitiesStr();
+				statSpellcastingAbilityModifier.Text = character.SpellcastingAbilityModifier.ToString();
 				statInitiative.Text = PlusModifier(character.initiative) + character.initiative.ToString();
 				statInspiration.Text = character.inspiration.ToString();
 				statIntelligence.Text = character.Intelligence.ToString();
@@ -642,7 +646,7 @@ namespace DndUI
 				//character.tempSleightOfHandMod = 
 				//character.tempStealthMod = 
 				//character.tempSurvivalMod = 
-				statHitDice.Text = character.totalHitDice;
+				//statHitDice.Text = character.totalHitDice;
 				//character.tremorSenseRadius =
 				//character.truesightRadius = 
 				statWeight.Text = character.weight.ToString();
@@ -693,6 +697,8 @@ namespace DndUI
 			//character.flyingSpeed = 
 			character.goldPieces = statGoldPieces.ToDecimal();
 			character.HitPoints = statHitPoints.ToInt();
+			character.maxHitPoints = statMaxHitPoints.ToInt();
+			character.SpellcastingAbilityModifier = statSpellcastingAbilityModifier.ToInt();
 			character.initiative = statInitiative.ToInt();
 			character.inspiration = statInspiration.Text;
 			character.baseIntelligence = statIntelligence.ToInt();
@@ -744,7 +750,7 @@ namespace DndUI
 			//character.tempSleightOfHandMod = 
 			//character.tempStealthMod = 
 			//character.tempSurvivalMod = 
-			character.totalHitDice = statHitDice.Text;
+			//character.totalHitDice = statHitDice.Text;
 			//character.tremorSenseRadius =
 			//character.truesightRadius = 
 			character.weight = statWeight.ToDouble();

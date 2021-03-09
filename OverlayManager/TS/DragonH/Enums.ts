@@ -324,7 +324,8 @@ enum TextAlign {
 enum TextDisplay {
   normal,
   plusMinus,
-  autoSize
+  autoSize,
+  deemphasizeZero
 }
 
 enum ScrollPage {
@@ -364,18 +365,20 @@ enum emphasisMain {
   Initiative = 13,
   Speed = 14,
   HitPoints = 15,
-  TempHitPoints = 16,
-  DeathSaves = 17,
-  HitDice = 18,
-  ProficiencyBonus = 19,
-  Perception = 20,
-  GoldPieces = 21,
-  SavingStrength = 22,
-  SavingDexterity = 23,
-  SavingConstitution = 24,
-  SavingIntelligence = 25,
-  SavingWisdom = 26,
-  SavingCharisma = 27
+  DeathSaves = 16,
+  SpellcastingAbilityModifier = 17,  // Was HitDice
+  ProficiencyBonus = 18,
+  Perception = 19,
+  GoldPieces = 20,
+  SavingStrength = 21,
+  SavingDexterity = 22,
+  SavingConstitution = 23,
+  SavingIntelligence = 24,
+  SavingWisdom = 25,
+  SavingCharisma = 26,
+  MaxHitPoints = 27,
+  ResistancesVulnerabilitiesImmunities = 28,
+  TempHitPoints = 29
 }
 
 enum emphasisSkills {

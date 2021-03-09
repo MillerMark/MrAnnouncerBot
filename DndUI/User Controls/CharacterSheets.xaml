@@ -45,7 +45,7 @@
 	<Grid>
 		<local:GridSheet x:Name="pageMain" Width="234" Height="555" Activated="PageMain_Activated" >
 			<Image Name="imageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="Fill" PreviewMouseDown="PageMain_PreviewMouseDown" MouseDown="PageMain_MouseDown"/>
-			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
+			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="65,194,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
 				StatBox1="{Binding ElementName=statStrength, Mode=OneWay}">
@@ -107,48 +107,51 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:StatBox x:Name="statName" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
-			<local:StatBox x:Name="statRaceClass" Margin="82,14,0,0" Width="121" Height="18" Text="Race/Class" FocusItem="RaceClass"/>
-			<local:StatBox x:Name="statLevel" Margin="84,38,0,0" Width="34" Height="18" Text="1" FocusItem="Level"/>
-			<local:StatBox x:Name="statInspiration" Margin="127,38,0,0" Width="34" Height="18" Text="0" FocusItem="Inspiration"/>
-			<local:StatBox x:Name="statExperiencePoints" Margin="169,38,0,0" Width="34" Height="18" Text="100" FocusItem="ExperiencePoints"/>
-			<local:StatBox x:Name="statAlignment" Margin="82,73,0,0" Width="121" Height="18" Text="Alignment" FocusItem="Alignment" StatChanged="AnyStatChanged"/>
-			<local:StatBox x:Name="statStrength" Margin="10,122,0,0" Width="37" Height="18" Text="15" FocusItem="Strength"/>
+			<local:StatBox x:Name="statName" Margin="10,72,157,465" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
+			<local:StatBox x:Name="statRaceClass" Margin="82,15,31,522" Width="121" Height="18" Text="Race/Class" FocusItem="RaceClass"/>
+			<local:StatBox x:Name="statLevel" Margin="82,38,118,499" Width="34" Height="18" Text="1" FocusItem="Level"/>
+			<local:StatBox x:Name="statInspiration" Margin="127,38,73,499" Width="34" Height="18" Text="0" FocusItem="Inspiration"/>
+			<local:StatBox x:Name="statExperiencePoints" Margin="169,38,31,499" Width="34" Height="18" Text="100" FocusItem="ExperiencePoints"/>
+			<local:StatBox x:Name="statAlignment" Margin="82,74,31,463" Width="121" Height="18" Text="Alignment" FocusItem="Alignment" StatChanged="AnyStatChanged"/>
+			<local:StatBox x:Name="statStrength" Margin="10,124,187,413" Width="37" Height="18" Text="15" FocusItem="Strength"/>
 			<TextBlock x:Name="calcStatStrengthModifier" Margin="21,142,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-			<local:StatBox x:Name="statDexterity" Margin="10,180,0,0" Width="37" Height="18" Text="15" FocusItem="Dexterity"/>
+			<local:StatBox x:Name="statDexterity" Margin="10,182,187,355" Width="37" Height="18" Text="15" FocusItem="Dexterity"/>
 			<TextBlock x:Name="calcStatDexterityModifier" Margin="21,200,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-			<local:StatBox x:Name="statConstitution" Margin="10,238,0,0" Width="37" Height="18" Text="15" FocusItem="Constitution"/>
+			<local:StatBox x:Name="statConstitution" Margin="10,239,187,298" Width="37" Height="18" Text="15" FocusItem="Constitution"/>
 			<TextBlock x:Name="calcStatConstitutionModifier" Margin="21,258,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-			<local:StatBox x:Name="statIntelligence" Margin="10,296,0,0" Width="37" Height="18" Text="15" FocusItem="Intelligence"/>
+			<local:StatBox x:Name="statIntelligence" Margin="10,298,187,239" Width="37" Height="18" Text="15" FocusItem="Intelligence"/>
 			<TextBlock x:Name="calcStatIntelligenceModifier" Margin="21,316,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-			<local:StatBox x:Name="statWisdom" Margin="10,354,0,0" Width="37" Height="18" Text="15" FocusItem="Wisdom"/>
+			<local:StatBox x:Name="statWisdom" Margin="10,356,187,181" Width="37" Height="18" Text="15" FocusItem="Wisdom"/>
 			<TextBlock x:Name="calcStatWisdomModifier" Margin="21,374,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-			<local:StatBox x:Name="statCharisma" Margin="10,412,0,0" Width="37" Height="18" Text="15" FocusItem="Charisma"/>
+			<local:StatBox x:Name="statCharisma" Margin="10,414,187,123" Width="37" Height="18" Text="15" FocusItem="Charisma"/>
 			<TextBlock x:Name="calcStatCharismaModifier" Margin="21,432,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" IsHitTestVisible="False"/>
-			<local:StatBox x:Name="statArmorClass" Margin="67,112,0,0" Width="37" Height="18" Text="10" FocusItem="ArmorClass"/>
-			<local:StatBox x:Name="statInitiative" Margin="112,112,0,0" Width="37" Height="18" Text="+2" FocusItem="Initiative"/>
-			<local:StatBox x:Name="statSpeed" Margin="156,112,0,0" Width="37" Height="18" Text="30" FocusItem="Speed"/>
-			<local:StatBox x:Name="statHitPoints" Margin="70,152,0,0" Width="37" Height="18" Text="22" FocusItem="HitPointsTempHitPoints"/>
-			<local:StatBox x:Name="statTempHitPoints" Margin="70,184,0,0" Width="37" Height="18" Text="3" FocusItem="HitPointsTempHitPoints"/>
-			<local:GroupBackground Height="62" Margin="119,148,0,0" Width="74" 
-		StatBox1="{Binding ElementName=statDeathSaveHeart1, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statDeathSaveHeart2, Mode=OneWay}"
-		StatBox3="{Binding ElementName=statDeathSaveHeart3, Mode=OneWay}"
-		StatBox4="{Binding ElementName=statDeathSaveSkull1, Mode=OneWay}"
-		StatBox5="{Binding ElementName=statDeathSaveSkull2, Mode=OneWay}"
-		StatBox6="{Binding ElementName=statDeathSaveSkull3, Mode=OneWay}"
-													 />
-			<local:RoundCheck x:Name="statDeathSaveHeart1" Margin="139,155,0,0" FocusItem="DeathSaves"/>
-			<local:RoundCheck x:Name="statDeathSaveHeart2" Margin="155,155,0,0" FocusItem="DeathSaves"/>
-			<local:RoundCheck x:Name="statDeathSaveHeart3" Margin="171,155,0,0" FocusItem="DeathSaves"/>
-			<local:RoundCheck x:Name="statDeathSaveSkull1" Margin="139,175,0,0" FocusItem="DeathSaves"/>
-			<local:RoundCheck x:Name="statDeathSaveSkull2" Margin="155,175,0,0" FocusItem="DeathSaves"/>
-			<local:RoundCheck x:Name="statDeathSaveSkull3" Margin="171,175,0,0" FocusItem="DeathSaves"/>
-			<local:StatBox x:Name="statHitDice" Margin="118,216,0,0" Width="75" Height="18" Text="1d4" TextAlignment="Left" FocusItem="HitDice"/>
-			<local:StatBox x:Name="statProficiencyBonus" Margin="60,252,0,0" Width="37" Height="18" Text="+2" FocusItem="ProficiencyBonus"/>
-			<local:StatBox x:Name="statPassivePerception" Margin="111,252,0,0" Width="37" Height="18" Text="12" FocusItem="Perception"/>
-			<local:StatBox x:Name="statGoldPieces" Margin="161,252,0,0" Width="48" Height="18" Text="222" FocusItem="GoldPieces"/>
-			<local:GroupBackground Height="20" Margin="68,298,0,0" Width="133" 
+			<local:StatBox x:Name="statArmorClass" Margin="70,112,127,425" Width="37" Height="18" Text="10" FocusItem="ArmorClass"/>
+			<local:StatBox x:Name="statInitiative" Margin="116,112,81,425" Width="37" Height="18" Text="+2" FocusItem="Initiative"/>
+			<local:StatBox x:Name="statSpeed" Margin="162,112,35,425" Width="37" Height="18" Text="30" FocusItem="Speed"/>
+			<local:StatBox x:Name="statHitPoints" Margin="68,198,126,339" Height="18" Text="22" FocusItem="HitPointsTempHitPoints"/>
+			<local:StatBox x:Name="statMaxHitPoints" Margin="95,171,112,366" Height="18" Text="22" FocusItem="MaxHitPoints"/>
+			<local:StatBox x:Name="statSpellcastingAbilityModifier" Margin="159,171,33,366" Height="18" Text="22" FocusItem="SpellcastingAbilityModifier"/>
+			<local:StatBox x:Name="statResistancesVulnerabilitiesImmunities" Margin="70,148,36,389" Height="18" Text="22" FocusItem="ResistancesVulnerabilitiesImmunities"/>
+
+			<local:StatBox x:Name="statTempHitPoints" Margin="70,231,127,306" Width="37" Height="18" Text="3" FocusItem="HitPointsTempHitPoints"/>
+			<local:GroupBackground Height="62" Margin="127,194,0,0" Width="74" 
+				StatBox1="{Binding ElementName=statDeathSaveHeart1, Mode=OneWay}"
+				StatBox2="{Binding ElementName=statDeathSaveHeart2, Mode=OneWay}"
+				StatBox3="{Binding ElementName=statDeathSaveHeart3, Mode=OneWay}"
+				StatBox4="{Binding ElementName=statDeathSaveSkull1, Mode=OneWay}"
+				StatBox5="{Binding ElementName=statDeathSaveSkull2, Mode=OneWay}"
+				StatBox6="{Binding ElementName=statDeathSaveSkull3, Mode=OneWay}"
+																/>
+			<local:RoundCheck x:Name="statDeathSaveHeart1" Margin="147,200,0,0" FocusItem="DeathSaves"/>
+			<local:RoundCheck x:Name="statDeathSaveHeart2" Margin="163,200,0,0" FocusItem="DeathSaves"/>
+			<local:RoundCheck x:Name="statDeathSaveHeart3" Margin="180,200,0,0" FocusItem="DeathSaves"/>
+			<local:RoundCheck x:Name="statDeathSaveSkull1" Margin="147,220,0,0" FocusItem="DeathSaves"/>
+			<local:RoundCheck x:Name="statDeathSaveSkull2" Margin="163,220,0,0" FocusItem="DeathSaves"/>
+			<local:RoundCheck x:Name="statDeathSaveSkull3" Margin="180,220,0,0" FocusItem="DeathSaves"/>
+			<local:StatBox x:Name="statProficiencyBonus" Margin="59,278,138,259" Width="37" Height="18" Text="+2" FocusItem="ProficiencyBonus"/>
+			<local:StatBox x:Name="statPassivePerception" Margin="110,278,87,259" Width="37" Height="18" Text="12" FocusItem="Perception"/>
+			<local:StatBox x:Name="statGoldPieces" Margin="160,277,26,260" Width="48" Height="18" Text="222" FocusItem="GoldPieces"/>
+			<local:GroupBackground Height="20" Margin="68,326,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingStrengthProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingStrength, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -159,9 +162,9 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingStrengthProficient" Margin="68,301,0,0" IsEnabled="False" FocusItem="SavingStrength"/>
-			<local:StatBox x:Name="statSavingStrength" Margin="90,300,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingStrength"/>
-			<local:GroupBackground Height="20" Margin="68,321,0,0" Width="133" 
+			<local:RoundCheck x:Name="statSavingStrengthProficient" Margin="68,328,0,0" IsEnabled="False" FocusItem="SavingStrength"/>
+			<local:StatBox x:Name="statSavingStrength" Margin="89,327,123,210" Width="22" Height="18" Text="+2" FocusItem="SavingStrength"/>
+			<local:GroupBackground Height="20" Margin="68,349,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingDexterityProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingDexterity, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -172,9 +175,9 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingDexterityProficient" Margin="68,324,0,0" IsEnabled="False" FocusItem="SavingDexterity"/>
-			<local:StatBox x:Name="statSavingDexterity" Margin="90,322,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingDexterity"/>
-			<local:GroupBackground Height="20" Margin="68,343,0,0" Width="133" 
+			<local:RoundCheck x:Name="statSavingDexterityProficient" Margin="68,352,0,0" IsEnabled="False" FocusItem="SavingDexterity"/>
+			<local:StatBox x:Name="statSavingDexterity" Margin="89,350,123,187" Width="22" Height="18" Text="+2" FocusItem="SavingDexterity"/>
+			<local:GroupBackground Height="20" Margin="68,371,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingConstitutionProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingConstitution, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -185,9 +188,9 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingConstitutionProficient" Margin="68,346,0,0" IsEnabled="False" FocusItem="SavingConstitution"/>
-			<local:StatBox x:Name="statSavingConstitution" Margin="90,345,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingConstitution"/>
-			<local:GroupBackground Height="20" Margin="68,366,0,0" Width="133" 
+			<local:RoundCheck x:Name="statSavingConstitutionProficient" Margin="68,374,0,0" IsEnabled="False" FocusItem="SavingConstitution"/>
+			<local:StatBox x:Name="statSavingConstitution" Margin="89,372,123,165" Width="22" Height="18" Text="+2" FocusItem="SavingConstitution"/>
+			<local:GroupBackground Height="20" Margin="68,394,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingIntelligenceProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingIntelligence, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -198,9 +201,9 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingIntelligenceProficient" Margin="68,368,0,0" IsEnabled="False" FocusItem="SavingIntelligence"/>
-			<local:StatBox x:Name="statSavingIntelligence" Margin="90,367,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingIntelligence"/>
-			<local:GroupBackground Height="20" Margin="68,388,0,0" Width="133" 
+			<local:RoundCheck x:Name="statSavingIntelligenceProficient" Margin="68,396,0,0" IsEnabled="False" FocusItem="SavingIntelligence"/>
+			<local:StatBox x:Name="statSavingIntelligence" Margin="89,395,123,142" Width="22" Height="18" Text="+2" FocusItem="SavingIntelligence"/>
+			<local:GroupBackground Height="20" Margin="68,416,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingWisdomProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingWisdom, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -211,9 +214,9 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingWisdomProficient" Margin="68,391,0,0" IsEnabled="False" FocusItem="SavingWisdom"/>
-			<local:StatBox x:Name="statSavingWisdom" Margin="90,390,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingWisdom"/>
-			<local:GroupBackground Height="20" Margin="68,411,0,0" Width="133" 
+			<local:RoundCheck x:Name="statSavingWisdomProficient" Margin="68,418,0,0" IsEnabled="False" FocusItem="SavingWisdom"/>
+			<local:StatBox x:Name="statSavingWisdom" Margin="89,418,123,119" Width="22" Height="18" Text="+2" FocusItem="SavingWisdom"/>
+			<local:GroupBackground Height="20" Margin="68,439,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingCharismaProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingCharisma, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -224,11 +227,11 @@
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
-			<local:RoundCheck x:Name="statSavingCharismaProficient" Margin="68,413,0,0" IsEnabled="False" FocusItem="SavingCharisma"/>
-			<local:StatBox x:Name="statSavingCharisma" Margin="90,412,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingCharisma"/>
+			<local:RoundCheck x:Name="statSavingCharismaProficient" Margin="68,440,0,0" IsEnabled="False" FocusItem="SavingCharisma"/>
+			<local:StatBox x:Name="statSavingCharisma" Margin="89,440,123,97" Width="22" Height="18" Text="+2" FocusItem="SavingCharisma"/>
 		</local:GridSheet>
 
-		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" >
+		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" Visibility="Hidden">
 			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="Fill" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}">

@@ -50,7 +50,7 @@ class Character extends Creature {
 	forceShowSpell: boolean;
 	Hidden: boolean;
 	ActiveSpell: ActiveSpellData;
-	level: number;
+	Level: number;
 	headshotIndex: number;
 	hueShift: number;
 	dieBackColor: string;
@@ -66,6 +66,7 @@ class Character extends Creature {
 	ShowingNameplate: boolean;
 	alignmentStr: string;
 	SpellCastingAbilityStr: string;
+	SpellCastingStr: string;
 	SpellSaveDC = 0;
 	SpellAttackBonusStr: string;
 	baseArmorClass: number;
@@ -149,6 +150,7 @@ class Character extends Creature {
 		this.alignmentStr = sourceCharacter.alignmentStr;
 		this.ShowingNameplate = sourceCharacter.ShowingNameplate;
 		this.SpellCastingAbilityStr = sourceCharacter.SpellCastingAbilityStr;
+		this.SpellCastingStr = sourceCharacter.SpellCastingStr;
 		this.SpellSaveDC = sourceCharacter.SpellSaveDC;
 		this.SpellAttackBonusStr = sourceCharacter.SpellAttackBonusStr;
 		this.headshotIndex = sourceCharacter.headshotIndex;
@@ -183,9 +185,10 @@ class Character extends Creature {
 		this.burrowingSpeed = sourceCharacter.burrowingSpeed;
 		this.swimmingSpeed = sourceCharacter.swimmingSpeed;
 		this.inspiration = sourceCharacter.inspiration;
-		this.level = sourceCharacter.level;
+		this.Level = sourceCharacter.Level;
+		//console.log('this.Level: ' + this.Level);
 		this.load = sourceCharacter.load;
-		this.maxHitPoints = sourceCharacter.maxHitPoints;
+		//console.log('this.maxHitPoints: ' + this.maxHitPoints);
 		this.name = sourceCharacter.name;
 		this.forceShowSpell = sourceCharacter.forceShowSpell;
 		this.Hidden = sourceCharacter.Hidden;
@@ -197,6 +200,8 @@ class Character extends Creature {
 		this.savingThrowProficiency = sourceCharacter.savingThrowProficiency;
 		this.doubleProficiency = sourceCharacter.doubleProficiency;
 		this.raceClass = sourceCharacter.raceClass;
+		this.maxHitPoints = sourceCharacter.maxHitPoints;
+		this.SpellSaveDC = sourceCharacter.SpellSaveDC;
 		this.race = sourceCharacter.race;
 		this.remainingHitDice = sourceCharacter.remainingHitDice;
 		this.rollInitiative = sourceCharacter.rollInitiative;
@@ -730,7 +735,7 @@ class Character extends Creature {
 		elf.baseArmorClass = 12;
 		Character.generateRandomAttributes(elf);
 		elf.remainingHitDice = '1 d10';
-		elf.level = 1;
+		elf.Level = 1;
 		elf.inspiration = "";
 
 		elf.initiative = 2;
@@ -772,7 +777,7 @@ class Character extends Creature {
 		barbarian.baseArmorClass = 14;
 		Character.generateRandomAttributes(barbarian);
 		barbarian.remainingHitDice = '1 d10';
-		barbarian.level = 1;
+		barbarian.Level = 1;
 		barbarian.inspiration = "";
 
 		barbarian.initiative = 2;
@@ -801,7 +806,7 @@ class Character extends Creature {
 		druid.baseArmorClass = 10;
 		Character.generateRandomAttributes(druid);
 		druid.remainingHitDice = '1 d8';
-		druid.level = 1;
+		druid.Level = 1;
 		druid.inspiration = "";
 
 		druid.initiative = 2;
@@ -830,7 +835,7 @@ class Character extends Creature {
 		wizard.baseArmorClass = 10;
 		Character.generateRandomAttributes(wizard);
 		wizard.remainingHitDice = '1 d8';
-		wizard.level = 1;
+		wizard.Level = 1;
 		wizard.inspiration = "";
 
 		wizard.initiative = 2;

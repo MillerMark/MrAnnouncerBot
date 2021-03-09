@@ -20,7 +20,6 @@ namespace DndCore
 		public virtual string dieFontColor { get => _dieFontColor; set => _dieFontColor = value; }
 
 		public abstract int GetSpellcastingAbilityModifier();
-		[JsonIgnore]
 		public abstract int Level { get; }
 		public abstract int IntId { get; }
 

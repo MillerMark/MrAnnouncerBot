@@ -4190,7 +4190,7 @@ class DieRoller {
 			}
 		}
 
-		if (inspiration) {
+		if (inspiration && inspiration !== '-') {
 			this.addDieFromStr(this.diceRollData.diceGroup, playerID, inspiration, DieCountsAs.inspiration, this.diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor, this.diceRollData.isMagic);
 		}
 	}

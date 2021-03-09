@@ -10,8 +10,7 @@ namespace DndCore
 	[TabName("Monsters")]
 	public class Monster : Creature
 	{
-		[JsonIgnore]
-		public override int Level => (int)Math.Min(21, Math.Ceiling(challengeRating));
+		public override int Level { get => (int)Math.Min(21, Math.Ceiling(challengeRating)); }
 
 		public override int GetSpellcastingAbilityModifier()
 		{

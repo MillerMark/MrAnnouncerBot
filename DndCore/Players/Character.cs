@@ -194,7 +194,19 @@ namespace DndCore
 
 		[JsonIgnore]
 		public int _attackNum = 0;
-		public string inspiration = string.Empty;
+		public string _inspiration = string.Empty;
+		
+		public string inspiration
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_inspiration))
+					return "-";
+				return _inspiration;
+			}
+			set => _inspiration = value;
+		}
+		
 		public double load = 0;
 		public double proficiencyBonus = 0;
 		public Skills proficientSkills = 0;
@@ -227,6 +239,15 @@ namespace DndCore
 			get
 			{
 				return DndUtils.ToAbilityDisplayString(spellCastingAbility);
+			}
+		}
+
+		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+		public string SpellCastingStr
+		{
+			get
+			{
+				return DndUtils.ToSpellcastingAbilityDisplayString(spellCastingAbility, SpellcastingAbilityModifier);
 			}
 		}
 
@@ -272,6 +293,21 @@ namespace DndCore
 					if (result.Length > 0)
 						result += " / ";
 					result += characterClass.ToString();
+				}
+				return result;
+			}
+		}
+
+		public string ClassStr
+		{
+			get
+			{
+				string result = string.Empty;
+				foreach (CharacterClass characterClass in Classes)
+				{
+					if (result.Length > 0)
+						result += " / ";
+					result += characterClass.Name;
 				}
 				return result;
 			}
@@ -557,6 +593,7 @@ namespace DndCore
 		[JsonIgnore]
 		public int leftMostPriority { get; set; }
 
+		
 		public override int Level
 		{
 			get
@@ -585,7 +622,8 @@ namespace DndCore
 		{
 			get
 			{
-				return $"{race} {ClassLevelStr}";
+				//return $"{race} {ClassLevelStr}";
+				return $"{race} {ClassStr}";
 			}
 		}
 
@@ -2134,7 +2172,7 @@ namespace DndCore
 			SetField("goldPieces", ref goldPieces, character.goldPieces);
 			SetField("hitPoints", ref hitPoints, character.HitPoints);
 			SetField("initiative", ref initiative, character.initiative);
-			SetField("inspiration", ref inspiration, character.inspiration);
+			SetField("inspiration", ref _inspiration, character.inspiration);
 			SetField("load", ref load, character.load);
 			SetField("name", ref base.name, character.name);
 			SetField("proficiencyBonus", ref proficiencyBonus, character.proficiencyBonus);
@@ -2487,6 +2525,12 @@ namespace DndCore
 		{
 			return obj is Character character &&
 						 spellCastingAbility == character.spellCastingAbility;
+		}
+
+		public string GetResistancesVulnerabilitiesImmunitiesStr()
+		{
+			// TODO: Implement this.
+			return string.Empty;
 		}
 	}
 }

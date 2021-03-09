@@ -106,7 +106,6 @@
 		}
 	}
 
-
 	sendScrollLayerCommand(commandData: string): void {
 		if (commandData === "Close") {
 			this.needImmediateReopen = false;
@@ -142,50 +141,55 @@
 			new HighlightEmitter(emphasisMain[emphasisMain.Alignment], new Vector(225, 130)).setRectangular(189, 24));
 
 
-		const acInitSpeedY: number = 196;
+		const acInitSpeedY = 196;
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.ArmorClass], new Vector(134, acInitSpeedY)).setCircular(28));
+			new HighlightEmitter(emphasisMain[emphasisMain.ArmorClass], new Vector(136, acInitSpeedY)).setCircular(28));
 
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.Initiative], new Vector(203, acInitSpeedY)).setRectangular(51, 51));
+			new HighlightEmitter(emphasisMain[emphasisMain.Initiative], new Vector(210, acInitSpeedY)).setRectangular(51, 51));
 
-		const speedWidth: number = 60;
-		const speedHeight: number = 53;
+		const speedWidth = 65;
+		const speedHeight = 53;
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.Speed], new Vector(273, acInitSpeedY)).setRectangular(speedWidth, speedHeight));
-
-
-		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.HitPoints], new Vector(139, 280)).setRectangular(67, 95));
-
-		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.TempHitPoints], new Vector(139, 280)).setRectangular(67, 95));
-
-		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.DeathSaves], new Vector(241, 277)).setRectangular(111, 90));
+			new HighlightEmitter(emphasisMain[emphasisMain.Speed], new Vector(282, acInitSpeedY)).setRectangular(speedWidth, speedHeight));
 
 
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.HitDice], new Vector(204, 350)).setRectangular(197, 26));
-
-		const profPercepGoldCenterY: number = 413;
-		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.ProficiencyBonus], new Vector(123, profPercepGoldCenterY)).setCircular(31));
-
+			new HighlightEmitter(emphasisMain[emphasisMain.HitPoints], new Vector(138, 348)).setRectangular(67, 95));
 
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
-			new HighlightEmitter(emphasisMain[emphasisMain.Perception], new Vector(201, profPercepGoldCenterY)).setRectangular(77, 53));
+			new HighlightEmitter(emphasisMain[emphasisMain.TempHitPoints], new Vector(138, 348)).setRectangular(67, 95));
+
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.DeathSaves], new Vector(256, 350)).setRectangular(112, 91));
+
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.SpellcastingAbilityModifier], new Vector(276, 280)).setRectangular(110, 24));
+
+		const profPercepGoldCenterY = 452;
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.ProficiencyBonus], new Vector(122, profPercepGoldCenterY)).setCircular(31));
 
 
-		const goldWidth: number = 72;
-		const goldHeight: number = 58;
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.Perception], new Vector(200, profPercepGoldCenterY)).setRectangular(77, 53));
+
+
+		const goldWidth = 72;
+		const goldHeight = 58;
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
 			new HighlightEmitter(emphasisMain[emphasisMain.GoldPieces], new Vector(288, profPercepGoldCenterY)).setRectangular(goldWidth, goldHeight));
+
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.ResistancesVulnerabilitiesImmunities], new Vector(208, 244)).setRectangular(207, 25));
+
+		this.highlightEmitterPages[ScrollPage.main].emitters.push(
+			new HighlightEmitter(emphasisMain[emphasisMain.MaxHitPoints], new Vector(148, 279)).setRectangular(78, 25));
 
 		const abilityDistribution: EmitterDistribution = new EmitterDistribution(45, 207, 54, 84, 91);
 		this.addDistribution(ScrollPage.main, emphasisMain.Strength, emphasisMain.Charisma, abilityDistribution);
 
-		const savingThrowDistribution: EmitterDistribution = new EmitterDistribution(210, 481, 211, 36, 35);
+		const savingThrowDistribution: EmitterDistribution = new EmitterDistribution(210, 525, 211, 36, 35);
 		this.addDistribution(ScrollPage.main, emphasisMain.SavingStrength, emphasisMain.SavingCharisma, savingThrowDistribution);
 
 
@@ -246,9 +250,9 @@
 	}
 
 	private addDistribution(page: ScrollPage, first: number, last: number, dist: EmitterDistribution) {
-		let x: number = dist.centerX;
-		let y: number = dist.centerY;
-		for (var i = first; i <= last; i++) {
+		let x: number = dist.firstCenterX;
+		let y: number = dist.firstCenterY;
+		for (let i = first; i <= last; i++) {
 			this.addRectangularHighlight(page, i, x, y, dist.width, dist.height);
 			if (dist.orientation === DistributionOrientation.Vertical)
 				y += dist.spread;
@@ -566,7 +570,7 @@
 		this.scrollBacks = new Sprites("Scroll/Backs/Back", 5, this.framerateMs, AnimationStyle.Static);
 		const totalKnownPlayers = 28;  //+++ Important - when adding new player headshots, increment totalKnownPlayers!
 		this.playerHeadshots = new Sprites("Scroll/Players/Player", totalKnownPlayers, this.framerateMs, AnimationStyle.Static);
-		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
+		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 30, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisEquipment = new Sprites("Scroll/Emphasis/Equipment/EmphasisEquipment", 5, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSpells = new Sprites("Scroll/Emphasis/Spells/EmphasisSpells", 4, this.framerateMs, AnimationStyle.Static);

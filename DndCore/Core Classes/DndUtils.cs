@@ -301,6 +301,35 @@ namespace DndCore
 			}
 			return "?";
 		}
+
+		public static string GetModStr(int modifier)
+		{
+			if (modifier <= 0)
+				return modifier.ToString();
+			return $"+{modifier}";
+		}
+
+		public static string ToSpellcastingAbilityDisplayString(Ability ability, int modifier)
+		{
+			string modifierStr = GetModStr(modifier);
+			switch (ability)
+			{
+				case Ability.strength:
+					return $"Str ({modifierStr})";
+				case Ability.dexterity:
+					return $"Dex ({modifierStr})";
+				case Ability.constitution:
+					return $"Con ({modifierStr})";
+				case Ability.intelligence:
+					return $"Int ({modifierStr})";
+				case Ability.wisdom:
+					return $"Wis ({modifierStr})";
+				case Ability.charisma:
+					return $"Chr ({modifierStr})";
+			}
+			return modifierStr;
+		}
+
 		public static string ToArticlePlusAbilityDisplayString(Ability ability)
 		{
 			if (ability == Ability.intelligence)

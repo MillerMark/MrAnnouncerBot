@@ -1,6 +1,6 @@
 ﻿class CharacterStat {
   constructor(public name: string, public x: number, public y: number,
-    public size: number, public textAlign: TextAlign = TextAlign.center, public textDisplay: TextDisplay = TextDisplay.normal) {
+    public fontSize: number, public maxWidth: number, public textAlign: TextAlign = TextAlign.center, public textDisplay: TextDisplay = TextDisplay.normal) {
 
   }
 
@@ -13,7 +13,7 @@
       return;
     }
 
-    let value: number | string | boolean = activeCharacter.getPropValue(this.name);
+    const value: number | string | boolean = activeCharacter.getPropValue(this.name);
 
     if (value === undefined) {
       return;
@@ -26,12 +26,12 @@
 
     this.setAlignment(context);
 
-    let fontSize: number = this.getFontSize();
+    const fontSize: number = this.getFontSize();
 
     context.font = fontSize + 'px Calibri';
     context.textBaseline = 'middle';
 
-    var valueStr: string = this.applyStyleGetValueStr(value, context, fontSize);
+    const valueStr: string = this.applyStyleGetValueStr(value, context, fontSize);
 
     if (valueStr !== null) {
       context.fillText(valueStr, this.x, this.y);
@@ -39,7 +39,7 @@
   }
 
   private applyStyleGetValueStr(value: string | number, context: CanvasRenderingContext2D, fontSize: number): string {
-    var valueStr: string;
+    let valueStr: string;
     if (this.textDisplay === TextDisplay.plusMinus) {
       if (value > 0) {
         valueStr = '+' + value.toString();
@@ -55,18 +55,30 @@
       }
     }
     else {
+      if (this.textDisplay === TextDisplay.deemphasizeZero) {
+        valueStr = value as string;
+        if (valueStr === '0')
+          context.fillStyle = '#ad8557';
+      }
+
       if (typeof value === "number") {
         valueStr = value.toLocaleString();
       }
       else {
         valueStr = value.toString();
       }
-      context.fillStyle = '#3a1f0c';
-      if (this.textDisplay === TextDisplay.autoSize) {
-        while (context.measureText(valueStr).width > this.size && fontSize > 7) {
-          fontSize--;
-          context.font = fontSize + 'px Calibri';
-        }
+      if (value === '-') {
+        context.fillStyle = '#895e45';
+      }
+      else {
+        context.fillStyle = '#3a1f0c';
+      }
+      if (this.textDisplay === TextDisplay.autoSize || this.textDisplay === TextDisplay.deemphasizeZero) {
+        if (this.maxWidth > 0)
+          while (context.measureText(valueStr).width > this.maxWidth && fontSize > 7) {
+            fontSize--;
+            context.font = fontSize + 'px Calibri';
+          }
       }
     }
     return valueStr;
@@ -75,10 +87,12 @@
   private getFontSize() {
     let fontSize: number;
     if (this.textDisplay === TextDisplay.autoSize) {
-      fontSize = 32;
+      fontSize = Math.min(this.fontSize * 2, 32);
+      if (fontSize === 0)
+        fontSize = 32;
     }
     else {
-      fontSize = this.size * 2; // Font sizes are taken from PowerPoint, which has a world that is 960 wide. We're on a 1920 screen, so we need to multiply by two.
+      fontSize = this.fontSize * 2; // Font sizes are taken from PowerPoint, which has a world that is 960 wide. We're on a 1920 screen, so we need to multiply by two.
     }
     return fontSize;
   }
@@ -95,7 +109,7 @@
   private fillCircle(value: boolean, context: CanvasRenderingContext2D) {
     if (value) {
       context.beginPath();
-      context.arc(this.x, this.y, this.size, 0, MathEx.TWO_PI);
+      context.arc(this.x, this.y, this.fontSize, 0, MathEx.TWO_PI);
       context.fillStyle = '#714b1f';
       context.fill();
     }

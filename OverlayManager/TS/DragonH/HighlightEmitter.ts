@@ -1,6 +1,6 @@
 ﻿class EmitterDistribution {
 	orientation: DistributionOrientation;
-	constructor(public centerX: number, public centerY: number, public width: number, public height: number, public spread: number) {
+	constructor(public firstCenterX: number, public firstCenterY: number, public width: number, public height: number, public spread: number) {
 		this.orientation = DistributionOrientation.Vertical;
 	}
 }
