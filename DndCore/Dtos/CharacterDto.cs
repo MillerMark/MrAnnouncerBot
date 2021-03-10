@@ -20,6 +20,7 @@ namespace DndCore
 		public string level1 { get; set; }
 		public string class2 { get; set; }
 		public string subclass2 { get; set; }
+		public string resistancesVulnerabilitiesImmunitiesStr { get; set; }
 		public string level2 { get; set; }
 		public int playerId { get; set; }
 		public int hitPoints { get; set; }

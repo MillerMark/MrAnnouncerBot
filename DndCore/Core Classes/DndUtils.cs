@@ -897,5 +897,9 @@ namespace DndCore
 			}
 			return string.Empty;
 		}
+		public static ScrollPage ToScrollPage(string scrollPage)
+		{
+			return GetElement<ScrollPage>(scrollPage);
+		}
 	}
 }

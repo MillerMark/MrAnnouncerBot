@@ -17,6 +17,9 @@ namespace DndCore
 	{
 		public override int IntId { get => playerID; }
 
+		[Column]
+		public string resistancesVulnerabilitiesImmunitiesStr { get; set; }
+
 		// HACK: Don't be mad at this name property storing to the ancestor's field of the exact same name - we are doing this wrapper to support both serialization to Google Sheets as well as JSON to SignalR serialization to legacy TypeScript code.
 		[Indexer]
 		public new string name { get => base.name; set => base.name = value; }
@@ -936,6 +939,7 @@ namespace DndCore
 			character.himHer = characterDto.himHer;
 			character.HeShe = characterDto.heShe.InitialCap();
 			character.HisHer = characterDto.hisHer.InitialCap();
+			character.resistancesVulnerabilitiesImmunitiesStr = characterDto.resistancesVulnerabilitiesImmunitiesStr;
 			string class1 = characterDto.class1;
 			int level1 = MathUtils.GetInt(characterDto.level1);
 			SubClass subClass1 = DndUtils.ToSubClass(characterDto.subclass1);
@@ -2530,7 +2534,7 @@ namespace DndCore
 		public string GetResistancesVulnerabilitiesImmunitiesStr()
 		{
 			// TODO: Implement this.
-			return string.Empty;
+			return resistancesVulnerabilitiesImmunitiesStr;
 		}
 	}
 }

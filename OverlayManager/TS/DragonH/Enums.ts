@@ -322,10 +322,11 @@ enum TextAlign {
 }
 
 enum TextDisplay {
-  normal,
-  plusMinus,
-  autoSize,
-  deemphasizeZero
+  normal = 0,
+  plusMinus = 1,
+  autoSize = 2,
+  deemphasizeZero = 4,
+  eraseBackground = 8
 }
 
 enum ScrollPage {

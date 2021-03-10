@@ -5976,7 +5976,7 @@ namespace DHDM
 
 		private void ChangeScrollPage(int playerId, ScrollPage page)
 		{
-			if (activePage != page)
+//			if (activePage != page)
 			{
 				activePage = page;
 				HubtasticBaseStation.PlayerDataChanged(playerId, activePage, string.Empty);
@@ -10717,5 +10717,9 @@ namespace DHDM
 			SelectInGameCreature("Next");
 		}
 
+		public void ChangeScrollPage(string scrollPage)
+		{
+			ChangeScrollPage(ActivePlayerId, DndUtils.ToScrollPage(scrollPage));
+		}
 	}
 }

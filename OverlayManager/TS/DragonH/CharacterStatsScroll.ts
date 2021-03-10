@@ -620,13 +620,13 @@
 		const spellName: string = spellDataItem.Name;
 		const saveTop: number = y;
 
-		const middleY: number = y + this.spellNameFontHeight / 2;
+		const middleY: number = y + CharacterStatsScroll.spellNameFontHeight / 2;
 		const itemIsOnScreen = middleY > topData && middleY < bottomData;
 
 		if (itemIsOnScreen)
 			this.drawSpellGroupItem(context, x + indent, y, spellName);
 
-		y += this.spellNameFontHeight
+		y += CharacterStatsScroll.spellNameFontHeight;
 
 		const spellNameWidth: number = context.measureText(spellName).width;
 		let spellNameRight: number = x + indent + spellNameWidth;
@@ -683,25 +683,30 @@
 		return y;
 	}
 
+	static readonly belowTitleSpacing: number = 5;
+	static readonly interGroupSpacing: number = 12;
+
 	drawSpellGroup(now: number, context: CanvasRenderingContext2D, item: SpellGroup, x: number, y: number, topData: number, bottomData: number): number {
-		y += this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
+		this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
+		y += CharacterStatsScroll.groupTitleHeight;
 
 		this.drawSpellBackground(context, x, y, item.SpellDataItems.length, topData, bottomData);
 
-		const belowTitleSpacing = 5;
-		y += belowTitleSpacing;
+		y += CharacterStatsScroll.belowTitleSpacing;
 
-		item.SpellDataItems.forEach(function (spellDataItem: SpellDataItem) {
+		item.SpellDataItems.forEach((spellDataItem: SpellDataItem) => {
 			y = this.drawSpellItem(now, context, spellDataItem, x, y, topData, bottomData)
-		}, this);
+		});
 
-		const interGroupSpacing = 12;
-		y += interGroupSpacing;
+		y += CharacterStatsScroll.interGroupSpacing;
+
 		return y;
 	}
 
 	static readonly spellDataLeft: number = 30;
+	
 	static readonly spellDataTop: number = 179;
+	static readonly spellDataBottom: number = 833;
 
 	rightMostTextX: number;
 	calloutPointX: number;
@@ -719,9 +724,10 @@
 
 		this.activeSpellData = activeCharacter.ActiveSpell;
 
-		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
+		activeCharacter.SpellData.forEach((item: SpellGroup) => {
+			if (item.pageNum === activeCharacter.activeSpellPageIndex)
 			y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
-		}, this);
+		});
 
 		const minTop: number = Math.max(InGameCreatureManager.NpcScrollHeight, this.calloutPointY) + SpellBook.spellHeaderHeight;
 
@@ -735,14 +741,15 @@
 			this.spellBook.draw(nowSec, context, 600, minTop, activeCharacter);
 	}
 
-	readonly spellNameFontHeight: number = 18;
+
+	static readonly spellNameFontHeight: number = 18;
 	readonly obsRectTextYOffset: number = 4;  // OBS rectangles seem to draw 4px closer to the top of the screen relative to text than in Chrome.
 
 	drawActiveSpellIndicator(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData): number {
 		let width = 0;
 		context.fillStyle = '#aa0000';
 		context.beginPath();
-		const centerY: number = y + this.spellNameFontHeight / 2 + this.getBrowserGraphicsYOffset() / 2;
+		const centerY: number = y + CharacterStatsScroll.spellNameFontHeight / 2 + this.getBrowserGraphicsYOffset() / 2;
 		const indicatorRadius = 4;
 		context.arc(x, centerY, indicatorRadius, 0, 2 * Math.PI);
 		width = 2 * indicatorRadius;
@@ -772,7 +779,7 @@
 			browserAdjustY = this.obsRectTextYOffset;
 
 		let top: number = y + browserAdjustY;
-		let height: number = numSpells * this.spellNameFontHeight + this.spellNameFontHeight / 2;
+		let height: number = numSpells * CharacterStatsScroll.spellNameFontHeight + CharacterStatsScroll.spellNameFontHeight / 2;
 		let bottom: number = top + height;
 
 		if (top < topData)
@@ -790,31 +797,31 @@
 	}
 
 	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string): void {
-		context.font = this.spellNameFontHeight + 'px Calibri';
+		context.font = CharacterStatsScroll.spellNameFontHeight + 'px Calibri';
 		context.fillStyle = '#3a1f0c';
 		const maxWidth: number = 305 - x;
-		context.fillText(spellName, x, y, maxWidth);
+		context.fillText(spellName, x, y + this.getBrowserGraphicsYOffset(), maxWidth);
 	}
 
-	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): number {
-		const groupTitleHeight = 22;
+	static readonly groupTitleHeight: number = 22;
 
-		const middleY: number = y + groupTitleHeight / 2;
+	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): void {
+		const middleY: number = y + CharacterStatsScroll.groupTitleHeight / 2;
 		const textIsOnScreen = middleY > topData && middleY < bottomData;
 
 		if (textIsOnScreen) {
 			context.textAlign = 'left';
 			context.textBaseline = 'top';
-			context.font = groupTitleHeight + 'px Calibri';
+			context.font = CharacterStatsScroll.groupTitleHeight + 'px Calibri';
 			context.fillStyle = '#3a1f0c';
-			const titleWidth: number = context.measureText(spellGroup.Name).width;
+			//const spellTitle = `${spellGroup.Name} (${spellGroup.pageNum})`;
+			const spellTitle = `${spellGroup.Name}`;
+			const titleWidth: number = context.measureText(spellTitle).width;
 			const maxWidth: number = 305 - x;
-			context.fillText(spellGroup.Name, x, y, maxWidth);
+			context.fillText(spellTitle, x, y + this.getBrowserGraphicsYOffset(), maxWidth);
 			const chargeBoxTopMargin = 1;
 			this.drawChargeBoxes(context, x + titleWidth, y + chargeBoxTopMargin, spellGroup.TotalCharges, spellGroup.ChargesUsed);
 		}
-
-		return groupTitleHeight;
 	}
 
 	drawChargeBoxes(context: CanvasRenderingContext2D, x: number, y: number, totalCharges: number, chargesUsed: number): void {
@@ -890,7 +897,19 @@
 				this.open(performance.now());
 			}
 			else {
-				// console.log('new page is not valid!');
+				console.log('new page is not valid!');
+			}
+		}
+		else if (this.page === newPageId && this.page === ScrollPage.spells) {
+			if (this.activeCharacter) {
+				if (this.activeCharacter.totalSpellPages > 1) {
+					console.log(`cycling spell page...`);
+					this.activeCharacter.activeSpellPageIndex++;
+					if (this.activeCharacter.activeSpellPageIndex >= this.activeCharacter.totalSpellPages)
+						this.activeCharacter.activeSpellPageIndex = 0;
+				}
+				console.log('this.activeCharacter.totalSpellPages: ' + this.activeCharacter.totalSpellPages);
+				console.log('this.activeCharacter.activeSpellPageNum: ' + this.activeCharacter.activeSpellPageIndex);
 			}
 		}
 		else {
@@ -929,11 +948,33 @@
 		const character: Character = this.getCharacter(sentChar.playerID);
 		if (character !== null) {
 			character.copyAttributesFrom(sentChar);
-			if (!character.ActiveSpell)
+			if (character.ActiveSpell) {
+				character.activeSpellPageIndex = this.getSpellPageForSpell(character);
+			}
+			else {
 				this.spellBook.lastSpellName = '';
 		}
 
+		}
+
 		return character;
+	}
+
+	getSpellPageForSpell(character: Character): number {
+		//console.log(character.SpellData);
+
+		for (let i = 0; i < character.SpellData.length; i++) {
+			const spellGroup: SpellGroup = character.SpellData[i];
+			for (let j = 0; j < spellGroup.SpellDataItems.length; j++) {
+				const spellItem: SpellDataItem = spellGroup.SpellDataItems[j];
+				if (spellItem.Name === character.ActiveSpell.name) {
+					//console.log(`Found spell!!!`);
+					return spellGroup.pageNum;
+				}
+			}
+		}
+		//console.log(`Spell name not found!`);
+		return 0;
 	}
 
 	readonly fadeTime: number = 300;

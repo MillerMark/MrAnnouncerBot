@@ -142,6 +142,15 @@ namespace Streamloots
 				{
 					System.Diagnostics.Debugger.Break();
 					Console.WriteLine(ex.ToString());
+
+					webRequest = WebRequest.Create(string.Format("https://widgets.streamloots.com/alerts/{0}/media-stream", streamlootsID.GetStr()));
+					((HttpWebRequest)webRequest).AllowReadStreamBuffering = false;
+					response = webRequest.GetResponse();
+					responseStream = response.GetResponseStream();
+
+					encoder = new UTF8Encoding();
+					cardStr = string.Empty;
+					buffer = new byte[100000];
 				}
 			}
 		}

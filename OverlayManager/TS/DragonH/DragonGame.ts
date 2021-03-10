@@ -429,7 +429,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 		let timeOffset = 0;
 		let numPlusses: number = Math.round((healthGain + 4) / 5); // More health == more plusses!
-		const maxPlusses = 10;
+		const maxPlusses = 5;
 		if (numPlusses > maxPlusses)
 			numPlusses = maxPlusses;
 		for (let i = 0; i < numPlusses; i++) {
@@ -438,6 +438,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			timeOffset += fullSpinTime / 6 + fullSpinTime / 30;  // Each plus is *about* 1/6 of a full spin (plus a little more) behind the other.
 		}
 	}
+
+	static readonly FontHueHealth: number = 220; // 283;
+	static readonly FontHueTempHp: number = 330; // 214;
 
 	private launchPlus(playerId: number, playerIndex: number, isTempHitPoints: boolean, timeOffset: number) {
 		let humanoidSizeScaleFactor = 1;
@@ -451,11 +454,12 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		}
 		const x: number = this.getPlayerX(playerIndex);
 		const center: Vector = new Vector(x, 1000);
-		let hueShift = 220;
-		if (isTempHitPoints)
-			hueShift = 330;
 
-		hueShift += Random.plusMinus(30);  // this.getHueShift(playerId)
+		let hueShift = DragonGame.FontHueHealth;
+		if (isTempHitPoints)
+			hueShift = DragonGame.FontHueTempHp;
+
+		hueShift += Random.plusMinus(25);  // this.getHueShift(playerId)
 
 		const saturation = 100;
 		const brightness = 100;

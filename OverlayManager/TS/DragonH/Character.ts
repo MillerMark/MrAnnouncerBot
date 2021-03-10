@@ -11,7 +11,7 @@ class SpellDataItem {
 	public IsConcentratingNow: boolean;
 	public FromChargedItem: boolean;
 	constructor() {
-		
+
 	}
 	static From(spellDataItemDto: any): SpellDataItem {
 		let result: SpellDataItem = new SpellDataItem();
@@ -25,10 +25,11 @@ class SpellDataItem {
 }
 
 class SpellGroup {
-	public Name: string;
-	public TotalCharges: number;
-	public ChargesUsed: number;
-	public SpellDataItems: Array<SpellDataItem>;
+	Name: string;
+	TotalCharges: number;
+	ChargesUsed: number;
+	SpellDataItems: Array<SpellDataItem>;
+	pageNum: number;
 	constructor() {
 
 	}
@@ -47,6 +48,7 @@ class Character extends Creature {
 	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
+	resistancesVulnerabilitiesImmunitiesStr: string;
 	forceShowSpell: boolean;
 	Hidden: boolean;
 	ActiveSpell: ActiveSpellData;
@@ -93,6 +95,7 @@ class Character extends Creature {
 	deathSaveDeath3: boolean;
 	proficientSkills: number;
 	doubleProficiency: number;
+	totalSpellPages = 0;
 
 	tempSavingThrowModStrength = 0;
 	tempSavingThrowModDexterity = 0;
@@ -124,6 +127,7 @@ class Character extends Creature {
 
 	private _firstName: string;
 
+
 	get firstName(): string {
 		if (!this._firstName)
 			this._firstName = this.getFirstName();
@@ -140,6 +144,7 @@ class Character extends Creature {
   */
 
 	playerId: number;
+	activeSpellPageIndex: number;
 
 	copyAttributesFrom(sourceCharacter: any): Character {
 		this.IntId = sourceCharacter.IntId;
@@ -190,6 +195,7 @@ class Character extends Creature {
 		this.load = sourceCharacter.load;
 		//console.log('this.maxHitPoints: ' + this.maxHitPoints);
 		this.name = sourceCharacter.name;
+		this.resistancesVulnerabilitiesImmunitiesStr = sourceCharacter.resistancesVulnerabilitiesImmunitiesStr;
 		this.forceShowSpell = sourceCharacter.forceShowSpell;
 		this.Hidden = sourceCharacter.Hidden;
 		this.ActiveSpell = sourceCharacter.ActiveSpell;
@@ -234,6 +240,7 @@ class Character extends Creature {
 		this.totalHitDice = sourceCharacter.totalHitDice;
 		this.weight = sourceCharacter.weight;
 
+		this.activeSpellPageIndex = 0;
 		return this;
 	}
 
@@ -248,24 +255,42 @@ class Character extends Creature {
 
 	private copySpellDataFrom(sourceCharacter: any) {
 		this.SpellData = [];
-		sourceCharacter.SpellData.forEach(function (spellData) {
-			let spellGroup: SpellGroup = new SpellGroup();
+		let spellPageNum = 0;
+		let yTop = CharacterStatsScroll.spellDataTop;
+		sourceCharacter.SpellData.forEach((spellData) => {
+			const spellGroup: SpellGroup = new SpellGroup();
+
+			const spellGroupHeight: number = CharacterStatsScroll.groupTitleHeight + CharacterStatsScroll.belowTitleSpacing + CharacterStatsScroll.spellNameFontHeight * spellData.SpellDataItems.length;
+
+			yTop += spellGroupHeight;
+			if (yTop < CharacterStatsScroll.spellDataBottom) {
+				yTop += CharacterStatsScroll.interGroupSpacing;
+			}
+			else {
+				yTop = CharacterStatsScroll.spellDataTop;
+				spellPageNum++;
+			}
+
+			spellGroup.pageNum = spellPageNum;
+
 			spellGroup.Name = spellData.Name;
 			spellGroup.ChargesUsed = spellData.ChargesUsed;
 			spellGroup.TotalCharges = spellData.TotalCharges;
 			spellGroup.SpellDataItems = [];
-			spellData.SpellDataItems.forEach(function (item) {
+			spellData.SpellDataItems.forEach((item) => {
 				spellGroup.SpellDataItems.push(SpellDataItem.From(item));
-			}, this);
-			
+			});
+
 			this.SpellData.push(spellGroup);
-		}, this);
+		});
+
+		this.totalSpellPages = spellPageNum + 1;
 	}
 
 	getFirstName(): string {
 		if (!this.name)
 			return "No name";
-		let spaceIndex: number = this.name.indexOf(' ');
+		const spaceIndex: number = this.name.indexOf(' ');
 		if (spaceIndex < 0)
 			return this.name;
 		return this.name.substring(0, spaceIndex);

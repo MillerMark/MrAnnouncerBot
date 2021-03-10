@@ -54,6 +54,7 @@ namespace DHDM
 			Commands.Add(new ChangeWealthCommand());
 			Commands.Add(new InstantRollCommand());
 			Commands.Add(new DigitCommand());
+			Commands.Add(new ScrollPageCommand());
 			Commands.Add(new StampedeCommand());
 			Commands.Add(new ApplyCommand());
 			Commands.Add(new TargetMoveCommands());

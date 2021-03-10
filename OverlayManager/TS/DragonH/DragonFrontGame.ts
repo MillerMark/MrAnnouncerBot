@@ -1374,10 +1374,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	static readonly FontColorDamage: string = '#ca0000';
 	static readonly FontOutlineDamage: string = '#000000';
-	static readonly FontColorHealth: string = '#5681d4';
+
+	static readonly FontColorHealth: string = '#5681d4'; // '#bb57d3';
 	static readonly FontOutlineHealth: string = '#ffffff';
-	static readonly FontColorTempHp: string = '#d4569d';
-	static readonly FontColorTempHpOnNameplates: string = '#e6a0c8';
+	static readonly FontColorTempHp: string = '#d4569d'; // '#0379bf';
+	static readonly FontColorTempHpOnNameplates: string = '#e6a0c8'; // '#57BEFB';
 	static readonly FontOutlineTempHp: string = '#ffffff';
 	static readonly FontColorGold: string = '#fedf80';
 	static readonly FontOutlineGold: string = '#5f4527';
@@ -1528,7 +1529,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		else
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 		const centerX: number = this.getPlayerX(playerIndex);
-		const hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
+		const hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints && player.tempHitPoints === 0;
 		let hpWidth: number = context.measureText(hpStr).width;
 		const nameWidth: number = context.measureText(playerName).width;
 		let nameHpMargin = 25;

@@ -80,5 +80,6 @@ namespace DHDM
 		void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "");
 		void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid);
 		void StampedeNow();
+		void ChangeScrollPage(string scrollPage);
 	}
 }

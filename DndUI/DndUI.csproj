@@ -80,7 +80,6 @@
     <Compile Include="User Controls\CharacterSheets.xaml.cs">
       <DependentUpon>CharacterSheets.xaml</DependentUpon>
     </Compile>
-    <Compile Include="User Controls\ScrollPage.cs" />
     <Compile Include="Event Args\SkillCheckEventArgs.cs" />
     <Compile Include="User Controls\Support\AnimationSprites.cs" />
     <Compile Include="User Controls\AttackBuilder.xaml.cs">

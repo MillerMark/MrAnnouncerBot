@@ -1,6 +1,19 @@
 ﻿ //` ![](45E77D94A1CD4CD6C4058A46BB98799C.png)
 
 class HueSatLight {
+
+  // blendAmount is a number between 0 and 1
+  static blend(hsl1: HueSatLight, hsl2: HueSatLight, blendAmount: number): HueSatLight {
+    const [r1, g1, b1] = hsl1.toRgb();
+    const [r2, g2, b2] = hsl2.toRgb();
+
+    const red: number = r1 + (r2 - r1) * blendAmount;
+    const green: number = g1 + (g2 - g1) * blendAmount;
+    const blue: number = b1 + (b2 - b1) * blendAmount;
+
+    return HueSatLight.fromRgb(red, green, blue);
+  }
+
   // hue, saturation, and light are all between 0 and 1.
   constructor(public hue: number, public saturation: number, public light: number) {
 
@@ -74,11 +87,7 @@ class HueSatLight {
     return new HueSatLight(hsl.hue, hsl.saturation, hsl.light);
   }
 
-  static fromRGB(red: number, green: number, blue: number): HueSatLight {
-    red /= 255;
-    green /= 255;
-    blue /= 255;
-
+  static fromRgb(red: number, green: number, blue: number): HueSatLight {
     const max = Math.max(red, green, blue);
     const min = Math.min(red, green, blue);
     const sum = max + min;
@@ -114,6 +123,13 @@ class HueSatLight {
     return new HueSatLight(inbounds(hue), inbounds(sat), inbounds(light));
   }
 
+  static fromRgbBytes(red: number, green: number, blue: number): HueSatLight {
+    red /= 255;
+    green /= 255;
+    blue /= 255;
+    return this.fromRgb(red, green, blue);
+  }
+
 	static fromHex(hex: string) {
     // Expand shorthand form (e.g. "08f") to full form (e.g. "0088FF")
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -130,6 +146,6 @@ class HueSatLight {
     let green = parseInt(result[2], 16);
     let blue = parseInt(result[3], 16);
 
-    return HueSatLight.fromRGB(red, green, blue);
+    return HueSatLight.fromRgbBytes(red, green, blue);
   }
 }
