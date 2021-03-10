@@ -180,6 +180,9 @@ namespace GoogleHelper
 					case "System.Decimal":
 						property.SetValue(instance, default(decimal));
 						break;
+					case "System.Double":
+						property.SetValue(instance, default(double));
+						break;
 					default:
 						if (property.PropertyType.BaseType.FullName == "System.Enum")
 							property.SetValue(instance, 0);

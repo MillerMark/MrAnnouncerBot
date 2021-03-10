@@ -6145,6 +6145,7 @@ namespace DHDM
 		private void LoadEverything()
 		{
 			AllKnownCards.Invalidate();
+			AllDndItems.Invalidate();
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
 			AllViewers.Invalidate();

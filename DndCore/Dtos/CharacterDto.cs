@@ -23,6 +23,7 @@ namespace DndCore
 		public string resistancesVulnerabilitiesImmunitiesStr { get; set; }
 		public string level2 { get; set; }
 		public int playerId { get; set; }
+		public string items { get; set; }
 		public int hitPoints { get; set; }
 		public int maxHitPoints { get; set; }
 		public int baseArmorClass { get; set; }

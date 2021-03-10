@@ -11,11 +11,16 @@ using GoogleHelper;
 
 namespace DndCore
 {
+
 	[SheetName("DnD")]
 	[TabName("Players")]
 	public class Character : Creature
 	{
 		public override int IntId { get => playerID; }
+
+		[JsonIgnore]
+		List<CarriedItem> CarriedItems = new List<CarriedItem>();
+
 
 		[Column]
 		public string resistancesVulnerabilitiesImmunitiesStr { get; set; }
@@ -980,6 +985,7 @@ namespace DndCore
 			character.headshotIndex = characterDto.headshotIndex;
 			character.alignmentStr = characterDto.alignment;
 			character.AddWeaponsFrom(characterDto.weapons);
+			character.AddItemsFrom(characterDto.items);
 			character.AddAmmunitionFrom(characterDto.ammunition);
 			character.AddSpellsFrom(characterDto.spells);
 			character.weaponProficiency = DndUtils.ToWeapon(characterDto.weaponProficiency);
@@ -1141,15 +1147,35 @@ namespace DndCore
 			return carriedWeapon;
 		}
 
+		public CarriedItem AddItem(string itemStr)
+		{
+			if (string.IsNullOrWhiteSpace(itemStr))
+				return null;
+
+			CarriedItem carriedItem = new CarriedItem();
+
+			DndItem item = AllDndItems.Get(itemStr);
+			carriedItem.Item = item;
+			if (item != null)
+				CarriedItems.Add(carriedItem);
+			return carriedItem;
+		}
+
 		void AddWeaponsFrom(string weaponsStr)
 		{
 			if (string.IsNullOrWhiteSpace(weaponsStr))
 				return;
 			string[] weaponStrs = weaponsStr.Split(';');
-			foreach (var weapon in weaponStrs)
-			{
+			foreach (string weapon in weaponStrs)
 				AddWeapon(weapon.Trim());
-			}
+		}
+		void AddItemsFrom(string itemsStr)
+		{
+			if (string.IsNullOrWhiteSpace(itemsStr))
+				return;
+			string[] itemsStrs = itemsStr.Split(';');
+			foreach (string item in itemsStrs)
+				AddItem(item.Trim());
 		}
 
 		public void ApplyModPermanently(Mod mod, string description)
@@ -2111,8 +2137,28 @@ namespace DndCore
 				knownSpell.TestEvaluateAllExpressions(this);
 			}
 		}
+
+		public List<CarriedItemDto> CarriedEquipment { get; set; }
+
+		void BuildItemList()
+		{
+			CarriedEquipment = new List<CarriedItemDto>();
+			foreach (CarriedItem carriedItem in CarriedItems)
+			{
+				CarriedEquipment.Add(new CarriedItemDto()
+				{
+					Name = carriedItem.Item.Name,
+					Equipped = carriedItem.Equipped,
+					CostValue = carriedItem.Item.CostValue,
+					Weight = carriedItem.Item.Weight
+				}
+				);
+			}
+		}
+
 		public void PrepareForSerialization()
 		{
+			BuildItemList();
 			BuildSpellGroupData();
 		}
 

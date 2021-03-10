@@ -280,8 +280,11 @@
 		if (this._page !== newValue) {
 			this.needImmediateReopen = true;
 
-			if (this.state !== ScrollState.disappearing && this.state !== ScrollState.slamming)
+			if (this.state !== ScrollState.disappearing && this.state !== ScrollState.slamming) {
+				console.log(this._page);
+				console.log(`Closing from set page! State is ${ScrollState[this.state]}!`);
 				this.close();
+			}
 
 			this._page = newValue;
 		}
@@ -605,10 +608,12 @@
 	}
 
 	drawAdditionalData(nowSec: number, context: CanvasRenderingContext2D, activeCharacter: Character, topData: number, bottomData: number): any {
-		if (!activeCharacter.SpellData)
-			return;
-		if (this.isOnPage(ScrollPage.spells)) {
+		if (activeCharacter.SpellData && this.isOnPage(ScrollPage.spells)) {
 			this.drawSpellData(nowSec, activeCharacter, context, topData, bottomData);
+		}
+
+		if (activeCharacter.CarriedEquipment && this.isOnPage(ScrollPage.equipment)) {
+			this.drawEquipment(nowSec, activeCharacter, context, topData, bottomData);
 		}
 	}
 
@@ -704,7 +709,7 @@
 	}
 
 	static readonly spellDataLeft: number = 30;
-	
+
 	static readonly spellDataTop: number = 179;
 	static readonly spellDataBottom: number = 833;
 
@@ -714,10 +719,127 @@
 	drawActiveSpellData = false;
 	activeSpellData: ActiveSpellData;
 
+	static readonly pageNumHeight: number = 14;
+	static readonly spellTitleColor: string = '#644834';
+
+	static readonly equipmentNameLeft: number = 28;
+	static readonly equipmentDistanceToBaseline: number = 16;
+	static readonly equipmentNameTop: number = 209;
+	static readonly equipmentNameWidth: number = 187;
+	static readonly equipmentGpWtWidth: number = 27;
+	static readonly equipmentNameHeaderTop: number = 184;
+	static readonly equipmentBorderLeft: number = 25;
+	static readonly equipmentBorderWidth: number = 284;
+	static readonly equipmentBorderTop: number = 189;
+	static readonly equipmentGpLineX: number = 218;
+	static readonly equipmentGpRightX: number = 248;
+	static readonly equipmentGpCenterX: number = 234;
+	static readonly equipmentEqCenterX: number = 263;
+	static readonly equipmentEqLineX: number = 251;
+	static readonly equipmentWtLineX: number = 275;
+	static readonly equipmentWtRightX: number = 306;
+	static readonly equipmentBorderRight: number = 309;
+	static readonly equipmentFontSize: number = 15;
+	static readonly equipmentLineColor: string = '#b1987b';
+	static readonly equipmentFillColor: string = '#e3d5bd';
+	static readonly equipmentHeaderColor: string = '#664826';
+	static readonly equipmentTextColor: string = '#3b1e0d';
+	static readonly equipmentEntryHeight: number = 21;
+
+
+	private drawEquipment(nowSec: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
+		this.drawEquipmentHeader(context, topData, bottomData);
+
+		let y: number = CharacterStatsScroll.equipmentBorderTop;
+		activeCharacter.CarriedEquipment.forEach((item) => {
+			this.drawEquipmentItem(context, item, y, topData, bottomData);
+			y += CharacterStatsScroll.equipmentEntryHeight;
+		});
+
+		if (y >= topData && y <= bottomData)
+			this.drawEquipmentHorizontalLine(context, y);
+	}
+
+	drawEquipmentItem(context: CanvasRenderingContext2D, item: CarriedItemDto, y: number, topData: number, bottomData: number) {
+		if (y < topData || y > bottomData)
+			return;
+
+		const textY: number = y + CharacterStatsScroll.equipmentDistanceToBaseline;
+		this.drawEquipmentBackground(context, y);
+		context.fillStyle = CharacterStatsScroll.equipmentTextColor;
+		context.textAlign = 'left';
+		
+		context.fillText(item.Name, CharacterStatsScroll.equipmentNameLeft, textY, CharacterStatsScroll.equipmentNameWidth);
+
+		context.textAlign = 'right';
+		context.fillText(item.CostValue.toString(), CharacterStatsScroll.equipmentGpRightX, textY, CharacterStatsScroll.equipmentGpWtWidth);
+		context.fillText(item.Weight.toString(), CharacterStatsScroll.equipmentWtRightX, textY, CharacterStatsScroll.equipmentGpWtWidth);
+
+		if (item.Equipped)
+		{
+			//context.textAlign = 'center';
+			//context.fillText('x', CharacterStatsScroll.equipmentEqCenterX, textY);
+
+			const rectSize = 8;
+			const rectHalfSize: number = rectSize / 2;
+			const centerY: number = y + CharacterStatsScroll.equipmentEntryHeight / 2;
+			context.fillStyle = '#714b1f';
+			context.fillRect(CharacterStatsScroll.equipmentEqCenterX - rectHalfSize, centerY - rectHalfSize, rectSize, rectSize);
+		}
+
+		this.drawEquipmentHorizontalLine(context, y);
+		this.drawEquipmentVerticalLine(context, CharacterStatsScroll.equipmentBorderLeft, y);
+		this.drawEquipmentVerticalLine(context, CharacterStatsScroll.equipmentGpLineX, y);
+		this.drawEquipmentVerticalLine(context, CharacterStatsScroll.equipmentEqLineX, y);
+		this.drawEquipmentVerticalLine(context, CharacterStatsScroll.equipmentWtLineX, y);
+		this.drawEquipmentVerticalLine(context, CharacterStatsScroll.equipmentBorderRight, y);
+	}
+
+	drawEquipmentBackground(context: CanvasRenderingContext2D, y: number) {
+		context.fillStyle = CharacterStatsScroll.equipmentFillColor;
+		context.fillRect(CharacterStatsScroll.equipmentBorderLeft, y, CharacterStatsScroll.equipmentBorderWidth, CharacterStatsScroll.equipmentEntryHeight);
+	}
+
+	drawEquipmentVerticalLine(context: CanvasRenderingContext2D, x: number, y: number) {
+		context.strokeStyle = CharacterStatsScroll.equipmentLineColor;
+		context.moveTo(x, y);
+		context.lineTo(x, y + CharacterStatsScroll.equipmentEntryHeight);
+		context.stroke();
+	}
+
+	drawEquipmentHorizontalLine(context: CanvasRenderingContext2D, y: number) {
+		context.strokeStyle = CharacterStatsScroll.equipmentLineColor;
+		context.moveTo(CharacterStatsScroll.equipmentBorderLeft, y);
+		context.lineTo(CharacterStatsScroll.equipmentBorderRight, y);
+		context.stroke();
+	}
+
+	drawEquipmentHeader(context: CanvasRenderingContext2D, topData: number, bottomData: number) {
+		if (topData > CharacterStatsScroll.equipmentNameHeaderTop)
+			return;
+		context.font = CharacterStatsScroll.equipmentFontSize + 'px Calibri';
+		context.fillStyle = CharacterStatsScroll.equipmentHeaderColor;
+		context.textAlign = 'left';
+		context.textBaseline = 'alphabetic';
+
+		context.fillText('Item:', CharacterStatsScroll.equipmentNameLeft, CharacterStatsScroll.equipmentNameHeaderTop);
+
+		context.textAlign = 'right';
+		context.fillText('Wt.', CharacterStatsScroll.equipmentWtRightX, CharacterStatsScroll.equipmentNameHeaderTop);
+
+		context.textAlign = 'center';
+		context.fillText('GP', CharacterStatsScroll.equipmentGpCenterX, CharacterStatsScroll.equipmentNameHeaderTop);
+		context.fillText('Eq.', CharacterStatsScroll.equipmentEqCenterX, CharacterStatsScroll.equipmentNameHeaderTop);
+	}
+
 	private drawSpellData(nowSec: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
 		const x: number = CharacterStatsScroll.spellDataLeft;
 		let y: number = CharacterStatsScroll.spellDataTop;
 
+		context.font = CharacterStatsScroll.pageNumHeight + 'px Calibri';
+		context.fillStyle = CharacterStatsScroll.spellTitleColor;
+		context.textAlign = "right";
+		context.fillText(`Page ${activeCharacter.activeSpellPageIndex + 1} of ${activeCharacter.totalSpellPages}`, 306, 191);
 
 		this.drawActiveSpellData = false;
 		this.rightMostTextX = x;
@@ -725,8 +847,8 @@
 		this.activeSpellData = activeCharacter.ActiveSpell;
 
 		activeCharacter.SpellData.forEach((item: SpellGroup) => {
-			if (item.pageNum === activeCharacter.activeSpellPageIndex)
-			y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
+			if (item.pageIndex === activeCharacter.activeSpellPageIndex)
+				y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
 		});
 
 		const minTop: number = Math.max(InGameCreatureManager.NpcScrollHeight, this.calloutPointY) + SpellBook.spellHeaderHeight;
@@ -804,6 +926,7 @@
 	}
 
 	static readonly groupTitleHeight: number = 22;
+	static readonly spellTitleColor: string = '#3a1f0c';
 
 	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): void {
 		const middleY: number = y + CharacterStatsScroll.groupTitleHeight / 2;
@@ -813,7 +936,7 @@
 			context.textAlign = 'left';
 			context.textBaseline = 'top';
 			context.font = CharacterStatsScroll.groupTitleHeight + 'px Calibri';
-			context.fillStyle = '#3a1f0c';
+			context.fillStyle = CharacterStatsScroll.spellTitleColor;
 			//const spellTitle = `${spellGroup.Name} (${spellGroup.pageNum})`;
 			const spellTitle = `${spellGroup.Name}`;
 			const titleWidth: number = context.measureText(spellTitle).width;
@@ -871,6 +994,11 @@
 		//console.log('newPageId: ' + newPageId);
 		//console.log('this.page: ' + ScrollPage[this.page]);
 		//console.log('this.state: ' + ScrollState[this.state]);
+
+		if (this.state === ScrollState.none) {
+			this._page = newPageId;
+			this.open(performance.now());
+		}
 
 		let changedActiveCharacter = false;
 		if (!this.activeCharacter || this.activeCharacter.IntId !== playerID) {
@@ -953,7 +1081,7 @@
 			}
 			else {
 				this.spellBook.lastSpellName = '';
-		}
+			}
 
 		}
 
@@ -969,7 +1097,7 @@
 				const spellItem: SpellDataItem = spellGroup.SpellDataItems[j];
 				if (spellItem.Name === character.ActiveSpell.name) {
 					//console.log(`Found spell!!!`);
-					return spellGroup.pageNum;
+					return spellGroup.pageIndex;
 				}
 			}
 		}
@@ -1215,8 +1343,8 @@
 
 		this.drawCharacterStats(nowSec, world.ctx, topData, bottomData);
 
-		this.scrollRolls.draw(world.ctx, nowSec * 1000);
 		this.drawCharacterData(nowSec, world, topData, bottomData);
+		this.scrollRolls.draw(world.ctx, nowSec * 1000);
 		return justClosed;
 	}
 

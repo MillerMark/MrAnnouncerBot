@@ -29,10 +29,17 @@ class SpellGroup {
 	TotalCharges: number;
 	ChargesUsed: number;
 	SpellDataItems: Array<SpellDataItem>;
-	pageNum: number;
+	pageIndex: number;
 	constructor() {
 
 	}
+}
+
+class CarriedItemDto {
+	Name: string;
+	Weight: number;
+	Equipped: boolean;
+	CostValue: number;
 }
 
 class Creature {
@@ -41,9 +48,10 @@ class Creature {
 	IntId: number;
 }
 
-//! Important!!! - property names must **exactly** match those in Character.ts that are serialized for copyAttributesFrom to work!!! (because it is called with two different data types - the DTO from our C# app && an instance of Character here, so the prop names have to be the same)
+
 class Character extends Creature {
 	SpellData: Array<SpellGroup>;
+	CarriedEquipment: Array<CarriedItemDto>;
 	equipment: Array<Item> = new Array<Item>();
 	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
@@ -179,7 +187,10 @@ class Character extends Creature {
 		this.deathSaveLife3 = sourceCharacter.deathSaveLife3;
 		this.dieBackColor = sourceCharacter.dieBackColor;
 		this.dieFontColor = sourceCharacter.dieFontColor;
+
+		// TODO: remove this.equipment. It's old
 		this.equipment = sourceCharacter.equipment;
+		this.CarriedEquipment = sourceCharacter.CarriedEquipment;
 		this.experiencePoints = sourceCharacter.experiencePoints;
 		this.goldPieces = sourceCharacter.goldPieces;
 		this.hitPoints = sourceCharacter.hitPoints;
@@ -271,7 +282,7 @@ class Character extends Creature {
 				spellPageNum++;
 			}
 
-			spellGroup.pageNum = spellPageNum;
+			spellGroup.pageIndex = spellPageNum;
 
 			spellGroup.Name = spellData.Name;
 			spellGroup.ChargesUsed = spellData.ChargesUsed;
