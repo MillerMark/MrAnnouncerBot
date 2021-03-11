@@ -149,6 +149,10 @@ namespace GoogleHelper
 						bool newValue = compareValue == "true" || compareValue == "x";
 						property.SetValue(instance, newValue);
 						break;
+					case "System.DateTime":
+						if (DateTime.TryParse(value, out DateTime date))
+							property.SetValue(instance, date);
+						break;
 					default:
 						SetValue(property, instance, value);
 						break;
@@ -182,6 +186,9 @@ namespace GoogleHelper
 						break;
 					case "System.Double":
 						property.SetValue(instance, default(double));
+						break;
+					case "System.DateTime":
+						property.SetValue(instance, default(DateTime));
 						break;
 					default:
 						if (property.PropertyType.BaseType.FullName == "System.Enum")

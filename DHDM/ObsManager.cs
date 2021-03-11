@@ -11,6 +11,8 @@ namespace DHDM
 {
 	public class ObsManager : IObsManager
 	{
+		public static event EventHandler<string> SceneChanged;
+		public static event EventHandler<OutputState> StateChanged;
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DispatcherTimer sceneReturnTimer;
 		PlateManager plateManager;
@@ -26,6 +28,17 @@ namespace DHDM
 		{
 
 		}
+
+		public static void OnStateChanged(object sender, OutputState state)
+		{
+			StateChanged?.Invoke(sender, state);
+		}
+
+		public static void OnSceneChanged(object sender, string sceneName)
+		{
+			SceneChanged?.Invoke(sender, sceneName);
+		}
+
 		public void Initialize(DndGame game, IDungeonMasterApp dungeonMasterApp)
 		{
 			DungeonMasterApp = dungeonMasterApp;
@@ -161,6 +174,8 @@ namespace DHDM
 			try
 			{
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
+				obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
+				obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
 			}
 			catch (AuthFailureException)
 			{
@@ -170,6 +185,16 @@ namespace DHDM
 			{
 				Console.WriteLine($"Connect failed. {ex.Message}");
 			}
+		}
+
+		private void ObsWebsocket_StreamingStateChanged(OBSWebsocket sender, OutputState type)
+		{
+			OnStateChanged(sender, type);
+		}
+
+		private void ObsWebsocket_SceneChanged(OBSWebsocket sender, string newSceneName)
+		{
+			OnSceneChanged(sender, newSceneName);
 		}
 
 		public void PlaySceneAfter(string sceneName, int delayMs, int returnMs)

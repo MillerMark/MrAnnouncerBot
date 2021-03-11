@@ -134,6 +134,9 @@
 					</CheckBox>
 					<TextBlock Text="Game Time:" Width="Auto" Height="Auto" Margin="4"/>
 					<TextBlock x:Name="txtTime" Text="-" Margin="0, 4, 4, 4" FontWeight="Bold"/>
+					<Button x:Name="btnCopyGameTime" Padding="8, 0, 8, 0" Margin="20, 0, 0, 0" Click="btnCopyGameTime_Click">
+						Copy Game Time
+					</Button>
 				</StackPanel>
 				<StackPanel x:Name="spTimeModifiers" Orientation="Horizontal" Margin="4, 0, 4, 16" >
 

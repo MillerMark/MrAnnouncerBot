@@ -169,10 +169,48 @@ namespace DHDM
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
+			viewerManager = new ViewerManager(this);
 			obsManager.Initialize(game, this);
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
+			CreateTimers();
+
+			History.TimeClock = game.Clock;
+			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
+			// TODO: Save and retrieve game time between games (or allow DM to set start time for every game).
+			game.Clock.SetTime(DateTime.Now);
+			InitializeComponent();
+			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
+			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
+			spTimeSegments.DataContext = game.Clock;
+			logListBox.ItemsSource = History.Entries;
+			History.LogUpdated += History_LogUpdated;
+
+			//InitializeAttackShortcuts();
+			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
+			CreateDungeonMasterClient();
+			CreateDragonHumpersClient();
+			CreateDhPubSub();
+
+			dmChatBot.Initialize(this);
+
+			dmChatBot.DungeonMasterApp = this;
+			commandParsers.Add(dmChatBot);
+			ConnectToObs();
+			HookEvents();
+
+			SetupSpellsChangedFileWatcher();
+
+			codeEditor.Load();
+
+			actionQueueTimer.Start();
+			lbActionStack.ItemsSource = actionQueue;
+			LoadEverything();
+		}
+
+		private void CreateTimers()
+		{
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
@@ -236,38 +274,6 @@ namespace DHDM
 			actionQueueTimer = new DispatcherTimer(DispatcherPriority.Send);
 			actionQueueTimer.Tick += new EventHandler(CheckActionQueue);
 			actionQueueTimer.Interval = TimeSpan.FromSeconds(2);
-
-			History.TimeClock = game.Clock;
-			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
-			// TODO: Save and retrieve game time between games (or allow DM to set start time for every game).
-			game.Clock.SetTime(DateTime.Now);
-			InitializeComponent();
-			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
-			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
-			spTimeSegments.DataContext = game.Clock;
-			logListBox.ItemsSource = History.Entries;
-			History.LogUpdated += History_LogUpdated;
-
-			//InitializeAttackShortcuts();
-			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
-			CreateDungeonMasterClient();
-			CreateDragonHumpersClient();
-			CreateDhPubSub();
-
-			dmChatBot.Initialize(this);
-
-			dmChatBot.DungeonMasterApp = this;
-			commandParsers.Add(dmChatBot);
-			ConnectToObs();
-			HookEvents();
-
-			SetupSpellsChangedFileWatcher();
-
-			codeEditor.Load();
-
-			actionQueueTimer.Start();
-			lbActionStack.ItemsSource = actionQueue;
-			LoadEverything();
 		}
 
 		private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -1685,6 +1691,7 @@ namespace DHDM
 
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
+			viewerManager.UserChats(e.ChatMessage.Username);
 			if (IsPlayer(e.ChatMessage.UserId) && (!DndViewer.TestingSayAnything || e.ChatMessage.UserId != "270998178"))
 				CharacterSaysSomething(e.ChatMessage.Message);
 			else if (ViewerCanUseChargeToSaySomething(e.ChatMessage.Username))
@@ -10024,6 +10031,12 @@ namespace DHDM
 
 		private void StreamlootsService_CardsPurchased(object sender, CardEventArgs ea)
 		{
+			string userName = ea.CardDto.GetUserName();
+			if (!string.IsNullOrWhiteSpace(userName))
+			{
+				DndViewer viewer = AllViewers.Get(userName);
+				viewer.LastCardPurchase = DateTime.Now;
+			}
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 		}
 
@@ -10600,6 +10613,7 @@ namespace DHDM
 		string nextStampedeUserName;
 		string nextStampedeCardName;
 		string lastStampedeGuid;
+		ViewerManager viewerManager;
 
 		public void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid)
 		{
@@ -10721,6 +10735,11 @@ namespace DHDM
 		public void ChangeScrollPage(string scrollPage)
 		{
 			ChangeScrollPage(ActivePlayerId, DndUtils.ToScrollPage(scrollPage));
+		}
+
+		private void btnCopyGameTime_Click(object sender, RoutedEventArgs e)
+		{
+			Clipboard.SetText(viewerManager.StreamTimeCode());
 		}
 	}
 }

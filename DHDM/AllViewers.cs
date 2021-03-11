@@ -13,7 +13,7 @@ namespace DHDM
 		static AllViewers()
 		{
 			GoogleSheets.RegisterSpreadsheetID("D&D Viewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
-			LoadViewers();
+			//LoadViewers();
 		}
 
 		private static void LoadViewers()

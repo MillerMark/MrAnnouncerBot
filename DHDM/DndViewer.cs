@@ -10,6 +10,9 @@ namespace DHDM
 	[TabName("Viewers")]
 	public class DndViewer: TrackPropertyChanges
 	{
+		public bool AlreadySeen { get; set; }
+		DateTime lastChatMessage;
+		DateTime lastCardPurchase;
 		public const bool TestingSayAnything = false;
 		string dieBackColor = "#ffffff";
 		string chargesStr = null;
@@ -30,6 +33,33 @@ namespace DHDM
 				OnPropertyChanged();
 			}
 		}
+
+		[Column]
+		public DateTime LastCardPurchase
+		{
+			get => lastCardPurchase;
+			set
+			{
+				if (lastCardPurchase == value)
+					return;
+				lastCardPurchase = value;
+				OnPropertyChanged();
+			}
+		}
+
+		[Column]
+		public DateTime LastChatMessage
+		{
+			get => lastChatMessage;
+			set
+			{
+				if (lastChatMessage == value)
+					return;
+				lastChatMessage = value;
+				OnPropertyChanged();
+			}
+		}
+		
 
 
 		[Column]
@@ -60,7 +90,27 @@ namespace DHDM
 				if (chargesStr == value)
 					return;
 				chargesStr = value;
+				AddCharges();
 				OnPropertyChanged();
+			}
+		}
+		void AddCharges()
+		{
+			if (string.IsNullOrWhiteSpace(chargesStr))
+				return;
+			string[] individualCharges = chargesStr.Split(';');
+			foreach (string charge in individualCharges)
+			{
+				int equalsPos = charge.IndexOf('=');
+				if (equalsPos > 0)
+				{
+					string[] sides = charge.Split('=');
+					if (sides.Length == 2)
+					{
+						if (int.TryParse(sides[1], out int value))
+							charges.Add(sides[0], value);
+					}
+				}
 			}
 		}
 
@@ -84,7 +134,7 @@ namespace DHDM
 			Charges = GetChargeStr();
 		}
 
-		Dictionary<string, int> charges = new Dictionary<string, int>();
+		internal Dictionary<string, int> charges = new Dictionary<string, int>();
 
 		/// <summary>
 		/// Adds the specified charge and returns the total charge count for the specified chargeName.
@@ -171,6 +221,11 @@ namespace DHDM
 				return white;
 			else
 				return black;
+		}
+
+		public bool HasAnyCharges()
+		{
+			return charges != null && charges.Count > 0;
 		}
 
 		[Column]
