@@ -1033,6 +1033,15 @@ namespace DndCore
 				//System.Diagnostics.Debugger.Break();
 				return;
 			}
+			if (hitPoints < maxHitPoints)
+			{
+				hitPoints += deltaTempHp;
+				deltaTempHp = hitPoints - maxHitPoints;
+				if (deltaTempHp > 0)
+					hitPoints = maxHitPoints;
+				else
+					return;
+			}
 			tempHitPoints += deltaTempHp;
 			if (tempHitPoints < 0)
 				tempHitPoints = 0;

@@ -159,11 +159,51 @@ namespace DndCore
 			validationFailed = true;
 		}
 
-		public bool ValidationHasFailed(Character spellCaster, Target target)
+		public ValidationResult GetValidation(Character spellCaster, Target target)
+		{
+			ValidationResult validationResult = new ValidationResult();
+			if (Spell.MinTargetsToCast > 0)
+			{
+				// TODO: Add warnings if min threshold satisfied but more targets are available.
+
+				/* 
+					var targetCount = GetCount(target);
+					if (targetCount == 0)
+						ValidationFailed($"Select up to {spell_AmmoCount} target(s)!", "Select targets!", Stop);
+					else if (targetCount > spell_AmmoCount)
+						ValidationFailed($"Max targets for Enhance Ability ({spell_AmmoCount}) exceeded! Select fewer targets or cast at a higher spell slot!", "Too many targets!", Stop);
+					else if (targetCount < spell_AmmoCount)
+						ValidationFailed($"More targets for Enhance Ability are available ({spell_AmmoCount} total). Are you sure you want to cast?", "Select more targets?", Warn); 
+				 
+				 */
+				if (target.Count < Spell.MinTargetsToCast)
+				{
+					validationResult.ValidationAction = ValidationAction.Stop;
+					if (Spell.MinTargetsToCast == 1)
+						validationResult.MessageOverPlayer = $"Need at least one target to cast {Spell.Name}!";
+					else
+						validationResult.MessageOverPlayer = $"Need at least {Spell.MinTargetsToCast} targets to cast {Spell.Name}!";
+				}
+				if (target.Count > Spell.MaxTargetsToCast)
+				{
+					validationResult.ValidationAction = ValidationAction.Stop;
+					if (Spell.MaxTargetsToCast == 1)
+						validationResult.MessageOverPlayer = $"Only one target is allowed for {Spell.Name}!";
+					else
+						validationResult.MessageOverPlayer = $"Only {Spell.MaxTargetsToCast} targets are allowed for {Spell.Name}!";
+				}
+			}
+			TriggerSpellValidation(spellCaster, target, validationResult);
+
+			return validationResult;
+		}
+
+		private void TriggerSpellValidation(Character spellCaster, Target target, ValidationResult validationResult)
 		{
 			validationFailed = false;
 			Spell.TriggerValidate(spellCaster, target, this);
-			return validationFailed;
+			if (validationFailed)
+				validationResult.ValidationAction = ValidationAction.Stop;
 		}
 
 		public bool HasSpellCasterConcentration()

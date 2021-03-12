@@ -13,7 +13,8 @@ enum VisualTargetType {
 	ActivePlayer = 0,
 	ActiveEnemy = 1,
 	ScrollPosition = 2,
-	ScreenPosition = 3
+	ScreenPosition = 3,
+  ByPlayerId = 4,
 }
 
 enum VantageKind {

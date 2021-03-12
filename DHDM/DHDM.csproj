@@ -340,6 +340,7 @@
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
     <Compile Include="StreamDeck Commands\ScrollPageCommand.cs" />
     <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
+    <Compile Include="StreamDeck Commands\TestCommand.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
     <Compile Include="Events\ViewerDieRollStoppedEventArgs.cs" />

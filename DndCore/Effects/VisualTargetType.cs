@@ -8,6 +8,7 @@ namespace DndCore
 		ActivePlayer,
 		ActiveEnemy,
 		ScrollPosition,
-		ScreenPosition
+		ScreenPosition,
+		ByPlayerId
 	}
 }

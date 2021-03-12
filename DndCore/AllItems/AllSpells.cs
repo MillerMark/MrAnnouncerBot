@@ -33,6 +33,8 @@ namespace DndCore
 
 		public static Spell Get(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
+			if (string.IsNullOrEmpty(spellName))
+				return null;
 			SpellDto spell = GetDto(spellName);
 			return Spell.FromDto(spell, spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 		}

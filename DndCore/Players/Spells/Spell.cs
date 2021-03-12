@@ -24,6 +24,15 @@ namespace DndCore
 				return AmmoCount * 2;
 			}
 		}
+
+		[Default(-1)]
+		[Column]
+		public int MinTargetsToCast { get; set; }
+
+		[Default(-1)]
+		[Column]
+		public int MaxTargetsToCast { get; set; }
+
 		public int OriginalAmmoCount { get; set; }
 		public string AmmoCount_word
 		{
@@ -417,6 +426,8 @@ namespace DndCore
 				spell.SpellSlotLevel = spellLevel;
 
 			spell.OriginalAmmoCount = spellDto.ammo_count; // Must be set before calculating dice and ammo.
+			spell.MinTargetsToCast = spellDto.minTargetsToCast;
+			spell.MaxTargetsToCast = spellDto.maxTargetsToCast;
 			spell.RecalculateDiceAndAmmo(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
 			return spell;
@@ -593,6 +604,8 @@ namespace DndCore
 			result.OriginalDieStr = OriginalDieStr;
 			result.OriginalAmmoCount = OriginalAmmoCount;
 			result.AmmoCount = AmmoCount;
+			result.MinTargetsToCast = MinTargetsToCast;
+			result.MaxTargetsToCast = MaxTargetsToCast;
 			result.PerLevelBonus = PerLevelBonus;
 			result.Range = Range;
 			result.RangeType = RangeType;

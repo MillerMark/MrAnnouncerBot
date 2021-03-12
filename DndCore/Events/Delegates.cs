@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace DndCore
 {
+	public delegate void ObsSceneFilterEventHandler(object sender, ObsSceneFilterEventArgs ea);
 	public delegate void QueueEffectEventHandler(object sender, QueueEffectEventArgs ea);
 	public delegate void RequestAddViewerChargeEventHandler(object sender, RequestAddViewerChargeEventArgs ea);
 	public delegate void CreaturePlusModIdEventHandler(CreaturePlusModIdEventArgs ea);

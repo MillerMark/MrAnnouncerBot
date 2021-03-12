@@ -29,6 +29,21 @@ namespace DHDM
 
 		}
 
+		public void SetFilterVisibility(string sourceName, string filterName, bool filterEnabled)
+		{
+			string[] parts = sourceName.Split(';');
+			foreach (string part in parts)
+				obsWebsocket.SetSourceFilterVisibility(part.Trim(), filterName, filterEnabled);
+		}
+
+		// TODO: Use GetSceneItem to smoothly scale video feeds up and down in 
+		public SceneItem GetSceneItem(string sceneName, string itemName)
+		{
+			GetSceneListInfo sceneList = obsWebsocket.GetSceneList();
+			OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
+			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
+		}
+
 		public static void OnStateChanged(object sender, OutputState state)
 		{
 			StateChanged?.Invoke(sender, state);

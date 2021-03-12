@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	[Tooltip("Stops spellcasting if the target count matches the specified value using the specified comparison operation.")]
+	[Tooltip("Sends a message to the D&D core engine to disallow casting (or warn that the player may want to change things before casting).")]
 	[Param(1, typeof(string), "dungeonMasterMessage", "The text to send the DM.", ParameterIs.Required)]
 	[Param(2, typeof(string), "floatText", "The text to float above the spellcaster.", ParameterIs.Required)]
 	[Param(3, typeof(ValidationAction), "validationAction", "What to do (Error or Warn).", ParameterIs.Required)]

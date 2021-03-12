@@ -162,6 +162,39 @@ namespace GoogleHelper
 			SetDefaultsForEmptyCells(instance, headers, row, type);
 		}
 
+		static object GetDefaultValue(PropertyInfo property)
+		{
+			IEnumerable<DefaultAttribute> customAttributes = property.GetCustomAttributes<DefaultAttribute>();
+
+			DefaultAttribute defaultAttribute = null;
+			if (customAttributes.Any())
+				defaultAttribute = customAttributes.First();
+			if (defaultAttribute != null)
+				return defaultAttribute.DefaultValue;
+
+			switch (property.PropertyType.FullName)
+			{
+				case "System.Int32":
+					return  default(int);
+				case "System.String":
+					return  string.Empty;
+				case "System.Boolean":
+					return  default(bool);
+				case "System.Decimal":
+					return  default(decimal);
+				case "System.Double":
+					return default(double);
+				case "System.DateTime":
+					return  default(DateTime);
+				default:
+					if (property.PropertyType.BaseType.FullName == "System.Enum")
+						return  0;
+					else
+						System.Diagnostics.Debugger.Break();
+					break;
+			}
+			return null;
+		}
 		private static void SetDefaultsForEmptyCells<T>(T instance, Dictionary<int, string> headers, IList<object> row, Type type) where T : new()
 		{
 			for (int i = row.Count; i < headers.Count; i++)  // There may be fewer rows than headers.
@@ -170,33 +203,8 @@ namespace GoogleHelper
 				if (property == null)
 					continue;
 
-				switch (property.PropertyType.FullName)
-				{
-					case "System.Int32":
-						property.SetValue(instance, default(int));
-						break;
-					case "System.String":
-						property.SetValue(instance, string.Empty);
-						break;
-					case "System.Boolean":
-						property.SetValue(instance, default(bool));
-						break;
-					case "System.Decimal":
-						property.SetValue(instance, default(decimal));
-						break;
-					case "System.Double":
-						property.SetValue(instance, default(double));
-						break;
-					case "System.DateTime":
-						property.SetValue(instance, default(DateTime));
-						break;
-					default:
-						if (property.PropertyType.BaseType.FullName == "System.Enum")
-							property.SetValue(instance, 0);
-						else
-							System.Diagnostics.Debugger.Break();
-						break;
-				}
+				object defaultValue = GetDefaultValue(property);
+				property.SetValue(instance, defaultValue);
 			}
 		}
 		static Dictionary<string, List<string>> sheetTabMap = new Dictionary<string, List<string>>();

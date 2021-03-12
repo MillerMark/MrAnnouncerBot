@@ -8,7 +8,7 @@ namespace DHDM
 	public static class AllViewers
 	{
 		// TODO: Remove RandomlyReplaceDragonHumpersViewerWithOthers (or set to false)- only for testing.
-		public static bool RandomlyReplaceDragonHumpersViewerWithOthers = true;
+		public static bool RandomlyReplaceDragonHumpersViewerWithOthers = false;
 		public static List<DndViewer> KnownViewers { get; set; }
 		static AllViewers()
 		{

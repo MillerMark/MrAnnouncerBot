@@ -485,6 +485,8 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			UnleashSpellEffectsFunction.RequestUnleashSpellEffects += UnleashSpellEffectsFunction_RequestUnleashSpellEffects;
+			SetSceneFilterVisibilityFunction.RequestSetObsSceneFilterVisibility += SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility;
 			DigitManager.DigitChanged += DigitManager_DigitChanged;
 			QueueEffect.RequestCardEventQueuing += QueueEffect_RequestCardEventQueuing;
 			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
@@ -512,6 +514,43 @@ namespace DHDM
 			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
 			StreamlootsService.CardRedeemed += StreamlootsService_CardRedeemed;
 			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
+		}
+
+		private void UnleashSpellEffectsFunction_RequestUnleashSpellEffects(object sender, int playerId)
+		{
+			UnleashSpellEffectsNow(playerId);
+		}
+
+		public class SceneTimer: System.Timers.Timer
+		{
+			public ObsSceneFilterEventArgs ea;
+			public SceneTimer()
+			{
+				
+			}
+		}
+
+		private void SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility(object sender, ObsSceneFilterEventArgs ea)
+		{
+			if (ea.DelayMs > 0)
+			{
+				SceneTimer timer = new SceneTimer();
+				timer.Interval = ea.DelayMs;
+				timer.Elapsed += Timer_Elapsed;
+				timer.ea = ea;
+				timer.Start();
+				return;
+			}
+			obsManager.SetFilterVisibility(ea.SourceName, ea.FilterName, ea.FilterEnabled);
+		}
+
+		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			if (sender is SceneTimer sceneTimer)
+			{
+				sceneTimer.Stop();
+				obsManager.SetFilterVisibility(sceneTimer.ea.SourceName, sceneTimer.ea.FilterName, sceneTimer.ea.FilterEnabled);
+			}
 		}
 
 		private void AddViewerChargeFunction_RequestAddViewerCharge(object sender, RequestAddViewerChargeEventArgs ea)
@@ -542,7 +581,7 @@ namespace DHDM
 			EffectGroup effectGroup = new EffectGroup();
 
 			VisualEffectTarget chestTarget, bottomTarget;
-			GetTargets(out chestTarget, out bottomTarget);
+			GetTargets(ActivePlayerId, out chestTarget, out bottomTarget);
 			AnimationEffect animationEffect = AnimationEffect.CreateEffect(ea.EffectName, bottomTarget, ea.Hue, ea.Saturation, ea.Brightness, ea.SecondaryHue, ea.SecondarySaturation, ea.SecondaryBrightness, ea.OffsetX, ea.OffsetY, ea.VelocityX, ea.VelocityY);
 			animationEffect.autoRotation = ea.AutoRotation;
 			animationEffect.rotation = ea.Rotation;
@@ -706,6 +745,7 @@ namespace DHDM
 				PlaySceneAfter(ea.SceneName, ea.DelayMs, ea.ReturnMs);
 			else
 				obsManager.PlayScene(ea.SceneName, ea.ReturnMs);
+
 		}
 
 		void AddBooleanAsk(AskUI askUI)
@@ -2836,8 +2876,40 @@ namespace DHDM
 
 		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
 		{
-			if (castedSpell.ValidationHasFailed(player, castedSpell.Target))
+			if (castedSpell.Target == null && (castedSpell.Spell.MinTargetsToCast > 0 || castedSpell.Spell.MaxTargetsToCast > 0))
+			{
+				Target target = new Target();
+				target.Type = AttackTargetType.Spell;
+				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					if (inGameCreature.IsTargeted)
+						target.AddCreature(inGameCreature.Creature);
+
+				foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+					if (creatureStats.IsTargeted)
+						target.AddCreature(AllPlayers.GetFromId(creatureStats.CreatureId));
+
+				castedSpell.Target = target;
+			}
+
+			DndCore.ValidationResult validationResult = castedSpell.GetValidation(player, castedSpell.Target);
+			if (validationResult.ValidationAction == ValidationAction.Stop)
+			{
+				ReportValidation(player, validationResult);
 				return PlayerSpellCastState.ValidationFailed;
+			}
+
+			if (validationResult.ValidationAction == ValidationAction.Warn)
+			{
+				// If we haven't warned yet, let's do that and get out. Otherwise, we allow the DM to push through warnings.
+				if (player.JustWarnedAbout != castedSpell.Spell)
+				{
+					player.JustWarnedAbout = castedSpell.Spell;
+					ReportValidation(player, validationResult);
+					return PlayerSpellCastState.ValidationFailed;
+				}
+			}
+
+			player.JustWarnedAbout = null;
 
 			PlayerSpellCastState playerSpellState = PlayerSpellCastState.FreeToCast;
 			if (castedSpell.Spell.RequiresConcentration && player.concentratedSpell != null)
@@ -2878,6 +2950,12 @@ namespace DHDM
 			}
 
 			return playerSpellState;
+		}
+
+		private void ReportValidation(Character player, DndCore.ValidationResult validationResult)
+		{
+			HubtasticBaseStation.ShowValidationIssue(player.playerID, validationResult.ValidationAction, validationResult.MessageOverPlayer);
+			TellDungeonMaster(validationResult.MessageToDm);
 		}
 
 		public enum PlayerSpellCastState
@@ -4107,12 +4185,12 @@ namespace DHDM
 			Hit
 		}
 
-		void ShowSpellEffectsInGame(string spellName, Queue<SpellEffect> additionalSpellEffects, Queue<SoundEffect> additionalSoundEffects, SpellHitType spellHitType = SpellHitType.Hit)
+		void ShowSpellEffectsInGame(int playerId, string spellName, Queue<SpellEffect> additionalSpellEffects, Queue<SoundEffect> additionalSoundEffects, SpellHitType spellHitType = SpellHitType.Hit)
 		{
 			EffectGroup effectGroup = new EffectGroup();
 
 			VisualEffectTarget chestTarget, bottomTarget;
-			GetTargets(out chestTarget, out bottomTarget);
+			GetTargets(playerId, out chestTarget, out bottomTarget);
 
 			if (spellHitType != SpellHitType.Hit)
 			{
@@ -4166,10 +4244,18 @@ namespace DHDM
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
-		private static void GetTargets(out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget)
+		private void GetTargets(int playerId, out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget)
 		{
-			chestTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
-			bottomTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
+			if (playerId == ActivePlayerId)
+			{
+				chestTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, DndCore.Vector.zero, new DndCore.Vector(0, -150));
+				bottomTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, DndCore.Vector.zero, DndCore.Vector.zero);
+			}
+			else
+			{
+				chestTarget = new VisualEffectTarget(VisualTargetType.ByPlayerId, DndCore.Vector.zero, new DndCore.Vector(0, -150), playerId);
+				bottomTarget = new VisualEffectTarget(VisualTargetType.ByPlayerId, DndCore.Vector.zero, DndCore.Vector.zero, playerId);
+			}
 		}
 
 		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName)
@@ -4177,7 +4263,17 @@ namespace DHDM
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
-			ShowSpellEffectsInGame(spellName, player.additionalSpellHitEffects, player.additionalSpellHitSoundEffects, spellHitType);
+			ShowSpellEffectsInGame(playerId, spellName, player.additionalSpellHitEffects, player.additionalSpellHitSoundEffects, spellHitType);
+		}
+
+		void UnleashSpellEffectsNow(int playerId)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			ShowSpellEffectsInGame(playerId, null, player.additionalSpellHitEffects, player.additionalSpellHitSoundEffects, SpellHitType.Hit);
+			ShowSpellEffectsInGame(playerId, null, player.additionalSpellCastEffects, player.additionalSpellCastSoundEffects, SpellHitType.Hit);
+			player.ClearAdditionalSpellEffects();
 		}
 
 		void ShowSpellCastEffectsInGame(int playerId, string spellName)
@@ -4185,7 +4281,7 @@ namespace DHDM
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
-			ShowSpellEffectsInGame(spellName, player.additionalSpellCastEffects, player.additionalSpellCastSoundEffects);
+			ShowSpellEffectsInGame(playerId, spellName, player.additionalSpellCastEffects, player.additionalSpellCastSoundEffects);
 		}
 
 		void DequeueSoundEffects(Queue<SoundEffect> additionalSoundEffects, EffectGroup effectGroup)
@@ -5983,7 +6079,7 @@ namespace DHDM
 
 		private void ChangeScrollPage(int playerId, ScrollPage page)
 		{
-//			if (activePage != page)
+			//			if (activePage != page)
 			{
 				activePage = page;
 				HubtasticBaseStation.PlayerDataChanged(playerId, activePage, string.Empty);
@@ -7035,7 +7131,7 @@ namespace DHDM
 
 		public void TellDungeonMaster(string message, bool isDetail = false)
 		{
-			if (dungeonMasterClient == null)
+			if (dungeonMasterClient == null || string.IsNullOrWhiteSpace(message))
 				return;
 
 			History.Log(message);
@@ -9672,7 +9768,7 @@ namespace DHDM
 					}
 				}
 			});
-			
+
 		}
 		public void PrepareTargetSkillCheck(string skillCheck)
 		{
@@ -10492,12 +10588,12 @@ namespace DHDM
 			{
 				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, saveTakesZeroDamage);
 				double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
-				
+
 				if (saveTakesZeroDamage && savingThrowResult == SavingThrowResult.Save)
 					multiplier = 0;
 
 				AddSavingThrowResult(results, targetCreature, savingThrowResult);
-				
+
 				inGameCreature.TakeDamage(game, damage, AttackKind.Magical, multiplier);
 				whatTargetChanged |= WhatTargetChanged.NpcMonster;
 			}

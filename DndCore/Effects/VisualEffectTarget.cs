@@ -19,6 +19,7 @@ namespace DndCore
 		public Vector targetOffset;
 		public TargetPage targetPage = TargetPage.None;
 		public VisualTargetType targetType;
+		public int playerId = Creature.invalidCreatureId;
 
 		public VisualEffectTarget()
 		{
@@ -36,11 +37,12 @@ namespace DndCore
 			screenPosition = new Vector(x, y);
 		}
 
-		public VisualEffectTarget(VisualTargetType targetType, Vector screenPosition, Vector targetOffset) : this()
+		public VisualEffectTarget(VisualTargetType targetType, Vector screenPosition, Vector targetOffset, int playerId = Creature.invalidCreatureId) : this()
 		{
 			this.targetType = targetType;
 			this.screenPosition = screenPosition;
 			this.targetOffset = targetOffset;
+			this.playerId = playerId;
 		}
 	}
 }

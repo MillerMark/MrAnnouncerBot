@@ -908,6 +908,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			result = new Vector(target.screenPosition.x, target.screenPosition.y);
 		else if (target.targetType === VisualTargetType.ActivePlayer)
 			result = new Vector(this.activePlayerX, 1080);
+		else if (target.targetType === VisualTargetType.ByPlayerId) {
+			// TODO: We are assuming it's a player, but the target could be an NPC/Monster. So let's fix this.
+			result = new Vector(this.getPlayerX(this.getPlayerIndex(target.playerId)), 1080);
+		}
 		else if (target.targetType === VisualTargetType.ActiveEnemy)
 			result = new Vector(1260, 1080);
 		else if (target.targetType === VisualTargetType.ScrollPosition)

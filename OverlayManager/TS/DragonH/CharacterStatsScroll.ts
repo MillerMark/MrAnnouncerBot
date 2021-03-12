@@ -926,7 +926,7 @@
 	}
 
 	static readonly groupTitleHeight: number = 22;
-	static readonly spellTitleColor: string = '#3a1f0c';
+	static readonly spellGroupTitleColor: string = '#3a1f0c';
 
 	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): void {
 		const middleY: number = y + CharacterStatsScroll.groupTitleHeight / 2;
@@ -936,7 +936,7 @@
 			context.textAlign = 'left';
 			context.textBaseline = 'top';
 			context.font = CharacterStatsScroll.groupTitleHeight + 'px Calibri';
-			context.fillStyle = CharacterStatsScroll.spellTitleColor;
+			context.fillStyle = CharacterStatsScroll.spellGroupTitleColor;
 			//const spellTitle = `${spellGroup.Name} (${spellGroup.pageNum})`;
 			const spellTitle = `${spellGroup.Name}`;
 			const titleWidth: number = context.measureText(spellTitle).width;
@@ -991,9 +991,9 @@
 		const newPageIsValid: boolean = newPageId !== -1;
 
 		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
-		//console.log('newPageId: ' + newPageId);
-		//console.log('this.page: ' + ScrollPage[this.page]);
-		//console.log('this.state: ' + ScrollState[this.state]);
+		console.log('newPageId: ' + newPageId);
+		console.log('this.page: ' + ScrollPage[this.page]);
+		console.log('this.state: ' + ScrollState[this.state]);
 
 		if (this.state === ScrollState.none) {
 			this._page = newPageId;
@@ -1002,7 +1002,7 @@
 
 		let changedActiveCharacter = false;
 		if (!this.activeCharacter || this.activeCharacter.IntId !== playerID) {
-			//console.log('changing player!!!');
+			console.log('changing player!!!');
 			this.clearEmphasis();
 			if (newPageIsValid) {
 				this.setActiveCharacter(playerID);
@@ -1013,7 +1013,7 @@
 			}
 		}
 		else if (this.page !== newPageId || this.state === ScrollState.closed || this.state === ScrollState.closing || this.state === ScrollState.disappearing) {
-			//console.log('changing page!!!');
+			console.log('changing page!!!');
 			this.clearEmphasis();
 
 			if (newPageIsValid) {
@@ -1041,7 +1041,7 @@
 			}
 		}
 		else {
-			// console.log('Data changed, but no update!');
+			console.log('Data changed, but no update!');
 		}
 
 		if (playerData !== '') {
