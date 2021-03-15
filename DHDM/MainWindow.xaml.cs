@@ -9761,7 +9761,8 @@ namespace DHDM
 							playerId = PlayerStatsManager.GetFirstPlayerIdWhoIsReadyToRoll();
 						}
 						//HubtasticBaseStation.ChangePlayerStats();
-						SelectCharacter(playerId);
+						SelectCharacter(playerId);    // SelectCharacter clears NextDieRollType. Need to re-set it for this roll.
+						NextDieRollType = DiceRollType.SkillCheck;
 						ChangeScrollPage(playerId, ScrollPage.skills);
 						HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
 						HubtasticBaseStation.FocusItem(playerId, activePage, itemID);
@@ -10836,6 +10837,11 @@ namespace DHDM
 		private void btnCopyGameTime_Click(object sender, RoutedEventArgs e)
 		{
 			Clipboard.SetText(viewerManager.StreamTimeCode());
+		}
+
+		public void ShowFilter(string sourceName, string filterName, bool visible)
+		{
+			obsManager.SetFilterVisibility(sourceName, filterName, visible);
 		}
 	}
 }

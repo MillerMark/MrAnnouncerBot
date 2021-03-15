@@ -81,5 +81,6 @@ namespace DHDM
 		void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid);
 		void StampedeNow();
 		void ChangeScrollPage(string scrollPage);
+		void ShowFilter(string sourceName, string filterName, bool visible);
 	}
 }
