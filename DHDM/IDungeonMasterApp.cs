@@ -82,5 +82,6 @@ namespace DHDM
 		void StampedeNow();
 		void ChangeScrollPage(string scrollPage);
 		void ShowFilter(string sourceName, string filterName, bool visible);
+		Character GetPlayerFromId(int playerId);
 	}
 }

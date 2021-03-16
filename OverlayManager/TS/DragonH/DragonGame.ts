@@ -823,11 +823,13 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.allWindupEffects.draw(context, nowMs);
 	}
 
+	activePlayerX = -1;
+
+	// Keep this getPlayerX function in sync with code in ObsManager.cs:
 	playerVideoLeftMargin = 10;
 	playerVideoRightMargin = 1384;
 
 	numberOfPlayers = 4;
-	activePlayerX = -1;
 
 	getPlayerX(playerIndex: number): number {
 		const distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;

@@ -220,6 +220,65 @@ namespace DHDM
 			playSceneTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
 			playSceneTimer.Start();
 		}
+
+		// Keep this getPlayerX function in sync with code in DragonGame.ts:
+		double playerVideoLeftMargin = 10;
+		double playerVideoRightMargin = 1384;
+
+		int numberOfPlayers = 4;
+
+		public double getPlayerX(int playerIndex)
+		{
+			double distanceForPlayerVideos = playerVideoRightMargin - playerVideoLeftMargin;
+			double distanceBetweenPlayers = distanceForPlayerVideos / numberOfPlayers;
+			double halfDistanceBetweenPlayers = distanceBetweenPlayers / 2;
+			double horizontalNudge = 0;
+			if (playerIndex == 0)  // Fred.
+				horizontalNudge = 25;
+			return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers + horizontalNudge;
+		}
+
+		void StartLiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double normalScale, double timeMs)
+		{
+			SceneItem sceneItem = GetSceneItem(sceneName, itemName);
+
+			double startScale = sceneItem.Height / sceneItem.SourceHeight;
+			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs, normalScale);
+			if (!sceneItem.Render)
+				SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
+			else
+				liveFeedAnimation.Render += LiveFeedAnimation_Render;
+		}
+
+		private void LiveFeedAnimation_Render(object sender, LiveFeedAnimation e)
+		{
+			float scale = (float)e.GetTargetScale();
+			SizeItem(e, scale);
+		}
+
+		private void SizeItem(LiveFeedAnimation e, float scale)
+		{
+			//double anchorOffsetHorizontal = e.VideoAnchorHorizontal * e.SceneItem.Width;
+			//double anchorOffsetVertical = e.VideoAnchorVertical * e.SceneItem.Height;
+			//double anchorLeft = e.SceneItem.XPos + anchorOffsetHorizontal;
+			//double anchorTop = e.SceneItem.YPos + anchorOffsetVertical;
+			double anchorLeft = e.PlayerX;
+			double anchorTop = 1080;
+
+			double newLeft = anchorLeft - e.VideoAnchorHorizontal * e.VideoWidth * scale;
+			double newTop = anchorTop - e.VideoAnchorVertical * e.VideoHeight * scale;
+
+			obsWebsocket.SetSceneItemTransform(e.ItemName, 0, scale, scale, e.SceneName);
+			obsWebsocket.SetSceneItemPosition(e.ItemName, (float)newLeft, (float)newTop, e.SceneName);
+		}
+
+		public void AnimateLiveFeed(string sourceName, string sceneName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs, double normalScale, int playerIndex)
+		{
+			string[] parts = sourceName.Split(';');
+			foreach (string part in parts)
+				StartLiveFeedAnimation(part.Trim(), sceneName, getPlayerX(playerIndex), videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, targetScale, normalScale, timeMs);
+		}
+
 		public IDungeonMasterApp DungeonMasterApp { get; set; }
 	}
 }

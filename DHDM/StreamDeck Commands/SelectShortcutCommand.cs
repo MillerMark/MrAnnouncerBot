@@ -9,7 +9,7 @@ namespace DHDM
 	public class SelectShortcutCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string shortcutName;
-		string playerInitial;
+		public string playerInitial;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{

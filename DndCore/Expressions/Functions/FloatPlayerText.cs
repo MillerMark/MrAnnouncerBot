@@ -36,7 +36,7 @@ namespace DndCore
 				recipientPlayer.ShowState(Expressions.GetStr(args[0], player, target, spell), fillColor, outlineColor, delayMs);
 			else if (player != null)
 				player.ShowState(Expressions.GetStr(args[0], player, target, spell), fillColor, outlineColor, delayMs);
-			else if (recipient.Creature != null)
+			else if (recipient != null && recipient.Creature != null)
 			{
 				recipient.Creature.ShowState(Expressions.GetStr(args[0], player, target, spell), fillColor, outlineColor, delayMs);
 				// TODO: Implement FloatCreatureText

@@ -288,18 +288,22 @@ namespace DHDM
 			if (dataToSend.Length > 0)
 				HubConnection.InvokeAsync("SetPlayerData", dataToSend);
 		}
+
 		public static void SendScrollLayerCommand(string commandData)
 		{
 			HubConnection.InvokeAsync("SendScrollLayerCommand", commandData);
 		}
+
 		public static void ExecuteSoundCommand(string commandData)
 		{
 			HubConnection.InvokeAsync("ExecuteSoundCommand", commandData);
 		}
+
 		public static void FloatPlayerText(int playerID, string message, string fillColor, string outlineColor)
 		{
 			HubConnection.InvokeAsync("FloatPlayerText", playerID, message, fillColor, outlineColor);
 		}
+
 		public static void ShowValidationIssue(int activePlayerId, ValidationAction validationAction, string floatText)
 		{
 			ValidationIssueDto validationIssueDto = new ValidationIssueDto();

@@ -102,16 +102,21 @@ namespace DHDM
 		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient, Character activePlayer)
 		{
 			lock (messageHandlingLock)
+			{
+				string streamDeckCommand = StripCommandsFromMessage(chatMessage.Message, out string commands);
 				foreach (IDungeonMasterCommand dungeonMasterCommand in Commands)
-				{
-					string streamDeckCommand = StripCommandsFromMessage(chatMessage.Message, out string commands);
 					if (dungeonMasterCommand.Matches(streamDeckCommand))
 					{
+						if (dungeonMasterCommand is SelectShortcutCommand shortcutCommand)
+						{
+							int playerId = DungeonMasterApp.GetPlayerIdFromName(shortcutCommand.playerInitial);
+							activePlayer = DungeonMasterApp.GetPlayerFromId(playerId);
+						}
 						Expressions.Do(commands, activePlayer);
 						dungeonMasterCommand.Execute(DungeonMasterApp, chatMessage);
 						return;
 					}
-				}
+			}
 		}
 
 		public void Initialize(IDungeonMasterApp dungeonMasterApp)

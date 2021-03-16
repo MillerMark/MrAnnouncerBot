@@ -332,6 +332,7 @@
     <Compile Include="DmEvent.cs" />
     <Compile Include="Events\DigitChangedEventArgs.cs" />
     <Compile Include="IObsManager.cs" />
+    <Compile Include="LiveFeedAnimation.cs" />
     <Compile Include="ObsManager.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />

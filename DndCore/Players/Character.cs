@@ -949,6 +949,14 @@ namespace DndCore
 			character.HisHer = characterDto.hisHer.InitialCap();
 			character.resistancesVulnerabilitiesImmunitiesStr = characterDto.resistancesVulnerabilitiesImmunitiesStr;
 			character.sourceName = characterDto.sourceName;
+			character.sceneName = characterDto.sceneName;
+			character.videoAnchorHorizontal = characterDto.videoAnchorHorizontal;
+			character.videoAnchorVertical = characterDto.videoAnchorVertical;
+			if (characterDto.normalScale > 0)
+				character.normalScale = characterDto.normalScale;
+			character.videoHeight = characterDto.videoHeight;
+			character.videoWidth = characterDto.videoWidth;
+
 			string class1 = characterDto.class1;
 			int level1 = MathUtils.GetInt(characterDto.level1);
 			SubClass subClass1 = DndUtils.ToSubClass(characterDto.subclass1);
@@ -2563,6 +2571,35 @@ namespace DndCore
 
 		[JsonIgnore]
 		public Spell JustWarnedAbout { get; set; }
+		/// <summary>
+		/// The name of the OBS scene holding the character's video feed.
+		/// </summary>
+		public string sceneName { get; set; }
+
+		/// <summary>
+		/// The percent across of the video feed's width where the anchor is located.
+		/// </summary>
+		public double videoAnchorHorizontal { get; set; }
+
+		/// <summary>
+		/// The scale of the live feed when seen as normal size. Defaults to 1.
+		/// </summary>
+		public double normalScale { get; set; } = 1;
+
+		/// <summary>
+		/// The percent down the video feed's height where the anchor is located.
+		/// </summary>
+		public double videoAnchorVertical { get; set; }
+
+		/// <summary>
+		/// The height of the video feed when it's scaled normally.
+		/// </summary>
+		public double videoHeight { get; set; }
+
+		/// <summary>
+		/// The width of the video feed when it's scaled normally.
+		/// </summary>
+		public double videoWidth { get; set; }
 
 		public void AddFeature(string featureName)
 		{

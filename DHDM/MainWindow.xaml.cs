@@ -485,6 +485,7 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			AnimateLiveFeed.RequestLiveFeedResize += AnimateLiveFeed_RequestLiveFeedResize;
 			UnleashSpellEffectsFunction.RequestUnleashSpellEffects += UnleashSpellEffectsFunction_RequestUnleashSpellEffects;
 			SetSceneFilterVisibilityFunction.RequestSetObsSceneFilterVisibility += SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility;
 			DigitManager.DigitChanged += DigitManager_DigitChanged;
@@ -621,7 +622,7 @@ namespace DHDM
 			if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
 			{
 				ea.Monster = AllMonsters.GetByKind(ActivePlayer.NextAnswer);
-				ActivePlayer.NextAnswer = null;
+				ActivePlayer.SetNextAnswer(null);
 				if (ea.Monster != null)
 					return;
 			}
@@ -1430,7 +1431,7 @@ namespace DHDM
 			}
 			else
 				selectedAnswer = answers.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
-			ActivePlayer.NextAnswer = null;
+			ActivePlayer.SetNextAnswer(null);
 			return selectedAnswer;
 		}
 
@@ -10842,6 +10843,20 @@ namespace DHDM
 		public void ShowFilter(string sourceName, string filterName, bool visible)
 		{
 			obsManager.SetFilterVisibility(sourceName, filterName, visible);
+		}
+
+		private void AnimateLiveFeed_RequestLiveFeedResize(object sender, LiveFeedEventArgs ea)
+		{
+			if (ea.Player is Character player)
+				obsManager.AnimateLiveFeed(player.sourceName, player.sceneName, 
+																	 player.videoAnchorHorizontal, player.videoAnchorVertical,
+																	 player.videoWidth, player.videoHeight,
+																	 ea.targetScale, ea.TimeMs, player.normalScale, player.Index);
+		}
+
+		public Character GetPlayerFromId(int playerId)
+		{
+			return Game.GetPlayerFromId(playerId);
 		}
 	}
 }

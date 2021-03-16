@@ -22,6 +22,12 @@ namespace DndCore
 		public string subclass2 { get; set; }
 		public string resistancesVulnerabilitiesImmunitiesStr { get; set; }
 		public string sourceName { get; set; }
+		public string sceneName { get; set; }
+		public double videoAnchorHorizontal { get; set; }
+		public double normalScale { get; set; }
+		public double videoAnchorVertical { get; set; }
+		public double videoWidth { get; set; }
+		public double videoHeight { get; set; }
 		public string level2 { get; set; }
 		public int playerId { get; set; }
 		public string items { get; set; }
