@@ -952,8 +952,6 @@ namespace DndCore
 			character.sceneName = characterDto.sceneName;
 			character.videoAnchorHorizontal = characterDto.videoAnchorHorizontal;
 			character.videoAnchorVertical = characterDto.videoAnchorVertical;
-			if (characterDto.normalScale > 0)
-				character.normalScale = characterDto.normalScale;
 			character.videoHeight = characterDto.videoHeight;
 			character.videoWidth = characterDto.videoWidth;
 
@@ -2580,11 +2578,6 @@ namespace DndCore
 		/// The percent across of the video feed's width where the anchor is located.
 		/// </summary>
 		public double videoAnchorHorizontal { get; set; }
-
-		/// <summary>
-		/// The scale of the live feed when seen as normal size. Defaults to 1.
-		/// </summary>
-		public double normalScale { get; set; } = 1;
 
 		/// <summary>
 		/// The percent down the video feed's height where the anchor is located.

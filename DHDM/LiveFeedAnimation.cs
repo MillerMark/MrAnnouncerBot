@@ -15,7 +15,7 @@ namespace DHDM
 		{
 		}
 
-		public LiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double startScale, double targetScale, double timeMs, double normalScale)
+		public LiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double startScale, double targetScale, double timeMs)
 		{
 			VideoHeight = videoHeight;
 			VideoWidth = videoWidth;
@@ -28,9 +28,8 @@ namespace DHDM
 			SceneName = sceneName;
 			VideoAnchorHorizontal = videoAnchorHorizontal;
 			VideoAnchorVertical = videoAnchorVertical;
-			TargetScale = targetScale * normalScale;
+			TargetScale = targetScale;
 			TimeMs = timeMs;
-			NormalScale = normalScale;
 			string key = GetKey();
 			if (allAnimations.ContainsKey(key))
 			{
@@ -66,7 +65,6 @@ namespace DHDM
 		public double VideoAnchorVertical { get; }
 		public double TargetScale { get; }
 		public double TimeMs { get; }
-		public double NormalScale { get; }
 		public double StartScale { get; set; }
 		public double PlayerX { get; set; }
 		public double VideoWidth { get; set; }

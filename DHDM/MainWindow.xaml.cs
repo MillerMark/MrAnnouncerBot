@@ -10851,7 +10851,7 @@ namespace DHDM
 				obsManager.AnimateLiveFeed(player.sourceName, player.sceneName, 
 																	 player.videoAnchorHorizontal, player.videoAnchorVertical,
 																	 player.videoWidth, player.videoHeight,
-																	 ea.targetScale, ea.TimeMs, player.normalScale, player.Index);
+																	 ea.targetScale, ea.TimeMs, player.Index);
 		}
 
 		public Character GetPlayerFromId(int playerId)

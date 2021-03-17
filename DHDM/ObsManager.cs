@@ -36,7 +36,7 @@ namespace DHDM
 				obsWebsocket.SetSourceFilterVisibility(part.Trim(), filterName, filterEnabled);
 		}
 
-		// TODO: Use GetSceneItem to smoothly scale video feeds up and down in 
+		// TODO: Optimize this for performance.
 		public SceneItem GetSceneItem(string sceneName, string itemName)
 		{
 			GetSceneListInfo sceneList = obsWebsocket.GetSceneList();
@@ -238,12 +238,12 @@ namespace DHDM
 			return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers + horizontalNudge;
 		}
 
-		void StartLiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double normalScale, double timeMs)
+		void StartLiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs)
 		{
 			SceneItem sceneItem = GetSceneItem(sceneName, itemName);
 
 			double startScale = sceneItem.Height / sceneItem.SourceHeight;
-			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs, normalScale);
+			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
 				SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
@@ -272,11 +272,11 @@ namespace DHDM
 			obsWebsocket.SetSceneItemPosition(e.ItemName, (float)newLeft, (float)newTop, e.SceneName);
 		}
 
-		public void AnimateLiveFeed(string sourceName, string sceneName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs, double normalScale, int playerIndex)
+		public void AnimateLiveFeed(string sourceName, string sceneName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs, int playerIndex)
 		{
 			string[] parts = sourceName.Split(';');
 			foreach (string part in parts)
-				StartLiveFeedAnimation(part.Trim(), sceneName, getPlayerX(playerIndex), videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, targetScale, normalScale, timeMs);
+				StartLiveFeedAnimation(part.Trim(), sceneName, getPlayerX(playerIndex), videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, targetScale, timeMs);
 		}
 
 		public IDungeonMasterApp DungeonMasterApp { get; set; }
