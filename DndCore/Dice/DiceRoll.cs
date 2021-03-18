@@ -20,6 +20,7 @@ namespace DndCore
 		public string DieTotalMessage { get; set; }
 		public string TextOutlineColor { get; set; }
 		public string TextFillColor { get; set; }
+		public double OverallDieScale { get; set; } = 1;
 		public int NumHalos { get; set; }
 		public int SingleOwnerId { get; set; } = int.MinValue;
 		public string OnFirstContactSound { get; set; }

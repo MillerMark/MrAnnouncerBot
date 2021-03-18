@@ -656,6 +656,7 @@ namespace DndCore
 			}
 			return false;
 		}
+
 		public static Skills FromSkillToAbility(Skills skill)
 		{
 			switch (skill)
@@ -863,6 +864,7 @@ namespace DndCore
 			}
 			return string.Empty;
 		}
+
 		public static string ToSkillItemName(string skillCheck)
 		{
 			Skills skill = ToSkill(skillCheck);
@@ -900,6 +902,49 @@ namespace DndCore
 		public static ScrollPage ToScrollPage(string scrollPage)
 		{
 			return GetElement<ScrollPage>(scrollPage);
+		}
+
+		public static Ability ToAbility(Skills skill)
+		{
+			switch (skill)
+			{
+				case Skills.strength:
+				case Skills.athletics:
+					return Ability.strength;
+
+				case Skills.dexterity:
+				case Skills.acrobatics:
+				case Skills.sleightOfHand:
+				case Skills.stealth:
+					return Ability.dexterity;
+
+				case Skills.constitution:
+					return Ability.constitution;
+
+				case Skills.intelligence:
+				case Skills.arcana:
+				case Skills.history:
+				case Skills.investigation:
+				case Skills.nature:
+				case Skills.religion:
+					return Ability.intelligence;
+
+				case Skills.wisdom:
+				case Skills.animalHandling:
+				case Skills.insight:
+				case Skills.medicine:
+				case Skills.perception:
+				case Skills.survival:
+					return Ability.wisdom;
+
+				case Skills.charisma:
+				case Skills.deception:
+				case Skills.intimidation:
+				case Skills.performance:
+				case Skills.persuasion:
+					return Ability.charisma;
+			}
+			return Ability.none;
 		}
 	}
 }

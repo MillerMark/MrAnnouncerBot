@@ -36,10 +36,10 @@ namespace DHDM
 				obsWebsocket.SetSourceFilterVisibility(part.Trim(), filterName, filterEnabled);
 		}
 
-		// TODO: Optimize this for performance.
 		public SceneItem GetSceneItem(string sceneName, string itemName)
 		{
-			GetSceneListInfo sceneList = obsWebsocket.GetSceneList();
+			if (sceneList == null)
+				sceneList = obsWebsocket.GetSceneList();
 			OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
 			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
 		}
@@ -226,6 +226,7 @@ namespace DHDM
 		double playerVideoRightMargin = 1384;
 
 		int numberOfPlayers = 4;
+		GetSceneListInfo sceneList;
 
 		public double getPlayerX(int playerIndex)
 		{
@@ -242,7 +243,13 @@ namespace DHDM
 		{
 			SceneItem sceneItem = GetSceneItem(sceneName, itemName);
 
-			double startScale = sceneItem.Height / sceneItem.SourceHeight;
+			SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(itemName, sceneName);
+			double startScale;
+			//if (sceneItem.Height == 0)  // Height for video feeds seems to be zero.
+				startScale = sceneItemProperties.Bounds.Height / videoHeight;
+			//else
+			//	startScale = sceneItemProperties.Bounds.Height / sceneItem.Height;
+
 			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
 				SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
@@ -258,18 +265,26 @@ namespace DHDM
 
 		private void SizeItem(LiveFeedAnimation e, float scale)
 		{
-			//double anchorOffsetHorizontal = e.VideoAnchorHorizontal * e.SceneItem.Width;
-			//double anchorOffsetVertical = e.VideoAnchorVertical * e.SceneItem.Height;
-			//double anchorLeft = e.SceneItem.XPos + anchorOffsetHorizontal;
-			//double anchorTop = e.SceneItem.YPos + anchorOffsetVertical;
 			double anchorLeft = e.PlayerX;
 			double anchorTop = 1080;
 
-			double newLeft = anchorLeft - e.VideoAnchorHorizontal * e.VideoWidth * scale;
+			double newLeft = anchorLeft - e.VideoAnchorHorizontal * Math.Abs(e.VideoWidth) * scale;
 			double newTop = anchorTop - e.VideoAnchorVertical * e.VideoHeight * scale;
+			//Console.WriteLine($"scale = {scale}");
 
-			obsWebsocket.SetSceneItemTransform(e.ItemName, 0, scale, scale, e.SceneName);
-			obsWebsocket.SetSceneItemPosition(e.ItemName, (float)newLeft, (float)newTop, e.SceneName);
+			SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
+			sceneItemProperties.Bounds = new SceneItemBoundsInfo()
+			{
+				Height = e.VideoHeight * scale,
+				Width = Math.Abs(e.VideoWidth) * scale,
+				Alignnment = sceneItemProperties.Bounds.Alignnment,
+				Type = sceneItemProperties.Bounds.Type
+			};
+
+			sceneItemProperties.Position = new SceneItemPositionInfo() { X = newLeft, Y = newTop, 
+				Alignment = sceneItemProperties.Position.Alignment };
+
+			obsWebsocket.SetSceneItemProperties(sceneItemProperties, e.SceneName);
 		}
 
 		public void AnimateLiveFeed(string sourceName, string sceneName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs, int playerIndex)

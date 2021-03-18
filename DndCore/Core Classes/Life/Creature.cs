@@ -938,8 +938,8 @@ namespace DndCore
 
 		public VantageKind GetVantage(DiceRollType type, Ability savingThrow, Skills skillCheck = Skills.none, VantageKind initialVantage = VantageKind.Normal)
 		{
-			int advantageCount = 0;
-			int disadvantageCount = 0;
+			int advantageCount = advantageCountThisRoll;
+			int disadvantageCount = disadvantageCountThisRoll;
 			switch (initialVantage)
 			{
 				case VantageKind.Advantage:
@@ -1361,6 +1361,15 @@ namespace DndCore
 				return rechargeable.TotalCharges;
 
 			return null;
+		}
+
+		public double GetStateDouble(string str)
+		{
+			object state = GetState(str);
+			if (state == null)
+				return double.NaN;
+
+			return Convert.ToDouble(state);
 		}
 
 		public void SetNextAnswer(string answer)
@@ -1897,6 +1906,23 @@ namespace DndCore
 			trailingEffectsThisRoll = string.Empty;
 			dieRollEffectsThisRoll = string.Empty;
 			dieRollMessageThisRoll = string.Empty;
+			advantageCountThisRoll = 0;
+			disadvantageCountThisRoll = 0;
+		}
+
+		int advantageCountThisRoll;
+		int disadvantageCountThisRoll;
+		public void AddVantageThisRoll(VantageKind vantageKind)
+		{
+			switch (vantageKind)
+			{
+				case VantageKind.Advantage:
+					advantageCountThisRoll++;
+					break;
+				case VantageKind.Disadvantage:
+					disadvantageCountThisRoll++;
+					break;
+			}
 		}
 	}
 }

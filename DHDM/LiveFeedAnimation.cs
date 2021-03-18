@@ -22,7 +22,7 @@ namespace DHDM
 			PlayerX = playerX;
 			StartScale = startScale;
 			timer = new Timer();
-			timer.Interval = 75;
+			timer.Interval = 40;
 			timer.Elapsed += Timer_Elapsed;
 			ItemName = itemName;
 			SceneName = sceneName;
@@ -81,6 +81,16 @@ namespace DHDM
 			timer.Start();
 		}
 
+		double EaseIn(double time, double startValue, double change, double duration)
+		{
+			time /= duration / 2;
+			if (time < 1)
+				return change / 2 * time * time + startValue;
+
+			time--;
+			return -change / 2 * (time * (time - 2) - 1) + startValue;
+		}
+
 		public double GetTargetScale()
 		{
 			double msElapsed = GetElapsedMs();
@@ -94,10 +104,7 @@ namespace DHDM
 				return TargetScale;
 			}
 
-			double percentComplete = msElapsed / TimeMs;
-			if (ItemName == "Fred Rage")
-				Console.WriteLine(StartScale + (TargetScale - StartScale) * percentComplete);
-			return StartScale + (TargetScale - StartScale) * percentComplete;
+			return EaseIn(msElapsed, StartScale, TargetScale - StartScale, TimeMs);
 		}
 		
 		private double GetElapsedMs()

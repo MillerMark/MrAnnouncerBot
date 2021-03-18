@@ -135,11 +135,13 @@ const failOutlineColor = '#ffffff';
 
 class PlayerRollOptions {
 	PlayerID: number;
+	Scale = 1;
 	Inspiration: string;
 	VantageKind: VantageKind;
 
 	constructor(dto: any) {
 		this.PlayerID = dto.PlayerID;
+		this.Scale = dto.Scale;
 		this.Inspiration = dto.Inspiration;
 		this.VantageKind = dto.VantageKind;
 	}
@@ -2645,6 +2647,7 @@ class DiceLayer {
 		diceRoll.spellId = dto.SpellID;
 		diceRoll.viewer = dto.Viewer;
 		diceRoll.singleOwnerId = dto.SingleOwnerId;
+		diceRoll.overallDieScale = dto.OverallDieScale;
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
@@ -3023,6 +3026,7 @@ class DiceRollData {
 	spellId: string;
 	viewer: string;
 	singleOwnerId: number;
+	overallDieScale: number;
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;

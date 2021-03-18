@@ -90,6 +90,13 @@
 	}
 
 	playAnimation(animationName: string, playerX: number): void {
+		const slashPos: number = animationName.indexOf('/');
+		let scale = 1;
+		if (slashPos >= 0) {
+			scale = +animationName.substring(slashPos + 1);
+			animationName = animationName.substr(0, slashPos);
+		}
+
 		const colonPos: number = animationName.indexOf(':');
 		let hueShift = 0;
 		if (colonPos >= 0) {
@@ -114,8 +121,9 @@
 			sprite = sprites.add(playerX, 1080);
 		else 
 			sprite = sprites.addShifted(playerX, 1080, 0, hueShift, 100, 75);
+		sprite.scale = scale;
 		if (flipped)
-			sprite.horizontalScale = -1;
+			sprite.horizontalScale = -sprite.scale;
 	}
 }
 

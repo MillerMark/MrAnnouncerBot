@@ -2724,13 +2724,15 @@ namespace DHDM
 			HubtasticBaseStation.AddWindup(serializedObject);
 		}
 
-		private static void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
+		private void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
 		{
+			double scale = GetScaleById(player.playerID);
 			if (actionShortcut.Windups.Count > 0)
 			{
 				List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
 				foreach (WindupDto windupDto in windups)
 				{
+					windupDto.Scale *= scale;
 					if (windupDto.EffectAvailableWhen == "usesMagicAmmunitionThisRoll == true")
 					{
 						if (player.ReadiedAmmunition != null)
@@ -3171,13 +3173,26 @@ namespace DHDM
 			cardHandManager.BeginUpdate();
 			try
 			{
+				SystemVariables.SavingThrowAbility = Ability.none;
+				SystemVariables.SkillCheckKind = Skills.none;
+				SystemVariables.SkillCheckAbility = Ability.none;
+
 				DiceRollType diceRollType = diceRoll.Type;
 				if (diceRollType == DiceRollType.SavingThrow)
+				{
+					SystemVariables.SavingThrowAbility = diceRoll.SavingThrow;
 					CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
+				}
 				else if (IsAttack(diceRollType))
+				{
 					CreatureAttacks(diceRoll.GetCreatureIds());
+				}
 				else if (diceRollType == DiceRollType.SkillCheck)
+				{
+					SystemVariables.SkillCheckKind = diceRoll.SkillCheck;
+					SystemVariables.SkillCheckAbility = DndUtils.ToAbility(diceRoll.SkillCheck);
 					CreaturesRollingSkillCheck(diceRoll.GetCreatureIds());
+				}
 			}
 			finally
 			{
@@ -3367,9 +3382,74 @@ namespace DHDM
 		}
 
 		DateTime lastDieRollTime;
+		void LastChanceToModifyDiceBeforeRoll(DiceRoll diceRoll)
+		{
+			AddVantageDice(diceRoll);
+			ScaleDiceToMatchPlayers(diceRoll);
+		}
+
+		private void AddVantageDice(DiceRoll diceRoll)
+		{
+			VantageKind vantageKind = diceRoll.VantageKind;
+			if (diceRoll.IsOnePlayer)
+			{
+				List<int> creatureIds = diceRoll.GetCreatureIds();
+				if (creatureIds != null && creatureIds.Count == 1)
+				{
+					BeforePlayerRolls(creatureIds[0], diceRoll, ref vantageKind);
+					diceRoll.VantageKind = vantageKind;
+					foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+						if (playerRollOptions.PlayerID == creatureIds[0])
+						{
+							playerRollOptions.VantageKind = vantageKind;
+						}
+				}
+			}
+			else
+			{
+				foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+				{
+					vantageKind = playerRollOptions.VantageKind;
+					BeforePlayerRolls(playerRollOptions.PlayerID, diceRoll, ref vantageKind);
+				}
+			}
+		}
+
+		private void ScaleDiceToMatchPlayers(DiceRoll diceRoll)
+		{
+			foreach (DiceDto diceDto in diceRoll.DiceDtos)
+			{
+				if (diceDto.CreatureId >= 0)
+					diceDto.Scale = GetScaleById(diceDto.CreatureId);
+			}
+			if (diceRoll.IsOnePlayer)
+			{
+				List<int> creatureIds = diceRoll.GetCreatureIds();
+				if (creatureIds != null && creatureIds.Count == 1 && creatureIds[0] >= 0)
+					diceRoll.OverallDieScale = GetScaleById(creatureIds[0]);
+			}
+			foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+			{
+				playerRollOptions.Scale = GetScaleById(playerRollOptions.PlayerID);
+			}
+		}
+
+		private double GetScaleById(int playerID)
+		{
+			Character player = Game.GetPlayerFromId(playerID);
+			if (player != null)
+			{
+				double dieScale = player.GetStateDouble("_dieScale");
+				if (!double.IsNaN(dieScale))
+					return dieScale;
+			}
+			return 1;
+		}
+
 		private void SeriouslyRollTheDice(DiceRoll diceRoll)
 		{
 			CardEventManager.ConditionRoll(diceRoll);
+			LastChanceToModifyDiceBeforeRoll(diceRoll);
 			lastDieRollTime = DateTime.Now;
 			if (dynamicThrottling)
 			{
@@ -3588,7 +3668,9 @@ namespace DHDM
 							diceRoll.SingleOwnerId = checkbox.PlayerId;
 
 						string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
-						BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
+						//BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
+						//diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
+						// Will add advantage/disadvantage later.
 						diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
 						foundPlayer = true;
 					}
@@ -3597,14 +3679,12 @@ namespace DHDM
 				if (!foundPlayer)
 				{
 					diceRoll.SingleOwnerId = ActivePlayerId;
-					BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
-					diceRoll.VantageKind = diceRollKind;
+					//BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
+					//diceRoll.VantageKind = diceRollKind;
 				}
 			}
 
 			diceRoll.AddCritFailMessages(type);
-
-
 
 			diceRoll.ThrowPower = new Random().Next() * 2.8;
 			if (diceRoll.ThrowPower < 0.3)
@@ -7113,6 +7193,10 @@ namespace DHDM
 					}
 				}
 			}
+			double dieScale = fred.GetStateDouble("_dieScale");
+			if (!double.IsNaN(dieScale))
+				movement += $"/{dieScale}";
+
 			HubtasticBaseStation.MoveFred(movement);
 		}
 
