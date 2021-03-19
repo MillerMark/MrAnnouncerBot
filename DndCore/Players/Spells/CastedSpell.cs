@@ -162,7 +162,7 @@ namespace DndCore
 		public ValidationResult GetValidation(Character spellCaster, Target target)
 		{
 			ValidationResult validationResult = new ValidationResult();
-			if (Spell.MinTargetsToCast > 0)
+			if (Spell.MinTargetsToCast > 0 || Spell.MaxTargetsToCast > 0)
 			{
 				// TODO: Add warnings if min threshold satisfied but more targets are available.
 
@@ -184,7 +184,15 @@ namespace DndCore
 					else
 						validationResult.MessageOverPlayer = $"Need at least {Spell.MinTargetsToCast} targets to cast {Spell.Name}!";
 				}
-				if (target.Count > Spell.MaxTargetsToCast)
+				else if (target.Count < Spell.MaxTargetsToCast)
+				{
+					validationResult.ValidationAction = ValidationAction.Warn;
+					if (Spell.MaxTargetsToCast == 1)
+						validationResult.MessageOverPlayer = $"Missing a target for {Spell.Name}?";
+					else
+						validationResult.MessageOverPlayer = $"You can have up to {Spell.MaxTargetsToCast} targets with {Spell.Name}!";
+				}
+				else if (target.Count > Spell.MaxTargetsToCast)
 				{
 					validationResult.ValidationAction = ValidationAction.Stop;
 					if (Spell.MaxTargetsToCast == 1)

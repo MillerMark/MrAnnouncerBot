@@ -330,16 +330,21 @@
     <Compile Include="CardEvents\StampedeCardEvent.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
+    <Compile Include="DmMoods\DmMood.cs" />
+    <Compile Include="DmMoods\DmMoodManager.cs" />
     <Compile Include="Events\DigitChangedEventArgs.cs" />
     <Compile Include="IObsManager.cs" />
     <Compile Include="LiveFeedAnimation.cs" />
-    <Compile Include="ObsManager.cs" />
+    <Compile Include="ObsManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
     <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
     <Compile Include="StreamDeck Commands\ScrollPageCommand.cs" />
+    <Compile Include="StreamDeck Commands\SetDmMood.cs" />
     <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowFilter.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />

@@ -50,6 +50,8 @@ namespace DndTests
 			Assert.AreEqual(DamageType.Thunder, DndUtils.ToDamage("thunder"));
 			Assert.AreEqual(DamageType.Condition, DndUtils.ToDamage("condition"));
 			Assert.AreEqual(DamageType.Bane, DndUtils.ToDamage("bane"));
+			Assert.AreEqual(DamageType.DamageAdd, DndUtils.ToDamage("damageadd"));
+			Assert.AreEqual(DamageType.DamageSubtract, DndUtils.ToDamage("damagesubtract"));
 			Assert.AreEqual(DamageType.Bless, DndUtils.ToDamage("bless"));
 			Assert.AreEqual(DamageType.Acid, DndUtils.ToDamage("acid"));
 			Assert.AreEqual(DamageType.Bludgeoning, DndUtils.ToDamage("bludgeoning"));

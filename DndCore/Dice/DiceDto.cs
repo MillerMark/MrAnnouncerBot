@@ -109,11 +109,21 @@ namespace DndCore
 			return type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow;
 		}
 
+		static bool IsDamage(DamageType damageType)
+		{
+			return damageType != DamageType.Bane && 
+						 damageType != DamageType.Bless && 
+						 damageType != DamageType.None && 
+						 damageType != DamageType.Superiority && 
+						 damageType != DamageType.Condition;
+		}
 		static DiceDto FromRoll(Roll roll, string dieBackColor, string dieFontColor, int creatureId, string playerName)
 		{
 			// TODO: Set color for creature, set label, set player name.
 			DiceDto result = new DiceDto();
 			result.DamageType = DndUtils.ToDamage(roll.Descriptor);
+			if (IsDamage(result.DamageType))
+				result.DieCountsAs = DieCountsAs.damage;
 			result.Quantity = (int)roll.Count;
 			result.BackColor = dieBackColor;
 			result.FontColor = dieFontColor;

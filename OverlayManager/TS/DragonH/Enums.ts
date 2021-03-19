@@ -306,7 +306,9 @@ enum DamageType {
 	Superiority = 8192,
   Condition = 16384,
   Bane = 32768,
-  Bless = 65536
+  Bless = 65536,
+  DamageAdd = 131072,
+  DamageSubtract = 262144
 }
 
 enum WeaponType {

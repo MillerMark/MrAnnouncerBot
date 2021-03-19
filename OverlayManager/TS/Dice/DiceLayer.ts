@@ -1061,8 +1061,13 @@ class DiceLayer {
 		const hsl = this.rgbToHSL(die.diceColor);
 		const blessBackSprite: SpriteProxy = this.blessBack.addShifted(960, 540, -1, hsl.h);
 		const blessFrontSprite: SpriteProxy = this.blessFront.addShifted(960, 540, -1, hsl.h);
+
+		blessBackSprite.scale = die.scale;
+		blessFrontSprite.scale = die.scale;
+
 		blessBackSprite.autoRotationDegeesPerSecond = Random.between(-20, 20);
 		blessFrontSprite.autoRotationDegeesPerSecond = Random.between(-20, 20);
+
 		this.initSprite(blessFrontSprite, die);
 		this.initSprite(blessBackSprite, die);
 
@@ -1106,6 +1111,7 @@ class DiceLayer {
 
 	addBane(die: IDie, sprites: Sprites, x: number, y: number, startingFrameIndex: number, hueShift: number, saturation: number, brightness: number, rotationOffset: number, autoRotation: number): SpriteProxy {
 		const sprite: SpriteProxy = sprites.addShifted(x, y, startingFrameIndex, hueShift, saturation, brightness);
+		sprite.scale = die.scale;
 		sprite.rotation = rotationOffset;
 		sprite.initialRotation = rotationOffset;
 		sprite.autoRotationDegeesPerSecond = autoRotation;

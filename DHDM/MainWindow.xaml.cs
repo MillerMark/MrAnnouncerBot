@@ -164,6 +164,8 @@ namespace DHDM
 			viewerSpellcaster.Game = game;
 		}
 
+		DmMoodManager dmMoodManager;
+
 		private void InitializeGame()
 		{
 			CardCommands.RegisterDiceRoller(this);
@@ -171,6 +173,7 @@ namespace DHDM
 			game = new DndGame();
 			viewerManager = new ViewerManager(this);
 			obsManager.Initialize(game, this);
+			dmMoodManager = new DmMoodManager(obsManager);
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
@@ -522,12 +525,12 @@ namespace DHDM
 			UnleashSpellEffectsNow(playerId);
 		}
 
-		public class SceneTimer: System.Timers.Timer
+		public class SceneTimer : System.Timers.Timer
 		{
 			public ObsSceneFilterEventArgs ea;
 			public SceneTimer()
 			{
-				
+
 			}
 		}
 
@@ -970,12 +973,32 @@ namespace DHDM
 			if (Rolls == null)
 				return results;
 
-			foreach (IndividualRoll Roll in Rolls)
-				if (Roll.damageType != DamageType.None && (Roll.damageType != DamageType.Bane || Roll.damageType != DamageType.Bless) && Roll.damageType != DamageType.Condition && Roll.damageType != DamageType.Superiority)
-					if (results.ContainsKey(Roll.damageType))
-						results[Roll.damageType] += Roll.value;
+			foreach (IndividualRoll roll in Rolls)
+				if (roll.damageType != DamageType.None &&
+					(roll.damageType != DamageType.Bane || roll.damageType != DamageType.Bless) &&
+					(roll.damageType != DamageType.DamageAdd || roll.damageType != DamageType.DamageSubtract) &&
+					roll.damageType != DamageType.Condition && roll.damageType != DamageType.Superiority)
+					if (results.ContainsKey(roll.damageType))
+						results[roll.damageType] += roll.value;
 					else
-						results.Add(Roll.damageType, Roll.value);
+						results.Add(roll.damageType, roll.value);
+
+			if (results.Count == 0)
+			{
+				results.Add(DamageType.None, 0);
+			}
+
+			foreach (IndividualRoll roll in Rolls)
+				if (roll.damageType == DamageType.DamageAdd)
+					foreach (DamageType damageType in results.Keys)
+						results[damageType] += roll.value;
+				else if (roll.damageType == DamageType.DamageSubtract)
+					foreach (DamageType damageType in results.Keys)
+					{
+						results[damageType] -= roll.value;
+						if (results[damageType] < 1)
+							results[damageType] = 1;
+					}
 
 			return results;
 		}
@@ -3396,12 +3419,15 @@ namespace DHDM
 				List<int> creatureIds = diceRoll.GetCreatureIds();
 				if (creatureIds != null && creatureIds.Count == 1)
 				{
-					BeforePlayerRolls(creatureIds[0], diceRoll, ref vantageKind);
+
 					diceRoll.VantageKind = vantageKind;
 					foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
 						if (playerRollOptions.PlayerID == creatureIds[0])
 						{
+							vantageKind = playerRollOptions.VantageKind;
+							BeforePlayerRolls(creatureIds[0], diceRoll, ref vantageKind);
 							playerRollOptions.VantageKind = vantageKind;
+							break;
 						}
 				}
 			}
@@ -3417,20 +3443,24 @@ namespace DHDM
 
 		private void ScaleDiceToMatchPlayers(DiceRoll diceRoll)
 		{
-			foreach (DiceDto diceDto in diceRoll.DiceDtos)
-			{
-				if (diceDto.CreatureId >= 0)
-					diceDto.Scale = GetScaleById(diceDto.CreatureId);
-			}
 			if (diceRoll.IsOnePlayer)
 			{
 				List<int> creatureIds = diceRoll.GetCreatureIds();
 				if (creatureIds != null && creatureIds.Count == 1 && creatureIds[0] >= 0)
 					diceRoll.OverallDieScale = GetScaleById(creatureIds[0]);
 			}
-			foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+			else
 			{
-				playerRollOptions.Scale = GetScaleById(playerRollOptions.PlayerID);
+				foreach (DiceDto diceDto in diceRoll.DiceDtos)
+				{
+					if (diceDto.CreatureId >= 0)
+						diceDto.Scale = GetScaleById(diceDto.CreatureId);
+				}
+
+				foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+				{
+					playerRollOptions.Scale = GetScaleById(playerRollOptions.PlayerID);
+				}
 			}
 		}
 
@@ -6328,6 +6358,7 @@ namespace DHDM
 
 		private void LoadEverything()
 		{
+			dmMoodManager.Invalidate();
 			AllKnownCards.Invalidate();
 			AllDndItems.Invalidate();
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
@@ -10468,6 +10499,10 @@ namespace DHDM
 				return false;
 			if (damageType == DamageType.Bless)
 				return false;
+			if (damageType == DamageType.DamageAdd)
+				return false;
+			if (damageType == DamageType.DamageSubtract)
+				return false;
 			return true;
 		}
 
@@ -10932,7 +10967,7 @@ namespace DHDM
 		private void AnimateLiveFeed_RequestLiveFeedResize(object sender, LiveFeedEventArgs ea)
 		{
 			if (ea.Player is Character player)
-				obsManager.AnimateLiveFeed(player.sourceName, player.sceneName, 
+				obsManager.AnimateLiveFeed(player.sourceName, player.sceneName,
 																	 player.videoAnchorHorizontal, player.videoAnchorVertical,
 																	 player.videoWidth, player.videoHeight,
 																	 ea.targetScale, ea.TimeMs, player.Index);
@@ -10941,6 +10976,11 @@ namespace DHDM
 		public Character GetPlayerFromId(int playerId)
 		{
 			return Game.GetPlayerFromId(playerId);
+		}
+
+		public void SetDmMood(string moodName)
+		{
+			dmMoodManager.SetMood(moodName);
 		}
 	}
 }

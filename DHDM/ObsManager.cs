@@ -9,6 +9,15 @@ using OBSWebsocketDotNet.Types;
 
 namespace DHDM
 {
+	public class SourceVisibilityTimer: System.Timers.Timer
+	{
+		
+		public SourceVisibilityTimer()
+		{
+			
+		}
+		public SetObsSourceVisibilityEventArgs ea { get; set; }
+	}
 	public class ObsManager : IObsManager
 	{
 		public static event EventHandler<string> SceneChanged;
@@ -148,16 +157,22 @@ namespace DHDM
 		{
 			weatherManager.ShowWeather(weatherKeyword);
 		}
+
+		public void SetSourceVisibility(string sourceName, string sceneName, bool visible, double delaySeconds = 0)
+		{
+			SetSourceVisibility(new SetObsSourceVisibilityEventArgs(sourceName, sceneName, visible, delaySeconds));
+		}
+
 		public void SetSourceVisibility(SetObsSourceVisibilityEventArgs ea)
 		{
 			if (ea.DelaySeconds > 0)
 			{
-				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
-				delayFloatTextTimer.Interval = TimeSpan.FromSeconds(ea.DelaySeconds);
-				ea.DelaySeconds = 0;
-				delayFloatTextTimer.Tick += new EventHandler(SetObsSourceVisibiltyNow);
-				delayFloatTextTimer.Tag = ea;
-				delayFloatTextTimer.Start();
+				SourceVisibilityTimer delayShowSourceTimer = new SourceVisibilityTimer();
+				delayShowSourceTimer.Interval = ea.DelaySeconds * 1000;
+				ea.DelaySeconds = 0;  // Prevents us from setting multiple timers for a single source switch.
+				delayShowSourceTimer.Elapsed += DelayShowSourceTimer_Elapsed;
+				delayShowSourceTimer.ea = ea;
+				delayShowSourceTimer.Start();
 				return;
 			}
 
@@ -171,17 +186,15 @@ namespace DHDM
 			}
 		}
 
-		void SetObsSourceVisibiltyNow(object sender, EventArgs e)
+		private void DelayShowSourceTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
 		{
-			if (!(sender is DispatcherTimer dispatcherTimer))
-				return;
-
-			dispatcherTimer.Stop();
-
-			if (!(dispatcherTimer.Tag is SetObsSourceVisibilityEventArgs ea))
-				return;
-			SetSourceVisibility(ea);
+			if (sender is SourceVisibilityTimer timer)
+			{
+				timer.Stop();
+				SetSourceVisibility(timer.ea);
+			}
 		}
+
 		public void Connect()
 		{
 			if (obsWebsocket.IsConnected)

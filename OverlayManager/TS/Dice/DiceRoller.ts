@@ -67,7 +67,7 @@ enum WildMagic {
 
 class OffsetMultiplier {
 	constructor(public offset: number, public multiplier = 1) {
-		
+
 	}
 }
 
@@ -150,6 +150,7 @@ interface IDie {
 	scoreHasBeenTallied: boolean;
 	isD20: boolean;
 	creatureID: number;
+	labelColor: string;
 	diceColor: string;
 	hasNotHitFloorYet: boolean;
 	getObject();
@@ -1061,6 +1062,8 @@ class DieRoller {
 		const cardScoreModsList: Map<number, Array<string>> = new Map<number, Array<string>>();
 		const inspirationValue: Map<number, number> = new Map<number, number>();
 		const damageMap: Map<DamageType, number> = new Map<DamageType, number>();
+		let damageAdd = 0;
+		let damageSubtract = 0;
 		let rawDamageRoll = 0;
 		let totalHealth = 0;
 		let totalExtra = 0;
@@ -1182,18 +1185,32 @@ class DieRoller {
 					}
 					{
 						const damageType: DamageType = die.damageType || DamageType.None;
-						const currentDamage: number = damageMap.get(damageType);
-						if (currentDamage) {
-							//console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
-							damageMap.set(damageType, currentDamage + topNumber);
+						if (damageType === DamageType.DamageAdd) {
+							damageAdd += topNumber;
+							if (logProgress) {
+								console.log('damageAdd: ' + damageAdd);
+							}
+						}
+						else if (damageType === DamageType.DamageSubtract) {
+							damageSubtract += topNumber;
+							if (logProgress) {
+								console.log('damageSubtract: ' + damageSubtract);
+							}
 						}
 						else {
-							//console.log(`New damage for ${DamageType[damageType]}: ${topNumber}`);
-							damageMap.set(damageType, topNumber + extraDamage);
-							extraDamage = 0;
-						}
+							const currentDamage: number = damageMap.get(damageType);
+							if (currentDamage) {
+								//console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
+								damageMap.set(damageType, currentDamage + topNumber);
+							}
+							else {
+								//console.log(`New damage for ${DamageType[damageType]}: ${topNumber}`);
+								damageMap.set(damageType, topNumber + extraDamage);
+								extraDamage = 0;
+							}
 
-						rawDamageRoll += topNumber;
+							rawDamageRoll += topNumber;
+						}
 						break;
 					}
 				case DieCountsAs.health:
@@ -1250,8 +1267,7 @@ class DieRoller {
 			const topNumber: number = die.getTopNumber();
 
 			if (this.diceRollData.hasMultiPlayerDice) {
-				if (die.creatureID !== Creature.invalidCreatureId)
-				{
+				if (die.creatureID !== Creature.invalidCreatureId) {
 					this.addDieToMultiPlayerSummary(die, topNumber, cardDamageModsList, cardScoreModsList);
 					this.attachDieLabel(die);
 				}
@@ -1346,6 +1362,21 @@ class DieRoller {
 		this.damageModMultiplier = damageModMultiplier;
 		this.totalHealthPlusModifier = totalHealth + this.healthModifierThisRoll;
 		this.totalExtraPlusModifier = totalExtra + this.extraModifierThisRoll;
+
+		const damageDelta: number = damageAdd - damageSubtract;
+		this.rawDamageRoll += damageDelta;
+		this.totalDamagePlusModifiers += damageDelta;
+
+		//console.log('damageDelta: ' + damageDelta);
+
+		if (damageDelta !== 0)
+			damageMap.forEach((value: number, key: DamageType) => {
+				damageMap.set(key, damageMap.get(key) + damageDelta);
+				if (damageMap.get(key) < 1)
+					damageMap.set(key, 1);
+			});
+
+		//console.log(damageMap);
 
 		return new RollResults(totalScoringDice, blessBaneLuckMods, cardDamageMods, cardDamageModsList, cardScoreMods, cardScoreModsList, nat20s, toHitModifier, singlePlayerId, playerIdForTextMessages, skillSavingModifier, rawDamageRoll, totalHealth, totalExtra, maxDamage, damageMap);
 	}
@@ -1661,6 +1692,12 @@ class DieRoller {
 		if (str === 'bless')
 			return DamageType.Bless;
 
+		if (str === 'damageadd')
+			return DamageType.DamageAdd;
+
+		if (str === 'damagesubtract')
+			return DamageType.DamageSubtract;
+
 		if (str === 'necrotic')
 			return DamageType.Necrotic;
 
@@ -1790,6 +1827,16 @@ class DieRoller {
 				backgroundColor = hsl.toHex();
 			}
 
+			if (damageType === DamageType.DamageAdd)
+			{
+				backgroundColor = '#aa0000';
+				textColor = '#ffffff';
+			}
+			else if (damageType === DamageType.DamageSubtract) {
+				backgroundColor = '#000000';
+				textColor = '#ffffff';
+			}
+
 			switch (numSides) {
 				case 4:
 					// @ts-ignore - DiceD4
@@ -1899,6 +1946,16 @@ class DieRoller {
 						case DamageType.Bane:
 							diceLayer.attachBane(die);
 							break;
+						case DamageType.DamageSubtract:
+							die.diceColor = '#aa000';
+							die.labelColor = '#ffffff';
+							diceLayer.attachBane(die);
+							break;
+						case DamageType.DamageAdd:
+							die.diceColor = '#aa000';
+							die.labelColor = '#ffffff';
+							diceLayer.attachBless(die);
+							break;
 						case DamageType.Bless:
 							diceLayer.attachBless(die);
 							break;
@@ -1910,8 +1967,15 @@ class DieRoller {
 				else if (rollType === DieCountsAs.totalScore || rollType === DieCountsAs.savingThrow || rollType === DieCountsAs.extra) {
 					if (damageType === DamageType.Bane)
 						diceLayer.attachBane(die);
-					else if (damageType === DamageType.Bless)
+					else if (damageType === DamageType.Bless) {
 						diceLayer.attachBless(die);
+					}
+					else if (damageType === DamageType.DamageAdd) {
+						diceLayer.attachBless(die);
+					}
+					else if (damageType === DamageType.DamageSubtract) {
+						diceLayer.attachBane(die);
+					}
 				}
 
 				if (rollType === DieCountsAs.health) {
@@ -2050,10 +2114,9 @@ class DieRoller {
 				dieSpec = dieSpec.substr(0, parenIndex);
 			}
 
-			if (damageType === DamageType.Bane || damageType === DamageType.Bless)
+			if (damageType === DamageType.Bane || damageType === DamageType.Bless || damageType === DamageType.DamageAdd || damageType === DamageType.DamageSubtract)
 				isMagic = true;
-
-			if (damageType !== DamageType.None)
+			else if (damageType !== DamageType.None)
 				isMagic = false;  // No magic rings around damage die.
 
 			const dieAndModifier = dieSpec.split('+');
@@ -2383,7 +2446,7 @@ class DieRoller {
 			totalDamageHealthExtraStr = this.totalExtraPlusModifier.toString();
 			modifierStr = diceLayer.getModStr(this.extraModifierThisRoll);
 		}
-		else 
+		else
 			return;
 
 		diceLayer.showTotalHealthDamage(totalDamageHealthExtraStr, this.attemptedRollWasSuccessful, reportLabel, fontColor, outlineColor, this.diceRollData.diceGroup, textCenter);
@@ -2773,9 +2836,9 @@ class DieRoller {
 				return true;
 
 			if (lastCreatureId !== item.CreatureId)
-				return true;	
+				return true;
 		}
-		
+
 		return false;
 	}
 
@@ -4510,7 +4573,7 @@ class DieRoller {
 		});
 	}
 
-  getCreatureNameFromId(dice: IDie[], creatureID: number): string {
+	getCreatureNameFromId(dice: IDie[], creatureID: number): string {
 		let creatureName = '';
 		dice.forEach((die: IDie) => {
 			if (die.creatureID === creatureID)
@@ -4518,7 +4581,7 @@ class DieRoller {
 		});
 
 		return creatureName;
-  }
+	}
 
 	showSavingThrowTotalsOverDice(playerName: string, dieTotal: number, hiddenThreshold: number, diceGroup: DiceGroup) {
 		const modifier: number = this.getDieModifier(playerName);
