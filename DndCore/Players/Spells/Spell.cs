@@ -666,5 +666,59 @@ namespace DndCore
 
 			return result;
 		}
+
+		string GetNextSentence(ref string description)
+		{
+			string result;
+			int dotPos = description.IndexOf(". ");
+			if (dotPos == -1)
+				dotPos = description.IndexOf(".");
+			if (dotPos == -1)
+			{
+				result = description;
+				description = string.Empty;
+				return result;
+			}
+
+			result = description.Substring(0, dotPos + 1) + " ";
+			description = description.Substring(dotPos + 1).Trim();
+			return result;
+		}
+
+		public string GetShortDescription()
+		{
+			// 
+			string description = Description.Replace("**", "");
+
+			description = description
+				.Replace("{spell_DieStrRaw}", DieStrRaw)
+				.Replace("{spell_DieStr}", DieStr)
+				.Replace("{SpellcastingAbilityModifierStr}", "+3")
+				.Replace("{spell_AmmoCount_word}", AmmoCount_word)
+				.Replace("{spell_AmmoCount_Word}", AmmoCount_Word)
+				.Replace("{spell_AmmoCount}", AmmoCount.ToString())
+				.Replace("{spell_DoubleAmmoCount}", DoubleAmmoCount.ToString());
+
+			string shortDescription = string.Empty;
+			const int maxLength = 200;
+			while (shortDescription.Length < maxLength)
+			{
+				string nextSentence = GetNextSentence(ref description);
+				if (shortDescription.Length + nextSentence.Length > maxLength && shortDescription.Length > 0)
+					return shortDescription;
+				shortDescription += nextSentence;
+			}
+			return shortDescription;
+		}
+
+		public string GetSpellPageNameDndBeyond()
+		{
+			return $"dndbeyond.com/spells/{Name.ToLower().Replace(' ', '-').Trim()}";
+		}
+
+		public string GetSpellSearchQueryDndBeyond()
+		{
+			return $"dndbeyond.com/search?q={Name.ToLower().Replace(' ', '+').Trim()}";
+		}
 	}
 }

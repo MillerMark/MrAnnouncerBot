@@ -472,25 +472,32 @@ class Sprites {
 			return 0;
 		}
 
+		const savedContextAlpha: number = context.globalAlpha;
+
 		this.advanceFrames(now);
 
 		let numSpritesDrawn = 0;
 
 		this.spriteProxies.forEach((sprite: SpriteProxy) => {
-			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
+			numSpritesDrawn = this.drawSprite(context, sprite, now, numSpritesDrawn);
+		});
 
-			if (sprite.stillAlive(now, this.baseAnimation.frameCount) && sprite.systemDrawn) {
-				if (now >= sprite.timeStart) {
-					numSpritesDrawn++;
-					sprite.drawBackground(context, now);
-					sprite.draw(this.baseAnimation, context, now, this.spriteWidth, this.spriteHeight, this.originX, this.originY);
-					sprite.drawAdornments(context, now);
-				}
-			}
-		}, this);
-
-		context.globalAlpha = 1.0;
+		context.globalAlpha = savedContextAlpha;
 		this.removeExpiredSprites(now);
+		return numSpritesDrawn;
+	}
+
+	public drawSprite(context: CanvasRenderingContext2D, sprite: SpriteProxy, nowMs: number, numSpritesDrawn = 0) {
+		context.globalAlpha = sprite.getAlpha(nowMs) * this.opacity;
+
+		if (sprite.stillAlive(nowMs, this.baseAnimation.frameCount) && sprite.systemDrawn) {
+			if (nowMs >= sprite.timeStart) {
+				numSpritesDrawn++;
+				sprite.drawBackground(context, nowMs);
+				sprite.draw(this.baseAnimation, context, nowMs, this.spriteWidth, this.spriteHeight, this.originX, this.originY);
+				sprite.drawAdornments(context, nowMs);
+			}
+		}
 		return numSpritesDrawn;
 	}
 

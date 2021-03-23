@@ -1719,6 +1719,23 @@ namespace DHDM
 			TellViewers($"{username}, your dice trailing effect is now {viewer.TrailingEffects}.");
 		}
 
+		bool ExecuteSpellCommand(string message, ChatMessage chatMessage)
+		{
+			if (!message.StartsWith("!"))
+				return false;
+
+			string possibleSpellName = message.Substring(1);
+			Spell spell = AllSpells.Get(possibleSpellName);
+			if (spell != null)
+			{
+				TellViewers($"{spell.Name}: {spell.GetShortDescription()}");
+				// https://www.dndbeyond.com/search?q=mage+hand
+				TellViewers($"For more information on {spell.Name}, see {spell.GetSpellSearchQueryDndBeyond()}");
+				return true;
+			}
+			return false;
+		}
+
 		void ExecuteDragonHumpersChatCommand(ChatMessage chatMessage)
 		{
 			string message = chatMessage.Message;
@@ -1732,6 +1749,11 @@ namespace DHDM
 				TellViewers("Use the !te command to set trailing effects for custom die rolls (triggered by playing cards from streamloots.com/DragonHumpers ). Choose from: " + AllTrailingEffects.GetList(", "));
 			else if (lowerMessage == "!dc" || lowerMessage == "!dc ")
 				TellViewers("Use the !dc command followed by an HTML color string to set your custom die roll color (triggered by playing cards from streamloots.com/DragonHumpers ). Example: !dc #690096");
+			else
+			{
+				if (ExecuteSpellCommand(message, chatMessage))
+					return;
+			}
 		}
 
 		void UseViewerCharge(string username)
@@ -7348,6 +7370,11 @@ namespace DHDM
 		public void TellViewers(string message)
 		{
 			SendMessage(message, DragonHumpersChannel);
+
+			if (System.Diagnostics.Debugger.IsAttached && !suppressMessagesToCodeRushedChannel)
+			{
+				TellCodeRushed(message);
+			}
 		}
 
 		public void TellCodeRushed(string message)
@@ -7359,10 +7386,6 @@ namespace DHDM
 		{
 			TellDungeonMaster(message);
 			TellViewers(message);
-			if (System.Diagnostics.Debugger.IsAttached && !suppressMessagesToCodeRushedChannel)
-			{
-				TellCodeRushed(message);
-			}
 		}
 
 		void ActivatePendingShortcuts(object sender, EventArgs e)

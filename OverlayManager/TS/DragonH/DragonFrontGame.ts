@@ -23,8 +23,230 @@ interface ScaleFactor {
 	scaleFactor: number;
 }
 
+type AnimatedTextAlign = 'left' | 'center' | 'right';
+
+class AnimatedText {
+	marginBetweenLetters = 14;
+	static readonly lowerCaseScale: number = 0.8;
+
+	isLowerCase(character: string): boolean {
+		return character && character.length === 1 &&
+			character.toLowerCase() === character &&
+			character.toUpperCase() !== character;
+	}
+
+	getWidth(text: string): number {
+		let result = 0;
+		const spaceWidth = 58;
+		for (let i = 0; i < text.length; i++) {
+			let caseScale = 1;
+			if (this.isLowerCase(text[i]))
+				caseScale = AnimatedText.lowerCaseScale;
+			const fontEntry: AnimatedFont = this.font.get(text[i].toUpperCase());
+			if (fontEntry) {
+				result += fontEntry.width * this.scale * caseScale;
+
+				const betweenTwoLetters: boolean = i < text.length - 1 && !!this.font.get(text[i + 1].toUpperCase());
+				if (betweenTwoLetters)
+					result += this.marginBetweenLetters * caseScale;
+			}
+			else {
+				result += spaceWidth * this.scale;
+			}
+			
+		}
+
+		return result;
+	}
+
+	spriteMap: Map<number, SpriteProxy> = new Map<number, SpriteProxy>();
+	constructor(private font: Map<string, AnimatedFont>, public text: string, public x: number, public y: number, hueShift: number,
+		public scale = 1, public alignment: AnimatedTextAlign) {
+
+		let xOffset = 0;
+
+		let left: number = x;
+		if (alignment === 'center') {
+			left = x - this.getWidth(text) / 2;
+		}
+		else if (alignment === 'right') {
+			left = x - this.getWidth(text);
+		}
+
+		for (let i = 0; i < text.length; i++) {
+			const isLowerCase: boolean = this.isLowerCase(text[i]);
+			const animatedFont: AnimatedFont = font.get(text[i].toUpperCase());
+			if (animatedFont) {
+				const sprite: SpriteProxy = animatedFont.sprites.addShifted(left + xOffset, y, -1, hueShift);
+				if (Random.chancePercent(50))
+					sprite.animationReverseOverride = true;
+				sprite.scale = this.scale;
+				if (isLowerCase)
+					sprite.scale *= AnimatedText.lowerCaseScale;
+				this.spriteMap.set(i, sprite);
+			}
+
+			xOffset += this.getWidth(text[i]);
+
+			let caseScale = 1;
+			if (this.isLowerCase(text[i]))
+				caseScale = AnimatedText.lowerCaseScale;
+			if (i < text.length - 1 && font.get(text[i + 1].toUpperCase()))
+				xOffset += this.marginBetweenLetters * caseScale;
+		}
+	}
+
+	draw(font: Map<string, AnimatedFont>, context: CanvasRenderingContext2D, nowMs: number) {
+		const savedGlobalAlpha: number = context.globalAlpha;
+
+		for (let i = 0; i < this.text.length; i++) {
+			const sprite: SpriteProxy = this.spriteMap.get(i);
+			const animatedFont: AnimatedFont = font.get(this.text[i].toUpperCase());
+			let sprites: Sprites = null;
+			if (animatedFont)
+				sprites = animatedFont.sprites;
+
+			if (sprite && sprites) {
+				// TODO: Could call advanceFrames way more efficiently.
+				sprites.advanceFrames(nowMs);
+				sprites.drawSprite(context, sprite, nowMs);
+			}
+		}
+
+		context.globalAlpha = savedGlobalAlpha;
+	}
+}
+
+
+class AnimatedFont {
+	private _sprites: Sprites;
+	
+	get sprites(): Sprites {
+		if (!this._sprites) {
+			Folders.assets = 'GameDev/Assets/DragonH/';
+			let assetName: string = this.character;
+			if (this.character === '!')
+				assetName = 'ExclamationPoint';
+			else if (this.character === '?')
+				assetName = 'QuestionMark';
+			else if (this.character === '+')
+				assetName = 'Plus';
+			else if (this.character === '-')
+				assetName = 'Minus';
+			else if (this.character === '(')
+				assetName = 'OpenParen';
+			else if (this.character === ')')
+				assetName = 'CloseParen';
+			else if (this.character === "'")
+				assetName = 'Apostrophe';
+			else if (this.character === ":")
+				assetName = 'Colon';
+			else if (+this.character >= 0 && +this.character <= 9)
+				assetName = `${this.character}_`;
+			this._sprites = new Sprites(`Letters/${assetName}`, 64, fps30, AnimationStyle.Loop, true);
+			this._sprites.originX = this.centerPos - this.width / 2;
+			this._sprites.originY = 183;
+		}
+		return this._sprites;
+	}
+	
+	set sprites(newValue: Sprites) {
+		this._sprites = newValue;
+	}
+	constructor(public character: string, public centerPos: number, public width: number) {
+
+	}
+}
+
+class AnimatedTextManager {
+	font: Map<string, AnimatedFont> = new Map<string, AnimatedFont>();
+	allText: Array<AnimatedText> = new Array<AnimatedText>();
+	constructor() {
+		this.addFontMetrics();
+		const distanceBetweenLines = 150;
+		let y = 240;
+		this.addText("Animated Font", 960, y, 300, 'center');
+		y += distanceBetweenLines;
+		this.addText("in Typescript!", 960, y, 210, 'center');
+		//this.addText("0123456789", 1880, y, 230, 'right');
+		//y += distanceBetweenLines;
+		//this.addText('ABCDEFGHIJKLM (-2)', 960, y, 270, 'center');
+		//y += distanceBetweenLines;
+		//this.addText('NOPQRSTUVWXYZ (+3)', 960, y, 30, 'center');
+		//y += distanceBetweenLines;
+		//this.addText("L'il Cutie: (+2)", 960, y, 210, 'center');
+	}
+
+	addText(text: string, x: number, y: number, hueShift: number, align: AnimatedTextAlign = 'left', scale = 1) {
+		this.allText.push(new AnimatedText(this.font, text, x, y, hueShift, scale, align));
+	}
+
+	clearAllText() {
+		this.allText = [];
+	}
+
+	addCharToFont(character: string, centerPos: number, width: number) {
+		this.font.set(character, new AnimatedFont(character.toUpperCase(), centerPos, width));
+	}
+
+	private addFontMetrics() {
+		this.addCharToFont('0', 103, 76);
+		this.addCharToFont('1', 98, 43);
+		this.addCharToFont('2', 101, 71);
+		this.addCharToFont('3', 104, 66);
+		this.addCharToFont('4', 105, 77);
+		this.addCharToFont('5', 103, 66);
+		this.addCharToFont('6', 104, 79);
+		this.addCharToFont('7', 110, 70);
+		this.addCharToFont('8', 103, 74);
+		this.addCharToFont('9', 104, 78);
+		this.addCharToFont('A', 103, 90);
+		this.addCharToFont('B', 107, 74);
+		this.addCharToFont('C', 107, 70);
+		this.addCharToFont('D', 106, 77);
+		this.addCharToFont('E', 105, 57);
+		this.addCharToFont('F', 106, 58);
+		this.addCharToFont('G', 104, 88);
+		this.addCharToFont('H', 103, 79);
+		this.addCharToFont('I', 104, 31);
+		this.addCharToFont('J', 99, 51);
+		this.addCharToFont('K', 108, 80);
+		this.addCharToFont('L', 107, 52);
+		this.addCharToFont('M', 103, 115);
+		this.addCharToFont('N', 102, 89);
+		this.addCharToFont('O', 103, 80);
+		this.addCharToFont('P', 104, 74);
+		this.addCharToFont('Q', 104, 89);
+		this.addCharToFont('R', 106, 81);
+		this.addCharToFont('S', 99, 58);
+		this.addCharToFont('T', 103, 64);
+		this.addCharToFont('U', 103, 81);
+		this.addCharToFont('V', 103, 99);
+		this.addCharToFont('W', 103, 122);
+		this.addCharToFont('X', 102, 92);
+		this.addCharToFont('Y', 103, 96);
+		this.addCharToFont('Z', 103, 86);
+		this.addCharToFont('?', 103, 74);
+		this.addCharToFont('!', 103, 29);
+		this.addCharToFont('\'', 107, 16);
+		this.addCharToFont('(', 103, 42);
+		this.addCharToFont(')', 103, 42);
+		this.addCharToFont('+', 103, 102);
+		this.addCharToFont('-', 103, 44);
+		this.addCharToFont(':', 103, 33);
+	}
+
+	draw(context: CanvasRenderingContext2D, nowMs: number) {
+		this.allText.forEach((animatedText: AnimatedText) => {
+			animatedText.draw(this.font, context, nowMs);
+		});
+	}
+}
+
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
+	animatedTextManager: AnimatedTextManager = new AnimatedTextManager();
+
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this, this.inGameCreatureManager);
 
@@ -202,6 +424,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 				this.showDiagnosticsLiveHandPosition(context, nowMs);
 			}
 		}
+		this.animatedTextManager.draw(context, nowMs);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -1649,7 +1872,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
 		let creatureX: number;
 		let creatureY: number;
-		let speedOverride: number = undefined; 
+		let speedOverride: number = undefined;
 		if (playerId >= 0) {
 			creatureY = 1080;
 			creatureX = this.getPlayerX(this.getPlayerIndex(playerId));

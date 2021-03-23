@@ -140,6 +140,7 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
 		}
+
 		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
