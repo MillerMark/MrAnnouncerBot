@@ -1924,5 +1924,6 @@ namespace DndCore
 					break;
 			}
 		}
+		public abstract double GetSkillCheckMod(Skills skill);
 	}
 }

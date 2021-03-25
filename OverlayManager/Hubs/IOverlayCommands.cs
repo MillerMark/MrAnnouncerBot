@@ -23,6 +23,7 @@ namespace OverlayManager.Hubs
 		Task UpdateSkeletalData(string skeletalData);
 		Task SpeechBubble(string speechStr);
 		Task CardCommand(string cardStr);
+		Task ContestCommand(string contestStr);
 		Task ChangePlayerHealth(string playerData);
 		Task ChangePlayerStats(string playerStatsData);
 		Task ChangePlayerWealth(string playerData);

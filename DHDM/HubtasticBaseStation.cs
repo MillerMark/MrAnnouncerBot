@@ -156,6 +156,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("CardCommand", cardStr);
 		}
 
+		public static void ContestCommand(string contestStr)
+		{
+			HubConnection.InvokeAsync("ContestCommand", contestStr);
+		}
+
 		public static void ChangePlayerHealth(string playerData)
 		{
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);

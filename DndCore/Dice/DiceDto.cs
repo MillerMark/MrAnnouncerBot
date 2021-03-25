@@ -143,5 +143,38 @@ namespace DndCore
 			foreach (Roll roll in dieRollDetails.Rolls)
 				diceDtos.Add(FromRoll(roll, dieBackColor, dieFontColor, creatureId, playerName));
 		}
+
+		public static DiceDto FromCreatureId(int creatureId, double mod)
+		{
+			DiceDto diceDto = new DiceDto();
+			
+			if (creatureId < 0)
+			{
+				InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
+				if (inGameCreature != null)
+				{
+					diceDto.BackColor = inGameCreature.BackgroundHex;
+					diceDto.FontColor = inGameCreature.ForegroundHex;
+					diceDto.Label = DndUtils.GetFirstName(inGameCreature.Name);
+				}
+			}
+			else
+			{
+				Character player = AllPlayers.GetFromId(creatureId);
+				if (player != null)
+				{
+					diceDto.BackColor = player.dieBackColor;
+					diceDto.FontColor = player.dieFontColor;
+					diceDto.Label = player.firstName;
+				}
+			}
+			diceDto.IsMagic = false;
+			
+			diceDto.CreatureId = creatureId;
+			diceDto.DieCountsAs = DieCountsAs.totalScore;
+			diceDto.DamageType = DamageType.None;
+			diceDto.Modifier = mod;
+			return diceDto;
+		}
 	}
 }

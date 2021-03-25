@@ -34,7 +34,7 @@ namespace DHDM
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(cardDto));
 		}
 
-		int GetHueShift(int creatureId)
+		public static int GetHueShift(int creatureId)
 		{
 			if (creatureId < 0)
 			{

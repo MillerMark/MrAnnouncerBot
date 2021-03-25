@@ -25,6 +25,30 @@ interface ScaleFactor {
 
 type AnimatedTextAlign = 'left' | 'center' | 'right';
 
+enum ContestSection {
+	Top,
+	Bottom
+}
+
+class Contestant {
+	Name: string;
+	HueShift: number;
+	Mod: number;
+}
+
+class ContestGroup {
+	Width: number;
+	Contestants: Array<Contestant>;
+}
+
+class ContestDto {
+	BottomContestants: ContestGroup;
+	TopContestants: ContestGroup;
+	ActiveSection: ContestSection;
+	Command: string;
+	SoundEffectToPlay: string;
+}
+
 class AnimatedText {
 	marginBetweenLetters = 14;
 	static readonly lowerCaseScale: number = 0.8;
@@ -53,7 +77,7 @@ class AnimatedText {
 			else {
 				result += spaceWidth * this.scale;
 			}
-			
+
 		}
 
 		return result;
@@ -61,7 +85,7 @@ class AnimatedText {
 
 	spriteMap: Map<number, SpriteProxy> = new Map<number, SpriteProxy>();
 	constructor(private font: Map<string, AnimatedFont>, public text: string, public x: number, public y: number, hueShift: number,
-		public scale = 1, public alignment: AnimatedTextAlign) {
+		public scale = 1, public alignment: AnimatedTextAlign, createSprites = true) {
 
 		let xOffset = 0;
 
@@ -76,7 +100,7 @@ class AnimatedText {
 		for (let i = 0; i < text.length; i++) {
 			const isLowerCase: boolean = this.isLowerCase(text[i]);
 			const animatedFont: AnimatedFont = font.get(text[i].toUpperCase());
-			if (animatedFont) {
+			if (animatedFont && createSprites) {
 				const sprite: SpriteProxy = animatedFont.sprites.addShifted(left + xOffset, y, -1, hueShift);
 				if (Random.chancePercent(50))
 					sprite.animationReverseOverride = true;
@@ -120,7 +144,7 @@ class AnimatedText {
 
 class AnimatedFont {
 	private _sprites: Sprites;
-	
+
 	get sprites(): Sprites {
 		if (!this._sprites) {
 			Folders.assets = 'GameDev/Assets/DragonH/';
@@ -149,7 +173,7 @@ class AnimatedFont {
 		}
 		return this._sprites;
 	}
-	
+
 	set sprites(newValue: Sprites) {
 		this._sprites = newValue;
 	}
@@ -163,11 +187,12 @@ class AnimatedTextManager {
 	allText: Array<AnimatedText> = new Array<AnimatedText>();
 	constructor() {
 		this.addFontMetrics();
-		const distanceBetweenLines = 150;
-		let y = 240;
-		this.addText("Animated Font", 960, y, 300, 'center');
-		y += distanceBetweenLines;
-		this.addText("in Typescript!", 960, y, 210, 'center');
+		//const distanceBetweenLines = 150;
+		//let y = 440;
+		//this.addText("Animated Font", 960, y, 270, 'center');
+		//y += distanceBetweenLines;
+		//this.addText("in Typescript!", 960, y, 210, 'center');
+
 		//this.addText("0123456789", 1880, y, 230, 'right');
 		//y += distanceBetweenLines;
 		//this.addText('ABCDEFGHIJKLM (-2)', 960, y, 270, 'center');
@@ -177,8 +202,23 @@ class AnimatedTextManager {
 		//this.addText("L'il Cutie: (+2)", 960, y, 210, 'center');
 	}
 
-	addText(text: string, x: number, y: number, hueShift: number, align: AnimatedTextAlign = 'left', scale = 1) {
-		this.allText.push(new AnimatedText(this.font, text, x, y, hueShift, scale, align));
+	getTextWidth(displayStr: string, textScale: number): number {
+		const animatedText: AnimatedText = new AnimatedText(this.font, displayStr, 0, 0, 0, textScale, 'left', false);
+		return animatedText.getWidth(displayStr);
+	}
+
+
+	addText(text: string, x: number, y: number, hueShift: number, align: AnimatedTextAlign = 'left', scale = 1): AnimatedText {
+		const animatedText: AnimatedText = new AnimatedText(this.font, text, x, y, hueShift, scale, align);
+		this.allText.push(animatedText);
+		return animatedText;
+	}
+
+	remove(animatedText: AnimatedText) {
+		const index: number = this.allText.indexOf(animatedText);
+		if (index >= 0) {
+			this.allText.splice(index, 1);
+		}
 	}
 
 	clearAllText() {
@@ -243,11 +283,132 @@ class AnimatedTextManager {
 	}
 }
 
+class ContestManager {
+	constructor(private animatedTextManager: AnimatedTextManager) {
+
+	}
+
+	topTextMap: Map<string, AnimatedText> = new Map<string, AnimatedText>();
+	bottomTextMap: Map<string, AnimatedText> = new Map<string, AnimatedText>();
+
+	private hideScreenIndicator(screenIndicatorSprites: Sprites) {
+		screenIndicatorSprites.spriteProxies.forEach((sprite: SpriteProxy) => {
+			sprite.fadeOutNow(500);
+		});
+	}
+
+	clean(contestDto: ContestDto, screenIndicatorSprites: Sprites) {
+		this.hideScreenIndicator(screenIndicatorSprites);
+		this.hideAllText(this.topTextMap);
+		this.hideAllText(this.bottomTextMap);
+	}
+
+	private hideAllText(map: Map<string, AnimatedText>) {
+		map.forEach((animatedText: AnimatedText) => {
+			this.animatedTextManager.remove(animatedText);
+		});
+		map.clear();
+	}
+
+	update(contestDto: ContestDto, screenIndicatorSprites: Sprites) {
+		this.hideScreenIndicator(screenIndicatorSprites);
+
+		let sprite: SpriteProxy;
+		const topCenterY = 220;
+		const bottomCenterY = 795;
+		if (contestDto.ActiveSection === ContestSection.Top) {
+			sprite = screenIndicatorSprites.addShifted(70, topCenterY, -1, 220);
+		}
+		else {
+			sprite = screenIndicatorSprites.addShifted(1920 - 70, bottomCenterY, -1, 220);
+		}
+		sprite.autoRotationDegeesPerSecond = 45;
+		sprite.fadeInTime = 500;
+
+		this.updateContestants(this.topTextMap, contestDto.TopContestants.Contestants, contestDto.TopContestants.Width, topCenterY, 'left');
+		this.updateContestants(this.bottomTextMap, contestDto.BottomContestants.Contestants, 1920 - contestDto.BottomContestants.Width, bottomCenterY, 'right');
+	}
+
+	hasContestant(contestants: Contestant[], key: string): boolean {
+		return contestants.find((contestant: Contestant) => {
+			return contestant.Name === key;
+		}) !== undefined;
+	}
+
+	updateContestants(textMap: Map<string, AnimatedText>, contestants: Contestant[], x: number, y: number, align: AnimatedTextAlign) {
+		const textToRemove: Array<string> = new Array<string>();
+		textMap.forEach((animatedText: AnimatedText, key: string) => {
+			if (!this.hasContestant(contestants, key)) {
+				textToRemove.push(key);
+				this.animatedTextManager.remove(animatedText);
+			}
+		});
+		textToRemove.forEach((key: string) => {
+			textMap.delete(key);
+		});
+
+		if (contestants.length === 0)
+			return;
+		const availableHeight = 420;
+		const lineHeightFullScale = 170;
+		let textScale = 1;
+
+		const maxLineHeight: number = availableHeight / contestants.length;
+		if (maxLineHeight < lineHeightFullScale)
+			textScale = maxLineHeight / lineHeightFullScale;
+
+
+		const edgeMargin = 70;
+		let availableWidth: number;
+		if (align === 'left')
+			availableWidth = 1920 - 180 - x - edgeMargin;
+		else
+			availableWidth = x - edgeMargin;
+
+		let longestLine = 0;
+		contestants.forEach((contestant: Contestant) => {
+			const displayStr: string = this.getDisplayStr(contestant);
+			const lineLength: number = this.animatedTextManager.getTextWidth(displayStr, textScale);
+			if (lineLength > longestLine)
+				longestLine = lineLength;
+		});
+
+		if (longestLine > availableWidth) {
+			const scaleFactor: number = availableWidth / longestLine;
+			textScale *= scaleFactor;
+		}
+
+
+		const textLineHeight: number = lineHeightFullScale * textScale;
+
+		let startY: number = y - textLineHeight * contestants.length / 2 + textLineHeight;
+		contestants.forEach((contestant: Contestant) => {
+			const animatedText: AnimatedText = textMap.get(contestant.Name);
+			if (animatedText)
+				this.animatedTextManager.remove(animatedText);
+			const displayStr: string = this.getDisplayStr(contestant);
+			textMap.set(contestant.Name, this.animatedTextManager.addText(displayStr, x, startY, contestant.HueShift, align, textScale));
+			startY += textLineHeight;
+		});
+	}
+
+	getDisplayStr(contestant: Contestant): string {
+		let modStr = '';
+		if (contestant.Mod > 0)
+			modStr = ` (+${contestant.Mod})`;
+		else if (contestant.Mod < 0)
+			modStr = ` (${contestant.Mod})`;
+		return contestant.Name + modStr;
+	}
+}
+
+
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
 	animatedTextManager: AnimatedTextManager = new AnimatedTextManager();
 
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
+	contestManager: ContestManager = new ContestManager(this.animatedTextManager);
 	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this, this.inGameCreatureManager);
 
 	showFpsMessage(message: string): any {
@@ -325,6 +486,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	allBackEffects: SpriteCollection;
 	allFrontEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
+	screenHalfIndicator: Sprites;
 	dragonFrontSounds: DragonFrontSounds;
 	activePlayerId: number;
 	playerDataSet = false;
@@ -424,6 +586,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 				this.showDiagnosticsLiveHandPosition(context, nowMs);
 			}
 		}
+		this.screenHalfIndicator.draw(context, nowMs);
 		this.animatedTextManager.draw(context, nowMs);
 	}
 
@@ -882,6 +1045,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fireWall.name = 'FireWall';
 		this.fireWall.originX = 300;
 		this.fireWall.originY = 300;
+
+		this.screenHalfIndicator = new Sprites('LeapMotion/Effects/MagicSmokeLoop/MagicSmokeLoop', 326, 30, AnimationStyle.Loop, true);
+		this.screenHalfIndicator.originX = 225;
+		this.screenHalfIndicator.originY = 270;
 
 		this.allBackEffects = new SpriteCollection();
 		this.allFrontEffects = new SpriteCollection();
@@ -1466,7 +1633,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		let hueShift = 261;
 		//console.log('validationIssue.PlayerId: ' + validationIssue.PlayerId);
 
-		if (validationIssue.PlayerId >= 0) {
+		if (validationIssue.PlayerId === 100)  // Dungeon Master!
+		{
+			scale = 2.0 / 3.0;
+
+			hueShift = 300;
+			x = 1780
+			y = 219;
+		}
+		else if (validationIssue.PlayerId >= 0) {
 			scale = 2.0 / 3.0;
 
 			const player: Character = this.getPlayer(validationIssue.PlayerId);
@@ -1505,7 +1680,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		sprite.fadeOutTime = 500;
 		if (validationIssue.FloatText)
-			if (validationIssue.PlayerId >= 0) {
+			if (validationIssue.PlayerId === 100) {
+				this.floatPlayerText(validationIssue.PlayerId, validationIssue.FloatText, '#4b22b2', '#ffffff');
+			}
+			else if (validationIssue.PlayerId >= 0) {
 				const player: Character = this.getPlayer(validationIssue.PlayerId);
 				this.floatPlayerText(validationIssue.PlayerId, validationIssue.FloatText, player.dieBackColor, player.dieFontColor);
 			}
@@ -1873,7 +2051,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		let creatureX: number;
 		let creatureY: number;
 		let speedOverride: number = undefined;
-		if (playerId >= 0) {
+		if (playerId === 100) {  // Dungeon Master!
+			creatureY = 217;
+			creatureX = 1773;
+			speedOverride = 2;
+		}
+		else if (playerId >= 0) {
 			creatureY = 1080;
 			creatureX = this.getPlayerX(this.getPlayerIndex(playerId));
 		}
@@ -1901,6 +2084,14 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	updateScreenBeforeWorldRender(context: CanvasRenderingContext2D, nowMs: number) {
 		this.inGameCreatureManager.drawInGameCreatures(context, nowMs);
+	}
+
+	contestCommand(contestStr: string) {
+		const contestDto: ContestDto = JSON.parse(contestStr);
+		if (contestDto.Command === "Update")
+			this.contestManager.update(contestDto, this.screenHalfIndicator);
+		else if (contestDto.Command === "Clean")
+			this.contestManager.clean(contestDto, this.screenHalfIndicator);
 	}
 
 	cardCommand(cardStr: string) {

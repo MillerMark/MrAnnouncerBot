@@ -328,6 +328,11 @@
     <Compile Include="CardEvents\DamageModifier.cs" />
     <Compile Include="CardEvents\RegexHelper.cs" />
     <Compile Include="CardEvents\StampedeCardEvent.cs" />
+    <Compile Include="Contests\Contestant.cs" />
+    <Compile Include="Contests\ContestDto.cs" />
+    <Compile Include="Contests\ContestGroup.cs" />
+    <Compile Include="Contests\ContestManager.cs" />
+    <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
     <Compile Include="DmMoods\DmMood.cs" />
@@ -341,6 +346,7 @@
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
     <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
+    <Compile Include="StreamDeck Commands\ContestCommand.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
     <Compile Include="StreamDeck Commands\ScrollPageCommand.cs" />

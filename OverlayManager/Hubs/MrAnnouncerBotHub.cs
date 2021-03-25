@@ -51,6 +51,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.CardCommand(cardStr);
 		}
 
+		public void ContestCommand(string contestStr)
+		{
+			coderushedHub.Clients.All.ContestCommand(contestStr);
+		}
+
 		public void ChangePlayerHealth(string playerData)
 		{
 			coderushedHub.Clients.All.ChangePlayerHealth(playerData);

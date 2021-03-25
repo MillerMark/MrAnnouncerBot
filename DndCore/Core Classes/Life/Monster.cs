@@ -666,5 +666,11 @@ namespace DndCore
 			}
 			return 0;
 		}
+
+		public override double GetSkillCheckMod(Skills skill)
+		{
+			Ability ability = DndUtils.ToAbility(skill);
+			return GetAbilityModifier(ability);
+		}
 	}
 }

@@ -2619,5 +2619,62 @@ namespace DndCore
 			// TODO: Implement this.
 			return resistancesVulnerabilitiesImmunitiesStr;
 		}
+
+		public override double GetSkillCheckMod(Skills skill)
+		{
+			switch (skill)
+			{
+				case Skills.acrobatics:
+					return skillModAcrobatics;
+				case Skills.animalHandling:
+					return skillModAnimalHandling;
+				case Skills.arcana:
+					return skillModArcana;
+				case Skills.athletics:
+					return skillModAthletics;
+				case Skills.deception:
+					return skillModDeception;
+				case Skills.history:
+					return skillModHistory;
+				case Skills.insight:
+					return skillModInsight;
+				case Skills.intimidation:
+					return skillModIntimidation;
+				case Skills.investigation:
+					return skillModInvestigation;
+				case Skills.medicine:
+					return skillModMedicine;
+				case Skills.nature:
+					return skillModNature;
+				case Skills.perception:
+					return skillModPerception;
+				case Skills.performance:
+					return skillModPerformance;
+				case Skills.persuasion:
+					return skillModPersuasion;
+				case Skills.religion:
+					return skillModReligion;
+				case Skills.sleightOfHand:
+					return skillModSleightOfHand;
+				case Skills.stealth:
+					return skillModStealth;
+				case Skills.survival:
+					return skillModSurvival;
+				case Skills.strength:
+					return strengthMod;
+				case Skills.dexterity:
+					return dexterityMod;
+				case Skills.charisma:
+					return charismaMod;
+				case Skills.intelligence:
+					return intelligenceMod;
+				case Skills.constitution:
+					return constitutionMod;
+				case Skills.wisdom:
+					return wisdomMod;
+			}
+
+			return 0;
+		}
 	}
 }

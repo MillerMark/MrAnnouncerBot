@@ -44,7 +44,8 @@ enum DiceRollType {
 	CastSimpleSpell,
 	DamagePlusSavingThrow,
 	OnlyTargetsSavingThrow,
-	ViewerRoll
+	ViewerRoll,
+	Contest
 }
 
 //enum SpriteType {

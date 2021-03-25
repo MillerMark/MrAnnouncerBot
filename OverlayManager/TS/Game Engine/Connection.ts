@@ -265,6 +265,13 @@ function cardCommand(cardStr: string) {
 	}
 }
 
+function contestCommand(contestStr: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.contestCommand(contestStr);
+	}
+}
+
+
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
 	if (activeBackGame instanceof DragonGame) {
 		activeBackGame.playerChanged(playerID, pageID, playerData);
@@ -373,6 +380,7 @@ function connectToSignalR(signalR) {
 		connection.on("UpdateSkeletalData", updateSkeletalData);
 		connection.on("SpeechBubble", speechBubble);
 		connection.on("CardCommand", cardCommand);
+		connection.on("ContestCommand", contestCommand);
 		connection.on("SetPlayerData", initializePlayerData);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;

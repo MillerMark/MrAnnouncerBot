@@ -165,6 +165,7 @@ namespace DHDM
 		}
 
 		DmMoodManager dmMoodManager;
+		ContestManager contestManager;
 
 		private void InitializeGame()
 		{
@@ -174,6 +175,7 @@ namespace DHDM
 			viewerManager = new ViewerManager(this);
 			obsManager.Initialize(game, this);
 			dmMoodManager = new DmMoodManager(obsManager);
+			contestManager = new ContestManager(obsManager);
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
@@ -2344,6 +2346,7 @@ namespace DHDM
 					break;
 				case DiceRollType.ExtraOnly:
 				case DiceRollType.ViewerRoll:
+				case DiceRollType.Contest:
 					rbExtra.IsChecked = true;
 					break;
 				case DiceRollType.ChaosBolt:
@@ -3695,6 +3698,10 @@ namespace DHDM
 				List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 				if (targetedCreatures.Count == 1)
 					diceRoll.SingleOwnerId = -targetedCreatures[0].Index;
+			}
+			else if (NextDieRollType == DiceRollType.Contest)
+			{
+				PrepareContestRoll(contestManager.ContestDto, diceRoll);
 			}
 			else
 			{
@@ -6381,6 +6388,7 @@ namespace DHDM
 		private void LoadEverything()
 		{
 			dmMoodManager.Invalidate();
+			contestManager.Invalidate();
 			AllKnownCards.Invalidate();
 			AllDndItems.Invalidate();
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
@@ -7611,6 +7619,15 @@ namespace DHDM
 
 		string nextSpellIdWeAreCasting = null;
 
+		void PrepareContestRoll(ContestDto contestDto, DiceRoll diceRoll)
+		{
+			foreach (Contestant contestant in contestDto.BottomContestants.Contestants)
+				diceRoll.DiceDtos.Add(DiceDto.FromCreatureId(contestant.CreatureId, contestant.Mod));
+			foreach (Contestant contestant in contestDto.TopContestants.Contestants)
+				diceRoll.DiceDtos.Add(DiceDto.FromCreatureId(contestant.CreatureId, contestant.Mod));
+
+			//contestDto.BottomContestants
+		}
 		private async void UnleashTheNextRoll()
 		{
 			bool needToAddSavingThrows = false;
@@ -11004,6 +11021,50 @@ namespace DHDM
 		public void SetDmMood(string moodName)
 		{
 			dmMoodManager.SetMood(moodName);
+		}
+
+		public void Contest(string contest)
+		{
+			if (contest == "Add")
+			{
+				contestManager.AddNpc();
+			}
+			else if (contest == "Back")
+			{
+				contestManager.Backup();
+			}
+			else if (contest == "Top")
+			{
+				contestManager.SwitchToTop();
+			}
+			else if (contest == "Bottom")
+			{
+				contestManager.SwitchToBottom();
+			}
+			else if (contest == "Clean")
+			{
+				contestManager.Clean();
+			}
+			else
+			{
+				Skills skill = DndUtils.ToSkill(contest);
+				if (skill != Skills.none)
+				{
+					contestManager.AddSkill(skill);
+				}
+				else
+				{
+					Character player = AllPlayers.GetFromName(contest);
+					if (player != null)
+						contestManager.AddPlayer(player);
+					else
+					{
+						System.Diagnostics.Debugger.Break();
+						return;
+					}
+				}
+			}
+			NextDieRollType = DiceRollType.Contest;
 		}
 	}
 }
