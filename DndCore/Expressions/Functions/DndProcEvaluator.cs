@@ -15,7 +15,7 @@ namespace DndCore
 			return proc != null;
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			if (proc == null)
 				return null;

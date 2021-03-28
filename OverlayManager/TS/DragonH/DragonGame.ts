@@ -394,6 +394,14 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			textEffect.velocityY = -speedOverride;
 		else
 			textEffect.velocityY = speedOverride;
+
+		const rightCutOff = 1160;
+		const leftCutOff = 760;
+		if (xPos > rightCutOff)
+			textEffect.velocityX = -speedOverride * (1 / 3) * (xPos - rightCutOff) / (1920 - rightCutOff);
+		else if (xPos < leftCutOff)
+			textEffect.velocityX = speedOverride * (1 / 3) * (leftCutOff - xPos) / leftCutOff;
+
 		textEffect.verticalThrust = 1.3;
 		return textEffect;
 	}

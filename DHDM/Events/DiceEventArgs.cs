@@ -22,7 +22,7 @@ namespace DHDM
 			else
 				try
 				{
-					StopRollingData = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceStoppedRollingData>(diceData);
+					StopRollingData = Newtonsoft.Json.JsonConvert.DeserializeObject<RollResults>(diceData);
 				}
 				catch (Exception ex)
 				{
@@ -33,6 +33,6 @@ namespace DHDM
 		}
 
 		public string DiceData { get; set; }
-		public DiceStoppedRollingData StopRollingData { get; set; }
+		public RollResults StopRollingData { get; set; }
 	}
 }

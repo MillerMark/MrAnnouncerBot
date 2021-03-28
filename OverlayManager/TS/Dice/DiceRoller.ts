@@ -1052,7 +1052,7 @@ class DieRoller {
 	}
 
 	getRollResults(tallyResults: boolean): RollResults {
-		const logProgress = false;
+		const logProgress = true;
 		const totalScoringDice: Map<number, number> = new Map<number, number>();
 		const nat20s: Map<number, boolean> = new Map<number, boolean>();
 		const blessBaneLuckMods: Map<number, number> = new Map<number, number>();
@@ -1827,8 +1827,7 @@ class DieRoller {
 				backgroundColor = hsl.toHex();
 			}
 
-			if (damageType === DamageType.DamageAdd)
-			{
+			if (damageType === DamageType.DamageAdd) {
 				backgroundColor = '#aa0000';
 				textColor = '#ffffff';
 			}
@@ -2127,10 +2126,22 @@ class DieRoller {
 			lastDieAdded = this.addDie(diceGroup, dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType, hueVariancePercent, scale);
 		});
 
-		this.damageModifierThisRoll += modifier;
+		switch (dieCountsAs) {
+			case DieCountsAs.totalScore:
+			case DieCountsAs.damage:
+				this.damageModifierThisRoll += modifier;
+				break;
+			case DieCountsAs.health:
+				this.healthModifierThisRoll += modifier;
+				break;
+			case DieCountsAs.extra:
+				this.extraModifierThisRoll += modifier;
+				break;
+		}
+
 		//console.log(`damageModifierThisRoll += modifier; (${damageModifierThisRoll})`);
-		this.healthModifierThisRoll += modifier;
-		this.extraModifierThisRoll += modifier;
+
+
 		return lastDieAdded;
 	}
 
@@ -2412,8 +2423,10 @@ class DieRoller {
 	}
 
 	private reportDamageHealthExtra(totalDamage: number, textCenter: Vector, totalHealth: number, totalExtra: number, cardDamageModsForPlayer: Array<string>) {
-		console.log(`reportDamageHealthExtra.....`);
-		console.log(cardDamageModsForPlayer);
+		//console.log(`reportDamageHealthExtra.....`);
+		//console.log(cardDamageModsForPlayer);
+		//console.log('totalHealth: ' + totalHealth);
+		//console.log('totalDamage: ' + totalDamage);
 		let totalDamageHealthExtraStr: string;
 		let reportLabel: string;
 		let fontColor: string;
@@ -2429,7 +2442,7 @@ class DieRoller {
 				cardDamageModsForPlayer.forEach((damageMod) => {
 					modifierStr += damageMod;
 				});
-				console.log('modifierStr: ' + modifierStr);
+				//console.log('modifierStr: ' + modifierStr);
 			}
 		}
 		else if (totalHealth > 0) {
@@ -2786,7 +2799,7 @@ class DieRoller {
 	lastRollDiceData;
 
 	reportDieRollBackToMainApp() {
-		// Corresponds to DiceStoppedRollingData 
+		// Corresponds to RollResults.cs
 		this.lastRollDiceData = {
 			'wasCriticalHit': this.wasCriticalHit,
 			'singleOwnerId': this.diceRollData.singleOwnerId,
@@ -2873,7 +2886,7 @@ class DieRoller {
 		//		playerId = creatureId;
 		//}
 
-		// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
+		// Connects to RollResults in RollResults.cs:
 		//console.log('diceRollData.type: ' + diceRollData.type);
 		//console.log(diceRollData.multiplayerSummary);
 		//console.log(diceRollData.individualRolls);

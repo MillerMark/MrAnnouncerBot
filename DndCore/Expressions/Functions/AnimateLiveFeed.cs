@@ -18,7 +18,7 @@ namespace DndCore
 			RequestLiveFeedResize?.Invoke(sender, ea);
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, RollResults dice = null)
 		{
 			ExpectingArguments(args, 2);
 			if (player != null)

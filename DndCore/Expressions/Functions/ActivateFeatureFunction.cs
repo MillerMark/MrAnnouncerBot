@@ -13,7 +13,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "ActivateFeature";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1);
 			Feature feature = AllFeatures.Get(args[0]);

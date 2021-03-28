@@ -490,6 +490,7 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			DeltaTargetFunction.RequestPropertyChange += DeltaTargetFunction_RequestPropertyChange;
 			AnimateLiveFeed.RequestLiveFeedResize += AnimateLiveFeed_RequestLiveFeedResize;
 			UnleashSpellEffectsFunction.RequestUnleashSpellEffects += UnleashSpellEffectsFunction_RequestUnleashSpellEffects;
 			SetSceneFilterVisibilityFunction.RequestSetObsSceneFilterVisibility += SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility;
@@ -520,6 +521,19 @@ namespace DHDM
 			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
 			StreamlootsService.CardRedeemed += StreamlootsService_CardRedeemed;
 			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
+		}
+
+		private void DeltaTargetFunction_RequestPropertyChange(object sender, PropertyChangeEventArgs ea)
+		{
+			if (ea.PropertyName == "HitPoints")
+			{
+				ApplyDamageHealthChange(new DamageHealthChange() { DamageHealth = (int)ea.DeltaValue, IsTempHitPoints = false, PlayerIds = { ea.Creature.SafeId } });
+			}
+			else
+			{
+				System.Diagnostics.Debugger.Break();
+				// TODO: Implement this.
+			}
 		}
 
 		private void UnleashSpellEffectsFunction_RequestUnleashSpellEffects(object sender, int playerId)
@@ -944,7 +958,7 @@ namespace DHDM
 					ea.Result = savedRolls[ea.RollName];
 		}
 
-		void SaveNamedResults(DiceStoppedRollingData stopRollingData)
+		void SaveNamedResults(RollResults stopRollingData)
 		{
 			if (savedRolls == null)
 				savedRolls = new Dictionary<string, int>();
@@ -3522,6 +3536,16 @@ namespace DHDM
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
 
+		Dictionary<string, Target> diceRollTargets = new Dictionary<string, Target>();
+		void BindTargetToDiceRoll(DiceRoll diceRoll, Target target)
+		{
+			diceRoll.CreateRollIdIfMissing();
+			if (!diceRollTargets.ContainsKey(diceRoll.RollID))
+				diceRollTargets.Add(diceRoll.RollID, target);
+			else
+				diceRollTargets[diceRoll.RollID] = target;
+		}
+
 		private void CompleteCast(DiceRoll diceRoll)
 		{
 			if (diceRoll.DiceGroup == DiceGroup.Viewers)
@@ -3529,6 +3553,7 @@ namespace DHDM
 
 			if (castedSpellNeedingCompletion != null)
 			{
+				BindTargetToDiceRoll(diceRoll, castedSpellNeedingCompletion.Target);
 				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
 				diceRoll.DamageHealthExtraDice = castedSpellNeedingCompletion.DieStr;
 				spellCaster = null;
@@ -4189,7 +4214,7 @@ namespace DHDM
 			EnqueueAction(wildMagicQueueEntry);
 		}
 
-		void IndividualDiceStoppedRolling(DiceStoppedRollingData stopRollingData)
+		void IndividualDiceStoppedRolling(RollResults stopRollingData)
 		{
 			if (stopRollingData.individualRolls?.Count > 0)
 				IndividualDiceStoppedRolling(stopRollingData.singleOwnerId, stopRollingData.individualRolls);
@@ -4214,7 +4239,7 @@ namespace DHDM
 			}
 		}
 
-		bool ChaosBoltRolledDoubles(DiceStoppedRollingData diceStoppedRollingData)
+		bool ChaosBoltRolledDoubles(RollResults diceStoppedRollingData)
 		{
 			if (!diceStoppedRollingData.success)
 				return false;
@@ -4245,7 +4270,7 @@ namespace DHDM
 			return firstValue == secondValue;
 		}
 
-		void CheckForFollowUpRolls(DiceStoppedRollingData diceStoppedRollingData)
+		void CheckForFollowUpRolls(RollResults diceStoppedRollingData)
 		{
 			if (diceStoppedRollingData == null)
 				return;
@@ -4271,7 +4296,7 @@ namespace DHDM
 			}
 		}
 
-		private static void TriggerAfterRollEffects(DiceStoppedRollingData diceStoppedRollingData, Character singlePlayer)
+		private static void TriggerAfterRollEffects(RollResults diceStoppedRollingData, Character singlePlayer)
 		{
 			if (singlePlayer == null)
 				return;
@@ -4304,7 +4329,7 @@ namespace DHDM
 		//	RollTheDice(lastRoll);
 		//}
 
-		void NotifyPlayersRollHasStopped(DiceStoppedRollingData stopRollingData)
+		void NotifyPlayersRollHasStopped(RollResults stopRollingData)
 		{
 			if (stopRollingData.multiplayerSummary != null)
 				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
@@ -4458,7 +4483,7 @@ namespace DHDM
 			return AnimationEffect.CreateEffect(spriteName, target, hueShift, 100, brightness);
 		}
 
-		void CheckSpellHitResults(DiceStoppedRollingData stopRollingData)
+		void CheckSpellHitResults(RollResults stopRollingData)
 		{
 			if (!DndUtils.IsAttack(stopRollingData.type))
 				return;
@@ -4662,7 +4687,7 @@ namespace DHDM
 			return result.TrimEnd(',', ' ');
 		}
 
-		void TriggerAfterRollEvents(DiceStoppedRollingData stopRollingData)
+		void TriggerAfterRollEvents(RollResults stopRollingData)
 		{
 			if (stopRollingData == null)
 				return;
@@ -4732,7 +4757,7 @@ namespace DHDM
 			return null;
 		}
 
-		void ResetRollBasedState(DiceStoppedRollingData stopRollingData)
+		void ResetRollBasedState(RollResults stopRollingData)
 		{
 			List<Creature> creatures = new List<Creature>();
 			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
@@ -4748,7 +4773,7 @@ namespace DHDM
 
 		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
-			DiceStoppedRollingData stopRollingData = ea.StopRollingData;
+			RollResults stopRollingData = ea.StopRollingData;
 			ResetRollBasedState(stopRollingData);
 			SaveNamedResults(stopRollingData);
 
@@ -4802,7 +4827,7 @@ namespace DHDM
 			//}
 		}
 
-		private void ApplyDamageToTargets(DiceStoppedRollingData stopRollingData)
+		private void ApplyDamageToTargets(RollResults stopRollingData)
 		{
 			if (stopRollingData.type == DiceRollType.Attack && stopRollingData.success)
 				ApplyDamageToTargets(stopRollingData.totalDamagePlusModifiers);
@@ -4811,7 +4836,7 @@ namespace DHDM
 				ApplySavingThrowDamage(stopRollingData);
 		}
 
-		private void TriggerAfterRollEffects(DiceStoppedRollingData stopRollingData)
+		private void TriggerAfterRollEffects(RollResults stopRollingData)
 		{
 			Character singlePlayer = stopRollingData.GetSingleRollingPlayer();
 			if (singlePlayer != null)
@@ -4843,7 +4868,7 @@ namespace DHDM
 				waitingToClearViewerDice = true;
 		}
 
-		private void StoreLastDamageOrHealth(DiceStoppedRollingData stopRollingData)
+		private void StoreLastDamageOrHealth(RollResults stopRollingData)
 		{
 			if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
 			{
@@ -4870,7 +4895,7 @@ namespace DHDM
 				ShowClearViewerDiceButton(null, EventArgs.Empty);
 		}
 
-		List<int> GetTargetIdsTryingToSave(DiceStoppedRollingData stopRollingData)
+		List<int> GetTargetIdsTryingToSave(RollResults stopRollingData)
 		{
 			List<int> results = new List<int>();
 			if (stopRollingData.individualRolls == null)
@@ -4885,7 +4910,7 @@ namespace DHDM
 			return results;
 		}
 
-		private void ApplySavingThrowDamage(DiceStoppedRollingData stopRollingData)
+		private void ApplySavingThrowDamage(RollResults stopRollingData)
 		{
 			List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
 			ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
@@ -4898,7 +4923,7 @@ namespace DHDM
 			//}
 		}
 
-		private void ApplyMultiplayerSavingThrowDamage(DiceStoppedRollingData stopRollingData)
+		private void ApplyMultiplayerSavingThrowDamage(RollResults stopRollingData)
 		{
 			List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
 			List<PlayerRoll> thoseWhoCritSaved = new List<PlayerRoll>();
@@ -4938,7 +4963,7 @@ namespace DHDM
 
 		bool suppressMessagesToCodeRushedChannel;
 
-		void ReportInitiativeResults(DiceStoppedRollingData stopRollingData, string title)
+		void ReportInitiativeResults(RollResults stopRollingData, string title)
 		{
 			if (stopRollingData.multiplayerSummary == null)
 			{
@@ -4975,13 +5000,24 @@ namespace DHDM
 			}
 		}
 
-		private void ReportOnDieRoll(DiceStoppedRollingData stopRollingData)
+		private void ReportOnDieRoll(RollResults stopRollingData)
 		{
 			if (stopRollingData.diceGroup == DiceGroup.Players)
 				ReportOnPlayerDieRoll(stopRollingData);
 		}
 
-		private void ReportOnPlayerDieRoll(DiceStoppedRollingData stopRollingData)
+		Target GetTargetFromDieRoll(string rollId)
+		{
+			if (diceRollTargets.ContainsKey(rollId))
+			{
+				Target target = diceRollTargets[rollId];
+				diceRollTargets.Remove(rollId);
+				return target;
+			}
+			return null;
+		}
+
+		private void ReportOnPlayerDieRoll(RollResults stopRollingData)
 		{
 			if (stopRollingData == null)
 				return;
@@ -5151,8 +5187,10 @@ namespace DHDM
 					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
 			}
 
+			Target target = GetTargetFromDieRoll(stopRollingData.rollId);
+
 			if (singlePlayer != null)
-				game.DieRollStopped(singlePlayer, rollValue, stopRollingData);
+				game.DieRollStopped(singlePlayer, rollValue, stopRollingData, target);
 
 			//DieRollStopped
 
@@ -10581,7 +10619,7 @@ namespace DHDM
 					TriggerCardPlayedEvent(ea.Card.Card.CardName, targetCharacterId, cardEventData);
 		}
 
-		private void ApplyDamageFromRoll(DiceStoppedRollingData stopRollingData, List<int> targetCharacterIds)
+		private void ApplyDamageFromRoll(RollResults stopRollingData, List<int> targetCharacterIds)
 		{
 			bool isStampede = stopRollingData.rollId == lastStampedeGuid;
 			if (isStampede)
@@ -10737,7 +10775,7 @@ namespace DHDM
 			return damageDieTotal * multiplier;
 		}
 
-		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool saveTakesZeroDamage, ref WhatTargetChanged whatTargetChanged)
+		private void ApplyRollDamageToCreature(RollResults stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool saveTakesZeroDamage, ref WhatTargetChanged whatTargetChanged)
 		{
 			if (targetCreature == null)
 				return;

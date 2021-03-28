@@ -5,7 +5,7 @@ using DndCore;
 
 namespace DndCore
 {
-	public class DiceStoppedRollingData
+	public class RollResults
 	{
 		public string rollId { get; set; }
 		public string spellId { get; set; }
@@ -32,7 +32,7 @@ namespace DndCore
 		public int bonus { get; set; }
 		public string additionalDieRollMessage { get; set; }
 
-		public DiceStoppedRollingData()
+		public RollResults()
 		{
 
 		}

@@ -11,7 +11,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "GetArticle";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1);
 			string nextWord = Expressions.GetStr(args[0], player, target, spell).ToLower();

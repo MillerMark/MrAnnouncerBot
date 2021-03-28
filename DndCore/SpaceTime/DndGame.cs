@@ -562,16 +562,14 @@ namespace DndCore
 			}
 		}
 
-		public void DieRollStopped(Creature creature, int score, DiceStoppedRollingData diceStoppedRollingData)
+		public void DieRollStopped(Creature creature, int score, RollResults diceStoppedRollingData, Target target)
 		{
-			OnDieRollStopped(creature, diceStoppedRollingData);
+			OnDieRollStopped(creature, diceStoppedRollingData, target);
+
+			// TODO: Consider calling OnCreatureHitsTarget for every target (parameter passed in)
 			if (WaitingForRollHiddenThreshold != int.MinValue && creature == WaitingForRollCreature)
-			{
 				if (DndUtils.IsAttack(WaitingForRollType) && score >= WaitingForRollHiddenThreshold)
-				{
 					OnCreatureHitsTarget(creature);
-				}
-			}
 
 			ClearWaitingForRollStateVars();
 		}
@@ -597,7 +595,7 @@ namespace DndCore
 				castedSpell.Spell.TriggerPlayerHitsTarget(player, WaitingForRollTarget, castedSpell);
 			}
 		}
-		void OnDieRollStopped(Creature creature, DiceStoppedRollingData diceStoppedRollingData)
+		void OnDieRollStopped(Creature creature, RollResults diceStoppedRollingData, Target target)
 		{
 			if (WaitingForRollHiddenThreshold == int.MinValue || creature != WaitingForRollCreature)
 				return;
@@ -606,10 +604,22 @@ namespace DndCore
 				return;
 
 			List<CastedSpell> playersActiveSpells = activeSpells.FindAll(x => x.SpellCaster == player);
+
+			if (WaitingForRollTarget != null)
+			{
+				if (target != null)
+				{
+					//! Two conflicting targets???!
+					System.Diagnostics.Debugger.Break();
+				}
+
+				target = WaitingForRollTarget;
+			}
+
 			for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
 			{
 				CastedSpell castedSpell = playersActiveSpells[i];
-				castedSpell.Spell.TriggerDieRollStopped(player, WaitingForRollTarget, castedSpell, diceStoppedRollingData);
+				castedSpell.Spell.TriggerDieRollStopped(player, target, castedSpell, diceStoppedRollingData);
 			}
 		}
 

@@ -161,8 +161,17 @@ namespace DndCore
 
 		public ValidationResult GetValidation(Character spellCaster, Target target)
 		{
+
+			int maxTargetsToCast = Spell.MaxTargetsToCast;
+			int minTargetsToCast = Spell.MinTargetsToCast;
+			// TODO: consider moving this logic directly into the properties MinTargetsToCast and MaxTargetsToCast
+			if (maxTargetsToCast == -1)  // Use spell ammo count
+				maxTargetsToCast = Spell.AmmoCount;
+			if (minTargetsToCast == -1)  // Use spell ammo count
+				minTargetsToCast = Spell.AmmoCount;
+
 			ValidationResult validationResult = new ValidationResult();
-			if (Spell.MinTargetsToCast > 0 || Spell.MaxTargetsToCast > 0)
+			if (minTargetsToCast > 0 || maxTargetsToCast > 0)
 			{
 				// TODO: Add warnings if min threshold satisfied but more targets are available.
 
@@ -176,29 +185,29 @@ namespace DndCore
 						ValidationFailed($"More targets for Enhance Ability are available ({spell_AmmoCount} total). Are you sure you want to cast?", "Select more targets?", Warn); 
 				 
 				 */
-				if (target.Count < Spell.MinTargetsToCast)
+				if (target.Count < minTargetsToCast)
 				{
 					validationResult.ValidationAction = ValidationAction.Stop;
-					if (Spell.MinTargetsToCast == 1)
+					if (minTargetsToCast == 1)
 						validationResult.MessageOverPlayer = $"Need at least one target to cast {Spell.Name}!";
 					else
-						validationResult.MessageOverPlayer = $"Need at least {Spell.MinTargetsToCast} targets to cast {Spell.Name}!";
+						validationResult.MessageOverPlayer = $"Need at least {minTargetsToCast} targets to cast {Spell.Name}!";
 				}
-				else if (target.Count < Spell.MaxTargetsToCast)
+				else if (maxTargetsToCast > 0 && target.Count < maxTargetsToCast)
 				{
 					validationResult.ValidationAction = ValidationAction.Warn;
-					if (Spell.MaxTargetsToCast == 1)
+					if (maxTargetsToCast == 1)
 						validationResult.MessageOverPlayer = $"Missing a target for {Spell.Name}?";
 					else
-						validationResult.MessageOverPlayer = $"You can have up to {Spell.MaxTargetsToCast} targets with {Spell.Name}!";
+						validationResult.MessageOverPlayer = $"You can have up to {maxTargetsToCast} targets with {Spell.Name}!";
 				}
-				else if (target.Count > Spell.MaxTargetsToCast)
+				else if (target.Count > maxTargetsToCast)
 				{
 					validationResult.ValidationAction = ValidationAction.Stop;
-					if (Spell.MaxTargetsToCast == 1)
+					if (maxTargetsToCast == 1)
 						validationResult.MessageOverPlayer = $"Only one target is allowed for {Spell.Name}!";
 					else
-						validationResult.MessageOverPlayer = $"Only {Spell.MaxTargetsToCast} targets are allowed for {Spell.Name}!";
+						validationResult.MessageOverPlayer = $"Only {maxTargetsToCast} targets are allowed for {Spell.Name}!";
 				}
 			}
 			TriggerSpellValidation(spellCaster, target, validationResult);

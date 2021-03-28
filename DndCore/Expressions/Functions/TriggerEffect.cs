@@ -30,7 +30,7 @@ namespace DndCore
 		}
 		public override string Name { get; set; } = "TriggerEffect";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1, 15);
 			OnRequestEffectTrigger(player, new EffectEventArgs(args, player, target, spell));

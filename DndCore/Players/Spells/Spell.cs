@@ -556,7 +556,7 @@ namespace DndCore
 			Expressions.Do(OnPlayerPreparesAttack, player, target, castedSpell);
 		}
 
-		public void TriggerDieRollStopped(Creature player, Target target, CastedSpell castedSpell, DiceStoppedRollingData dice)
+		public void TriggerDieRollStopped(Creature player, Target target, CastedSpell castedSpell, RollResults dice)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnDieRollStopped, player, target, castedSpell, dice);

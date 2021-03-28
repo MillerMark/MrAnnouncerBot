@@ -29,5 +29,27 @@ namespace DndCore
 			return AddPropertiesAndFields<Spell>();
 		}
 	}
+	public class DndDiceRollProperty : DndPropertyAccessor
+	{
+		public DndDiceRollProperty()
+		{
+		}
+
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
+		{
+			return Handles<RollResults>(tokenName);
+		}
+
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
+		{
+			RollResults rollResults = Expressions.GetDiceStoppedRollingData(evaluator.Variables);
+			return GetValue<RollResults>(variableName, rollResults);
+		}
+
+		public override List<PropertyCompletionInfo> GetCompletionInfo()
+		{
+			return AddPropertiesAndFields<RollResults>();
+		}
+	}
 }
 

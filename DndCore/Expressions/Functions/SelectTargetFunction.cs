@@ -46,7 +46,7 @@ namespace DndCore
 		public override string Name { get; set; } = "SelectTarget";
 
 		TargetEventArgs ea;
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature creature, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature creature, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1, 3);
 			TargetStatus targetStatus = Expressions.Get<TargetStatus>(args[0], creature, target, spell, dice);

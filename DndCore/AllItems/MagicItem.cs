@@ -101,12 +101,12 @@ namespace DndCore
 			TriggerEvent(magic, onRecipientHitsTarget);
 		}
 		
-		public void TriggerDieRollStopped(Magic magic, DiceStoppedRollingData dice)
+		public void TriggerDieRollStopped(Magic magic, RollResults dice)
 		{
 			TriggerEvent(magic, onDieRollStopped, dice);
 		}
 
-		private void TriggerEvent(Magic magic, string eventCode, DiceStoppedRollingData dice = null)
+		private void TriggerEvent(Magic magic, string eventCode, RollResults dice = null)
 		{
 			if (string.IsNullOrWhiteSpace(eventCode))
 				return;

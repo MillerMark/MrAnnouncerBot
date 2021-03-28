@@ -774,9 +774,9 @@ namespace DndCore
 
 		public void DieRollStoppedForTestCases(int score, int damage = 0)
 		{
-			DiceStoppedRollingData diceStoppedRollingData = new DiceStoppedRollingData();
+			RollResults diceStoppedRollingData = new RollResults();
 			diceStoppedRollingData.totalDamagePlusModifiers = damage;
-			Game.DieRollStopped(this, score, diceStoppedRollingData);
+			Game.DieRollStopped(this, score, diceStoppedRollingData, null);
 		}
 
 		public virtual void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)

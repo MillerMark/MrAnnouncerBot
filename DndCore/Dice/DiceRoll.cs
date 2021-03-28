@@ -290,6 +290,11 @@ namespace DndCore
 
 			return false;
 		}
+		public void CreateRollIdIfMissing()
+		{
+			if (RollID == null)
+				RollID = Guid.NewGuid().ToString();
+		}
 
 		public bool IsOnePlayer
 		{

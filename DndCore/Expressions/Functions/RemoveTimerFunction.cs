@@ -11,7 +11,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "RemoveTimer";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1);
 			string timerName = Expressions.GetStr(args[0], player, target, spell);

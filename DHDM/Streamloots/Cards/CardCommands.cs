@@ -48,7 +48,7 @@ namespace DHDM
 			ViewerDieRollStarts?.Invoke(sender, ea);
 		}
 
-		static void RollIsComplete(CardDto card, DiceStoppedRollingData stopRollingData)
+		static void RollIsComplete(CardDto card, RollResults stopRollingData)
 		{
 			OnViewerDieRollComplete(null, new ViewerDieRollStoppedEventArgs(card, stopRollingData));
 		}

@@ -19,7 +19,7 @@ namespace DndCore
 			RequestCardEventQueuing?.Invoke(null, ea);
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, RollResults dice = null)
 		{
 			ExpectingArguments(args, 2, 10);
 			string cardEventName = Expressions.GetStr(args[0]);

@@ -10,7 +10,7 @@ namespace DndCore
 		public const string CMD_RollTargetSavingThrows = "!!RollTargetSavingThrows";
 		public override string Name => "RollTargetSavingThrows";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData rollTargetSavingThrows = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults rollTargetSavingThrows = null)
 		{
 			ExpectingArguments(args, 0);
 
