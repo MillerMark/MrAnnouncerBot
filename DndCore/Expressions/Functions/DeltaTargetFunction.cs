@@ -27,6 +27,14 @@ namespace DndCore
 
 			string propertyName = Expressions.GetStr(args[0], player, target, spell, dice);
 			double deltaValue = Expressions.GetDouble(args[1], player, target, spell, dice);
+
+			if (target == null)
+			{
+				// Make sure this Spell has values in the MinTargetsToCast and MaxTargetsToCast columns.
+				System.Diagnostics.Debugger.Break();
+				return null;
+			}
+
 			foreach (Creature creature in target.Creatures)
 				OnRequestPropertyChange(creature, propertyName, deltaValue);
 

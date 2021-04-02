@@ -10,6 +10,7 @@ namespace DndCore
 		public string effect { get; set; }
 		public string effectAvailableWhen { get; set; }
 		public bool playToEndOnExpire { get; set; }
+		public bool isForAmmunition { get; set; }
 		public string hue { get; set; }
 		public int saturation { get; set; }
 		public int brightness { get; set; }
@@ -62,6 +63,7 @@ namespace DndCore
 			result.effectAvailableWhen = dto.effectAvailableWhen;
 			result.playToEndOnExpire = MathUtils.IsChecked(dto.playToEndOnExpire);
 			result.hue = dto.hue;
+			result.isForAmmunition = MathUtils.IsChecked(dto.isForAmmunition);
 			result.saturation = MathUtils.GetInt(dto.saturation, 100);
 			result.brightness = MathUtils.GetInt(dto.brightness, 100);
 			result.opacity = MathUtils.GetDouble(dto.opacity, 1);

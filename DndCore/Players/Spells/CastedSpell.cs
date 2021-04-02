@@ -199,7 +199,7 @@ namespace DndCore
 					if (maxTargetsToCast == 1)
 						validationResult.MessageOverPlayer = $"Missing a target for {Spell.Name}?";
 					else
-						validationResult.MessageOverPlayer = $"You can have up to {maxTargetsToCast} targets with {Spell.Name}!";
+						validationResult.MessageOverPlayer = $"Only {target.Count} of {maxTargetsToCast} targets with {Spell.Name}?!";
 				}
 				else if (target.Count > maxTargetsToCast)
 				{

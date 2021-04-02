@@ -7,6 +7,8 @@ namespace DndCore
 	{
 		public static bool IsChecked(string entry)
 		{
+			if (entry == null)
+				return false;
 			return entry.ToLower().Trim() == "x";
 		}
 

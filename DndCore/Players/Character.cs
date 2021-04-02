@@ -138,8 +138,21 @@ namespace DndCore
 			}
 		}
 
+
+
 		[JsonIgnore]
 		public CarriedAmmunition ReadiedAmmunition;
+
+		[JsonIgnore]
+		public string ReadiedAmmunitionEffectName
+		{
+			get
+			{
+				if (ReadiedAmmunition == null)
+					return string.Empty;
+				return ReadiedAmmunition.EffectName.Trim().Trim('"');
+			}
+		}
 		double _passivePerception = int.MinValue;
 
 		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]

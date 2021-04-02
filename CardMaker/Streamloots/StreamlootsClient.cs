@@ -15,6 +15,7 @@ using BotCore;
 
 namespace CardMaker
 {
+	// LifxBearerToken
 	public class StreamlootsClient
 	{
 		Dictionary<string, List<SetCardViewModel>> existingCards = new Dictionary<string, List<SetCardViewModel>>();

@@ -187,6 +187,8 @@
     <Compile Include="AppData.cs" />
     <Compile Include="BotCommand.cs" />
     <Compile Include="BotCommands.cs" />
+    <Compile Include="Twitch Delete.cs" />
+    <Compile Include="Twitch.cs" />
     <Compile Include="Twitch\Chatters.cs" />
     <Compile Include="CsvData.cs" />
     <Compile Include="Twitch\LiveShowData.cs" />
@@ -195,7 +197,6 @@
     <Compile Include="MySecureString.cs" />
     <Compile Include="ObsHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Twitch.cs" />
     <Compile Include="Twitch\TwitchPagination.cs" />
     <Compile Include="Twitch\TwitchStreamData.cs" />
     <Compile Include="UserInfo.cs" />

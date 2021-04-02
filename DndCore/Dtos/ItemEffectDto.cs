@@ -12,6 +12,7 @@ namespace DndCore
 		public string effectAvailableWhen { get; set; }
 		public string playToEndOnExpire { get; set; }
 		public string hue { get; set; }
+		public string isForAmmunition { get; set; }
 		public string saturation { get; set; }
 		public string brightness { get; set; }
 		public string opacity { get; set; }

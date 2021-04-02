@@ -3,6 +3,7 @@ class WindupData {
 	constructor(
 		public Effect: string,
 		public Hue: number,
+		
 		public Opacity: number = 1,
 		public Saturation: number = 100,
 		public Brightness: number = 100,
@@ -22,6 +23,7 @@ class WindupData {
 		public PlayToEndOnExpire: boolean = false,
 		public FlipHorizontal: boolean = false,
 		public FlipVertical: boolean = false,
+		public IsForAmmunition: boolean = false,
 		public Name: string = '',
 		public TargetScale: number = 1
 	) {

@@ -5,6 +5,7 @@ namespace DndCore
 {
 	public class CarriedAmmunition
 	{
+		public string EffectName { get; set; } = string.Empty;
 		public string Name { get; set; } = string.Empty;
 		public string DamageBonusStr { get; set; } = string.Empty;
 		public string HueShift { get; set; } = string.Empty;
@@ -25,11 +26,14 @@ namespace DndCore
 			if (parameters.Length == 0)
 				return;
 			Name = Expressions.GetStr(parameters[0], player);
+			EffectName = Name;
 			if (parameters.Length > 1)
 			{
 				DamageBonusStr = parameters[1].Trim();
 				if (parameters.Length > 2)
 					HueShift = parameters[2].Trim();
+				if (parameters.Length > 3)
+					EffectName = parameters[3].Trim();
 			}
 		}
 	}

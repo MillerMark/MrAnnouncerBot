@@ -765,8 +765,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const bowOriginY = 570;
 		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY);
 		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY);
-		this.loadWeapon('Bow', 'MagicArrow', bowOriginX, bowOriginY);
-		this.loadWeapon('Bow', 'ArrowFlame', bowOriginX, bowOriginY);
+		this.loadWeapon('Bow/Arrows', 'MagicArrow', bowOriginX, bowOriginY - 381);
+		this.loadWeapon('Bow/Arrows', 'ArrowFlame', bowOriginX, bowOriginY - 356);
+		this.loadWeapon('Bow/Arrows', 'ArrowLightning', bowOriginX, bowOriginY - 438);
+		this.loadWeapon('Bow/Arrows', 'ArrowBomb', bowOriginX, bowOriginY - 206);
 	}
 
 	private loadRapier() {

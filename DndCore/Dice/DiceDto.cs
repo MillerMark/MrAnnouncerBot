@@ -171,6 +171,7 @@ namespace DndCore
 			diceDto.IsMagic = false;
 			
 			diceDto.CreatureId = creatureId;
+			diceDto.Sides = 20;
 			diceDto.DieCountsAs = DieCountsAs.totalScore;
 			diceDto.DamageType = DamageType.None;
 			diceDto.Modifier = mod;

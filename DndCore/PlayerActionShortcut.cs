@@ -117,7 +117,7 @@ namespace DndCore
 			shortcutIndex = 0;
 		}
 
-		void SetHueFromStr(WindupDto item, Character player, string hueStr)
+		public void SetHueFromStr(WindupDto item, Character player, string hueStr)
 		{
 			if (item.Effect.EndsWith(".Magic") && player.OverrideWeaponMagicHue != int.MinValue)
 			{

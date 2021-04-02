@@ -616,11 +616,17 @@ namespace DndCore
 				target = WaitingForRollTarget;
 			}
 
-			for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
+			if (playersActiveSpells.Count == 0)
 			{
-				CastedSpell castedSpell = playersActiveSpells[i];
-				castedSpell.Spell.TriggerDieRollStopped(player, target, castedSpell, diceStoppedRollingData);
+				//if (target == null)
+				//	target = GetTargetFromDieRoll(diceStoppedRollingData.rollId);
 			}
+			else
+				for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
+				{
+					CastedSpell castedSpell = playersActiveSpells[i];
+					castedSpell.Spell.TriggerDieRollStopped(player, target, castedSpell, diceStoppedRollingData);
+				}
 		}
 
 		public void GetReadyToPlay()
@@ -779,7 +785,7 @@ namespace DndCore
 				player.RechargeAfterLongRest();
 			}
 		}
-		
+
 		public void RechargePlayersAfterShortRest()
 		{
 			foreach (Character player in Players)
@@ -894,7 +900,7 @@ namespace DndCore
 				return initiativeIds.Count;
 			}
 		}
-		
+
 		public int InitiativeIndex
 		{
 			get => initiativeIndex;

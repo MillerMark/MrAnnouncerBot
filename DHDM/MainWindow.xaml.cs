@@ -2795,15 +2795,16 @@ namespace DHDM
 				foreach (WindupDto windupDto in windups)
 				{
 					windupDto.Scale *= scale;
-					if (windupDto.EffectAvailableWhen == "usesMagicAmmunitionThisRoll == true")
+					
+					
+					if (windupDto.IsForAmmunition)
 					{
 						if (player.ReadiedAmmunition != null)
 						{
 							if (!string.IsNullOrEmpty(player.ReadiedAmmunition.HueShift))
 							{
+								actionShortcut.SetHueFromStr(windupDto, player, player.ReadiedAmmunition.HueShift);
 								windupDto.HueStr = player.ReadiedAmmunition.HueShift;
-								if (int.TryParse(player.ReadiedAmmunition.HueShift, out int result))
-									windupDto.Hue = result;
 							}
 						}
 					}
@@ -3559,6 +3560,13 @@ namespace DHDM
 				spellCaster = null;
 				castedSpellNeedingCompletion = null;
 			}
+			else
+			{
+				if (!string.IsNullOrWhiteSpace(diceRoll.SpellID))
+				{
+					
+				}
+			}
 		}
 
 		void PrepareForClear()
@@ -3778,10 +3786,11 @@ namespace DHDM
 				diceRoll.SetHiddenThreshold(tbxSaveThreshold.Text);
 			else if (type == DiceRollType.SkillCheck)
 				diceRoll.SetHiddenThreshold(tbxSkillCheckThreshold.Text);
-			else
+			else if (NextDieRollType != DiceRollType.Contest)
 				diceRoll.SetHiddenThreshold(tbxAttackThreshold.Text);
 
-			diceRoll.IsMagic = ckbUseMagic.IsChecked == true || type == DiceRollType.WildMagicD20Check;
+			if (NextDieRollType != DiceRollType.Contest)
+				diceRoll.IsMagic = ckbUseMagic.IsChecked == true || type == DiceRollType.WildMagicD20Check;
 
 			diceRoll.AddTrailingEffects(activeTrailingEffects);
 			diceRoll.AddDieRollEffects(activeDieRollEffects);
@@ -5008,6 +5017,8 @@ namespace DHDM
 
 		Target GetTargetFromDieRoll(string rollId)
 		{
+			if (rollId == null)
+				return null;
 			if (diceRollTargets.ContainsKey(rollId))
 			{
 				Target target = diceRollTargets[rollId];
@@ -7664,6 +7675,9 @@ namespace DHDM
 			foreach (Contestant contestant in contestDto.TopContestants.Contestants)
 				diceRoll.DiceDtos.Add(DiceDto.FromCreatureId(contestant.CreatureId, contestant.Mod));
 
+			diceRoll.SuppressLegacyRoll = true;
+			// TODO: Sound effects?
+			// Hide text?
 			//contestDto.BottomContestants
 		}
 		private async void UnleashTheNextRoll()

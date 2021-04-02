@@ -1183,6 +1183,9 @@ namespace DndCore
 		public ActiveSpellData spellPrepared;
 
 		[JsonIgnore]
+		public CastedSpell castedSpellPrepared;
+
+		[JsonIgnore]
 		public ActiveSpellData spellActivelyCasting;
 
 		[JsonIgnore]
@@ -1204,7 +1207,9 @@ namespace DndCore
 			forceShowSpell = true;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = null;
+			castedSpellPrepared = castedSpell;
 			spellPrepared = ActiveSpellData.FromCastedSpell(castedSpell);
+			
 			OnStateChanged(this, new StateChangedEventArgs("spellPrepared", null, null));
 		}
 

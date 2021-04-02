@@ -774,7 +774,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			}
 			const sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
 			if (!sprites)
+			{
+				console.error(`Windup effect "${windup.Effect}" not found.`);
 				continue;
+				}
 			const startingAngle: number = windup.DegreesOffset;
 			const startingFrameIndex: number = startingAngle / 6 % 360;
 			if (sprites) {
