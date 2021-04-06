@@ -187,7 +187,6 @@
     <Compile Include="AppData.cs" />
     <Compile Include="BotCommand.cs" />
     <Compile Include="BotCommands.cs" />
-    <Compile Include="Twitch Delete.cs" />
     <Compile Include="Twitch.cs" />
     <Compile Include="Twitch\Chatters.cs" />
     <Compile Include="CsvData.cs" />

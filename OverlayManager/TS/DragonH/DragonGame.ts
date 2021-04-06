@@ -692,13 +692,16 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91): Sprites {
-		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true);
-		weapon.name = weaponName + '.' + animationName;
-		weapon.originX = originX;
-		weapon.originY = originY;
+		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount);
 		weapon.returnFrameIndex = 13;
 		weapon.segmentSize = 57;
-		this.allWindupEffects.add(weapon);
+		return weapon;
+	}
+
+	loadNewWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91): Sprites {
+		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount);
+		weapon.returnFrameIndex = 32;
+		weapon.segmentSize = 60;
 		return weapon;
 	}
 
@@ -708,6 +711,15 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.backLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
 		this.leapEffectSoundManager = new SoundManager('GameDev/Assets/DragonH/SoundEffects/Leap Effects');
+	}
+
+	private addWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount: number) {
+		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true);
+		weapon.name = weaponName + '.' + animationName;
+		weapon.originX = originX;
+		weapon.originY = originY;
+		this.allWindupEffects.add(weapon);
+		return weapon;
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -773,11 +785,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				continue;
 			}
 			const sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
-			if (!sprites)
-			{
+			if (!sprites) {
 				console.error(`Windup effect "${windup.Effect}" not found.`);
 				continue;
-				}
+			}
 			const startingAngle: number = windup.DegreesOffset;
 			const startingFrameIndex: number = startingAngle / 6 % 360;
 			if (sprites) {
@@ -1630,7 +1641,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	showDmSetThresholdFeedback(hueShift: number) {
-		
+
 	}
 
 	dmDataChanged(dmData: string) {

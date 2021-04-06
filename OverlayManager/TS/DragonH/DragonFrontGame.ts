@@ -706,9 +706,21 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	private loadBoomerang() {
+		const boomerangWeaponLeft = 486;
+		const boomerangWeaponTop = 555;
+		const magicBackLeft = 395;
+		const magicBackTop = 489;
+		const magicFrontLeft = 387;
+		const magicFrontTop = 509;
+		const backOffsetX: number = boomerangWeaponLeft - magicBackLeft;
+		const backOffsetY: number = boomerangWeaponTop - magicBackTop;
+		const frontOffsetX: number = boomerangWeaponLeft - magicFrontLeft;
+		const frontOffsetY: number = boomerangWeaponTop - magicFrontTop;
 		const boomerangOriginX = 229;
 		const boomerangOriginY = 304;
-		this.loadWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 101);
+		this.loadNewWeapon('Boomerang', 'MagicBack', boomerangOriginX + backOffsetX, boomerangOriginY + backOffsetY, 180);
+		this.loadNewWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 180);
+		this.loadNewWeapon('Boomerang', 'MagicFront', boomerangOriginX + frontOffsetX, boomerangOriginY + frontOffsetY, 180);
 	}
 
 	private loadMace() {
