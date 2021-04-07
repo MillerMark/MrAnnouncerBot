@@ -1,22 +1,21 @@
 ﻿
- //` ![](63471E649C008AAD6A3CD8DE26B410CB.png;devexpress.com )
+//` ![](63471E649C008AAD6A3CD8DE26B410CB.png;devexpress.com )
 
 const globalFramesToLoad = 1;
 const globalFramesToCount = 2;
-
 
 // Each of these fps constants is the number of ms for that frame rate.
 const fps100 = 10;
 const fps90 = 1000 / 90;
 const fps80 = 1000 / 80;
 const fps70 = 1000 / 70;
-const fps60= 16.66666667;
-const fps50= 20;
-const fps40= 25;
-const fps30= 33.33333333;
-const fps20= 50;
-const fps25= 40;
-const fps15= 66.66666667;
+const fps60 = 16.66666667;
+const fps50 = 20;
+const fps40 = 25;
+const fps30 = 33.33333333;
+const fps20 = 50;
+const fps25 = 40;
+const fps15 = 66.66666667;
 const fps4 = 250;
 const fps2 = 500;
 
@@ -199,7 +198,7 @@ class Part {
 
 		if (onlyLoadOne) {
 			//const self: Part = this;
-			this._images[0].onload = function () {
+			this._images[0].onload = () => {
 				try {
 					if (this.onImageLoaded) {
 						this.onImageLoaded(this._images[0]);
@@ -209,7 +208,7 @@ class Part {
 					console.log('Part/this: ' + this);
 					console.error('ex: ' + ex);
 				}
-			}.bind(this);
+			};
 
 			if (this.frameCount > 1) {
 				PartBackgroundLoader.add(this);
@@ -221,6 +220,12 @@ class Part {
 		}
 	}
 
+	imageSizeOverrideWidth: number;
+	imageSizeOverrideHeight: number;
+
+	frameOffsetsX: number[];
+	frameOffsetsY: number[];
+
 	constructor(public fileName: string, public frameCount: number,
 		public animationStyle: AnimationStyle,
 		private offsetX: number,
@@ -228,7 +233,16 @@ class Part {
 		private frameRate = 100,
 		public jiggleX: number = 0,
 		public jiggleY: number = 0,
-		private padFileIndex: boolean = false) {
+		private padFileIndex = false,
+		public superCropped = false) {
+
+		this.frameOffsetsX = [];
+		this.frameOffsetsY = [];
+		for (let i = 0; i < frameCount; i++) {
+			this.frameOffsetsX.push(0);
+			this.frameOffsetsY.push(0);
+		}
+
 		this.assetFolder = Folders.assets;
 		this.loadedAllImages = false;
 
@@ -240,7 +254,50 @@ class Part {
 
 		this.framesToLoad = 1;
 		this.framesToCount = 1;
-		this.loadImages(true);
+
+		if (superCropped) {
+			this.readOffsetsAndLoadImages(fileName);
+		}
+		else
+			this.loadImages(true);
+	}
+
+	readOffsetsAndLoadImages(fileName: string) {
+		const rawFile = new XMLHttpRequest();
+		const fullFileName = `${this.assetFolder}${fileName}.offsets`;
+		console.log('fullFileName: ' + fullFileName);
+		rawFile.open("GET", fullFileName, false);
+		rawFile.onreadystatechange = () => {
+			if (rawFile.readyState === 4) {
+				if (rawFile.status === 200 || rawFile.status === 0) {
+					const allText = rawFile.responseText;
+					const allLines: string[] = allText.split('\n');
+
+					this.frameOffsetsX = [];
+					this.frameOffsetsY = [];
+
+					allLines.forEach((line: string, index: number) => {
+						const coordinates: string[] = line.split(',');
+						if (coordinates.length === 2) {
+							const x: number = +coordinates[0].trim();
+							const y: number = +coordinates[1].trim();
+
+							if (index === 0) {  // Image width and height are the first entry.
+								this.imageSizeOverrideWidth = x;
+								this.imageSizeOverrideHeight = y;
+							}
+							else {  // Remaining entries are the x & y offsets for each frame.
+								this.frameOffsetsX.push(x);
+								this.frameOffsetsY.push(y);
+							}
+						}
+					});
+
+					this.loadImages(true);
+				}
+			}
+		}
+		rawFile.send(null);
 	}
 
 	fileExists(url) {
@@ -314,10 +371,10 @@ class Part {
 			return;
 
 		//if (!filterCache)
-			if (!this.images[frameIndex]) {
-				console.error(`Image not found for ${this.fileName}*.png at frameIndex: ${frameIndex}`);
-				return;
-			}
+		if (!this.images[frameIndex]) {
+			console.error(`Image not found for ${this.fileName}*.png at frameIndex: ${frameIndex}`);
+			return;
+		}
 
 		if (verticalScale === -1)
 			verticalScale = horizontalScale;
@@ -352,8 +409,8 @@ class Part {
 
 		const wiggleX: number = this.getWiggle(this.jiggleX);
 		const wiggleY: number = this.getWiggle(this.jiggleY);
-		const dx: number = Math.round(x + this.offsetX + wiggleX);
-		const dy: number = Math.round(y + this.offsetY + wiggleY);
+		const dx: number = Math.round(x + this.offsetX + this.frameOffsetsX[frameIndex] + wiggleX);
+		const dy: number = Math.round(y + this.offsetY + this.frameOffsetsY[frameIndex] + wiggleY);
 
 		//let canvasImageSource: CanvasImageSource;
 		//if (filterCache) {
@@ -372,7 +429,7 @@ class Part {
 		//	context.drawImage(canvasImageSource, sourceOffsetX, sourceOffsetY, width, height, dx, dy, width, height);
 		//}
 		//else
-			context.drawImage(this.images[frameIndex], dx, dy);
+		context.drawImage(this.images[frameIndex], dx, dy);
 
 
 		if (transforming) {

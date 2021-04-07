@@ -718,9 +718,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const frontOffsetY: number = boomerangWeaponTop - magicFrontTop;
 		const boomerangOriginX = 229;
 		const boomerangOriginY = 304;
-		this.loadNewWeapon('Boomerang', 'MagicBack', boomerangOriginX + backOffsetX, boomerangOriginY + backOffsetY, 180);
-		this.loadNewWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 180);
-		this.loadNewWeapon('Boomerang', 'MagicFront', boomerangOriginX + frontOffsetX, boomerangOriginY + frontOffsetY, 180);
+		this.loadNewWeapon('Boomerang', 'MagicBack', boomerangOriginX + backOffsetX, boomerangOriginY + backOffsetY, 180, true);
+		this.loadNewWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 180, true);
+		this.loadNewWeapon('Boomerang', 'MagicFront', boomerangOriginX + frontOffsetX, boomerangOriginY + frontOffsetY, 180, true);
 	}
 
 	private loadMace() {
@@ -760,9 +760,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	private loadBattleAxe() {
 		const battleAxeOriginX = 341;
 		const battleAxeOriginY = 542;
-		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY);
-		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY);
-		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY);
+		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY, 91, true);
+		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY, 91, true);
+		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY, 91, true);
 	}
 
 	private loadClub() {
@@ -775,12 +775,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	private loadBow() {
 		const bowOriginX = 380;
 		const bowOriginY = 570;
-		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY);
-		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY);
-		this.loadWeapon('Bow/Arrows', 'MagicArrow', bowOriginX, bowOriginY - 381);
-		this.loadWeapon('Bow/Arrows', 'ArrowFlame', bowOriginX, bowOriginY - 356);
-		this.loadWeapon('Bow/Arrows', 'ArrowLightning', bowOriginX, bowOriginY - 438);
-		this.loadWeapon('Bow/Arrows', 'ArrowBomb', bowOriginX, bowOriginY - 206);
+		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY, 187);
+		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY, 187);
+		this.loadWeapon('Bow/Arrows', 'MagicArrow', bowOriginX, bowOriginY - 381, 187);
+		this.loadWeapon('Bow/Arrows', 'ArrowFlame', bowOriginX, bowOriginY - 356, 187);
+		this.loadWeapon('Bow/Arrows', 'ArrowLightning', bowOriginX, bowOriginY - 438, 187);
+		this.loadWeapon('Bow/Arrows', 'ArrowBomb', bowOriginX, bowOriginY - 206, 187);
 	}
 
 	private loadRapier() {

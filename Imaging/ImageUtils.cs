@@ -285,6 +285,13 @@ namespace Imaging
 				return new Size(firstFrame.PixelWidth, firstFrame.PixelHeight);
 			}
 		}
+
+		public static void GetImageSize(string file, out double width, out double height)
+		{
+			Size imageSize = GetImageSize(file);
+			width = imageSize.Width;
+			height = imageSize.Height;
+		}
 	}
 }
 

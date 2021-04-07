@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OverlayManager.Hubs;
+using Microsoft.Extensions.FileProviders;
 
 namespace OverlayManager
 {
@@ -52,7 +53,13 @@ namespace OverlayManager
 			}
 
 			app.UseHttpsRedirection();
-			app.UseStaticFiles();
+			//app.UseStaticFiles();
+
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				ServeUnknownFileTypes = true
+			});
+
 			app.UseCookiePolicy();
 
 			app.UseSignalR(x => {

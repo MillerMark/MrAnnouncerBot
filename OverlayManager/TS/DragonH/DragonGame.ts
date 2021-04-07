@@ -691,17 +691,28 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return health;
 	}
 
-	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91): Sprites {
-		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount);
+	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91, superCropped = false): Sprites {
+		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount, superCropped);
 		weapon.returnFrameIndex = 13;
 		weapon.segmentSize = 57;
+		console.log(`Just loaded weapon: ${weaponName} with a framecount of ${frameCount}!`);
+		console.log(weapon);
 		return weapon;
 	}
 
-	loadNewWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91): Sprites {
-		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount);
+	loadBowOrArrow(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 187): Sprites {
+		const weapon: Sprites = this.loadWeapon(weaponName, animationName, originX, originY, frameCount, true);
+		weapon.returnFrameIndex = 43;
+		weapon.segmentSize = 49;
+		return weapon;
+	}
+
+	loadNewWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91, superCropped = false): Sprites {
+		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount, superCropped);
 		weapon.returnFrameIndex = 32;
 		weapon.segmentSize = 60;
+		console.log(`Just loaded weapon: ${weaponName} with a framecount of ${frameCount}!`);
+		console.log(weapon);
 		return weapon;
 	}
 
@@ -713,9 +724,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.leapEffectSoundManager = new SoundManager('GameDev/Assets/DragonH/SoundEffects/Leap Effects');
 	}
 
-	private addWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount: number) {
-		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true);
+	private addWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount: number, superCropped = false) {
+		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true, null, null, superCropped);
 		weapon.name = weaponName + '.' + animationName;
+		console.log('weapon.name: ' + weapon.name);
 		weapon.originX = originX;
 		weapon.originY = originY;
 		this.allWindupEffects.add(weapon);
@@ -778,6 +790,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
 		//console.log('Adding Windups:');
+		console.log(`AddWindups...`);
+		console.log(windups);
 		for (let i = 0; i < windups.length; i++) {
 			const windup: WindupData = windups[i];
 			if (windup === null) {
@@ -789,6 +803,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				console.error(`Windup effect "${windup.Effect}" not found.`);
 				continue;
 			}
+			console.log(windup);
 			const startingAngle: number = windup.DegreesOffset;
 			const startingFrameIndex: number = startingAngle / 6 % 360;
 			if (sprites) {

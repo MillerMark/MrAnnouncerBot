@@ -33,10 +33,10 @@ class Sprites {
 		return null;
 	}
 
-	constructor(baseAnimationName: string, expectedFrameCount: number, public frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
+	constructor(baseAnimationName: string, expectedFrameCount: number, public frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?, superCropped = false) {
 		this.opacity = 1;
 		this.spriteProxies = [];
-		this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
+		this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex, superCropped);
 		this.returnFrameIndex = 0;
 		this.spriteWidth = -1;
 		this.spriteHeight = -1;
@@ -46,21 +46,19 @@ class Sprites {
 		this.originX = 0;
 		this.originY = 0;
 
-		/* 
-		 * ImageManager...
-		
-		  this.baseAnimation.imagesLoaded.then(image => {
-      self.spriteWidth = image.width;
-      self.spriteHeight = image.height;
-      self.loaded = true;
-      if (onLoadedFunc != null)
-        onLoadedFunc(self);
-    });
-		  */
-
 		this.baseAnimation.onImageLoaded = (image: HTMLImageElement) => {
-			this.spriteWidth = image.width;
-			this.spriteHeight = image.height;
+			if (this.baseAnimation.superCropped)
+			{
+				this.spriteWidth = this.baseAnimation.imageSizeOverrideWidth;
+				this.spriteHeight = this.baseAnimation.imageSizeOverrideHeight;
+				console.log(`SuperCrop Image Size: ${this.spriteWidth}x${this.spriteHeight}`);
+			}
+			else 
+				{
+				this.spriteWidth = image.width;
+				this.spriteHeight = image.height;
+				}
+			
 			this.loaded = true;
 			if (onLoadedFunc)
 				onLoadedFunc(this);
