@@ -154,7 +154,13 @@ namespace Imaging
 
 			using (Bitmap image = new Bitmap(workFile))
 			{
-				using (Bitmap cropped = image.Clone(new Rectangle(leftMargin, topMargin, image.Width - rightMargin - leftMargin, image.Height - bottomMargin - topMargin), PixelFormat.Format32bppArgb))
+				int width = image.Width - rightMargin - leftMargin;
+				int height = image.Height - bottomMargin - topMargin;
+				if (width <= 0)
+					width = 1;
+				if (height <= 0)
+					height = 1;
+				using (Bitmap cropped = image.Clone(new Rectangle(leftMargin, topMargin, width, height), PixelFormat.Format32bppArgb))
 				{
 					if (targetFileName == null)
 						targetFileName = Path.GetFileName(file);
