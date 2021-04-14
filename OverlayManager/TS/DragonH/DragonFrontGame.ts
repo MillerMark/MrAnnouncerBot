@@ -697,105 +697,96 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	private loadWarHammer() {
-		const warHammerOriginX = 516;
-		const warHammerOriginY = 685;
-		this.loadWeapon('WarHammer', 'MagicBackHead', warHammerOriginX, warHammerOriginY);
-		this.loadWeapon('WarHammer', 'Weapon', warHammerOriginX, warHammerOriginY);
-		this.loadWeapon('WarHammer', 'MagicFrontHead', warHammerOriginX, warHammerOriginY);
-		this.loadWeapon('WarHammer', 'MagicHandle', warHammerOriginX, warHammerOriginY);
+		const warHammerOriginX = 290;
+		const warHammerOriginY = 675;
+		this.loadNewWeapon('WarHammer', 'MagicBackHead', warHammerOriginX + 196, warHammerOriginY + 189, 151);
+		this.loadNewWeapon('WarHammer', 'Weapon', warHammerOriginX, warHammerOriginY, 151);
+		this.loadNewWeapon('WarHammer', 'MagicFrontHead', warHammerOriginX + 269, warHammerOriginY + 209, 151);
+		this.loadNewWeapon('WarHammer', 'MagicHandle', warHammerOriginX + -70, warHammerOriginY + -93, 151);
 	}
 
 	private loadBoomerang() {
-		const boomerangWeaponLeft = 486;
-		const boomerangWeaponTop = 555;
-		const magicBackLeft = 395;
-		const magicBackTop = 489;
-		const magicFrontLeft = 387;
-		const magicFrontTop = 509;
-		const backOffsetX: number = boomerangWeaponLeft - magicBackLeft;
-		const backOffsetY: number = boomerangWeaponTop - magicBackTop;
-		const frontOffsetX: number = boomerangWeaponLeft - magicFrontLeft;
-		const frontOffsetY: number = boomerangWeaponTop - magicFrontTop;
 		const boomerangOriginX = 229;
-		const boomerangOriginY = 304;
-		this.loadNewWeapon('Boomerang', 'MagicBack', boomerangOriginX + backOffsetX, boomerangOriginY + backOffsetY, 180, true);
-		this.loadNewWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 180, true);
-		this.loadNewWeapon('Boomerang', 'MagicFront', boomerangOriginX + frontOffsetX, boomerangOriginY + frontOffsetY, 180, true);
+		const boomerangOriginY = 350;
+		this.loadNewWeapon('Boomerang', 'MagicBack', boomerangOriginX + 76, boomerangOriginY + 20, 156);
+		this.loadNewWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 156);
+		this.loadNewWeapon('Boomerang', 'MagicFront', boomerangOriginX + 398, boomerangOriginY + 499, 163);
 	}
 
 	private loadMace() {
-		const maceOriginX = 251;
+		const maceOriginX = 243;
 		const maceOriginY = 447;
-		this.loadWeapon('Mace', 'Mace', maceOriginX, maceOriginY);
+		this.loadNewWeapon('Mace', 'Mace', maceOriginX, maceOriginY, 151);
 	}
 
 	private loadSickle() {
 		const sickleOriginX = 376;
 		const sickleOriginY = 536;
-		this.loadWeapon('Sickle', 'Sickle', sickleOriginX, sickleOriginY);
+		this.loadNewWeapon('Sickle', 'Sickle', sickleOriginX, sickleOriginY, 151);
 	}
 
 	private loadLongSword() {
-		const longSwordOriginX = 410;
-		const longSwordOriginY = 717;
-		this.loadWeapon('LongSword', 'MagicB', longSwordOriginX, longSwordOriginY);  // Big fire effect in back.
-		this.loadWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY);
-		this.loadWeapon('LongSword', 'MagicA', longSwordOriginX, longSwordOriginY);
-	}
+		const longSwordOriginX = 234;
+		const longSwordOriginY = 700;
+		this.loadNewWeapon('LongSword', 'MagicA', longSwordOriginX + 200, longSwordOriginY + 140, 151);  // Big fire effect in back.
+		this.loadNewWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY, 151);
+		this.loadNewWeapon('LongSword', 'MagicB', longSwordOriginX + 30, longSwordOriginY + 15, 151);
+		}
 
 	private loadJavelin() {
-		const javelinOriginX = 426;
+		const javelinOriginX = 286;
 		const javelinOriginY = 999;
-		this.loadWeapon('Javelin', 'Weapon', javelinOriginX, javelinOriginY);
-		this.loadWeapon('Javelin', 'Magic', javelinOriginX, javelinOriginY);
+		this.loadNewWeapon('Javelin', 'Weapon', javelinOriginX, javelinOriginY, 151);
+		this.loadNewWeapon('Javelin', 'Magic', javelinOriginX + 100, javelinOriginY + 110, 151);
 	}
 
 	private loadStaff() {
 		const staffOriginX = 352;
 		const staffOriginY = 744;
-		this.loadWeapon('Staff', 'Magic', staffOriginX, staffOriginY);
-		this.loadWeapon('Staff', 'Weapon', staffOriginX, staffOriginY);
+		this.loadNewWeapon('Staff', 'Magic', staffOriginX, staffOriginY);
+		this.loadNewWeapon('Staff', 'Weapon', staffOriginX, staffOriginY);
 	}
 
 	private loadBattleAxe() {
-		const battleAxeOriginX = 341;
-		const battleAxeOriginY = 542;
-		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY, 91, true);
-		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY, 91, true);
-		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY, 91, true);
-	}
-
-	private loadClub() {
-		const clubOriginX = 440;
-		const clubOriginY = 745;
-		this.loadWeapon('Club', 'Weapon', clubOriginX, clubOriginY);
-		this.loadWeapon('Club', 'Magic', clubOriginX, clubOriginY);
+		const battleAxeOriginX = 211;
+		const battleAxeOriginY = 472;
+		this.loadNewWeapon('BattleAxe', 'MagicA', battleAxeOriginX + 170, battleAxeOriginY + 140, 169, true);
+		this.loadNewWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY, 169, true);
+		this.loadNewWeapon('BattleAxe', 'MagicB', battleAxeOriginX + 132, battleAxeOriginY + 32, 169, true);
 	}
 
 	private loadBow() {
-		const bowOriginX = 380;
-		const bowOriginY = 570;
-		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY, 187);
-		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY, 187);
-		this.loadWeapon('Bow/Arrows', 'MagicArrow', bowOriginX, bowOriginY - 381, 187);
-		this.loadWeapon('Bow/Arrows', 'ArrowFlame', bowOriginX, bowOriginY - 356, 187);
-		this.loadWeapon('Bow/Arrows', 'ArrowLightning', bowOriginX, bowOriginY - 438, 187);
-		this.loadWeapon('Bow/Arrows', 'ArrowBomb', bowOriginX, bowOriginY - 206, 187);
+		const bowOriginX = 620;
+		const bowOriginY = 270;
+		this.loadNewWeapon('Bow', 'Magic', bowOriginX - 144, bowOriginY + 128, 169);
+		this.loadNewWeapon('Bow', 'Bow', bowOriginX, bowOriginY, 169);
+		this.loadNewWeapon('Bow/Arrows', 'ArrowMagic', bowOriginX - 98, bowOriginY - 30, 169);
+		this.loadNewWeapon('Bow/Arrows', 'ArrowFlame', bowOriginX, bowOriginY + 96, 169);
+		this.loadNewWeapon('Bow/Arrows', 'ArrowLightning', bowOriginX - 197, bowOriginY - 52, 169);
+		this.loadNewWeapon('Bow/Arrows', 'ArrowBomb', bowOriginX - 10, bowOriginY + 132, 169);
+	}
+
+	private loadClub() {
+		const clubOriginX = 267;
+		const clubOriginY = 680;
+		this.loadNewWeapon('Club', 'MagicBack', clubOriginX + 150, clubOriginY + 120, 153);
+		this.loadNewWeapon('Club', 'Weapon', clubOriginX, clubOriginY, 153);
+		this.loadNewWeapon('Club', 'MagicFront', clubOriginX + 366, clubOriginY + 180, 153);
 	}
 
 	private loadRapier() {
-		const rapierOriginX = 423;
-		const rapierOriginY = 600;
-		this.loadWeapon('Rapier', 'MagicBack', rapierOriginX, rapierOriginY);
-		this.loadWeapon('Rapier', 'Weapon', rapierOriginX, rapierOriginY);
-		this.loadWeapon('Rapier', 'MagicFront', rapierOriginX, rapierOriginY);
+		const rapierOriginX = 183;
+		const rapierOriginY = 560;
+		this.loadNewWeapon('Rapier', 'MagicBack', rapierOriginX + 159, rapierOriginY + 147, 150);
+		this.loadNewWeapon('Rapier', 'Weapon', rapierOriginX, rapierOriginY, 150);
+		this.loadNewWeapon('Rapier', 'MagicFront', rapierOriginX + 118, rapierOriginY + 120, 150);
 	}
 
 	private loadGreatSword() {
-		const greatSwordOriginX = 306;
-		const greatSwordOriginY = 837;
-		this.loadWeapon('GreatSword', 'Magic', greatSwordOriginX, greatSwordOriginY);
-		this.loadWeapon('GreatSword', 'Weapon', greatSwordOriginX, greatSwordOriginY);
+		const greatSwordOriginX = 220;
+		const greatSwordOriginY = 707;
+		this.loadNewWeapon('GreatSword', 'Magic', greatSwordOriginX + 108, greatSwordOriginY + 100, 151);
+		this.loadNewWeapon('GreatSword', 'Weapon', greatSwordOriginX, greatSwordOriginY, 151);
 	}
 
 	start() {

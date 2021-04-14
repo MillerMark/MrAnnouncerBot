@@ -13,6 +13,7 @@ class WindupData {
 		public FadeOut: number = 900,
 		public StartSound: string = '',
 		public EndSound: string = '',
+		public FloatText: string = '',
 		public Rotation: number = 0,
 		public AutoRotation: number = 0,
 		public DegreesOffset: number = 0,

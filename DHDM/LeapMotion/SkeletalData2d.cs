@@ -21,6 +21,7 @@ namespace DHDM
 		public bool ShowActivePlane { get; set; }
 		public bool ShowLiveHandPosition { get; set; }
 		bool hasTrackableEffect;
+		int trackableEffectHueShift;
 		bool trackingObjectInLeftHand;
 		bool trackingObjectInRightHand;
 		HandFxDto handEffect;
@@ -35,6 +36,8 @@ namespace DHDM
 				AnalyzeNewHandEffects();
 			}
 		}
+		public int TrackableEffectHueShiftLeft { get; set; }
+		public int TrackableEffectHueShiftRight { get; set; }
 
 		bool IsTrackableEffect(string effectName)
 		{
@@ -53,6 +56,7 @@ namespace DHDM
 				if (IsTrackableEffect(handEffectDto.EffectName))
 				{
 					hasTrackableEffect = true;
+					trackableEffectHueShift = handEffectDto.HueShift;
 					return;
 				}
 			}
@@ -84,31 +88,48 @@ namespace DHDM
 
 			return false;
 		}
-		
+
+		public object handsLock = new object();
+
 		public void SetFromFrame(Frame frame)
 		{
-			Hands.Clear();
-			if (frame == null)
-				return;
+			lock (handsLock)
+			{
+				Hands.Clear();
+				if (frame == null)
+					return;
 
-			foreach (Hand hand in frame.Hands)
-				Hands.Add(new Hand2d(hand));
+				foreach (Hand hand in frame.Hands)
+					Hands.Add(new Hand2d(hand));
+			}
 
 			if (!HasRightHand(frame))
 				Hand2d.RightHandFloatPoint = null;
 			if (!HasLeftHand(frame))
 				Hand2d.LeftHandFloatPoint = null;
-			
+
 
 			if (hasTrackableEffect && Hands.Count > 0)
 			{
 				hasTrackableEffect = false;
 				trackingObjectInLeftHand = false;
 				trackingObjectInRightHand = false;
+
+				// This works, because there is only one hand up when the button is pressed.
+				// TODO: Make this work for two hands up while button is pressed.
 				if (Hands[0].Side == HandSide.Left)
+				{
+					TrackableEffectHueShiftLeft = trackableEffectHueShift;
 					trackingObjectInLeftHand = true;
+				}
 				else
+				{
+					TrackableEffectHueShiftRight = trackableEffectHueShift;
 					trackingObjectInRightHand = true;
+				}
+				trackableEffectHueShift = -1;
+
+				Hands[0].HasLightSource = true;
 			}
 
 			CheckForThrow();
@@ -132,8 +153,8 @@ namespace DHDM
 			{
 				if (world.Instances.Count == 0)
 					return;
-			} 
-			
+			}
+
 			const float minXyDistanceForCatch = 200;
 			const float minZDistanceForCatch = 280;
 			ScaledPoint palmPosition2d = hand.PalmPosition3d.ToScaledPoint();
@@ -220,6 +241,26 @@ namespace DHDM
 			return world.AddInstance(throwVector);
 		}
 
+		public Vector GetLightPosition(Hand2d hand)
+		{
+			lock (handsLock)
+				lock (world.Instances)
+				{
+					if (hand.Throwing)
+					{
+						if (hand.ThrownObjectIndex < 0 || hand.ThrownObjectIndex >= world.Instances.Count)
+							return null;
+						return world.Instances[hand.ThrownObjectIndex].CurrentPosition;
+					}
+					else if (hand.Side == HandSide.Right && trackingObjectInRightHand)
+						return hand.PalmPosition3d;
+					else if (hand.Side == HandSide.Left && trackingObjectInLeftHand)
+						return hand.PalmPosition3d;
+
+					return null;
+				}
+		}
+
 		bool CheckForThrow(Hand2d hand)
 		{
 			if (!trackingObjectInLeftHand && !trackingObjectInRightHand || hand.IsFist)
@@ -233,14 +274,17 @@ namespace DHDM
 
 		private bool ThrowObject(Hand2d hand, PositionVelocityTime throwVector)
 		{
-			HandVelocityHistory.ClearHistory(hand);
-			int instanceIndex = Throw(hand, throwVector);
-			if (instanceIndex < 0)
-				return false;
-			hand.Throwing = true;
-			hand.ThrownObjectIndex = instanceIndex;
-			hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.Velocity);
-			return true;
+			lock (handsLock)
+			{
+				HandVelocityHistory.ClearHistory(hand);
+				int instanceIndex = Throw(hand, throwVector);
+				if (instanceIndex < 0)
+					return false;
+				hand.Throwing = true;
+				hand.ThrownObjectIndex = instanceIndex;
+				hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.Velocity);
+				return true;
+			}
 		}
 
 		public bool ShowingDiagnostics()

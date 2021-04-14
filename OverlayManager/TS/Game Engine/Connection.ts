@@ -18,11 +18,17 @@ function castSpell(spellData: string): void {
 }
 
 function clearWindup(windupName: string): void {
+	let fadeOut = true;
+	if (windupName.endsWith('!')) {
+		fadeOut = false;
+		windupName = windupName.substr(0, windupName.length - 1);
+	}
+
 	if (activeFrontGame instanceof DragonGame) {
-		activeFrontGame.clearWindup(windupName);
+		activeFrontGame.clearWindup(windupName, fadeOut);
 	}
 	if (activeBackGame instanceof DragonGame) {
-		activeBackGame.clearWindup(windupName);
+		activeBackGame.clearWindup(windupName, fadeOut);
 	}
 }
 
@@ -82,8 +88,7 @@ let bigPlayerData = "";
 const bigDataPortionToken = "portion: ";
 
 function initializePlayerData(playerData: string) {
-	if (playerData.startsWith(bigDataPortionToken))
-	{
+	if (playerData.startsWith(bigDataPortionToken)) {
 		bigPlayerData += playerData.substr(bigDataPortionToken.length);
 		return;
 	}

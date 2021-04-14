@@ -51,7 +51,7 @@ class Sprites {
 			{
 				this.spriteWidth = this.baseAnimation.imageSizeOverrideWidth;
 				this.spriteHeight = this.baseAnimation.imageSizeOverrideHeight;
-				console.log(`SuperCrop Image Size: ${this.spriteWidth}x${this.spriteHeight}`);
+				//console.log(`SuperCrop Image Size: ${this.spriteWidth}x${this.spriteHeight}`);
 			}
 			else 
 				{

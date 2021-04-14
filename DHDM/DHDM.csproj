@@ -339,6 +339,9 @@
     <Compile Include="DmMoods\DmMoodManager.cs" />
     <Compile Include="Events\DigitChangedEventArgs.cs" />
     <Compile Include="IObsManager.cs" />
+    <Compile Include="LIFX\LifxService.cs" />
+    <Compile Include="LIFX\LifxSetting.cs" />
+    <Compile Include="LIFX\LightSettingDto.cs" />
     <Compile Include="LiveFeedAnimation.cs" />
     <Compile Include="ObsManager.cs">
       <SubType>Component</SubType>
@@ -349,10 +352,12 @@
     <Compile Include="StreamDeck Commands\ContestCommand.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
+    <Compile Include="StreamDeck Commands\HandEffectDto.cs" />
     <Compile Include="StreamDeck Commands\ScrollPageCommand.cs" />
     <Compile Include="StreamDeck Commands\SetDmMood.cs" />
     <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowFilter.cs" />
+    <Compile Include="StreamDeck Commands\TargetHand.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
     <Compile Include="Events\ViewerDieRollStoppedEventArgs.cs" />

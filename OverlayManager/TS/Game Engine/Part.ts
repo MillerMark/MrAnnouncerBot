@@ -265,8 +265,12 @@ class Part {
 	readOffsetsAndLoadImages(fileName: string) {
 		const rawFile = new XMLHttpRequest();
 		const fullFileName = `${this.assetFolder}${fileName}.offsets`;
-		console.log('fullFileName: ' + fullFileName);
+		//console.log('fullFileName: ' + fullFileName);
+
+		// TODO: Convert rawFile.open to an async call?
+		// [Deprecation of rawFile.open call] Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 		rawFile.open("GET", fullFileName, false);
+
 		rawFile.onreadystatechange = () => {
 			if (rawFile.readyState === 4) {
 				if (rawFile.status === 200 || rawFile.status === 0) {

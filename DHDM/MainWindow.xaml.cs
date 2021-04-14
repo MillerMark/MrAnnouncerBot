@@ -3278,6 +3278,8 @@ namespace DHDM
 
 		private void RollTheDiceNow(DiceRoll diceRoll)
 		{
+			HubtasticBaseStation.ClearWindup("Weapon.*!");
+			HubtasticBaseStation.ClearWindup("Windup.*!");
 			SystemVariables.DiceRoll = diceRoll;
 
 			CompleteCast(diceRoll);

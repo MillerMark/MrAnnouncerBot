@@ -702,17 +702,27 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	loadBowOrArrow(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 187): Sprites {
 		const weapon: Sprites = this.loadWeapon(weaponName, animationName, originX, originY, frameCount, true);
-		weapon.returnFrameIndex = 43;
-		weapon.segmentSize = 49;
+		weapon.returnFrameIndex = 61;
+		weapon.segmentSize = 62;
+		//weapon.returnFrameIndex = 43;
+		//weapon.segmentSize = 49;
 		return weapon;
 	}
 
-	loadNewWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91, superCropped = false): Sprites {
+	//loadBowOrArrow3D(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 187): Sprites {
+	//	const weapon: Sprites = this.loadWeapon(weaponName, animationName, originX, originY, frameCount, true);
+	//	weapon.returnFrameIndex = 61;
+	//	weapon.segmentSize = 62;
+	//	return weapon;
+	//}
+
+
+	loadNewWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 169, superCropped = true): Sprites {
 		const weapon: Sprites = this.addWeapon(weaponName, animationName, originX, originY, frameCount, superCropped);
 		weapon.returnFrameIndex = 32;
 		weapon.segmentSize = 60;
-		console.log(`Just loaded weapon: ${weaponName} with a framecount of ${frameCount}!`);
-		console.log(weapon);
+		//console.log(`Just loaded weapon: ${weaponName} with a framecount of ${frameCount}!`);
+		//console.log(weapon);
 		return weapon;
 	}
 
@@ -727,7 +737,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	private addWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount: number, superCropped = false) {
 		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true, null, null, superCropped);
 		weapon.name = weaponName + '.' + animationName;
-		console.log('weapon.name: ' + weapon.name);
+		//console.log('weapon.name: ' + weapon.name);
 		weapon.originX = originX;
 		weapon.originY = originY;
 		this.allWindupEffects.add(weapon);
@@ -740,7 +750,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		characters.forEach(character => { this.players.push(new Character(character)) }, this);
 	}
 
-	clearWindup(windupName: string): void {
+	clearWindup(windupName: string, fadeOut: boolean): void {
 		//console.log(`clearWindup(${windupName})`);
 		// TODO: Use windupName to find specific sprites to clear.
 		const now: number = performance.now();
@@ -775,6 +785,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 				if (destroyAllSprites || noNameSpecified && spriteHasNoName || nameMatches) {
 					sprite.expirationDate = now + sprite.fadeOutTime;
+					if (fadeOut) {
+						sprite.playToEndOnExpire = false;
+						sprite.fadeOutNow(1000);
+					}
 				}
 			});
 		});
@@ -835,10 +849,13 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				sprite.flipHorizontally = windup.FlipHorizontal;
 				if (windup.StartSound)
 					this.playWindupSound(windup.StartSound);
+				if (windup.FloatText)
+					this.addFloatingText(playerX, windup.FloatText, this.activePlayerColor, "#ffffff");
 				if (windup.EndSound)
-					sprite.onExpire = function () {
-						this.playWindupSound(windup.EndSound);
-					}.bind(this);
+					sprite.onExpire = () => {
+						if (sprite.playToEndOnExpire)
+							this.playWindupSound(windup.EndSound);
+					};
 			}
 		}
 		console.log('');
@@ -861,6 +878,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	activePlayerX = -1;
+	activePlayerColor = "#000000";
 
 	// Keep this getPlayerX function in sync with code in ObsManager.cs:
 	playerVideoLeftMargin = 10;
@@ -934,6 +952,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (playerIndex === -1)
 			return;
 		this.activePlayerX = this.getPlayerX(playerIndex);
+		this.activePlayerColor = this.players[playerIndex].dieBackColor;
 
 		if (playerData) {
 			const playerDto = JSON.parse(playerData);

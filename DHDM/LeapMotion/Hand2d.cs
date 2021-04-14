@@ -32,6 +32,7 @@ namespace DHDM
 		public ScaledPoint PalmAttachPoint { get; set; }
 		public bool IsFist { get; set; }
 		public bool IsFlat { get; set; }
+		public bool HasLightSource { get; set; }
 		public Hand2d()
 		{
 

@@ -26,6 +26,7 @@ namespace DndCore
 		public string trailingEffects { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
+		public string floatText { get; set; }
 		public ItemEffectKind kind { get; set; }
 		public int Lifespan { get; set; }
 		public int FadeIn { get; set; }
@@ -78,6 +79,7 @@ namespace DndCore
 			result.trailingEffects = dto.trailingEffects;
 			result.startSound = dto.startSound;
 			result.endSound = dto.endSound;
+			result.floatText = dto.floatText;
 			result.Lifespan = MathUtils.GetInt(dto.lifespan);
 			result.FadeIn = MathUtils.GetInt(dto.fadeIn);
 			result.FadeOut = MathUtils.GetInt(dto.fadeOut);

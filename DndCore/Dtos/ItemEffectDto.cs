@@ -27,6 +27,7 @@ namespace DndCore
 		public string trailingEffects { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
+		public string floatText { get; set; }
 		public string lifespan { get; set; }
 		public string fadeIn { get; set; }
 		public string fadeOut { get; set; }

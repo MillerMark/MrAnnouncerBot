@@ -21,6 +21,7 @@ namespace DndCore
 		public int Brightness { get; set; }
 		public string StartSound { get; set; }
 		public string EndSound { get; set; }
+		public string FloatText { get; set; }
 		public string Description { get; set; }
 		public double Rotation { get; set; }
 		public double AutoRotation { get; set; }
@@ -62,6 +63,7 @@ namespace DndCore
 			result.Scale = this.Scale;
 			result.StartSound = this.StartSound;
 			result.EndSound = this.EndSound;
+			result.FloatText = this.FloatText;
 			result.Description = this.Description;
 			result.Velocity = this.Velocity;
 			result.EffectAvailableWhen = this.EffectAvailableWhen;
@@ -224,6 +226,7 @@ namespace DndCore
 			result.Brightness = itemEffect.brightness;
 			result.StartSound = itemEffect.startSound;
 			result.EndSound = itemEffect.endSound;
+			result.FloatText = itemEffect.floatText;
 			result.Rotation = itemEffect.rotation;
 			result.DegreesOffset = (int)Math.Round(itemEffect.degreesOffset);
 			result.Offset = new Vector(itemEffect.moveLeftRight, itemEffect.moveUpDown);
