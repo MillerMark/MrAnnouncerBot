@@ -10299,12 +10299,22 @@ namespace DHDM
 		}
 
 		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e)
-
 		{
 			leapDevice.SetDiagnosticsOptions(chkShowBackPlane.IsChecked == true, chkShowFrontPlane.IsChecked == true, chkShowActivePlane.IsChecked == true);
 		}
+
 		public void TriggerHandFx(HandFxDto handFxDto)
 		{
+			Dispatcher.Invoke(() =>
+			{
+				Activate();
+
+				if (ckActive.IsChecked != true)
+				{
+					ckActive.IsChecked = true;
+					ckActive_Click(null, null);
+				}
+			});
 			leapDevice.TriggerHandFx(handFxDto);
 		}
 
@@ -10393,6 +10403,7 @@ namespace DHDM
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+			leapDevice.ShuttingDown();
 			AllViewers.Save();
 		}
 		//

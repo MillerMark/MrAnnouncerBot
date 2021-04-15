@@ -25,6 +25,7 @@ namespace DHDM
 		bool trackingObjectInLeftHand;
 		bool trackingObjectInRightHand;
 		HandFxDto handEffect;
+		LifxService lifxService;
 		public HandFxDto HandEffect
 		{
 			get => handEffect;
@@ -89,11 +90,9 @@ namespace DHDM
 			return false;
 		}
 
-		public object handsLock = new object();
-
 		public void SetFromFrame(Frame frame)
 		{
-			lock (handsLock)
+			lock (world.worldLock)
 			{
 				Hands.Clear();
 				if (frame == null)
@@ -108,6 +107,16 @@ namespace DHDM
 			if (!HasLeftHand(frame))
 				Hand2d.LeftHandFloatPoint = null;
 
+			foreach (Hand2d hand in Hands)
+			{
+				if (hand.IsFist)
+				{
+					trackingObjectInLeftHand = false;
+					trackingObjectInRightHand = false;
+					lifxService.RestoreDefaultBulbSettings();
+					break;
+				}
+			}
 
 			if (hasTrackableEffect && Hands.Count > 0)
 			{
@@ -149,7 +158,7 @@ namespace DHDM
 		}
 		void CheckForCatch(Hand2d hand)
 		{
-			lock (world.Instances)
+			lock (world.worldLock)
 			{
 				if (world.Instances.Count == 0)
 					return;
@@ -159,7 +168,7 @@ namespace DHDM
 			const float minZDistanceForCatch = 280;
 			ScaledPoint palmPosition2d = hand.PalmPosition3d.ToScaledPoint();
 			List<Virtual3dObject> caughtInstances = new List<Virtual3dObject>();
-			lock (world.Instances)
+			lock (world.worldLock)
 			{
 				foreach (Virtual3dObject virtual3DObject in world.Instances)
 				{
@@ -200,7 +209,7 @@ namespace DHDM
 			const float maxZ = 3000;
 			const float minZ = -3000;
 			List<Virtual3dObject> instancesToRemove = new List<Virtual3dObject>();
-			lock (world.Instances)
+			lock (world.worldLock)
 			{
 				if (world.Instances.Count == 0)
 					return;
@@ -243,22 +252,24 @@ namespace DHDM
 
 		public Vector GetLightPosition(Hand2d hand)
 		{
-			lock (handsLock)
-				lock (world.Instances)
-				{
-					if (hand.Throwing)
-					{
-						if (hand.ThrownObjectIndex < 0 || hand.ThrownObjectIndex >= world.Instances.Count)
-							return null;
-						return world.Instances[hand.ThrownObjectIndex].CurrentPosition;
-					}
-					else if (hand.Side == HandSide.Right && trackingObjectInRightHand)
-						return hand.PalmPosition3d;
-					else if (hand.Side == HandSide.Left && trackingObjectInLeftHand)
-						return hand.PalmPosition3d;
-
+			lock (world.worldLock)
+			{
+				if (hand.IsFist)
 					return null;
-				}
+				//if (hand.Throwing)
+				//{
+				//	if (hand.ThrownObjectIndex < 0 || hand.ThrownObjectIndex >= world.Instances.Count)
+				//		return null;
+				//	return world.Instances[hand.ThrownObjectIndex].CurrentPosition;
+				//}
+				//else
+				if (hand.Side == HandSide.Right && trackingObjectInRightHand)
+					return hand.PalmPosition3d;
+				else if (hand.Side == HandSide.Left && trackingObjectInLeftHand)
+					return hand.PalmPosition3d;
+
+				return null;
+			}
 		}
 
 		bool CheckForThrow(Hand2d hand)
@@ -274,13 +285,16 @@ namespace DHDM
 
 		private bool ThrowObject(Hand2d hand, PositionVelocityTime throwVector)
 		{
-			lock (handsLock)
+			lock (world.worldLock)
 			{
 				HandVelocityHistory.ClearHistory(hand);
 				int instanceIndex = Throw(hand, throwVector);
 				if (instanceIndex < 0)
 					return false;
+				lifxService.RestoreDefaultBulbSettings();
 				hand.Throwing = true;
+				trackingObjectInLeftHand = false;
+				trackingObjectInRightHand = false;
 				hand.ThrownObjectIndex = instanceIndex;
 				hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.Velocity);
 				return true;
@@ -300,7 +314,7 @@ namespace DHDM
 			if (!HasVirtualObjects())
 				return;
 
-			lock (world.Instances)
+			lock (world.worldLock)
 				foreach (Virtual3dObject virtual3DObject in world.Instances)
 				{
 					ThrownObjects.Add(virtual3DObject.ThrownObject);
@@ -309,7 +323,7 @@ namespace DHDM
 
 		public bool HasVirtualObjects()
 		{
-			lock (world.Instances)
+			lock (world.worldLock)
 				return world.Instances.Count > 0;
 		}
 
@@ -357,6 +371,10 @@ namespace DHDM
 			launchInfo.Velocity = (cameraCenter - hand.palmAttachPoint3d).Normalized * speed;
 			launchInfo.Time = DateTime.Now;
 			ThrowObject(hand, launchInfo);
+		}
+		public void RegisterLifxService(LifxService lifxService)
+		{
+			this.lifxService = lifxService;
 		}
 	}
 }

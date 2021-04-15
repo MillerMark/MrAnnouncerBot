@@ -12,6 +12,8 @@ namespace DHDM
 {
 	public class LifxService
 	{
+		DateTime serviceStartTime = DateTime.Now;
+		List<string> log = new List<string>();
 		static Dictionary<string, LifxSetting> lastSettings = new Dictionary<string, LifxSetting>();
 		static HttpClient client = new HttpClient();
 
@@ -43,11 +45,15 @@ namespace DHDM
 				infrared = 0,
 				power = "on"
 			};
-			
+
+			log.Add($"{GetTimeStr()}: {bulbLabel} -> {color} in {duration}s.");
 			ByteArrayContent byteContent = ToSerializedBytes(lightSettingDto);
-			HttpResponseMessage httpResponseMessage = await client.PutAsync($"https://api.lifx.com/v1/lights/label:{bulbLabel}/state", byteContent);
+			if (!bulbLabel.StartsWith("group:"))
+				bulbLabel = "label:" + bulbLabel;
+			HttpResponseMessage httpResponseMessage = await client.PutAsync($"https://api.lifx.com/v1/lights/{bulbLabel}/state", byteContent);
 			if (await ErrorsReported(httpResponseMessage))
 				return;
+			
 			//string result = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 		}
 
@@ -66,11 +72,17 @@ namespace DHDM
 			if (!httpResponseMessage.IsSuccessStatusCode)
 			{
 				string result = await httpResponseMessage.Content.ReadAsStringAsync();
+				log.Add($"{GetTimeStr()}: Error - {result}.");
 				//System.Diagnostics.Debugger.Break();
 				//System.Windows.MessageBox.Show(result, $"HTTP Response Error in {memberName}");
 				return true;
 			}
 			return false;
+		}
+
+		private string GetTimeStr()
+		{
+			return Math.Round((DateTime.Now - serviceStartTime).TotalMilliseconds).ToString().PadLeft(7, ' ');
 		}
 
 		private static ByteArrayContent ToSerializedBytes(object updateData)
@@ -81,6 +93,17 @@ namespace DHDM
 			var byteContent = new ByteArrayContent(buffer);
 			byteContent.Headers.Add("content-type", "application/json");
 			return byteContent;
+		}
+
+		public async void RestoreDefaultBulbSettings()
+		{
+			await ChangeBulbSettings("Left", "#ffffff", 0.2, 0.3);
+			await ChangeBulbSettings("Right", "#ffffff", 0.3, 0.3);
+		}
+
+		public async void TurnOffBulbs()
+		{
+			await ChangeBulbSettings("group:Fireball", "#ffffff", 0);
 		}
 	}
 }

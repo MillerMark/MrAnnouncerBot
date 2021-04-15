@@ -54,8 +54,17 @@ class ScaledPoint {
 	}
 }
 
+class FingerBone {
+	Center: ScaledPoint;
+	ScaledLength: number;
+	Direction: Vector;
+}
+
 class Finger2d {
 	TipPosition: ScaledPoint;
+	DistalPhalange: FingerBone;
+	IntermediatePhalange: FingerBone;
+	ProximalPhalange: FingerBone;
 	constructor() {
 
 	}
@@ -76,7 +85,7 @@ class ScaledPlane {
 
 	}
 }
-
+	
 class Hand2d {
 	Speed: number;
 	PalmDirection: VectorCompassDirection;
@@ -94,6 +103,7 @@ class Hand2d {
 	ThrownObjectIndex: number;
 	PalmAttachPoint: ScaledPoint;
 	PositionZ: number;
+	PalmToFingerVector: Vector;
 	constructor() {
 
 	}
@@ -316,6 +326,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	handEffectsCollection: SpriteCollection = new SpriteCollection();
 	handHeldFireball: Sprites;
+	handHeldFireblast: Sprites;
 	handHeldSmoke: Sprites;
 	handHeldFloatingSmoke: Sprites;
 	smokeExtinguish: Sprites;
@@ -1065,7 +1076,16 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			const fontSize: number = 32 * hand.PalmPosition.Scale;
 			context.font = `${fontSize}px Arial`;
 			context.fillText(VectorCompassDirection[hand.PalmDirection].toString(), hand.PalmPosition.X, hand.PalmPosition.Y);
-			context.fillText((Math.round(hand.PositionZ * 100) / 100).toString(), hand.PalmPosition.X, hand.PalmPosition.Y + fontSize);
+
+
+			// Show hand rotation:
+			context.fillText(`${Math.round(this.getHandRotation(hand) * 100) / 100}`, hand.PalmPosition.X, hand.PalmPosition.Y + fontSize);
+
+			// Show the PalmToFingerVector position:
+			//context.fillText(`${Math.round(hand.PalmToFingerVector.x * 100)}, ${Math.round(hand.PalmToFingerVector.y * 100)}`, hand.PalmPosition.X, hand.PalmPosition.Y + fontSize);
+
+			// Show the z position in the palm:
+			//context.fillText((Math.round(hand.PositionZ * 100) / 100).toString(), hand.PalmPosition.X, hand.PalmPosition.Y + fontSize);
 
 			hand.Fingers.forEach((finger: Finger2d) => {
 				context.fillStyle = fingerFillColors[colorIndex];
@@ -1138,8 +1158,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.handEffectsCollection.add(this.smokePoofB);
 
 		this.smokePoofC = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofC', 120, 30, AnimationStyle.Sequential, true);
-		this.smokePoofC.originX = 333;
-		this.smokePoofC.originY = 715;
+		this.smokePoofC.originX = 300;
+		this.smokePoofC.originY = 817;
 		this.handEffectsCollection.add(this.smokePoofC);
 
 		this.smokePoofD = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofD', 121, 30, AnimationStyle.Sequential, true);
@@ -1156,6 +1176,11 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.handHeldFireball.originX = 317;
 		this.handHeldFireball.originY = 647;
 		this.handEffectsCollection.add(this.handHeldFireball);
+
+		this.handHeldFireblast = new Sprites('LeapMotion/Effects/Fireblast/FireblastA', 49, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireblast.originX = 218;
+		this.handHeldFireblast.originY = 742;
+		this.handEffectsCollection.add(this.handHeldFireblast);
 
 		this.handHeldSmoke = new Sprites('LeapMotion/Effects/MagicSmokeLoop/MagicSmokeLoop', 326, 30, AnimationStyle.Loop, true);
 		this.handHeldSmoke.originX = 225;
@@ -1265,28 +1290,30 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		skeletalData2d.HandEffect.HandEffects.forEach((handEffect: HandEffectDto) => {
 			const firstHand: Hand2d = skeletalData2d.Hands[0];
 			const attachPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
-			let addEffectToThisCanvas = this.shouldAddEffectToThisCanvas(firstHand, attachPoint);
+			const addEffectToThisCanvas = this.shouldAddEffectToThisCanvas(firstHand, attachPoint);
+
+			const angleOfRotation: number = this.getHandRotation(firstHand);
 
 			switch (handEffect.EffectName) {
 				case 'SmokeA':
 					if (addEffectToThisCanvas)
-						this.addScaledSprite(this.smokePoofA, handEffect, attachPoint);
+						this.addScaledSprite(this.smokePoofA, handEffect, attachPoint, angleOfRotation);
 					break;
 				case 'SmokeB':
 					if (addEffectToThisCanvas)
-						this.addScaledSprite(this.smokePoofB, handEffect, attachPoint);
+						this.addScaledSprite(this.smokePoofB, handEffect, attachPoint, angleOfRotation);
 					break;
 				case 'SmokeC':
 					if (addEffectToThisCanvas)
-						this.addScaledSprite(this.smokePoofC, handEffect, attachPoint);
+						this.addScaledSprite(this.smokePoofC, handEffect, attachPoint, angleOfRotation);
 					break;
 				case 'SmokeD':
 					if (addEffectToThisCanvas)
-						this.addScaledSprite(this.smokePoofD, handEffect, attachPoint);
+						this.addScaledSprite(this.smokePoofD, handEffect, attachPoint, angleOfRotation);
 					break;
 				case 'SmokeE':
 					if (addEffectToThisCanvas)
-						this.addScaledSprite(this.smokePoofE, handEffect, attachPoint);
+						this.addScaledSprite(this.smokePoofE, handEffect, attachPoint, angleOfRotation);
 					break;
 				case 'FireBall': {
 					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldFireball, handEffect, attachPoint);
@@ -1297,8 +1324,17 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldSmoke, handEffect, attachPoint);
 					break;
 				}
+				case 'FireBlast': {
+					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldFireblast, handEffect, attachPoint);
+					break;
+				}
 			}
 		});
+	}
+
+	getHandRotation(firstHand: Hand2d): number {
+		const radians = Math.atan2(firstHand.PalmToFingerVector.y, firstHand.PalmToFingerVector.x); // In radians
+		return -radians * (180 / Math.PI) + 90;
 	}
 
 	private shouldAddEffectToThisCanvas(firstHand: Hand2d, attachPoint: ScaledPoint) {
@@ -1318,9 +1354,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return trackedSprite;
 	}
 
-	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint): SpriteProxy {
+	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint, angle = 0): SpriteProxy {
 		const sprite: SpriteProxy = smokePoof.addShifted(scaledPoint.X, scaledPoint.Y, 0, handEffect.HueShift);
 		this.setHandEffectScale(sprite, handEffect, scaledPoint.Scale);
+		sprite.rotation = angle;
 		return sprite;
 	}
 

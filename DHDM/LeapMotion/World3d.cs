@@ -8,6 +8,7 @@ namespace DHDM
 	public class World3d
 	{
 		int numInstancesCreated;
+		public object worldLock = new object();
 		public List<Virtual3dObject> Instances { get; set; } = new List<Virtual3dObject>();
 		public World3d()
 		{
@@ -16,7 +17,7 @@ namespace DHDM
 
 		public void Update(DateTime time)
 		{
-			lock (Instances)
+			lock (worldLock)
 			{
 				if (Instances.Count == 0)
 					return;
@@ -34,7 +35,7 @@ namespace DHDM
 		public int AddInstance(PositionVelocityTime throwVector)
 		{
 			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.Velocity.ToMetersPerSecond(), Index = numInstancesCreated };
-			lock (Instances)
+			lock (worldLock)
 				Instances.Add(virtual3DObject);
 			numInstancesCreated++;
 			return virtual3DObject.Index;
@@ -42,7 +43,7 @@ namespace DHDM
 
 		public void RemoveInstances(List<Virtual3dObject> instancesToRemove)
 		{
-			lock (Instances)
+			lock (worldLock)
 			{
 				if (Instances.Count == 0)
 					return;

@@ -33,6 +33,7 @@ namespace DHDM
 		public bool IsFist { get; set; }
 		public bool IsFlat { get; set; }
 		public bool HasLightSource { get; set; }
+		public DndCore.Vector PalmToFingerVector { get; set; }
 		public Hand2d()
 		{
 
@@ -75,8 +76,15 @@ namespace DHDM
 			fingerTipsAttachPoint3d = GetFingerTipsAttachPoint3d(hand);
 			PalmAttachPoint = LeapCalibrator.ToScaledPoint(palmAttachPoint3d);
 			PalmDirection = GetVectorDirection(hand.PalmNormal);
+			PalmToFingerVector = GetPalmToFingerVector();
 			FacingForwardOrBack = GetForwardOrBack(hand.PalmNormal);
 			PositionZ = hand.PalmPosition.z;
+		}
+
+		private DndCore.Vector GetPalmToFingerVector()
+		{
+			Vector palmToFingerVector3D = (fingerTipsAttachPoint3d - palmAttachPoint3d).Normalized;
+			return new DndCore.Vector(palmToFingerVector3D.x, palmToFingerVector3D.y);
 		}
 
 		public static Vector GetAttachPoint3d(Hand hand)

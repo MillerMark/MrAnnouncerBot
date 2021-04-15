@@ -11,16 +11,21 @@ namespace DHDM
 		public double Brightness { get; set; }
 		public DateTime CreationTime { get; set; }
 		public double AgeSeconds => (DateTime.Now - CreationTime).TotalSeconds;
-		public static bool operator ==(LifxSetting left, IntPtr right)
+		public static bool operator ==(LifxSetting left, LifxSetting right)
 		{
 			if ((object)left == null)
 				return (object)right == null;
 			else
 				return left.Equals(right);
 		}
-		public static bool operator !=(LifxSetting left, IntPtr right)
+		public static bool operator !=(LifxSetting left, LifxSetting right)
 		{
 			return !(left == right);
+		}
+
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
 		}
 
 		public override bool Equals(object obj)

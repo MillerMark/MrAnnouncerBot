@@ -114,7 +114,7 @@ namespace DHDM
 				return;
 
 			Leap.Vector markPosition = new Leap.Vector(-20.2903f, 445.1746f, 423.4169f);
-			lock (skeletalData2d.handsLock)
+			lock (skeletalData2d.world.worldLock)
 				foreach (Hand2d hand2D in skeletalData2d.Hands)
 				{
 					Leap.Vector lightPosition = skeletalData2d.GetLightPosition(hand2D);
@@ -131,12 +131,16 @@ namespace DHDM
 						// <formula 2; distance = \sqrt{deltaX^2 + deltaY^2 + deltaZ^2}>
 
 						const int minDistance = 100;
-						const int maxDistance = 250;
+						const int maxDistance = 350;
 						distance = Math.Max(minDistance, distance);
 						distance = Math.Min(maxDistance, distance);
 
-						double brightnessMultiplier = (distance - minDistance) / (maxDistance - minDistance);
+						double brightnessMultiplier = 1 - (distance - minDistance) / (maxDistance - minDistance);
+
+						brightnessMultiplier = Math.Ceiling(5 * brightnessMultiplier) / 5;  // isolate to 0.2, 0.4, 0.6, 
+						
 						// 250 to about 100
+						brightnessMultiplier = Math.Max(0.2, brightnessMultiplier);
 
 						int hueShift = GetHueShiftFromHand(hand2D);
 						if (lightPosition.x < markPosition.x)
@@ -160,7 +164,7 @@ namespace DHDM
 			// Don't update the LIFX bulbs faster than 20Hz!
 
 			skeletalData2d.UpdateVirtualObjects();
-			lock (skeletalData2d.world.Instances)
+			lock (skeletalData2d.world.worldLock)
 				HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
 			LastUpdateTime = DateTime.Now;
 			ClearImpulseData();
@@ -170,6 +174,8 @@ namespace DHDM
 		{
 			timer.Elapsed += Timer_Elapsed;
 			lifxService = new LifxService(new MySecureString(Twitch.Configuration["Secrets:LifxBearerToken"]));
+			lifxService.RestoreDefaultBulbSettings();
+			skeletalData2d.RegisterLifxService(lifxService);
 		}
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -248,6 +254,11 @@ namespace DHDM
 					return;
 			}
 			UpdateData();
+		}
+
+		public void ShuttingDown()
+		{
+			lifxService.TurnOffBulbs();
 		}
 	}
 }
