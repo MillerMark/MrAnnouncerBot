@@ -232,10 +232,33 @@ namespace DHDM
 					break;
 			}
 		}
+
+		Random random;
+		int lastRandomColor;
+		DateTime lastTimeWeGeneratedRandomColor;
 		public void TriggerHandFx(HandFxDto handFxDto)
 		{
 			// TODO: Add support for hand-specific (left or right) placement.
 			// TODO: Add support for tossable objects in the stream deck commands.
+			foreach (HandEffectDto handEffect in handFxDto.HandEffects)
+			{
+				if (handEffect.HueShift == -1)
+				{
+					if (random == null)
+						random = new Random();
+					if ((DateTime.Now - lastTimeWeGeneratedRandomColor).TotalSeconds > 5)
+					{
+						lastTimeWeGeneratedRandomColor = DateTime.Now;
+						lastRandomColor = new Random().Next(360);
+						handEffect.HueShift = lastRandomColor;
+					}
+					else
+					{
+						handEffect.HueShift = lastRandomColor + random.Next(20) - 10;
+						lastRandomColor += 20;
+					}
+				}
+			}
 			skeletalData2d.HandEffect = handFxDto;
 		}
 

@@ -809,10 +809,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.coinManager.loadResources();
 		this.speechBubbleManager.loadResources();
 
-		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
+		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true, null, null, true);
 		this.denseSmoke.name = 'DenseSmoke';
-		this.denseSmoke.originX = 309;
-		this.denseSmoke.originY = 723;
+		this.denseSmoke.originX = 220;
+		this.denseSmoke.originY = 716;
 
 		this.smokeColumnBack = new Sprites('SmokeColumn/SmokeColumnBack', 77, fps30, AnimationStyle.Sequential, true);
 		this.smokeColumnBack.name = 'SmokeColumnBack';

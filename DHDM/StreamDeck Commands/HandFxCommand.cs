@@ -24,7 +24,7 @@ namespace DHDM
 				bool success = false;
 				foreach (string line in lines)
 				{
-					Match match = Regex.Match(line.Trim(), @"^HandFx\s+(\w+)\s+(\d+)(?:\s+(\d+)%)?");
+					Match match = Regex.Match(line.Trim(), @"^HandFx\s+(\w+)\s+([-+]?\d+)(?:\s+(\d+)%)?");
 
 					if (match.Success)
 					{

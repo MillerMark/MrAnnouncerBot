@@ -45,7 +45,7 @@ namespace DHDM
 
 			// TODO: If we add more trackable effects, include them here.
 			// TODO: If we do this a lot, make it data-driven.
-			return effectName == "FireBall" || effectName == "MagicSmokeLoop";
+			return effectName == "FireBall" || effectName == "Sparks" || effectName == "MagicSmokeLoop";
 		}
 
 		void AnalyzeNewHandEffects()

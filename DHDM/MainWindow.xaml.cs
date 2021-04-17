@@ -10324,6 +10324,7 @@ namespace DHDM
 			ckShowLiveHandPosition.IsEnabled = leapDevice.Active;
 			btnCalibrate.IsEnabled = leapDevice.Active;
 		}
+
 		public void ShowBackground(string sourceName)
 		{
 			obsManager.ShowPlateBackground(sourceName);

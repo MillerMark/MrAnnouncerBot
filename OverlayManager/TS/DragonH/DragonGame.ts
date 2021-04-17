@@ -326,6 +326,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	handEffectsCollection: SpriteCollection = new SpriteCollection();
 	handHeldFireball: Sprites;
+	handHeldSparksLoop: Sprites;
+	nextHandHeldSparks: Sprites;
 	handHeldFireblast: Sprites;
 	handHeldSmoke: Sprites;
 	handHeldFloatingSmoke: Sprites;
@@ -338,6 +340,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	smokePoofC: Sprites;
 	smokePoofD: Sprites;
 	smokePoofE: Sprites;
+	sparksPoof: Sprites;
 
 
 	allWindupEffects: SpriteCollection;
@@ -1018,6 +1021,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			if (this.skeletalData2d.HandEffect)
 				this.changeHandEffects(this.skeletalData2d);
 			this.checkForThrowsAndCatches(this.skeletalData2d, this.handHeldFireball);
+			this.checkForThrowsAndCatches(this.skeletalData2d, this.handHeldSparksLoop);
 			this.checkForThrowsAndCatches(this.skeletalData2d, this.handHeldSmoke);
 		}
 	}
@@ -1172,14 +1176,29 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.smokePoofE.originY = 851;
 		this.handEffectsCollection.add(this.smokePoofE);
 
+		this.sparksPoof = new Sprites('LeapMotion/Effects/SmokePoof/Sparks', 46, 30, AnimationStyle.Sequential, true);
+		this.sparksPoof.originX = 103;
+		this.sparksPoof.originY = 777;
+		this.handEffectsCollection.add(this.sparksPoof);
+
 		this.handHeldFireball = new Sprites('LeapMotion/Effects/FireBall/FireBall', 59, 30, AnimationStyle.Loop, true);
 		this.handHeldFireball.originX = 317;
 		this.handHeldFireball.originY = 647;
 		this.handEffectsCollection.add(this.handHeldFireball);
 
-		this.handHeldFireblast = new Sprites('LeapMotion/Effects/Fireblast/FireblastA', 49, 30, AnimationStyle.Sequential, true);
-		this.handHeldFireblast.originX = 218;
-		this.handHeldFireblast.originY = 742;
+		this.handHeldSparksLoop = new Sprites('LeapMotion/Effects/Sparks/SparksLoop', 54, 30, AnimationStyle.Loop, true);
+		this.handHeldSparksLoop.originX = 306;
+		this.handHeldSparksLoop.originY = 301;
+		this.handEffectsCollection.add(this.handHeldSparksLoop);
+
+		this.nextHandHeldSparks = new Sprites('LeapMotion/Effects/Sparks/Sparks', 24, 30, AnimationStyle.Sequential, true);
+		this.nextHandHeldSparks.originX = 396;
+		this.nextHandHeldSparks.originY = 367;
+		this.handEffectsCollection.add(this.nextHandHeldSparks);
+
+		this.handHeldFireblast = new Sprites('LeapMotion/Effects/Fireblast/FireblastB', 177, fps50, AnimationStyle.Sequential, true);
+		this.handHeldFireblast.originX = 225;
+		this.handHeldFireblast.originY = 751;
 		this.handEffectsCollection.add(this.handHeldFireblast);
 
 		this.handHeldSmoke = new Sprites('LeapMotion/Effects/MagicSmokeLoop/MagicSmokeLoop', 326, 30, AnimationStyle.Loop, true);
@@ -1240,6 +1259,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			this.destroyAllFireballs();
 		}
 
+		if (this.handHeldSparksLoop.spriteProxies.length > 0) {
+			this.destroyAllSparks();
+		}
+
 		if (this.handHeldSmoke.spriteProxies.length > 0) {
 			// TODO: Play a sound effect in the Front overlay when the smoke extinguishes.
 			this.handHeldSmoke.spriteProxies = [];
@@ -1249,7 +1272,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	fireBallSound: string;
 	activeLeapFireballSound: HTMLAudioElement;
 
-	private destroyAllFireballs() {
+	private destroyAllSprites(sprites: Sprites) {
 		if (this instanceof DragonFrontGame)
 			this.leapEffectSoundManager.safePlayMp3('FireBallExtinguish');
 
@@ -1258,19 +1281,28 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			const attachPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
 			const addEffectToThisCanvas = this.shouldAddEffectToThisCanvas(firstHand, attachPoint);
 			if (addEffectToThisCanvas) {
-				const fireBall: ColorShiftingSpriteProxy = this.handHeldFireball.spriteProxies[0] as ColorShiftingSpriteProxy;
+				const handHeldSprite: ColorShiftingSpriteProxy = sprites.spriteProxies[0] as ColorShiftingSpriteProxy;
 
-				if (fireBall) {
-					const scale: number = fireBall.scale;
-					const smokeExtinguish: SpriteProxy = this.smokeExtinguish.addShifted(fireBall.x + this.handHeldFireball.originX, fireBall.y + this.handHeldFireball.originY, 0, fireBall.hueShift);
+				if (handHeldSprite) {
+					const scale: number = handHeldSprite.scale;
+					const smokeExtinguish: SpriteProxy = this.smokeExtinguish.addShifted(handHeldSprite.x + sprites.originX, handHeldSprite.y + sprites.originY, 0, handHeldSprite.hueShift);
 					smokeExtinguish.scale = scale;
 				}
 			}
 		}
 
-		this.handHeldFireball.spriteProxies = [];
+		sprites.spriteProxies = [];
 		this.activeLeapFireballSound.pause();
 		this.activeLeapFireballSound = null;
+	}
+
+	private destroyAllFireballs() {
+		this.destroyAllSprites(this.handHeldFireball);
+		
+	}
+
+	private destroyAllSparks() {
+		this.destroyAllSprites(this.handHeldSparksLoop);
 	}
 
 	addFireballSound() {
@@ -1299,33 +1331,52 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 					if (addEffectToThisCanvas)
 						this.addScaledSprite(this.smokePoofA, handEffect, attachPoint, angleOfRotation);
 					break;
+
 				case 'SmokeB':
 					if (addEffectToThisCanvas)
 						this.addScaledSprite(this.smokePoofB, handEffect, attachPoint, angleOfRotation);
 					break;
+
 				case 'SmokeC':
 					if (addEffectToThisCanvas)
 						this.addScaledSprite(this.smokePoofC, handEffect, attachPoint, angleOfRotation);
 					break;
+
 				case 'SmokeD':
 					if (addEffectToThisCanvas)
 						this.addScaledSprite(this.smokePoofD, handEffect, attachPoint, angleOfRotation);
 					break;
+
 				case 'SmokeE':
 					if (addEffectToThisCanvas)
 						this.addScaledSprite(this.smokePoofE, handEffect, attachPoint, angleOfRotation);
 					break;
+
+				case 'SparksPoof':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.sparksPoof, handEffect, attachPoint, angleOfRotation);
+					break;
+
 				case 'FireBall': {
 					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldFireball, handEffect, attachPoint);
 					this.addFireballSound();
 					break;
 				}
+
+				case 'Sparks': {
+					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldSparksLoop, handEffect, attachPoint);
+					this.addFireballSound();
+					break;
+				}
+
 				case 'MagicSmokeLoop': {
 					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldSmoke, handEffect, attachPoint);
 					break;
 				}
+
 				case 'FireBlast': {
-					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldFireblast, handEffect, attachPoint);
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.handHeldFireblast, handEffect, attachPoint, angleOfRotation);
 					break;
 				}
 			}
@@ -1649,6 +1700,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (this.skeletalData2d) {
 			this.updateTrackingEffects(this.skeletalData2d, this.handHeldFireball, nowMs, this.getChildFlameSprite.bind(this));
 			this.updateTrackingEffects(this.skeletalData2d, this.handHeldSmoke, nowMs, this.getChildSmokeSprite.bind(this));
+			this.updateTrackingEffects(this.skeletalData2d, this.handHeldSparksLoop, nowMs, this.getChildSparksSprite.bind(this));
 			this.handEffectsCollection.updatePositions(nowMs);
 			this.handEffectsCollection.draw(context, nowMs);
 		}
@@ -1675,6 +1727,12 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		childSprite.initialRotation = Random.max(360);
 		childSprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
 		childSprite.fadeInTime = 300;
+		return childSprite;
+	}
+
+	private getChildSparksSprite(x: number, y: number): ColorShiftingSpriteProxy {
+		const childSprite: ColorShiftingSpriteProxy = this.nextHandHeldSparks.addShifted(x, y);
+		childSprite.initialRotation = Random.max(360);
 		return childSprite;
 	}
 
