@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCore", "SharedCore\Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaleSpireCore", "TaleSpireCore\TaleSpireCore.csproj", "{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaleSpireExplore", "TaleSpireExplore\TaleSpireExplore.csproj", "{425D72BF-D995-4980-8BE7-60610705AFAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{425D72BF-D995-4980-8BE7-60610705AFAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{425D72BF-D995-4980-8BE7-60610705AFAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{425D72BF-D995-4980-8BE7-60610705AFAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{425D72BF-D995-4980-8BE7-60610705AFAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
