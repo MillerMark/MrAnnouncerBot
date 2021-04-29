@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaleSpireCore", "TaleSpireCore.csproj", "{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {496DC291-C098-492D-97E0-A36BC6AF2759}
+	EndGlobalSection
+EndGlobal

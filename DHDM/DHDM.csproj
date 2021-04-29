@@ -628,6 +628,10 @@
       <Project>{f7623e7a-2d21-420c-95fb-406d8d7f50cd}</Project>
       <Name>Streamloots</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TaleSpireCore\TaleSpireCore.csproj">
+      <Project>{08c85a94-9b3c-4f94-a8cd-0132c8f21aef}</Project>
+      <Name>TaleSpireCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

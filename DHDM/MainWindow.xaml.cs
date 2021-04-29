@@ -32,6 +32,7 @@ using Newtonsoft.Json;
 using ICSharpCode.AvalonEdit;
 using System.IO;
 using GoogleHelper;
+using TaleSpireCore;
 using System.Reflection;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -212,6 +213,7 @@ namespace DHDM
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 			LoadEverything();
+			//TaleSpireEvents.StartSocketServer();
 		}
 
 		private void CreateTimers()
@@ -3947,6 +3949,12 @@ namespace DHDM
 				txtTime.Text = timeStr;
 
 				TimeSpan timeIntoToday = game.Clock.Time - new DateTime(game.Clock.Time.Year, game.Clock.Time.Month, game.Clock.Time.Day);
+				if (Math.Abs(timeIntoToday.TotalHours - lastHourUpdated) > 0.05)
+				{
+					lastHourUpdated = timeIntoToday.TotalHours;
+					TaleSpireClient.SendMessageToServer("SetTime", TaleSpireUtils.HoursToNormalizedTime(timeIntoToday.TotalHours));
+				}
+				
 				double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
 
 				string afterSpinMp3 = null;
@@ -10937,6 +10945,7 @@ namespace DHDM
 		string nextStampedeCardName;
 		string lastStampedeGuid;
 		ViewerManager viewerManager;
+		double lastHourUpdated;
 
 		public void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid)
 		{
@@ -11131,6 +11140,12 @@ namespace DHDM
 				}
 			}
 			NextDieRollType = DiceRollType.Contest;
+		}
+
+		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
+		{
+			ApiResponse response = TaleSpireClient.SendMessageToServer("GetCreatures");
+			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
 		}
 	}
 }

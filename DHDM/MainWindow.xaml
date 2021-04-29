@@ -658,6 +658,11 @@
 						</StackPanel>
 					</StackPanel>
 				</TabItem>
+				<TabItem x:Name="tbTaleSpire" Header="TaleSpire">
+					<Button x:Name="btnGetCharacterPositions" MaxWidth="165" HorizontalAlignment="Left" Padding="9, 4, 9, 4" Margin="4" Click="btnGetCharacterPositions_Click" >
+						Get Character Positions
+					</Button>
+				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<StackPanel Orientation="Vertical">
 						<StackPanel Orientation="Vertical">

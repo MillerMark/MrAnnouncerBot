@@ -23,6 +23,7 @@ namespace DHDM
 		const string TheVoid_Lava = "TheVoid_Lava.mov";
 		const string TheVoid_Rainbow = "TheVoid_Rainbow.mov";
 		const string TopMonitor = "TopMonitor";
+		const string BothComputers = "CR.BothComputers";
 		OBSWebsocket obsWebsocket;
 		List<string> voidItems;
 		List<string> allBackgroundItems;
@@ -52,6 +53,7 @@ namespace DHDM
 			allBackgroundItems.Add(Nebula);
 			allBackgroundItems.Add(TaleSpireNdi);
 			allBackgroundItems.Add(TopMonitor);
+			allBackgroundItems.Add(BothComputers);
 		}
 
 		private void AddVoidItems()

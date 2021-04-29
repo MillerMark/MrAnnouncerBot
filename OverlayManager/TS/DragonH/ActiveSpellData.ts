@@ -12,7 +12,7 @@
 	requiresConcentration: boolean;
 	morePowerfulAtHigherLevels: boolean;
 	powerComesFromCasterLevel: boolean;
-	
+
 	constructor(fromDto: any) {
 		if (fromDto) {
 			this.name = fromDto.name;

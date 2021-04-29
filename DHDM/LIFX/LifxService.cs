@@ -97,8 +97,8 @@ namespace DHDM
 
 		public async void RestoreDefaultBulbSettings()
 		{
-			await ChangeBulbSettings("Left", "#ffffff", 0.2, 0.3);
-			await ChangeBulbSettings("Right", "#ffffff", 0.3, 0.3);
+			await ChangeBulbSettings("Left", "#ffffff", 0.15, 0.3);
+			await ChangeBulbSettings("Right", "#ffffff", 0.15, 0.3);
 		}
 
 		public async void TurnOffBulbs()
