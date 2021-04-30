@@ -57,6 +57,7 @@ namespace DHDM
 			Commands.Add(new DigitCommand());
 			Commands.Add(new ShowFilter());
 			Commands.Add(new SetDmMood());
+			Commands.Add(new CodeRushDemo());
 			Commands.Add(new ScrollPageCommand());
 			Commands.Add(new StampedeCommand());
 			Commands.Add(new ApplyCommand());
