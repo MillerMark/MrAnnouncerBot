@@ -20,7 +20,6 @@ namespace TaleSpireExplore
 		public FrmExplorer()
 		{
 			InitializeComponent();
-			HookEvents();
 		}
 
 		void LogEvent(string message)
@@ -515,9 +514,8 @@ namespace TaleSpireExplore
 			LogEvent($"PhotonNetwork.OnEventCall(eventCode: {eventCode}, content: {content}, senderId: {senderId})");
 		}
 
-		private void btnLoadClasses_Click(object sender, EventArgs e)
+		void LoadCreatures()
 		{
-			//string creatureList = ModdingUtils.GetCreatureList();
 			try
 			{
 				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
@@ -533,7 +531,25 @@ namespace TaleSpireExplore
 			{
 				MessageBox.Show(ex.Message, "Exception!");
 			}
-			return;
+		}
+		void LoadResources()
+		{
+			try
+			{
+				UnityEngine.Object[] resources = Resources.LoadAll("");
+				tbxScratch.Text = "";
+				foreach (UnityEngine.Object unityObj in resources)
+					tbxScratch.Text += $"{unityObj.name}\n  Type: {unityObj.GetType().FullName}\n  ID: {unityObj.GetInstanceID()}\n\n";
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message, "Exception!");
+			}
+		}
+		private void btnLoadClasses_Click(object sender, EventArgs e)
+		{
+			LoadCreatures();
+			LoadResources();
 		}
 
 		void SendBouncyApiToScratch()
@@ -736,6 +752,11 @@ namespace TaleSpireExplore
 			return field.GetValue(instance) as T;
 		}
 
+		void AddScratchLine(string str)
+		{
+			tbxScratch.Text += str + Environment.NewLine;
+		}
+
 		private void btnShowRelationEffect_Click(object sender, EventArgs e)
 		{
 			float x = 15f;
@@ -760,10 +781,59 @@ namespace TaleSpireExplore
 						else
 						{
 							tbxScratch.Text += $"drizzle was found!" + Environment.NewLine;
+							AddScratchLine($"  proceduralSimulationSupported: {drizzle.proceduralSimulationSupported}");
+							AddScratchLine($"  collision: {drizzle.collision}");
+							AddScratchLine($"  colorBySpeed: {drizzle.colorBySpeed}");
+							AddScratchLine($"  colorOverLifetime: {drizzle.colorOverLifetime}");
+							AddScratchLine($"  customData: {drizzle.customData}");
+							AddScratchLine($"  emission.burstCount: {drizzle.emission.burstCount}");
+							AddScratchLine($"  emission.emission.enabled: {drizzle.emission.enabled}");
+							AddScratchLine($"  emission.emission.rateOverDistance: {drizzle.emission.rateOverDistance}");
+							AddScratchLine($"  emission.emission.rateOverDistanceMultiplier: {drizzle.emission.rateOverDistanceMultiplier}");
+							AddScratchLine($"  emission.emission.rateOverTime: {drizzle.emission.rateOverTime}");
+							AddScratchLine($"  emission.emission.rateOverTimeMultiplier: {drizzle.emission.rateOverTimeMultiplier}");
+							AddScratchLine($"  externalForces: {drizzle.externalForces}");
+							AddScratchLine($"  forceOverLifetime: {drizzle.forceOverLifetime}");
+							AddScratchLine($"  inheritVelocity: {drizzle.inheritVelocity}");
+							AddScratchLine($"  isEmitting: {drizzle.isEmitting}");
+							AddScratchLine($"  isPaused: {drizzle.isPaused}");
+							AddScratchLine($"  isStopped: {drizzle.isStopped}");
+							AddScratchLine($"  lifetimeByEmitterSpeed: {drizzle.lifetimeByEmitterSpeed}");
+							AddScratchLine($"  lights: {drizzle.lights}");
+							AddScratchLine($"  limitVelocityOverLifetime: {drizzle.limitVelocityOverLifetime}");
+
+							AddScratchLine($"  main.duration: {drizzle.main.duration}");
+							AddScratchLine($"  main.gravityModifier: {drizzle.main.gravityModifier}");
+							AddScratchLine($"  main.loop: {drizzle.main.loop}");
+
+
+
+
 							ParticleSystem.MinMaxGradient minMaxGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue);
 							minMaxGradient.mode = ParticleSystemGradientMode.RandomColor;
 							ParticleSystem.MainModule main = drizzle.main;
 							main.startColor = minMaxGradient;
+							main.startSize = 2;
+							ParticleSystem.EmissionModule emission = drizzle.emission;
+							emission.rateOverTime = 50;
+
+
+
+							// None of these tries work to change the color:
+							ParticleSystem.ColorOverLifetimeModule col = drizzle.colorOverLifetime;
+							col.enabled = true;
+
+							Gradient grad = new Gradient();
+							grad.SetKeys(new GradientColorKey[] { new GradientColorKey(UnityEngine.Color.blue, 0.0f), new GradientColorKey(UnityEngine.Color.red, 1.0f) }, new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(0.0f, 1.0f) });
+							col.color = grad;
+
+							ParticleSystem.ColorBySpeedModule colorBySpeed = drizzle.colorBySpeed;
+							colorBySpeed.enabled = true;
+							colorBySpeed.color = grad;
+
+							ParticleSystemRenderer renderer = drizzle.GetComponent<ParticleSystemRenderer>();
+							if (renderer != null)
+								renderer.material.color = UnityEngine.Color.blue;
 						}
 					}
 					tbxScratch.Text += $"PlayFromOriginToTarget!" + Environment.NewLine;
@@ -781,6 +851,14 @@ namespace TaleSpireExplore
 					ex = ex.InnerException;
 				}
 			}
+		}
+
+		private void chkListenToEvents_CheckedChanged(object sender, EventArgs e)
+		{
+			if (chkListenToEvents.Checked)
+				HookEvents();
+			else
+				UnhookEvents();
 		}
 	}
 }

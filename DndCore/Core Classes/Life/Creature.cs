@@ -13,6 +13,11 @@ namespace DndCore
 	[DebuggerDisplay("{Name}")]
 	public abstract class Creature
 	{
+		[JsonIgnore]
+		public Vector MapPosition { get; set; }
+
+		[JsonIgnore]
+		public string taleSpireId { get; set; }
 		public const int invalidCreatureId = -2147483648;
 		string _dieBackColor = "#ffffff";
 		string _dieFontColor = "#000000";
@@ -1930,5 +1935,10 @@ namespace DndCore
 			}
 		}
 		public abstract double GetSkillCheckMod(Skills skill);
+
+		public void SetMapPosition(float x, float y, float z)
+		{
+			MapPosition = new Vector(x, y, z);
+		}
 	}
 }

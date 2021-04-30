@@ -37,13 +37,13 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.txtSunDirection = new System.Windows.Forms.TextBox();
 			this.btnSetSun = new System.Windows.Forms.Button();
-			this.label3 = new System.Windows.Forms.Label();
 			this.btnClear = new System.Windows.Forms.Button();
 			this.btnEffects = new System.Windows.Forms.Button();
 			this.label4 = new System.Windows.Forms.Label();
 			this.txtEffectName = new System.Windows.Forms.TextBox();
 			this.btnShowEffect = new System.Windows.Forms.Button();
 			this.btnShowRelationEffect = new System.Windows.Forms.Button();
+			this.chkListenToEvents = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -128,15 +128,6 @@
 			this.btnSetSun.UseVisualStyleBackColor = true;
 			this.btnSetSun.Click += new System.EventHandler(this.btnSetSun_Click);
 			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(560, 12);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(43, 13);
-			this.label3.TabIndex = 9;
-			this.label3.Text = "Events:";
-			// 
 			// btnClear
 			// 
 			this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -194,18 +185,29 @@
 			this.btnShowRelationEffect.UseVisualStyleBackColor = true;
 			this.btnShowRelationEffect.Click += new System.EventHandler(this.btnShowRelationEffect_Click);
 			// 
+			// chkListenToEvents
+			// 
+			this.chkListenToEvents.AutoSize = true;
+			this.chkListenToEvents.Location = new System.Drawing.Point(563, 11);
+			this.chkListenToEvents.Name = "chkListenToEvents";
+			this.chkListenToEvents.Size = new System.Drawing.Size(105, 17);
+			this.chkListenToEvents.TabIndex = 16;
+			this.chkListenToEvents.Text = "Listen to Events:";
+			this.chkListenToEvents.UseVisualStyleBackColor = true;
+			this.chkListenToEvents.CheckedChanged += new System.EventHandler(this.chkListenToEvents_CheckedChanged);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1004, 450);
+			this.Controls.Add(this.chkListenToEvents);
 			this.Controls.Add(this.btnShowRelationEffect);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.txtEffectName);
 			this.Controls.Add(this.btnShowEffect);
 			this.Controls.Add(this.btnEffects);
 			this.Controls.Add(this.btnClear);
-			this.Controls.Add(this.label3);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.txtSunDirection);
 			this.Controls.Add(this.btnSetSun);
@@ -234,12 +236,12 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox txtSunDirection;
 		private System.Windows.Forms.Button btnSetSun;
-		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Button btnClear;
 		private System.Windows.Forms.Button btnEffects;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.TextBox txtEffectName;
 		private System.Windows.Forms.Button btnShowEffect;
 		private System.Windows.Forms.Button btnShowRelationEffect;
+		private System.Windows.Forms.CheckBox chkListenToEvents;
 	}
 }

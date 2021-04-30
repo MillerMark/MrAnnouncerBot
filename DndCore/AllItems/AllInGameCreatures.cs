@@ -239,6 +239,11 @@ namespace DndCore
 			npcMonsterDice.BackColor = inGameCreature.BackgroundHex;
 			npcMonsterDice.FontColor = inGameCreature.ForegroundHex;
 		}
+
+		public static Creature GetByTaleSpireId(string taleSpireId)
+		{
+			return inGameCreatures.FirstOrDefault(x => x.TaleSpireId == taleSpireId)?.Creature;
+		}
 	}
 }
 

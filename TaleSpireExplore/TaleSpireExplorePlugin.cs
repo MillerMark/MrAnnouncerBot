@@ -22,7 +22,7 @@ namespace TaleSpireExplore
 			ModdingUtils.Initialize(this, this.Logger, true);
 
 			// TODO: Remove SceneManager.sceneLoaded event and the SceneManager_sceneLoaded handler when we have the explorer driver by commands.
-			//SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 			//CreatureManager.OnLineOfSightUpdated += CreatureManager_OnLineOfSightUpdated;
 		}
 

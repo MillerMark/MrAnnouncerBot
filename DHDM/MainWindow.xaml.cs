@@ -11142,10 +11142,54 @@ namespace DHDM
 			NextDieRollType = DiceRollType.Contest;
 		}
 
+		List<Creature> GetAllPlayingCreatures()
+		{
+			List<Creature> result = new List<Creature>();
+			result.AddRange(AllInGameCreatures.Creatures.Where(x => x.OnScreen).Select(x => x.Creature));
+			result.AddRange(AllPlayers.GetActive());
+			return result;
+		}
+
+		private static Creature GetCreatureFromTaleSpireId(string taleSpireId)
+		{
+			Creature creature = AllInGameCreatures.GetByTaleSpireId(taleSpireId);
+			if (creature != null)
+				return creature;
+
+			return AllPlayers.GetFromTaleSpireId(taleSpireId);
+		}
+
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
 		{
 			ApiResponse response = TaleSpireClient.SendMessageToServer("GetCreatures");
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
+
+			foreach (CharacterPosition characterPosition in characterPositions.Characters)
+			{
+				Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
+				if (creature != null)
+					creature.SetMapPosition(characterPosition.Position.x, characterPosition.Position.y, characterPosition.Position.z);
+			}
+
+			if (ActivePlayer != null)
+			{
+				List<Creature> allCreatures = GetAllPlayingCreatures();
+				
+				
+				foreach (Creature creature in allCreatures)
+				{
+					if (creature != ActivePlayer)
+					{
+						creature.ShowState($"{(creature.MapPosition.DistanceTo(ActivePlayer.MapPosition) * 5):f2}ft",
+							creature.dieBackColor, creature.dieFontColor);
+					}
+					else
+					{
+						
+					}
+
+				}
+			}
 		}
 	}
 }

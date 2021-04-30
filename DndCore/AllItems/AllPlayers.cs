@@ -108,5 +108,10 @@ namespace DndCore
 		{
 			return Players.Where(x => x.IsSelected).ToList();
 		}
+
+		public static Character GetFromTaleSpireId(string iD)
+		{
+			return Players.FirstOrDefault(x => x.taleSpireId == iD);
+		}
 	}
 }

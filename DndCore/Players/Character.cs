@@ -11,7 +11,6 @@ using GoogleHelper;
 
 namespace DndCore
 {
-
 	[SheetName("DnD")]
 	[TabName("Players")]
 	public class Character : Creature
@@ -963,6 +962,7 @@ namespace DndCore
 			character.resistancesVulnerabilitiesImmunitiesStr = characterDto.resistancesVulnerabilitiesImmunitiesStr;
 			character.sourceName = characterDto.sourceName;
 			character.sceneName = characterDto.sceneName;
+			character.taleSpireId = characterDto.taleSpireId;
 			character.videoAnchorHorizontal = characterDto.videoAnchorHorizontal;
 			character.videoAnchorVertical = characterDto.videoAnchorVertical;
 			character.videoHeight = characterDto.videoHeight;

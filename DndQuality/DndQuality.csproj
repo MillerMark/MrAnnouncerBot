@@ -54,6 +54,10 @@
       <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
       <Name>DndCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TaleSpireCore\TaleSpireCore.csproj">
+      <Project>{08c85a94-9b3c-4f94-a8cd-0132c8f21aef}</Project>
+      <Name>TaleSpireCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
