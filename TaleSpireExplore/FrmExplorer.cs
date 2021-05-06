@@ -549,7 +549,8 @@ namespace TaleSpireExplore
 		private void btnLoadClasses_Click(object sender, EventArgs e)
 		{
 			LoadCreatures();
-			LoadResources();
+			//LoadResources();
+			//SendBouncyApiToScratch()
 		}
 
 		void SendBouncyApiToScratch()
@@ -859,6 +860,107 @@ namespace TaleSpireExplore
 				HookEvents();
 			else
 				UnhookEvents();
+		}
+
+		private void btnGetFlashlight_Click(object sender, EventArgs e)
+		{
+			//LocalClient.SelectedCreatureId
+			
+		}
+
+		System.Timers.Timer flashlightTimer;
+		void StartFlashlightTimer()
+		{
+			if (flashlightTimer == null)
+			{
+				lblFlashlightStatus.Text = "(tracking)";
+				flashlightTimer = new System.Timers.Timer();
+				flashlightTimer.Interval = 100;
+				flashlightTimer.Elapsed += FlashlightTimer_Tick;
+				flashlightTimer.Start();
+			}
+		}
+
+		private void FlashlightTimer_Tick(object sender, EventArgs e)
+		{
+			lblFlashlightStatus.Text = TaleSpireHelper.GetFlashlightPositionStr();
+		}
+
+		void StopFlashlightTimer()
+		{
+			lblFlashlightStatus.Text = "(not tracking)";
+			if (flashlightTimer == null)
+				return;
+			flashlightTimer.Stop();
+			flashlightTimer = null;
+		}
+
+		private void chkTrackFlashlight_CheckedChanged(object sender, EventArgs e)
+		{
+			if (chkTrackFlashlight.Checked)
+				StartFlashlightTimer();
+			else
+				StopFlashlightTimer();
+		}
+
+		private void btnBoom_Click(object sender, EventArgs e)
+		{
+			float x = 15f;
+			float y = 22.5f;
+			float z = 95.4f;
+
+			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			sphere.transform.position = new Vector3(x, y, z);
+			sphere.transform.localScale = new Vector3(10, 10, 10);
+		}
+
+		private void btnSpectatorMode_Click(object sender, EventArgs e)
+		{
+			TaleSpireHelper.SwitchToSpectatorMode();
+		}
+
+		private void btnPlayer_Click(object sender, EventArgs e)
+		{
+			TaleSpireHelper.SwitchToPlayerMode();
+		}
+
+		private void btnFlashlightOff_Click(object sender, EventArgs e)
+		{
+			TaleSpireHelper.TurnFlashlightOff();
+		}
+
+		private void btnFlashlightOn_Click(object sender, EventArgs e)
+		{
+			TaleSpireHelper.TurnFlashlightOn();
+			try
+			{
+				FlashLight flashlight = TaleSpireHelper.GetFlashlight();
+
+				GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+				// Unity units - 1 = 1 tile = 5 feet
+				sphere.transform.localScale = new Vector3(4, 4, 4);
+				Renderer renderer = sphere.GetComponent<Renderer>();
+
+				// TODO: Figure transparency.
+				// http://gyanendushekhar.com/2021/02/08/using-transparent-material-in-unity-3d/
+				Material material = renderer.material;
+
+				material.SetOverrideTag("RenderType", "Transparent");
+				material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+				material.SetInt("_ZWrite", 0);
+				material.DisableKeyword("_ALPHATEST_ON");
+				material.DisableKeyword("_ALPHABLEND_ON");
+				material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+				material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+				material.color = new UnityEngine.Color(0, 0, 1, 0.2f);
+
+				sphere.transform.parent = flashlight.gameObject.transform;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception calling method!");
+			}
 		}
 	}
 }

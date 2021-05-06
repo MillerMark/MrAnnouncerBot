@@ -44,15 +44,22 @@
 			this.btnShowEffect = new System.Windows.Forms.Button();
 			this.btnShowRelationEffect = new System.Windows.Forms.Button();
 			this.chkListenToEvents = new System.Windows.Forms.CheckBox();
+			this.chkTrackFlashlight = new System.Windows.Forms.CheckBox();
+			this.lblFlashlightStatus = new System.Windows.Forms.Label();
+			this.btnBoom = new System.Windows.Forms.Button();
+			this.btnSpectatorMode = new System.Windows.Forms.Button();
+			this.btnPlayer = new System.Windows.Forms.Button();
+			this.btnFlashlightOn = new System.Windows.Forms.Button();
+			this.btnFlashlightOff = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
 			// 
 			this.btnLoadClasses.Location = new System.Drawing.Point(12, 12);
 			this.btnLoadClasses.Name = "btnLoadClasses";
-			this.btnLoadClasses.Size = new System.Drawing.Size(86, 30);
+			this.btnLoadClasses.Size = new System.Drawing.Size(88, 30);
 			this.btnLoadClasses.TabIndex = 0;
-			this.btnLoadClasses.Text = "Load Classes";
+			this.btnLoadClasses.Text = "Load Creatures";
 			this.btnLoadClasses.UseVisualStyleBackColor = true;
 			this.btnLoadClasses.Click += new System.EventHandler(this.btnLoadClasses_Click);
 			// 
@@ -60,10 +67,10 @@
 			// 
 			this.tbxScratch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-			this.tbxScratch.Location = new System.Drawing.Point(124, 15);
+			this.tbxScratch.Location = new System.Drawing.Point(159, 15);
 			this.tbxScratch.Multiline = true;
 			this.tbxScratch.Name = "tbxScratch";
-			this.tbxScratch.Size = new System.Drawing.Size(423, 422);
+			this.tbxScratch.Size = new System.Drawing.Size(388, 422);
 			this.tbxScratch.TabIndex = 1;
 			this.tbxScratch.WordWrap = false;
 			// 
@@ -105,7 +112,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(11, 149);
+			this.label2.Location = new System.Drawing.Point(13, 129);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(29, 13);
 			this.label2.TabIndex = 8;
@@ -113,14 +120,14 @@
 			// 
 			// txtSunDirection
 			// 
-			this.txtSunDirection.Location = new System.Drawing.Point(50, 145);
+			this.txtSunDirection.Location = new System.Drawing.Point(52, 125);
 			this.txtSunDirection.Name = "txtSunDirection";
 			this.txtSunDirection.Size = new System.Drawing.Size(48, 20);
 			this.txtSunDirection.TabIndex = 7;
 			// 
 			// btnSetSun
 			// 
-			this.btnSetSun.Location = new System.Drawing.Point(12, 171);
+			this.btnSetSun.Location = new System.Drawing.Point(14, 151);
 			this.btnSetSun.Name = "btnSetSun";
 			this.btnSetSun.Size = new System.Drawing.Size(86, 23);
 			this.btnSetSun.TabIndex = 6;
@@ -179,7 +186,7 @@
 			// 
 			this.btnShowRelationEffect.Location = new System.Drawing.Point(14, 336);
 			this.btnShowRelationEffect.Name = "btnShowRelationEffect";
-			this.btnShowRelationEffect.Size = new System.Drawing.Size(86, 44);
+			this.btnShowRelationEffect.Size = new System.Drawing.Size(118, 22);
 			this.btnShowRelationEffect.TabIndex = 15;
 			this.btnShowRelationEffect.Text = "Show Relation Effect";
 			this.btnShowRelationEffect.UseVisualStyleBackColor = true;
@@ -196,11 +203,88 @@
 			this.chkListenToEvents.UseVisualStyleBackColor = true;
 			this.chkListenToEvents.CheckedChanged += new System.EventHandler(this.chkListenToEvents_CheckedChanged);
 			// 
+			// chkTrackFlashlight
+			// 
+			this.chkTrackFlashlight.AutoSize = true;
+			this.chkTrackFlashlight.Location = new System.Drawing.Point(12, 408);
+			this.chkTrackFlashlight.Name = "chkTrackFlashlight";
+			this.chkTrackFlashlight.Size = new System.Drawing.Size(101, 17);
+			this.chkTrackFlashlight.TabIndex = 18;
+			this.chkTrackFlashlight.Text = "Track Flashlight";
+			this.chkTrackFlashlight.UseVisualStyleBackColor = true;
+			this.chkTrackFlashlight.CheckedChanged += new System.EventHandler(this.chkTrackFlashlight_CheckedChanged);
+			// 
+			// lblFlashlightStatus
+			// 
+			this.lblFlashlightStatus.AutoSize = true;
+			this.lblFlashlightStatus.Location = new System.Drawing.Point(29, 428);
+			this.lblFlashlightStatus.Name = "lblFlashlightStatus";
+			this.lblFlashlightStatus.Size = new System.Drawing.Size(69, 13);
+			this.lblFlashlightStatus.TabIndex = 19;
+			this.lblFlashlightStatus.Text = "(not tracking)";
+			// 
+			// btnBoom
+			// 
+			this.btnBoom.Location = new System.Drawing.Point(12, 180);
+			this.btnBoom.Name = "btnBoom";
+			this.btnBoom.Size = new System.Drawing.Size(86, 23);
+			this.btnBoom.TabIndex = 20;
+			this.btnBoom.Text = "Boom!";
+			this.btnBoom.UseVisualStyleBackColor = true;
+			this.btnBoom.Click += new System.EventHandler(this.btnBoom_Click);
+			// 
+			// btnSpectatorMode
+			// 
+			this.btnSpectatorMode.Location = new System.Drawing.Point(12, 206);
+			this.btnSpectatorMode.Name = "btnSpectatorMode";
+			this.btnSpectatorMode.Size = new System.Drawing.Size(47, 23);
+			this.btnSpectatorMode.TabIndex = 21;
+			this.btnSpectatorMode.Text = "Spec";
+			this.btnSpectatorMode.UseVisualStyleBackColor = true;
+			this.btnSpectatorMode.Click += new System.EventHandler(this.btnSpectatorMode_Click);
+			// 
+			// btnPlayer
+			// 
+			this.btnPlayer.Location = new System.Drawing.Point(65, 206);
+			this.btnPlayer.Name = "btnPlayer";
+			this.btnPlayer.Size = new System.Drawing.Size(48, 23);
+			this.btnPlayer.TabIndex = 21;
+			this.btnPlayer.Text = "Player";
+			this.btnPlayer.UseVisualStyleBackColor = true;
+			this.btnPlayer.Click += new System.EventHandler(this.btnPlayer_Click);
+			// 
+			// btnFlashlightOn
+			// 
+			this.btnFlashlightOn.Location = new System.Drawing.Point(12, 379);
+			this.btnFlashlightOn.Name = "btnFlashlightOn";
+			this.btnFlashlightOn.Size = new System.Drawing.Size(47, 23);
+			this.btnFlashlightOn.TabIndex = 21;
+			this.btnFlashlightOn.Text = "F - On";
+			this.btnFlashlightOn.UseVisualStyleBackColor = true;
+			this.btnFlashlightOn.Click += new System.EventHandler(this.btnFlashlightOn_Click);
+			// 
+			// btnFlashlightOff
+			// 
+			this.btnFlashlightOff.Location = new System.Drawing.Point(65, 379);
+			this.btnFlashlightOff.Name = "btnFlashlightOff";
+			this.btnFlashlightOff.Size = new System.Drawing.Size(48, 23);
+			this.btnFlashlightOff.TabIndex = 21;
+			this.btnFlashlightOff.Text = "F - Off";
+			this.btnFlashlightOff.UseVisualStyleBackColor = true;
+			this.btnFlashlightOff.Click += new System.EventHandler(this.btnFlashlightOff_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1004, 450);
+			this.Controls.Add(this.btnFlashlightOff);
+			this.Controls.Add(this.btnFlashlightOn);
+			this.Controls.Add(this.btnPlayer);
+			this.Controls.Add(this.btnSpectatorMode);
+			this.Controls.Add(this.btnBoom);
+			this.Controls.Add(this.lblFlashlightStatus);
+			this.Controls.Add(this.chkTrackFlashlight);
 			this.Controls.Add(this.chkListenToEvents);
 			this.Controls.Add(this.btnShowRelationEffect);
 			this.Controls.Add(this.label4);
@@ -243,5 +327,12 @@
 		private System.Windows.Forms.Button btnShowEffect;
 		private System.Windows.Forms.Button btnShowRelationEffect;
 		private System.Windows.Forms.CheckBox chkListenToEvents;
+		private System.Windows.Forms.CheckBox chkTrackFlashlight;
+		private System.Windows.Forms.Label lblFlashlightStatus;
+		private System.Windows.Forms.Button btnBoom;
+		private System.Windows.Forms.Button btnSpectatorMode;
+		private System.Windows.Forms.Button btnPlayer;
+		private System.Windows.Forms.Button btnFlashlightOn;
+		private System.Windows.Forms.Button btnFlashlightOff;
 	}
 }

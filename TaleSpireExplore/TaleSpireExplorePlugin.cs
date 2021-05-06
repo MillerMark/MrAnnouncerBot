@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 namespace TaleSpireExplore
 {
 	
-	[BepInPlugin("org.generic.plugins.talespireexplore", "Mark's TaleSpire Explorer", "1.0.0.0")]
+	[BepInPlugin("org.generic.plugins.talespireexplore", "Mark's TaleSpire Explorer", "1.0.0.2")]
 	class TaleSpireExplorePlugin : BaseUnityPlugin
 	{
 		static FrmExplorer frmExplorer;
