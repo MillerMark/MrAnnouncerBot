@@ -668,26 +668,11 @@ namespace TaleSpireExplore
 		}
 
 
-		public EffectManager EffectManagerInstance => SingletonBehaviour<EffectManager>.Instance;
-
 		private void btnEffects_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				EffectManager effectManager = EffectManagerInstance;
-				FieldInfo field = typeof(EffectManager).GetField("_effects", BindingFlags.NonPublic | BindingFlags.Instance);
-				object value = field.GetValue(effectManager);
-				if (value is List<EffectManager.Effect> effects)
-				{
-					tbxScratch.Text += $"Known Effects ({effects.Count}):" + Environment.NewLine;
-
-					foreach (EffectManager.Effect effect in effects)
-						tbxScratch.Text += "  " + effect._effectName + Environment.NewLine;
-				}
-				else
-				{
-					tbxScratch.Text += $"value is not a List<EffectManager.Effect>! It is a {value.GetType()}" + Environment.NewLine;
-				}
+				tbxScratch.Text += Talespire.Effects.GetList();
 			}
 			catch (Exception ex)
 			{
@@ -698,27 +683,6 @@ namespace TaleSpireExplore
 					MessageBox.Show(ex.Message, "Inner Exception!");
 				}
 			}
-		}
-
-		EffectManager.Effect GetEffect(string effectName)
-		{
-			effectName = effectName.Trim();
-			EffectManager effectManager = EffectManagerInstance;
-			FieldInfo field = typeof(EffectManager).GetField("_effects", BindingFlags.NonPublic | BindingFlags.Instance);
-			object value = field.GetValue(effectManager);
-			if (value is List<EffectManager.Effect> effects)
-				foreach (EffectManager.Effect effect in effects)
-					if (effect._effectName == effectName)
-						return effect;
-			return null;
-		}
-
-		VisualEffect GetVisualEffect(string effectName)
-		{
-			EffectManager.Effect effect = GetEffect(effectName);
-			if (effect == null)
-				return null;
-			return effect.GetEffect();
 		}
 
 		private void btnShowEffect_Click(object sender, EventArgs e)
@@ -745,14 +709,6 @@ namespace TaleSpireExplore
 
 		}
 
-		T GetNonPublicField<T>(Type type, object instance, string fieldName) where T: class
-		{
-			FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-			if (field == null)
-				return default(T);
-			return field.GetValue(instance) as T;
-		}
-
 		void AddScratchLine(string str)
 		{
 			tbxScratch.Text += str + Environment.NewLine;
@@ -771,71 +727,72 @@ namespace TaleSpireExplore
 				GameObject target = new GameObject();
 				origin.transform.position = new Vector3(x, y, z);
 				target.transform.position = new Vector3(x + 4, y, z + 3);
-				VisualEffect visualEffect = GetVisualEffect(effectName);
+				VisualEffect visualEffect = Talespire.Effects.GetVisual(effectName);
+				
 				if (visualEffect != null)
 				{
 					if (visualEffect is VFXMissile missile)
 					{
-						ParticleSystem drizzle = GetNonPublicField<ParticleSystem>(typeof(VFXMissile), missile, "drizzle");
-						if (drizzle == null)
-							tbxScratch.Text += $"drizzle was NOT found!" + Environment.NewLine;
-						else
-						{
-							tbxScratch.Text += $"drizzle was found!" + Environment.NewLine;
-							AddScratchLine($"  proceduralSimulationSupported: {drizzle.proceduralSimulationSupported}");
-							AddScratchLine($"  collision: {drizzle.collision}");
-							AddScratchLine($"  colorBySpeed: {drizzle.colorBySpeed}");
-							AddScratchLine($"  colorOverLifetime: {drizzle.colorOverLifetime}");
-							AddScratchLine($"  customData: {drizzle.customData}");
-							AddScratchLine($"  emission.burstCount: {drizzle.emission.burstCount}");
-							AddScratchLine($"  emission.emission.enabled: {drizzle.emission.enabled}");
-							AddScratchLine($"  emission.emission.rateOverDistance: {drizzle.emission.rateOverDistance}");
-							AddScratchLine($"  emission.emission.rateOverDistanceMultiplier: {drizzle.emission.rateOverDistanceMultiplier}");
-							AddScratchLine($"  emission.emission.rateOverTime: {drizzle.emission.rateOverTime}");
-							AddScratchLine($"  emission.emission.rateOverTimeMultiplier: {drizzle.emission.rateOverTimeMultiplier}");
-							AddScratchLine($"  externalForces: {drizzle.externalForces}");
-							AddScratchLine($"  forceOverLifetime: {drizzle.forceOverLifetime}");
-							AddScratchLine($"  inheritVelocity: {drizzle.inheritVelocity}");
-							AddScratchLine($"  isEmitting: {drizzle.isEmitting}");
-							AddScratchLine($"  isPaused: {drizzle.isPaused}");
-							AddScratchLine($"  isStopped: {drizzle.isStopped}");
-							AddScratchLine($"  lifetimeByEmitterSpeed: {drizzle.lifetimeByEmitterSpeed}");
-							AddScratchLine($"  lights: {drizzle.lights}");
-							AddScratchLine($"  limitVelocityOverLifetime: {drizzle.limitVelocityOverLifetime}");
+						//ParticleSystem drizzle = ReflectionHelper.GetNonPublicField<ParticleSystem>(typeof(VFXMissile), missile, "drizzle");
+						//if (drizzle == null)
+						//	tbxScratch.Text += $"drizzle was NOT found!" + Environment.NewLine;
+						//else
+						//{
+						//	tbxScratch.Text += $"drizzle was found!" + Environment.NewLine;
+						//	AddScratchLine($"  proceduralSimulationSupported: {drizzle.proceduralSimulationSupported}");
+						//	AddScratchLine($"  collision: {drizzle.collision}");
+						//	AddScratchLine($"  colorBySpeed: {drizzle.colorBySpeed}");
+						//	AddScratchLine($"  colorOverLifetime: {drizzle.colorOverLifetime}");
+						//	AddScratchLine($"  customData: {drizzle.customData}");
+						//	AddScratchLine($"  emission.burstCount: {drizzle.emission.burstCount}");
+						//	AddScratchLine($"  emission.emission.enabled: {drizzle.emission.enabled}");
+						//	AddScratchLine($"  emission.emission.rateOverDistance: {drizzle.emission.rateOverDistance}");
+						//	AddScratchLine($"  emission.emission.rateOverDistanceMultiplier: {drizzle.emission.rateOverDistanceMultiplier}");
+						//	AddScratchLine($"  emission.emission.rateOverTime: {drizzle.emission.rateOverTime}");
+						//	AddScratchLine($"  emission.emission.rateOverTimeMultiplier: {drizzle.emission.rateOverTimeMultiplier}");
+						//	AddScratchLine($"  externalForces: {drizzle.externalForces}");
+						//	AddScratchLine($"  forceOverLifetime: {drizzle.forceOverLifetime}");
+						//	AddScratchLine($"  inheritVelocity: {drizzle.inheritVelocity}");
+						//	AddScratchLine($"  isEmitting: {drizzle.isEmitting}");
+						//	AddScratchLine($"  isPaused: {drizzle.isPaused}");
+						//	AddScratchLine($"  isStopped: {drizzle.isStopped}");
+						//	AddScratchLine($"  lifetimeByEmitterSpeed: {drizzle.lifetimeByEmitterSpeed}");
+						//	AddScratchLine($"  lights: {drizzle.lights}");
+						//	AddScratchLine($"  limitVelocityOverLifetime: {drizzle.limitVelocityOverLifetime}");
 
-							AddScratchLine($"  main.duration: {drizzle.main.duration}");
-							AddScratchLine($"  main.gravityModifier: {drizzle.main.gravityModifier}");
-							AddScratchLine($"  main.loop: {drizzle.main.loop}");
-
-
-
-
-							ParticleSystem.MinMaxGradient minMaxGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue);
-							minMaxGradient.mode = ParticleSystemGradientMode.RandomColor;
-							ParticleSystem.MainModule main = drizzle.main;
-							main.startColor = minMaxGradient;
-							main.startSize = 2;
-							ParticleSystem.EmissionModule emission = drizzle.emission;
-							emission.rateOverTime = 50;
+						//	AddScratchLine($"  main.duration: {drizzle.main.duration}");
+						//	AddScratchLine($"  main.gravityModifier: {drizzle.main.gravityModifier}");
+						//	AddScratchLine($"  main.loop: {drizzle.main.loop}");
 
 
 
-							// None of these tries work to change the color:
-							ParticleSystem.ColorOverLifetimeModule col = drizzle.colorOverLifetime;
-							col.enabled = true;
 
-							Gradient grad = new Gradient();
-							grad.SetKeys(new GradientColorKey[] { new GradientColorKey(UnityEngine.Color.blue, 0.0f), new GradientColorKey(UnityEngine.Color.red, 1.0f) }, new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(0.0f, 1.0f) });
-							col.color = grad;
+						//	ParticleSystem.MinMaxGradient minMaxGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue);
+						//	minMaxGradient.mode = ParticleSystemGradientMode.RandomColor;
+						//	ParticleSystem.MainModule main = drizzle.main;
+						//	main.startColor = minMaxGradient;
+						//	main.startSize = 2;
+						//	ParticleSystem.EmissionModule emission = drizzle.emission;
+						//	//MessageBox.Show(ReflectionHelper.GetAllProperties(drizzle), "drizzle");
+						//	MessageBox.Show(ReflectionHelper.GetAllProperties(emission), "emission");
+						//	emission.rateOverTime = 50;
 
-							ParticleSystem.ColorBySpeedModule colorBySpeed = drizzle.colorBySpeed;
-							colorBySpeed.enabled = true;
-							colorBySpeed.color = grad;
+						//	// None of these tries work to change the color:
+						//	ParticleSystem.ColorOverLifetimeModule col = drizzle.colorOverLifetime;
+						//	col.enabled = true;
 
-							ParticleSystemRenderer renderer = drizzle.GetComponent<ParticleSystemRenderer>();
-							if (renderer != null)
-								renderer.material.color = UnityEngine.Color.blue;
-						}
+						//	Gradient grad = new Gradient();
+						//	grad.SetKeys(new GradientColorKey[] { new GradientColorKey(UnityEngine.Color.blue, 0.0f), new GradientColorKey(UnityEngine.Color.red, 1.0f) }, new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(0.0f, 1.0f) });
+						//	col.color = grad;
+
+						//	ParticleSystem.ColorBySpeedModule colorBySpeed = drizzle.colorBySpeed;
+						//	colorBySpeed.enabled = true;
+						//	colorBySpeed.color = grad;
+
+						//	ParticleSystemRenderer renderer = drizzle.GetComponent<ParticleSystemRenderer>();
+						//	if (renderer != null)
+						//		renderer.material.color = UnityEngine.Color.blue;
+						//}
 					}
 					tbxScratch.Text += $"PlayFromOriginToTarget!" + Environment.NewLine;
 					visualEffect.PlayFromOriginToTarget(origin.transform, target.transform);
@@ -883,7 +840,12 @@ namespace TaleSpireExplore
 
 		private void FlashlightTimer_Tick(object sender, EventArgs e)
 		{
-			lblFlashlightStatus.Text = TaleSpireHelper.GetFlashlightPositionStr();
+			string mouseState;
+			if (Input.GetMouseButton(0))
+				mouseState = " [x";
+			else
+				mouseState = " [";
+			lblFlashlightStatus.Text = Talespire.Flashlight.GetPositionStr() + mouseState;
 		}
 
 		void StopFlashlightTimer()
@@ -916,51 +878,74 @@ namespace TaleSpireExplore
 
 		private void btnSpectatorMode_Click(object sender, EventArgs e)
 		{
-			TaleSpireHelper.SwitchToSpectatorMode();
+			Talespire.Modes.SwitchToSpectator();
 		}
 
 		private void btnPlayer_Click(object sender, EventArgs e)
 		{
-			TaleSpireHelper.SwitchToPlayerMode();
+			Talespire.Modes.SwitchToPlayer();
 		}
 
 		private void btnFlashlightOff_Click(object sender, EventArgs e)
 		{
-			TaleSpireHelper.TurnFlashlightOff();
+			Talespire.Flashlight.TurnOff();
 		}
 
 		private void btnFlashlightOn_Click(object sender, EventArgs e)
 		{
-			TaleSpireHelper.TurnFlashlightOn();
+			chkTrackFlashlight.Checked = true;
+			Talespire.Flashlight.TurnOn();
 			try
 			{
-				FlashLight flashlight = TaleSpireHelper.GetFlashlight();
-
-				GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-				// Unity units - 1 = 1 tile = 5 feet
-				sphere.transform.localScale = new Vector3(4, 4, 4);
-				Renderer renderer = sphere.GetComponent<Renderer>();
-
-				// TODO: Figure transparency.
-				// http://gyanendushekhar.com/2021/02/08/using-transparent-material-in-unity-3d/
-				Material material = renderer.material;
-
-				material.SetOverrideTag("RenderType", "Transparent");
-				material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-				material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-				material.SetInt("_ZWrite", 0);
-				material.DisableKeyword("_ALPHATEST_ON");
-				material.DisableKeyword("_ALPHABLEND_ON");
-				material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-				material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-				material.color = new UnityEngine.Color(0, 0, 1, 0.2f);
-
-				sphere.transform.parent = flashlight.gameObject.transform;
+				FlashLight flashlight = Talespire.Flashlight.Get();
+				AddTarget(flashlight);
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "Exception calling method!");
 			}
+		}
+
+		private static void AddTarget(FlashLight flashlight)
+		{
+			AddCylinder(flashlight, 0.25f, UnityEngine.Color.red, 0.02f);
+			AddCylinder(flashlight, 0.58f, UnityEngine.Color.white, 0f);
+			AddCylinder(flashlight, 0.92f, UnityEngine.Color.red, -0.02f);
+		}
+
+		private static void AddCylinder(FlashLight flashlight, float diameter, UnityEngine.Color color, float yOffset)
+		{
+			GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+			Renderer renderer = cylinder.GetComponent<Renderer>();
+			if (renderer != null)
+				renderer.material.color = color;
+
+			cylinder.transform.localScale = new Vector3(diameter, 0.07f, diameter);
+			cylinder.transform.parent = flashlight.gameObject.transform;
+			cylinder.transform.localPosition = new Vector3(0, yOffset, 0);
+		}
+
+		private void btnAddEffects_Click(object sender, EventArgs e)
+		{
+			VFXMissile magicMissile = Talespire.Effects.GetVisual("MagicMissile") as VFXMissile;
+			VFXMissile spellMissile = VFXMissile.Instantiate(magicMissile);
+			ParticleSystem drizzle = ReflectionHelper.GetNonPublicFieldValue<ParticleSystem>(spellMissile, "drizzle");
+			if (drizzle != null)
+			{
+				MessageBox.Show("drizzle found!");
+				ParticleSystem.MainModule main = drizzle.main;
+				main.startSize = 10;
+			}
+
+			const string spellEffectName = "Spell Missile!";
+			spellMissile.name = spellEffectName;
+			Talespire.Effects.AddNew(spellEffectName, spellMissile);
+
+			//tbxScratch.Text += Environment.NewLine + "MagicMissile:" + Environment.NewLine;
+			//tbxScratch.Text += ReflectionHelper.GetAllProperties(magicMissile);
+			//tbxScratch.Text += Environment.NewLine + Environment.NewLine;
+			//tbxScratch.Text += Environment.NewLine + "spellMissile: (clone)" + Environment.NewLine;
+			//tbxScratch.Text += Environment.NewLine + ReflectionHelper.GetAllProperties(spellMissile);
 		}
 	}
 }

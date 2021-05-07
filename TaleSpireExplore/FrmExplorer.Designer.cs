@@ -51,6 +51,7 @@
 			this.btnPlayer = new System.Windows.Forms.Button();
 			this.btnFlashlightOn = new System.Windows.Forms.Button();
 			this.btnFlashlightOff = new System.Windows.Forms.Button();
+			this.btnAddEffects = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -67,19 +68,21 @@
 			// 
 			this.tbxScratch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-			this.tbxScratch.Location = new System.Drawing.Point(159, 15);
+			this.tbxScratch.Location = new System.Drawing.Point(181, 15);
 			this.tbxScratch.Multiline = true;
 			this.tbxScratch.Name = "tbxScratch";
-			this.tbxScratch.Size = new System.Drawing.Size(388, 422);
+			this.tbxScratch.Size = new System.Drawing.Size(366, 457);
 			this.tbxScratch.TabIndex = 1;
 			this.tbxScratch.WordWrap = false;
 			// 
 			// tbxLog
 			// 
+			this.tbxLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
 			this.tbxLog.Location = new System.Drawing.Point(563, 31);
 			this.tbxLog.Multiline = true;
 			this.tbxLog.Name = "tbxLog";
-			this.tbxLog.Size = new System.Drawing.Size(423, 406);
+			this.tbxLog.Size = new System.Drawing.Size(423, 441);
 			this.tbxLog.TabIndex = 2;
 			this.tbxLog.WordWrap = false;
 			// 
@@ -148,9 +151,9 @@
 			// 
 			// btnEffects
 			// 
-			this.btnEffects.Location = new System.Drawing.Point(14, 235);
+			this.btnEffects.Location = new System.Drawing.Point(12, 282);
 			this.btnEffects.Name = "btnEffects";
-			this.btnEffects.Size = new System.Drawing.Size(84, 23);
+			this.btnEffects.Size = new System.Drawing.Size(118, 23);
 			this.btnEffects.TabIndex = 11;
 			this.btnEffects.Text = "List Effects...";
 			this.btnEffects.UseVisualStyleBackColor = true;
@@ -159,7 +162,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(13, 285);
+			this.label4.Location = new System.Drawing.Point(11, 315);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(38, 13);
 			this.label4.TabIndex = 14;
@@ -167,14 +170,14 @@
 			// 
 			// txtEffectName
 			// 
-			this.txtEffectName.Location = new System.Drawing.Point(52, 281);
+			this.txtEffectName.Location = new System.Drawing.Point(50, 311);
 			this.txtEffectName.Name = "txtEffectName";
 			this.txtEffectName.Size = new System.Drawing.Size(48, 20);
 			this.txtEffectName.TabIndex = 13;
 			// 
 			// btnShowEffect
 			// 
-			this.btnShowEffect.Location = new System.Drawing.Point(14, 307);
+			this.btnShowEffect.Location = new System.Drawing.Point(12, 337);
 			this.btnShowEffect.Name = "btnShowEffect";
 			this.btnShowEffect.Size = new System.Drawing.Size(86, 23);
 			this.btnShowEffect.TabIndex = 12;
@@ -184,7 +187,7 @@
 			// 
 			// btnShowRelationEffect
 			// 
-			this.btnShowRelationEffect.Location = new System.Drawing.Point(14, 336);
+			this.btnShowRelationEffect.Location = new System.Drawing.Point(12, 366);
 			this.btnShowRelationEffect.Name = "btnShowRelationEffect";
 			this.btnShowRelationEffect.Size = new System.Drawing.Size(118, 22);
 			this.btnShowRelationEffect.TabIndex = 15;
@@ -206,7 +209,7 @@
 			// chkTrackFlashlight
 			// 
 			this.chkTrackFlashlight.AutoSize = true;
-			this.chkTrackFlashlight.Location = new System.Drawing.Point(12, 408);
+			this.chkTrackFlashlight.Location = new System.Drawing.Point(10, 438);
 			this.chkTrackFlashlight.Name = "chkTrackFlashlight";
 			this.chkTrackFlashlight.Size = new System.Drawing.Size(101, 17);
 			this.chkTrackFlashlight.TabIndex = 18;
@@ -217,7 +220,7 @@
 			// lblFlashlightStatus
 			// 
 			this.lblFlashlightStatus.AutoSize = true;
-			this.lblFlashlightStatus.Location = new System.Drawing.Point(29, 428);
+			this.lblFlashlightStatus.Location = new System.Drawing.Point(27, 458);
 			this.lblFlashlightStatus.Name = "lblFlashlightStatus";
 			this.lblFlashlightStatus.Size = new System.Drawing.Size(69, 13);
 			this.lblFlashlightStatus.TabIndex = 19;
@@ -255,7 +258,7 @@
 			// 
 			// btnFlashlightOn
 			// 
-			this.btnFlashlightOn.Location = new System.Drawing.Point(12, 379);
+			this.btnFlashlightOn.Location = new System.Drawing.Point(10, 409);
 			this.btnFlashlightOn.Name = "btnFlashlightOn";
 			this.btnFlashlightOn.Size = new System.Drawing.Size(47, 23);
 			this.btnFlashlightOn.TabIndex = 21;
@@ -265,7 +268,7 @@
 			// 
 			// btnFlashlightOff
 			// 
-			this.btnFlashlightOff.Location = new System.Drawing.Point(65, 379);
+			this.btnFlashlightOff.Location = new System.Drawing.Point(63, 409);
 			this.btnFlashlightOff.Name = "btnFlashlightOff";
 			this.btnFlashlightOff.Size = new System.Drawing.Size(48, 23);
 			this.btnFlashlightOff.TabIndex = 21;
@@ -273,11 +276,21 @@
 			this.btnFlashlightOff.UseVisualStyleBackColor = true;
 			this.btnFlashlightOff.Click += new System.EventHandler(this.btnFlashlightOff_Click);
 			// 
+			// btnAddEffects
+			// 
+			this.btnAddEffects.Location = new System.Drawing.Point(12, 253);
+			this.btnAddEffects.Name = "btnAddEffects";
+			this.btnAddEffects.Size = new System.Drawing.Size(118, 23);
+			this.btnAddEffects.TabIndex = 11;
+			this.btnAddEffects.Text = "Add Effect...";
+			this.btnAddEffects.UseVisualStyleBackColor = true;
+			this.btnAddEffects.Click += new System.EventHandler(this.btnAddEffects_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1004, 450);
+			this.ClientSize = new System.Drawing.Size(1004, 485);
 			this.Controls.Add(this.btnFlashlightOff);
 			this.Controls.Add(this.btnFlashlightOn);
 			this.Controls.Add(this.btnPlayer);
@@ -290,6 +303,7 @@
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.txtEffectName);
 			this.Controls.Add(this.btnShowEffect);
+			this.Controls.Add(this.btnAddEffects);
 			this.Controls.Add(this.btnEffects);
 			this.Controls.Add(this.btnClear);
 			this.Controls.Add(this.label2);
@@ -334,5 +348,6 @@
 		private System.Windows.Forms.Button btnPlayer;
 		private System.Windows.Forms.Button btnFlashlightOn;
 		private System.Windows.Forms.Button btnFlashlightOff;
+		private System.Windows.Forms.Button btnAddEffects;
 	}
 }

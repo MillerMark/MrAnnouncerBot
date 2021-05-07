@@ -74,6 +74,22 @@
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\DLLs\MultiMod\Mono.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MultiMod">
+      <HintPath>..\DLLs\MultiMod\MultiMod.dll</HintPath>
+    </Reference>
+    <Reference Include="MultiMod.Cecil">
+      <HintPath>..\DLLs\MultiMod\MultiMod.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MultiMod.Interface">
+      <HintPath>..\DLLs\MultiMod\MultiMod.Interface.dll</HintPath>
+    </Reference>
+    <Reference Include="MultiMod.Shared">
+      <HintPath>..\DLLs\MultiMod\MultiMod.Shared.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -117,6 +133,10 @@
       <HintPath>..\DLLs\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\DLLs\MultiMod\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>..\DLLs\UnityEngine.AudioModule.dll</HintPath>
       <Private>False</Private>
@@ -126,9 +146,17 @@
       <HintPath>..\DLLs\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\DLLs\MultiMod\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DLLs\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>..\DLLs\MultiMod\UnityEngine.JSONSerializeModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">

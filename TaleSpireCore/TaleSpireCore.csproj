@@ -31,6 +31,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bouncyrock.BouncePackage.Runtime">
+      <HintPath>..\DLLs\Bouncyrock.BouncePackage.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Bouncyrock.TaleSpire.3rdParty.Runtime">
+      <HintPath>..\DLLs\Bouncyrock.TaleSpire.3rdParty.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Bouncyrock.TaleSpire.BounceTools.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\Bouncyrock.TaleSpire.BounceTools.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Bouncyrock.TaleSpire.DataModel.Runtime">
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.DataModel.Runtime.dll</HintPath>
     </Reference>
@@ -49,14 +62,27 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.Animation.Rigging, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\Unity.Animation.Rigging.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>..\DLLs\Unity.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\DLLs\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\DLLs\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\DLLs\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>..\DLLs\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -73,10 +99,15 @@
     <Compile Include="DTOs\PlayerControlled.cs" />
     <Compile Include="DTOs\SayTextData.cs" />
     <Compile Include="DTOs\SlabData.cs" />
+    <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="Spell Effects\SpellMissile.cs" />
+    <Compile Include="Tailspire\Talespire.Modes.cs" />
+    <Compile Include="Tailspire\Talespire.Effects.cs" />
     <Compile Include="TaleSpireClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
+    <Compile Include="Tailspire\Talespire.Flashlight.cs" />
     <Compile Include="TaleSpireUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
