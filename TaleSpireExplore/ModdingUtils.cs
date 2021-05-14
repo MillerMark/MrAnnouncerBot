@@ -1284,26 +1284,7 @@ namespace ModdingTales
 		}
 		static string GetCreatures(string[] arg)
 		{
-			IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
-			if (allCreatureAssets == null)
-				return new ApiResponse("AllCreatureAssets returned null!").ToString();
-
-			CharacterPositions characterPositions = new CharacterPositions();
-
-			foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-			{
-				float altitude = 0;
-				if (creatureAsset.FlyingIndicator?.ElevationAmount > 0)
-					altitude = creatureAsset.FlyingIndicator.ElevationAmount;
-
-				characterPositions.Characters.Add(new CharacterPosition()
-				{
-					Name = TaleSpireUtils.GetName(creatureAsset),
-					Position = new VectorDto(creatureAsset.PlacedPosition.x, creatureAsset.PlacedPosition.y, creatureAsset.PlacedPosition.z),
-					ID = creatureAsset.BoardAssetId.ToString(),
-					FlyingAltitude = altitude
-				});
-			}
+			CharacterPositions characterPositions = Talespire.Minis.GetPositions();
 
 			return ApiResponse.Good("Success", characterPositions);
 		}

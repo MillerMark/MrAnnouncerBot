@@ -1,4 +1,53 @@
-﻿using BepInEx;
+﻿/* 
+ 
+CubePrefab
+SampleParticleSys
+ConjureAmethystSea
+ConjureLavaPool
+ConjureWaterPool
+DivineJudgment
+EssenceHarvest
+FireBarrier
+FusionCore
+HammerStrike
+HealingSeal
+HeartOfBattle
+HoloShield
+IonMarker
+IonStrike
+LaserCannonBarrage
+MagicMissileBarrage
+MeteorStrike
+MineField
+MoltenPillar
+NeuralShield
+PlasmaBarrier
+ProgramShield
+PulseGrenade
+RocketBarrage
+SpiritBomb
+StarRays
+StormBeacon
+StormPillar
+SummonStorm
+VoidShield
+Volley
+WaterBarrier
+EvilSmoke
+Fire
+FireBall
+FireRing
+Ice
+MediumFire
+Particle Dome
+White Smoke
+SpellEffects
+StartupPrefab
+ 
+ */
+
+using BepInEx;
+using BepInEx.Logging;
 using ModdingTales;
 using MultiMod;
 using MultiMod.Interface;
@@ -8,6 +57,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using TaleSpireCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,28 +66,54 @@ namespace TaleSpireExplore
 {
 
 	[BepInPlugin("org.generic.plugins.talespireexplore", "Mark's TaleSpire Explorer", "1.0.0.2")]
-	class TaleSpireExplorePlugin : BaseUnityPlugin
+	public class TaleSpireExplorePlugin : BaseUnityPlugin
 	{
+		//public static T CloneChildAsset<T>(string assetName, string instanceId, string parentPrefab = "StartupPrefab") where T: class
+		//{
+		//	Talespire.Log.Warning("CloneAsset...");
+		//	GameObject startupPrefab = Talespire.Prefabs.Get(parentPrefab);
+		//	
+		//	if (startupPrefab == null)
+		//	{
+		//		Talespire.Log.Warning($"startupPrefab is null!");
+		//		return default(T);
+		//	}
+
+		//	Talespire.Log.Warning($"Children: {startupPrefab.transform.childCount}");
+		//	foreach (Transform transform in startupPrefab.transform.Children())
+		//	{
+		//		Talespire.Log.Warning($"transform.gameObject.name: {transform.gameObject.name}, transform.name: {transform.name}");
+		//		if (transform.gameObject is T && transform.gameObject is GameObject originalAsset && transform.name == assetName)
+		//			return Talespire.Instances.Create<T>(instanceId, originalAsset);
+		//	}
+
+		//	return default(T);
+		//}
+
+		//public static GameObject CloneSpellEffect(string assetName, string instanceId)
+		//{
+		//	return CloneChildAsset<GameObject>(assetName, instanceId, "SpellEffects");
+		//}
+
 		static FrmExplorer frmExplorer;
 
 		public void LoadMultiModAssets()
 		{
-			var searchDirectory = Path.Combine(Paths.PluginPath, "multimod/mods");
-			var mm = ModManager.instance;
-			
-			mm.AddSearchDirectory(searchDirectory);
-			mm.RefreshSearchDirectories();
-			Debug.Log($"MultiMod search path: {searchDirectory}");
+			var searchDirectory = Path.Combine(Paths.PluginPath, "multimod\\mods");
+			var modManager = ModManager.instance;
+
+			modManager.AddSearchDirectory(searchDirectory);
+			modManager.RefreshSearchDirectories();
+			Talespire.Log.Debug($"MultiMod search path: {searchDirectory}");
 			//MessageBox.Show(searchDirectory, "New Search Directory");
 			//MessageBox.Show(mm.defaultSearchDirectory, "mm.defaultSearchDirectory");
-			mm.ModsChanged += () =>
+			modManager.ModsChanged += () =>
 			{
 				try
 				{
-					Debug.Log("Mods changed.");
-					foreach (var mod in mm.mods)
-						Debug.Log(
-								$"{mod.name}: {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
+					Talespire.Log.Debug("Mods changed.");
+					foreach (var mod in modManager.mods)
+						Talespire.Log.Debug($"{mod.name}: {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
 				}
 				catch (Exception ex)
 				{
@@ -49,29 +125,28 @@ namespace TaleSpireExplore
 				}
 			};
 
-			mm.ModFound += mod =>
+			modManager.ModFound += mod =>
 			{
 				try
 				{
 					//MessageBox.Show($"Mod found: {mod.name}");
-					Debug.Log(
-							$"Mod found: {mod.name} {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
+					Talespire.Log.Debug($"Mod found: {mod.name} {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
 
-					foreach (var assetPath in mod.assetPaths) Debug.Log($" - {assetPath}");
+					foreach (var assetPath in mod.assetPaths) Talespire.Log.Debug($" - {assetPath}");
 
 					mod.Load();
 
-					mod.LoadCancelled += (obj) => {
+					mod.LoadCancelled += (obj) =>
+					{
 						if (obj != null)
 							MessageBox.Show($"Mod_LoadCancelled: {obj.name}");
 						else
 							MessageBox.Show($"Mod_LoadCancelled: null resource");
 					};
 
-					mod.Loaded += resource => { Debug.Log($"Resource loaded? {resource.loadState} - {resource.name}"); };
+					mod.Loaded += resource => { Talespire.Log.Debug($"Resource loaded? {resource.loadState} - {resource.name}"); };
 
-					Debug.Log(
-							$"Mod loaded?: {mod.name} {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
+					Talespire.Log.Debug($"Mod loaded?: {mod.name} {mod.assemblyNames.Count} assemblies, {mod.contentHandler.prefabs.Count} prefabs, isValid={mod.isValid}, state {mod.loadState}");
 				}
 				catch (Exception ex)
 				{
@@ -83,27 +158,49 @@ namespace TaleSpireExplore
 				}
 			};
 
-			mm.ModLoaded += mod =>
+			modManager.ModLoaded += mod =>
 			{
 				try
 				{
 					//MessageBox.Show($"{mod.name} loaded. Looking for ExportSettings.");
-					Debug.Log($"{mod.name} loaded. Looking for ExportSettings.");
+					Talespire.Log.Debug($"{mod.name} loaded. Looking for ExportSettings.");
 					var settings = mod.GetAsset<ExportSettings>("ExportSettings");
 
 					if (settings == null)
 					{
-						Debug.LogError("Couldn't find ExportSettings in mod assetbundle.");
+						Talespire.Log.Error("Couldn't find ExportSettings in mod assetbundle.");
 						return;
 					}
 
+					Talespire.Log.Warning($"settings: \n{ReflectionHelper.GetAllProperties(settings)}");
+
 					if (settings.StartupPrefab == null)
 					{
+						Talespire.Log.Error("settings.StartupPrefab == null!");
 						//MessageBox.Show(ReflectionHelper.GetAllProperties(settings), "settings");
+						Talespire.Log.Warning($"mod.contentHandler.prefabs.Count: {mod.contentHandler.prefabs.Count}");
+						foreach (GameObject prefab in mod.contentHandler.prefabs)
+						{
+							Talespire.Log.Warning($"  Adding \"{prefab.name}\" to the dictionary.");
+
+							Talespire.Prefabs.Add(prefab);
+
+							if (prefab.name == "StartupPrefab")  // This is our startup prefab!
+							{
+								startupPrefab = Instantiate(prefab);
+
+								UnityEngine.Object.DontDestroyOnLoad(startupPrefab);
+								startupPrefab.GetComponents<ModBehaviour>().ToList().ForEach(modBehavior =>
+								{
+									modBehavior.contentHandler = mod.contentHandler;
+									modBehavior.OnLoaded(mod.contentHandler);
+								});
+								//startupPrefab.SetActive(false);
+							}
+						}
 					}
 					else
 					{
-						// settings.StartupPrefab is always null.
 						MessageBox.Show(ReflectionHelper.GetAllProperties(settings), "Prefab is good!");
 						var gobj = Instantiate(settings.StartupPrefab);
 						UnityEngine.Object.DontDestroyOnLoad(gobj);
@@ -124,9 +221,9 @@ namespace TaleSpireExplore
 				}
 			};
 
-			mm.ModLoadCancelled += mod => { Debug.LogWarning($"Mod loading canceled: {mod.name}"); };
+			modManager.ModLoadCancelled += mod => { Talespire.Log.Warning($"Mod loading canceled: {mod.name}"); };
 
-			mm.ModUnloaded += mod => { Debug.Log($"Mod UNLOADED: {mod.name}"); };
+			modManager.ModUnloaded += mod => { Talespire.Log.Debug($"Mod UNLOADED: {mod.name}"); };
 		}
 
 		void Awake()
@@ -141,6 +238,7 @@ namespace TaleSpireExplore
 		}
 
 		DateTime lastLineOfSightUpdateTime = DateTime.Now;
+		public static GameObject startupPrefab;
 		private void CreatureManager_OnLineOfSightUpdated(CreatureGuid arg1, LineOfSightManager.LineOfSightResult arg2)
 		{
 			if ((DateTime.Now - lastLineOfSightUpdateTime).TotalSeconds > 3)

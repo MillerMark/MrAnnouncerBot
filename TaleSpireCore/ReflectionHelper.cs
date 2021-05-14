@@ -152,5 +152,20 @@ namespace TaleSpireCore
 				return default(T);
 			return field.GetValue(instance) as T;
 		}
+
+		public static void SetNonPublicFieldValue(Type type, object instance, string fieldName, object value)
+		{
+			try
+			{
+				FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+				if (field == null)
+					return;
+				field.SetValue(instance, value);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
 	}
 }

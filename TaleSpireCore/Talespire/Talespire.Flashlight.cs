@@ -106,8 +106,6 @@ namespace TaleSpireCore
 			{
 				return typeof(LocalClient).GetField("_flashLight", BindingFlags.NonPublic | BindingFlags.Static);
 			}
-
-
 		}
 	}
 }

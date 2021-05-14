@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using UnityEngine;
 using TaleSpireCore;
+using TaleSpireExplore;
 using System;
 using System.Collections.Generic;
 using Runtime.Scripts;
@@ -17,9 +18,11 @@ namespace TaleSpireExplore
 {
 	public partial class FrmExplorer : Form
 	{
+		const string STR_SpellTestId = "SpellTest";
 		public FrmExplorer()
 		{
 			InitializeComponent();
+			RegisterEffects();
 		}
 
 		void LogEvent(string message)
@@ -765,18 +768,6 @@ namespace TaleSpireExplore
 						//	AddScratchLine($"  main.loop: {drizzle.main.loop}");
 
 
-
-
-						//	ParticleSystem.MinMaxGradient minMaxGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue);
-						//	minMaxGradient.mode = ParticleSystemGradientMode.RandomColor;
-						//	ParticleSystem.MainModule main = drizzle.main;
-						//	main.startColor = minMaxGradient;
-						//	main.startSize = 2;
-						//	ParticleSystem.EmissionModule emission = drizzle.emission;
-						//	//MessageBox.Show(ReflectionHelper.GetAllProperties(drizzle), "drizzle");
-						//	MessageBox.Show(ReflectionHelper.GetAllProperties(emission), "emission");
-						//	emission.rateOverTime = 50;
-
 						//	// None of these tries work to change the color:
 						//	ParticleSystem.ColorOverLifetimeModule col = drizzle.colorOverLifetime;
 						//	col.enabled = true;
@@ -865,15 +856,39 @@ namespace TaleSpireExplore
 				StopFlashlightTimer();
 		}
 
-		private void btnBoom_Click(object sender, EventArgs e)
+		private void btnGetRuler_Click(object sender, EventArgs e)
 		{
-			float x = 15f;
-			float y = 22.5f;
-			float z = 95.4f;
+			
+			UnityEngine.Object[] lineRulers = Talespire.Components.GetAll<LineRulerIndicator>();
+			
+			if (lineRulers == null)
+			{
+				tbxScratch.Text += $"No LineRulerIndicators found.\n";
+				return;
+			}
+			
+			
+			tbxScratch.Text += $"{lineRulers.Length} LineRulerIndicators found!\n";
 
-			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			sphere.transform.position = new Vector3(x, y, z);
-			sphere.transform.localScale = new Vector3(10, 10, 10);
+			for (int j = 0; j < 11; j++)
+				Talespire.Instances.Delete($"RulerFlames{j}");
+
+			for (int i = 0; i < lineRulers.Length; i++)
+			{
+				LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
+				if (lineRulerIndicator != null)
+				{
+					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(typeof(LineRulerIndicator), lineRulerIndicator, "_handles");
+					if (_handles != null)
+					{
+						tbxScratch.Text += $"{_handles.Count} _handles found!\n";
+						for (int j = 0; j < _handles.Count; j++)
+							AddEffect($"RulerFlames{j}", "MediumFire", new Vector3(_handles[j].position.x, _handles[j].position.y, _handles[j].position.z));
+					}
+					else
+						tbxScratch.Text += $"_handles NOT found!\n";
+				}
+			}
 		}
 
 		private void btnSpectatorMode_Click(object sender, EventArgs e)
@@ -899,11 +914,21 @@ namespace TaleSpireExplore
 			{
 				FlashLight flashlight = Talespire.Flashlight.Get();
 				AddTarget(flashlight);
+				AddTargetingSphere(flashlight, 40);
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "Exception calling method!");
 			}
+		}
+
+		void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
+		{
+			float diameterTiles = diameterFeet / 5;
+			GameObject particleDome = Talespire.Prefabs.Clone("ParticleDome");
+			particleDome.transform.position = new Vector3(0, 0, 0);
+			particleDome.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+			particleDome.transform.parent = flashlight.gameObject.transform;
 		}
 
 		private static void AddTarget(FlashLight flashlight)
@@ -929,13 +954,56 @@ namespace TaleSpireExplore
 		{
 			VFXMissile magicMissile = Talespire.Effects.GetVisual("MagicMissile") as VFXMissile;
 			VFXMissile spellMissile = VFXMissile.Instantiate(magicMissile);
-			ParticleSystem drizzle = ReflectionHelper.GetNonPublicFieldValue<ParticleSystem>(spellMissile, "drizzle");
-			if (drizzle != null)
+			GameObject particleSysPrefab = Talespire.Prefabs.Get("SampleParticleSys");
+
+			if (particleSysPrefab != null)
 			{
-				MessageBox.Show("drizzle found!");
-				ParticleSystem.MainModule main = drizzle.main;
-				main.startSize = 10;
+				ParticleSystem particleSystem = particleSysPrefab.GetComponentInChildren<ParticleSystem>();
+				if (particleSystem != null)
+				{
+					Talespire.Log.Debug("setting drizzle...");
+					ReflectionHelper.SetNonPublicFieldValue(typeof(VFXMissile), spellMissile, "drizzle", particleSystem);
+					Talespire.Log.Debug("setting impact...");
+					ReflectionHelper.SetNonPublicFieldValue(typeof(VFXMissile), spellMissile, "impact", particleSystem);
+				}
 			}
+				
+
+			//ParticleSystem drizzle = ReflectionHelper.GetNonPublicFieldValue<ParticleSystem>(spellMissile, "drizzle");
+			//if (drizzle != null)
+			//{
+			//	TaleSpireExplorePlugin.LogWarning("Test Log Warning - about to show Drizzle MB...");
+			//	MessageBox.Show("drizzle found!");
+			//	TaleSpireExplorePlugin.LogError("Test Log Error - this is only a test...");
+			//	ParticleSystem.MainModule main = drizzle.main;
+			//	
+			//	ParticleSystem.MinMaxGradient minMaxGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue);
+			//	minMaxGradient.mode = ParticleSystemGradientMode.Color;
+			//	main.startColor = minMaxGradient;
+			//	main.startSize = 5;
+			//	ParticleSystem.EmissionModule emission = drizzle.emission;
+
+			//	ParticleSystem.ColorOverLifetimeModule colorOverLifetime = drizzle.colorOverLifetime;
+
+			//	ParticleSystem.MinMaxGradient colorOverLifetimeGradient = new ParticleSystem.MinMaxGradient(UnityEngine.Color.blue, UnityEngine.Color.red);
+			//	colorOverLifetime.color = colorOverLifetimeGradient;
+			//	colorOverLifetime.enabled = true;
+			//	TaleSpireExplorePlugin.LogInfo(ReflectionHelper.GetAllProperties(drizzle.main));
+
+			//	//Shader shader = Shader.Find("Transparent/Diffuse");
+			//	//if (shader != null)
+			//	//{
+			//	//	MessageBox.Show(ReflectionHelper.GetAllProperties(shader), "shader");
+			//	//	Material material = new Material(shader);
+			//	//	MessageBox.Show(ReflectionHelper.GetAllProperties(material), "material");
+			//	//	material.color = UnityEngine.Color.blue;
+			//	//	// TODO: use this material in the renderer?
+			//	//}
+
+
+			//	//MessageBox.Show(ReflectionHelper.GetAllProperties(emission), "emission");
+			//	emission.rateOverTime = 50;
+			//}
 
 			const string spellEffectName = "Spell Missile!";
 			spellMissile.name = spellEffectName;
@@ -946,6 +1014,199 @@ namespace TaleSpireExplore
 			//tbxScratch.Text += Environment.NewLine + Environment.NewLine;
 			//tbxScratch.Text += Environment.NewLine + "spellMissile: (clone)" + Environment.NewLine;
 			//tbxScratch.Text += Environment.NewLine + ReflectionHelper.GetAllProperties(spellMissile);
+		}
+
+		private void btnParticleSystemOn_Click(object sender, EventArgs e)
+		{
+			string spellEffectName = "Fire";
+			if (!string.IsNullOrWhiteSpace(lastSelectedPrefab))
+				spellEffectName = lastSelectedPrefab;
+			AddEffect(STR_SpellTestId, spellEffectName, new Vector3(15f, 22.5f, 95.4f));
+		}
+
+		private static GameObject AddEffect(string instanceId, string spellEffectName, Vector3? newPosition = null)
+		{
+			try
+			{
+				GameObject effect;
+
+				effect = Talespire.Prefabs.Clone(spellEffectName, instanceId);
+
+				if (effect == null)
+				{
+					Talespire.Log.Debug($"Talespire.Prefabs.Clone(\"{spellEffectName}\") returned null.");
+					return null;
+				}
+
+				Talespire.Log.Debug($"prefab: {effect.name}");
+				if (newPosition.HasValue)
+					effect.transform.position = newPosition.Value;
+				return effect;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+				return null;
+			}
+		}
+
+		private void btnParticleSystemOff_Click(object sender, EventArgs e)
+		{
+			Talespire.Instances.Delete(STR_SpellTestId);
+		}
+
+		string lastSelectedPrefab;
+		private void cmbPrefabs_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			lastSelectedPrefab = cmbPrefabs.SelectedItem as string;
+			if (string.IsNullOrWhiteSpace(lastSelectedPrefab))
+				return;
+			AddEffect(STR_SpellTestId, lastSelectedPrefab, new Vector3(15f, 22.5f, 95.4f));
+		}
+
+		private void cmbPrefabs_DropDown(object sender, EventArgs e)
+		{
+			if (cmbPrefabs.Items.Count == 0)
+				foreach (string item in Talespire.Prefabs.AllNames.OrderBy(x => x).ToList())
+					cmbPrefabs.Items.Add(item);
+		}
+
+		const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
+		const string MerkinId = "b9529862-8d73-4662-ab13-cf9232b1ccf9";
+		const string MediumFireEffectId = "MediumFireEffectId";
+
+		private void btnAttackJanus_Click(object sender, EventArgs e)
+		{
+
+			try
+			{
+				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+
+				string effectName = "MediumFire";
+				if (lastSelectedPrefab != null)
+					effectName = lastSelectedPrefab;
+
+
+				GameObject fireBall = AddEffect(MediumFireEffectId, effectName);
+				Translator translator = fireBall.AddComponent<Translator>();
+
+				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
+				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
+
+				if (janusPosition == null)
+				{
+					Talespire.Log.Error("janusPosition is null!");
+					return;
+				}
+
+				if (merkinPosition == null)
+				{
+					Talespire.Log.Error("merkinPosition is null!");
+					return;
+				}
+
+				fireBall.transform.position = merkinPosition.Position.GetVector3();
+				translator.StartPosition = merkinPosition.Position.GetVector3();
+				translator.StopPosition = janusPosition.Position.GetVector3();
+				translator.TravelTime = 0.8f;
+				translator.easing = EasingOption.EaseInQuint;
+				translator.StartTravel();
+				//AddEffect(MerkinId, "MediumFire", merkinPosition.Position.GetVector3());
+			}
+			catch (Exception ex)
+			{
+				while (ex != null)
+				{
+					MessageBox.Show(ex.Message, "Exception!");
+					ex = ex.InnerException;
+				}
+			}
+		}
+
+		void ApplyEffects(GameObject effect)
+		{
+			string effectNameToMatch = effect.name;
+			if (effectNameToMatch.Contains("("))
+			{
+				effectNameToMatch = effectNameToMatch.Substring(0, effectNameToMatch.IndexOf("("));
+			}
+
+			Talespire.Log.Debug($"effectNameToMatch = {effectNameToMatch}");
+		}
+
+		Dictionary<string, CompositeEffect> registeredEffects = new Dictionary<string, CompositeEffect>();
+
+		void RegisterEffects()
+		{
+			CompositeEffect result = new CompositeEffect();
+
+			result.Prefab = "MediumFire";
+			result.AddProperty(new ChangeVector3("<Transform>.localScale", "3, 3, 3"));
+			result.AddProperty(new ChangeMinMaxGradient("<ParticleSystem>.main.startColor", "#0026ff -> #00ffdd"));
+
+			string serializedObject = JsonConvert.SerializeObject(result);
+			Talespire.Log.Debug($"JSON'd effect: \"{serializedObject}\"");
+			registeredEffects.Add("TestFireEffect", result);
+		}
+
+		private void btnClearAttack_Click(object sender, EventArgs e)
+		{
+			Talespire.Instances.Delete(JanusId);
+			Talespire.Instances.Delete(MediumFireEffectId);
+			Talespire.Instances.Delete(MerkinId);
+		}
+
+		CompositeEffect GetCompositeEffect(string key)
+		{
+			if (registeredEffects.ContainsKey(key))
+				return registeredEffects[key];
+			return null;
+		}
+
+		const string testInstanceId = "TestEffectsClick";
+
+		private void btnTestEffects_Click(object sender, EventArgs e)
+		{
+			CompositeEffect compositeEffect = GetCompositeEffect("TestFireEffect");
+			if (compositeEffect == null)
+			{
+				Talespire.Log.Error("TestFireEffect not found!");
+				return;
+			}
+
+			Talespire.Log.Warning("TestFireEffect found!");
+
+			try
+			{
+				Talespire.Instances.Delete(testInstanceId);
+
+				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
+				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
+				compositeEffect.Create(merkinPosition, janusPosition, testInstanceId);
+				tbxScratch.Text = JsonConvert.SerializeObject(compositeEffect);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		private void btnDeserialize_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				Talespire.Instances.Delete(testInstanceId);
+
+				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(tbxScratch.Text);
+				compositeEffect.RebuildPropertiesAfterLoad();
+				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
+				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
+				compositeEffect.Create(merkinPosition, janusPosition, testInstanceId);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
 		}
 	}
 }

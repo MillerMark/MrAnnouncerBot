@@ -11,5 +11,10 @@ namespace TaleSpireCore
 		public string ID { get; set; }
 		public VectorDto Position { get; set; }
 		public float FlyingAltitude { get; set; }
+
+		public float GetFloorY()
+		{
+			return Position.y - FlyingAltitude;
+		}
 	}
 }

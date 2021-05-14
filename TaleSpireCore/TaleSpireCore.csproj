@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>..\bepinexbin\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
     <Reference Include="Bouncyrock.BouncePackage.Runtime">
       <HintPath>..\DLLs\Bouncyrock.BouncePackage.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -93,7 +96,14 @@
     <Compile Include="DTOs\CustomBoardInfo.cs" />
     <Compile Include="DTOs\CustomCreatureData.cs" />
     <Compile Include="DTOs\CustomCreatureStat.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeMinMaxGradient.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyChangerDto.cs" />
+    <Compile Include="CompositeEffects\CompositeEffect.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeFloat.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\Core\BasePropertyChanger.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeVector3.cs" />
     <Compile Include="DTOs\Euler.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyChangerFactory.cs" />
     <Compile Include="DTOs\VectorDto.cs" />
     <Compile Include="DTOs\MoveAction.cs" />
     <Compile Include="DTOs\PlayerControlled.cs" />
@@ -101,13 +111,19 @@
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
-    <Compile Include="Tailspire\Talespire.Modes.cs" />
-    <Compile Include="Tailspire\Talespire.Effects.cs" />
+    <Compile Include="Talespire\Talespire.Components.cs" />
+    <Compile Include="Talespire\Talespire.Minis.cs" />
+    <Compile Include="Talespire\Talespire.Log.cs" />
+    <Compile Include="Talespire\Talespire.Prefabs.cs" />
+    <Compile Include="Talespire\Talespire.Instances.cs" />
+    <Compile Include="Talespire\Talespire.Modes.cs" />
+    <Compile Include="Talespire\Talespire.Effects.cs" />
     <Compile Include="TaleSpireClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Talespire\TalespireExtensions.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
-    <Compile Include="Tailspire\Talespire.Flashlight.cs" />
+    <Compile Include="Talespire\Talespire.Flashlight.cs" />
     <Compile Include="TaleSpireUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
