@@ -1208,5 +1208,28 @@ namespace TaleSpireExplore
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
+
+		FrmEffectEditor frmEffectEditor;
+		private void btnEditPrefabs_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				if (frmEffectEditor == null)
+				{
+					frmEffectEditor = new FrmEffectEditor();
+					frmEffectEditor.FormClosed += FrmEffectEditor_FormClosed;
+				}
+				frmEffectEditor.Show();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception");
+			}
+		}
+
+		private void FrmEffectEditor_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			frmEffectEditor = null;
+		}
 	}
 }

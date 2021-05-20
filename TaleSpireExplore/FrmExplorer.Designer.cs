@@ -60,6 +60,7 @@
 			this.btnClearAttack = new System.Windows.Forms.Button();
 			this.btnTestEffects = new System.Windows.Forms.Button();
 			this.btnDeserialize = new System.Windows.Forms.Button();
+			this.btnEditPrefabs = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -79,7 +80,7 @@
 			this.tbxScratch.Location = new System.Drawing.Point(181, 15);
 			this.tbxScratch.Multiline = true;
 			this.tbxScratch.Name = "tbxScratch";
-			this.tbxScratch.Size = new System.Drawing.Size(366, 456);
+			this.tbxScratch.Size = new System.Drawing.Size(366, 465);
 			this.tbxScratch.TabIndex = 1;
 			this.tbxScratch.WordWrap = false;
 			// 
@@ -90,7 +91,7 @@
 			this.tbxLog.Location = new System.Drawing.Point(563, 31);
 			this.tbxLog.Multiline = true;
 			this.tbxLog.Name = "tbxLog";
-			this.tbxLog.Size = new System.Drawing.Size(423, 440);
+			this.tbxLog.Size = new System.Drawing.Size(423, 449);
 			this.tbxLog.TabIndex = 2;
 			this.tbxLog.WordWrap = false;
 			// 
@@ -298,7 +299,7 @@
 			// btnParticleSystemOn
 			// 
 			this.btnParticleSystemOn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnParticleSystemOn.Location = new System.Drawing.Point(56, 542);
+			this.btnParticleSystemOn.Location = new System.Drawing.Point(56, 551);
 			this.btnParticleSystemOn.Name = "btnParticleSystemOn";
 			this.btnParticleSystemOn.Size = new System.Drawing.Size(57, 23);
 			this.btnParticleSystemOn.TabIndex = 21;
@@ -309,7 +310,7 @@
 			// btnParticleSystemOff
 			// 
 			this.btnParticleSystemOff.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnParticleSystemOff.Location = new System.Drawing.Point(131, 542);
+			this.btnParticleSystemOff.Location = new System.Drawing.Point(131, 551);
 			this.btnParticleSystemOff.Name = "btnParticleSystemOff";
 			this.btnParticleSystemOff.Size = new System.Drawing.Size(86, 23);
 			this.btnParticleSystemOff.TabIndex = 21;
@@ -321,7 +322,7 @@
 			// 
 			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(10, 518);
+			this.label3.Location = new System.Drawing.Point(10, 527);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(41, 13);
 			this.label3.TabIndex = 23;
@@ -331,7 +332,7 @@
 			// 
 			this.cmbPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.cmbPrefabs.FormattingEnabled = true;
-			this.cmbPrefabs.Location = new System.Drawing.Point(56, 515);
+			this.cmbPrefabs.Location = new System.Drawing.Point(56, 524);
 			this.cmbPrefabs.MaxDropDownItems = 42;
 			this.cmbPrefabs.Name = "cmbPrefabs";
 			this.cmbPrefabs.Size = new System.Drawing.Size(162, 21);
@@ -342,9 +343,9 @@
 			// btnAttackJanus
 			// 
 			this.btnAttackJanus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAttackJanus.Location = new System.Drawing.Point(224, 513);
+			this.btnAttackJanus.Location = new System.Drawing.Point(224, 543);
 			this.btnAttackJanus.Name = "btnAttackJanus";
-			this.btnAttackJanus.Size = new System.Drawing.Size(122, 52);
+			this.btnAttackJanus.Size = new System.Drawing.Size(99, 31);
 			this.btnAttackJanus.TabIndex = 21;
 			this.btnAttackJanus.Text = "Attack Janus!";
 			this.btnAttackJanus.UseVisualStyleBackColor = true;
@@ -353,9 +354,9 @@
 			// btnClearAttack
 			// 
 			this.btnClearAttack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnClearAttack.Location = new System.Drawing.Point(352, 513);
+			this.btnClearAttack.Location = new System.Drawing.Point(329, 543);
 			this.btnClearAttack.Name = "btnClearAttack";
-			this.btnClearAttack.Size = new System.Drawing.Size(122, 52);
+			this.btnClearAttack.Size = new System.Drawing.Size(99, 31);
 			this.btnClearAttack.TabIndex = 21;
 			this.btnClearAttack.Text = "Clear Attack!";
 			this.btnClearAttack.UseVisualStyleBackColor = true;
@@ -364,7 +365,7 @@
 			// btnTestEffects
 			// 
 			this.btnTestEffects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnTestEffects.Location = new System.Drawing.Point(499, 513);
+			this.btnTestEffects.Location = new System.Drawing.Point(457, 543);
 			this.btnTestEffects.Name = "btnTestEffects";
 			this.btnTestEffects.Size = new System.Drawing.Size(90, 31);
 			this.btnTestEffects.TabIndex = 21;
@@ -375,7 +376,7 @@
 			// btnDeserialize
 			// 
 			this.btnDeserialize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnDeserialize.Location = new System.Drawing.Point(181, 476);
+			this.btnDeserialize.Location = new System.Drawing.Point(181, 485);
 			this.btnDeserialize.Name = "btnDeserialize";
 			this.btnDeserialize.Size = new System.Drawing.Size(90, 31);
 			this.btnDeserialize.TabIndex = 21;
@@ -383,15 +384,27 @@
 			this.btnDeserialize.UseVisualStyleBackColor = true;
 			this.btnDeserialize.Click += new System.EventHandler(this.btnDeserialize_Click);
 			// 
+			// btnEditPrefabs
+			// 
+			this.btnEditPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 543);
+			this.btnEditPrefabs.Name = "btnEditPrefabs";
+			this.btnEditPrefabs.Size = new System.Drawing.Size(90, 31);
+			this.btnEditPrefabs.TabIndex = 21;
+			this.btnEditPrefabs.Text = "Edit Prefab";
+			this.btnEditPrefabs.UseVisualStyleBackColor = true;
+			this.btnEditPrefabs.Click += new System.EventHandler(this.btnEditPrefabs_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1004, 577);
+			this.ClientSize = new System.Drawing.Size(1004, 586);
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.btnParticleSystemOff);
 			this.Controls.Add(this.btnDeserialize);
+			this.Controls.Add(this.btnEditPrefabs);
 			this.Controls.Add(this.btnTestEffects);
 			this.Controls.Add(this.btnClearAttack);
 			this.Controls.Add(this.btnAttackJanus);
@@ -462,5 +475,6 @@
 		private System.Windows.Forms.Button btnClearAttack;
 		private System.Windows.Forms.Button btnTestEffects;
 		private System.Windows.Forms.Button btnDeserialize;
+		private System.Windows.Forms.Button btnEditPrefabs;
 	}
 }

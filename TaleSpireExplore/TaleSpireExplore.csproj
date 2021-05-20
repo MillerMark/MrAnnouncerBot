@@ -112,10 +112,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TopDown">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_TopDown\TopDown.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Animation.Rigging">
       <HintPath>..\DLLs\Unity.Animation.Rigging.dll</HintPath>
       <Private>False</Private>
@@ -191,6 +187,59 @@
     <None Include="Decompiles\EffectManager.cs" />
     <None Include="Decompiles\FactoryItemBehaviour.cs" />
     <None Include="Decompiles\VisualEffect.cs" />
+    <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtNone.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtNone.Designer.cs">
+      <DependentUpon>EdtNone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtBool.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtBool.Designer.cs">
+      <DependentUpon>EdtBool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtVector3.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtVector3.Designer.cs">
+      <DependentUpon>EdtVector3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtInt.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtInt.Designer.cs">
+      <DependentUpon>EdtInt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMinMaxGradient.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMinMaxGradient.Designer.cs">
+      <DependentUpon>EdtMinMaxGradient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\FrmAddNode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmAddNode.Designer.cs">
+      <DependentUpon>FrmAddNode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\FrmEffectEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmEffectEditor.Designer.cs">
+      <DependentUpon>FrmEffectEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\Core\AllValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtFloat.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtFloat.Designer.cs">
+      <DependentUpon>EdtFloat.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\Core\IValueChangedListener.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\IValueEditor.cs" />
     <Compile Include="FrmExplorer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -198,8 +247,16 @@
       <DependentUpon>FrmExplorer.cs</DependentUpon>
     </Compile>
     <None Include="Decompiles\ParticleEmitterVisualEffect.cs" />
+    <Compile Include="Effects Editor\FrmSelectPrefab.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmSelectPrefab.Designer.cs">
+      <DependentUpon>FrmSelectPrefab.cs</DependentUpon>
+    </Compile>
     <Compile Include="ModdingUtils.cs" />
+    <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Effects Editor\CustomNodes\PropertyNode.cs" />
     <Compile Include="TaleSpireExplorePlugin.cs" />
     <None Include="Decompiles\VFXMissile.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
@@ -208,8 +265,29 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtNone.resx">
+      <DependentUpon>EdtNone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtBool.resx">
+      <DependentUpon>EdtBool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtVector3.resx">
+      <DependentUpon>EdtVector3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmAddNode.resx">
+      <DependentUpon>FrmAddNode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmEffectEditor.resx">
+      <DependentUpon>FrmEffectEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMinMaxGradient.resx">
+      <DependentUpon>EdtMinMaxGradient.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmExplorer.resx">
       <DependentUpon>FrmExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmSelectPrefab.resx">
+      <DependentUpon>FrmSelectPrefab.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
