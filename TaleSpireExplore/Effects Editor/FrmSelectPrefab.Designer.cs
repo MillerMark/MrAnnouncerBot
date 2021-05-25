@@ -89,7 +89,7 @@
 			this.Controls.Add(this.label1);
 			this.MinimumSize = new System.Drawing.Size(258, 205);
 			this.Name = "FrmSelectPrefab";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Select Prefab";
 			this.Load += new System.EventHandler(this.FrmSelectPrefab_Load);
 			this.ResumeLayout(false);

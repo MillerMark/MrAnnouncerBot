@@ -121,6 +121,7 @@ namespace TaleSpireExplore
 			SingletonStateMBehaviour.OnStateChange += SingletonStateMBehaviour_OnStateChange;
 			SingletonStateMBehaviour.OnStateWillTransition += SingletonStateMBehaviour_OnStateWillTransition;
 		}
+
 		void UnhookEvents()
 		{
 			PhotonNetwork.OnEventCall -= PhotonNetwork_OnEventCall;
@@ -1138,15 +1139,20 @@ namespace TaleSpireExplore
 
 		void RegisterEffects()
 		{
-			CompositeEffect result = new CompositeEffect();
-
-			result.Prefab = "MediumFire";
-			result.AddProperty(new ChangeVector3("<Transform>.localScale", "3, 3, 3"));
-			result.AddProperty(new ChangeMinMaxGradient("<ParticleSystem>.main.startColor", "#0026ff -> #00ffdd"));
+			CompositeEffect result = CreateCustomFireEffect();
 
 			string serializedObject = JsonConvert.SerializeObject(result);
 			Talespire.Log.Debug($"JSON'd effect: \"{serializedObject}\"");
 			registeredEffects.Add("TestFireEffect", result);
+		}
+
+		private static CompositeEffect CreateCustomFireEffect()
+		{
+			CompositeEffect result = new CompositeEffect();
+			result.Prefab = "MediumFire";
+			result.AddProperty(new ChangeVector3("<Transform>.localScale", "3, 3, 3"));
+			result.AddProperty(new ChangeMinMaxGradient("<ParticleSystem>.main.startColor", "#0026ff -> #00ffdd"));
+			return result;
 		}
 
 		private void btnClearAttack_Click(object sender, EventArgs e)
@@ -1219,7 +1225,7 @@ namespace TaleSpireExplore
 					frmEffectEditor = new FrmEffectEditor();
 					frmEffectEditor.FormClosed += FrmEffectEditor_FormClosed;
 				}
-				frmEffectEditor.Show();
+				frmEffectEditor.Show(this);
 			}
 			catch (Exception ex)
 			{

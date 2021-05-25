@@ -18,10 +18,10 @@ namespace TaleSpireExplore
 			InitializeComponent();
 		}
 
-		public static string SelectPrefab()
+		public static string SelectPrefab(Control owner)
 		{
 			FrmSelectPrefab frmSelectPrefab = new FrmSelectPrefab();
-			if (frmSelectPrefab.ShowDialog() == DialogResult.OK)
+			if (frmSelectPrefab.ShowDialog(owner) == DialogResult.OK)
 				return frmSelectPrefab.lstPrefabs.SelectedItem as string;
 			return null;
 		}

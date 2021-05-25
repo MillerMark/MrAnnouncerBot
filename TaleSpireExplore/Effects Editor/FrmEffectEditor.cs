@@ -22,16 +22,21 @@ namespace TaleSpireExplore
 			RegisterValueEditors();
 		}
 
+		List<string> instanceIds = new List<string>();
+
 		private void btnAddPrefab_Click(object sender, EventArgs e)
 		{
-			string prefabName = FrmSelectPrefab.SelectPrefab();
+			string prefabName = FrmSelectPrefab.SelectPrefab(this);
 			if (prefabName == null)
 				return;
 
 			GameObjectNode node = new GameObjectNode()
 			{
 				Text = prefabName,
-				GameObject = Talespire.Prefabs.Clone(prefabName)
+				CompositeEffect = new CompositeEffect()
+				{
+					Prefab = prefabName
+				}
 			};
 
 			TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
@@ -39,6 +44,8 @@ namespace TaleSpireExplore
 				selectedNode.Nodes.Add(node);
 			else
 				trvEffectHierarchy.Nodes.Add(node);
+			node.GameObject = Talespire.Prefabs.Clone(prefabName, GetNewInstanceId());
+
 			try
 			{
 				AddChildren(node);
@@ -47,6 +54,13 @@ namespace TaleSpireExplore
 			{
 				MessageBox.Show(ex.Message, "Exception!");
 			}
+		}
+
+		private string GetNewInstanceId()
+		{
+			string instanceId = Guid.NewGuid().ToString();
+			instanceIds.Add(instanceId);
+			return instanceId;
 		}
 
 		void AddChildren(GameObjectNode node)
@@ -123,7 +137,11 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.Message, "Exception!");
+				while (ex != null)
+				{
+					MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
+					ex = ex.InnerException;
+				}
 			}
 		}
 
@@ -277,6 +295,7 @@ namespace TaleSpireExplore
 						Talespire.Log.Debug($"Skipping property {propertyInfo.Name} because it has no set method.");
 						continue;
 					}
+
 					PropertyNode prop = new PropertyNode()
 					{
 						PropertyName = propertyInfo.Name,
@@ -285,6 +304,17 @@ namespace TaleSpireExplore
 						ValueInstance = propertyInfo.GetValue(parentInstance),
 						ParentInstance = parentInstance
 					};
+
+					PropertyInfo enabledProperty = propertyInfo.PropertyType.GetProperty("enabled", BindingFlags.Public | BindingFlags.Instance);
+					if (enabledProperty != null)
+					{
+						Talespire.Log.Debug($"Found an enabledProperty.");
+						bool enabled = (bool)enabledProperty.GetValue(prop.ValueInstance);
+						Talespire.Log.Debug($"enabled = {enabled}");
+						if (!enabled)
+							prop.IsDisabled = true;
+					}
+
 					if (WillHaveChildNodes(prop.ValueInstance, prop.PropertyName))
 						AddVirtualNode(prop);
 					nodes.Add(prop);
@@ -380,7 +410,7 @@ namespace TaleSpireExplore
 					string typeName = propertyNode.ParentInstance?.GetType().Name;
 					if (typeName == null)
 						typeName = "(unknown type)";
-					lblPropertyName.Text = $"{propertyNode.ParentInstance.GetType().Name}{propertyNode.Text}:";
+					lblPropertyName.Text = $"{propertyNode.ParentInstance.GetType().Name}.{propertyNode.Text}:";
 					ShowValueEditor(propertyNode);
 				}
 			}
@@ -457,7 +487,30 @@ namespace TaleSpireExplore
 
 		private void btnTestEffect_Click(object sender, EventArgs e)
 		{
-			// TODO: remove the existing test effect and add a new one.
+			ClearTestEffects();
+			CharacterPosition sourcePosition = new CharacterPosition() {  Position = new VectorDto(10, 0.5f, 0) };
+			CharacterPosition targetPosition = new CharacterPosition() { Position = new VectorDto(0, 0.5f, 0) };
+			AddEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
+		}
+
+		private void AddEffectsForNodes(CharacterPosition sourcePosition, CharacterPosition targetPosition, TreeNodeCollection nodes)
+		{
+			try
+			{
+				foreach (TreeNode treeNode in nodes)
+					if (treeNode is GameObjectNode gameObjectNode)
+					{
+						if (gameObjectNode.CompositeEffect != null)
+							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.Create(sourcePosition, targetPosition, GetNewInstanceId());
+
+						if (gameObjectNode.Nodes != null)
+							AddEffectsForNodes(sourcePosition, targetPosition, gameObjectNode.Nodes);
+					}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
 		}
 
 		private void tbxSearch_TextChanged(object sender, EventArgs e)
@@ -527,6 +580,74 @@ namespace TaleSpireExplore
 					continue;
 				AddNodesToFlatList(flatNodes, treeNode.Nodes);
 			}
+		}
+
+		private void trvProperties_DrawNode(object sender, DrawTreeNodeEventArgs e)
+		{
+			if (!(sender is TreeView treeView))
+				return;
+
+			Brush font = Brushes.Black;
+			if (e.Node is PropertyNode propertyNode)
+				if (propertyNode.IsDisabled)
+					font = Brushes.Gray;
+
+			Font nodeFont = e.Node.NodeFont;
+			if (nodeFont == null)
+				nodeFont = treeView.Font;
+			e.Graphics.DrawString(e.Node.Text, nodeFont, font, Rectangle.Inflate(e.Bounds, 2, 0));
+
+
+			if ((e.State & TreeNodeStates.Focused) != 0)
+			{
+				using (Pen focusPen = new Pen(System.Drawing.Color.Black))
+				{
+					focusPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+					Rectangle focusBounds = NodeBounds(treeView, e.Node, nodeFont);
+					focusBounds.Size = new Size(focusBounds.Width - 1,
+					focusBounds.Height - 1);
+					e.Graphics.DrawRectangle(focusPen, focusBounds);
+				}
+			}
+
+			e.DrawDefault = false;
+
+
+		}
+
+		// Returns the bounds of the specified node, including the region 
+		// occupied by the node label and any node tag displayed.
+		private Rectangle NodeBounds(TreeView treeView, TreeNode node, Font font)
+		{
+			// Set the return value to the normal node bounds.
+			Rectangle bounds = node.Bounds;
+			if (node.Tag != null)
+			{
+				// Retrieve a Graphics object from the TreeView handle
+				// and use it to calculate the display width of the tag.
+				System.Drawing.Graphics g = treeView.CreateGraphics();
+				int tagWidth = (int)g.MeasureString
+						(node.Tag.ToString(), font).Width + 6;
+
+				// Adjust the node bounds using the calculated value.
+				bounds.Offset(tagWidth / 2, 0);
+				bounds = Rectangle.Inflate(bounds, tagWidth / 2, 0);
+				g.Dispose();
+			}
+
+			return bounds;
+		}
+
+		private void btnClearEffect_Click(object sender, EventArgs e)
+		{
+			ClearTestEffects();
+		}
+
+		private void ClearTestEffects()
+		{
+			foreach (string instanceId in instanceIds)
+				Talespire.Instances.Delete(instanceId);
+			instanceIds.Clear();
 		}
 	}
 }

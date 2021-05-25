@@ -34,6 +34,8 @@ namespace TaleSpireCore
 		public List<CompositeEffect> Children { get; set; }
 
 
+		// TODO: Change Scripts to a more sophisticate class, to include property settings.
+
 		/// <summary>
 		/// Scripts to add to this composite effect (added before setting properties).
 		/// </summary>
@@ -101,7 +103,7 @@ namespace TaleSpireCore
 				basePropertyDto.ModifyProperty(effect);
 		}
 
-		public void Create(CharacterPosition sourcePosition, CharacterPosition targetPosition, string instanceId)
+		public GameObject Create(CharacterPosition sourcePosition, CharacterPosition targetPosition, string instanceId)
 		{
 			this.targetPosition = targetPosition;
 			this.sourcePosition = sourcePosition;
@@ -112,6 +114,8 @@ namespace TaleSpireCore
 			if (Children != null)
 				foreach (CompositeEffect nestedEffectDto in Children)
 					nestedEffectDto.Create(sourcePosition, targetPosition, instanceId);
+
+			return effect;
 		}
 	}
 }

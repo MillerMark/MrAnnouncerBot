@@ -153,11 +153,22 @@ namespace TaleSpireExplore
 			SomethingChanged();
 		}
 
+		IWin32Window GetParentForm()
+		{
+			Control parent = Parent;
+			Control parentForm = parent;
+			while (parentForm.Parent != null)
+			{
+				parentForm = parentForm.Parent;
+			}
+			return parentForm;
+		}
+
 		private void ChangeColor(Button button)
 		{
 			ColorDialog colorDialog = new ColorDialog();
 			colorDialog.Color = button.BackColor;
-			if (colorDialog.ShowDialog() == DialogResult.OK)
+			if (colorDialog.ShowDialog(GetParentForm()) == DialogResult.OK)
 			{
 				button.BackColor = colorDialog.Color;
 				SomethingChanged();

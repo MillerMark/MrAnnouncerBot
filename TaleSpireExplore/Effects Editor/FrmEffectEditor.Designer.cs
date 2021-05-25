@@ -45,6 +45,7 @@
 			this.tbxSearch = new System.Windows.Forms.TextBox();
 			this.btnFindPrevious = new System.Windows.Forms.Button();
 			this.btnFindNext = new System.Windows.Forms.Button();
+			this.btnClearEffect = new System.Windows.Forms.Button();
 			this.pnlProperties.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -124,6 +125,7 @@
 			// 
 			this.pnlProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+			this.pnlProperties.Controls.Add(this.btnClearEffect);
 			this.pnlProperties.Controls.Add(this.btnTestEffect);
 			this.pnlProperties.Controls.Add(this.btnApplyChange);
 			this.pnlProperties.Location = new System.Drawing.Point(444, 46);
@@ -166,12 +168,14 @@
 			// 
 			this.trvProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+			this.trvProperties.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
 			this.trvProperties.HideSelection = false;
 			this.trvProperties.Location = new System.Drawing.Point(231, 71);
 			this.trvProperties.Name = "trvProperties";
 			this.trvProperties.Size = new System.Drawing.Size(203, 388);
 			this.trvProperties.TabIndex = 9;
 			this.trvProperties.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.trvProperties_BeforeExpand);
+			this.trvProperties.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.trvProperties_DrawNode);
 			this.trvProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.trvProperties_AfterSelect);
 			// 
 			// tbxSearch
@@ -202,6 +206,17 @@
 			this.btnFindNext.UseVisualStyleBackColor = true;
 			this.btnFindNext.Click += new System.EventHandler(this.btnFindNext_Click);
 			// 
+			// btnClearEffect
+			// 
+			this.btnClearEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnClearEffect.Location = new System.Drawing.Point(3, 355);
+			this.btnClearEffect.Name = "btnClearEffect";
+			this.btnClearEffect.Size = new System.Drawing.Size(99, 26);
+			this.btnClearEffect.TabIndex = 3;
+			this.btnClearEffect.Text = "Clear Effect";
+			this.btnClearEffect.UseVisualStyleBackColor = true;
+			this.btnClearEffect.Click += new System.EventHandler(this.btnClearEffect_Click);
+			// 
 			// FrmEffectEditor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -222,7 +237,7 @@
 			this.Controls.Add(this.label1);
 			this.MinimumSize = new System.Drawing.Size(816, 270);
 			this.Name = "FrmEffectEditor";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Effect Editor";
 			this.pnlProperties.ResumeLayout(false);
 			this.ResumeLayout(false);
@@ -247,5 +262,6 @@
 		private System.Windows.Forms.TextBox tbxSearch;
 		private System.Windows.Forms.Button btnFindPrevious;
 		private System.Windows.Forms.Button btnFindNext;
+		private System.Windows.Forms.Button btnClearEffect;
 	}
 }

@@ -15,6 +15,7 @@ namespace TaleSpireExplore
 		public object FieldValue => FieldInfo?.GetValue(ParentInstance);
 		public object PropertyValue => PropertyInfo?.GetValue(ParentInstance);
 		public object ParentInstance { get; set; }
+		public bool IsDisabled { get; set; }
 
 		public PropertyNode()
 		{
