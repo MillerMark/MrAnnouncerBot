@@ -45,7 +45,7 @@ namespace TaleSpireExplore
 			else
 				trvEffectHierarchy.Nodes.Add(node);
 			node.GameObject = Talespire.Prefabs.Clone(prefabName, GetNewInstanceId());
-
+			node.Checked = node.GameObject.activeSelf;
 			try
 			{
 				AddChildren(node);
@@ -67,7 +67,6 @@ namespace TaleSpireExplore
 		{
 			if (node == null)
 				return;
-			Talespire.Log.Debug($"Adding children to {node.Text}");
 			if (node.GameObject == null)
 				return;
 			Transform transform = node.GameObject.transform;
@@ -77,6 +76,8 @@ namespace TaleSpireExplore
 			if (childCount == 0)
 				return;
 
+			Talespire.Log.Debug($"Adding {childCount} children to {node.Text}");
+
 			for (int i = 0; i < childCount; i++)
 			{
 				Transform childTransform = transform.GetChild(i);
@@ -84,7 +85,10 @@ namespace TaleSpireExplore
 				{
 					GameObject gameObject = childTransform.gameObject;
 					if (gameObject != null)
+					{
+						Talespire.Log.Debug($"Adding child {gameObject.name}");
 						AddChild(node, gameObject);
+					}
 				}
 			}
 		}
@@ -109,8 +113,9 @@ namespace TaleSpireExplore
 			GameObjectNode childNode = new GameObjectNode();
 			childNode.GameObject = gameObject;
 			childNode.Text = gameObject.name;
+			childNode.Checked = gameObject.activeSelf;
 			node.Nodes.Add(childNode);
-			AddChildren(node);
+			AddChildren(childNode);
 		}
 
 		void AddVirtualNode(TreeNode treeNode)
@@ -125,20 +130,61 @@ namespace TaleSpireExplore
 			AddPropertiesToNodes(nodes, gameObject.GetType(), gameObject);
 		}
 
+		void AddSpecialProperties(List<TreeNode> nodes, Type type, object parentInstance)
+		{
+			try
+			{
+				if (!(parentInstance is Material material))
+					return;
+
+				if (!(material.shader is Shader shader))
+					return;
+
+				int propertyCount = shader.GetPropertyCount();
+				for (int i = 0; i < propertyCount; i++)
+				{
+					if (shader.GetPropertyType(i) == UnityEngine.Rendering.ShaderPropertyType.Color)
+					{
+						string propertyName = shader.GetPropertyName(i);
+						nodes.Add(new MaterialColorPropertyNode()
+						{
+							Name = propertyName,
+							Text = propertyName,
+							Material = material
+						});
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				while (ex != null)
+				{
+					Talespire.Log.Error($"{ex.Message} in AddSpecialProperties....");
+					MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
+					ex = ex.InnerException;
+				}
+			}
+		}
+
 		private void AddPropertiesToNodes(TreeNodeCollection nodes, Type type, object parentInstance)
 		{
 			nodes.Clear();
 			Talespire.Log.Debug($"AddPropertiesToNodes for type {type.FullName}...");
 			try
 			{
-				AddProperties(nodes, type, parentInstance);
-				AddFields(nodes, type, parentInstance);
-				AddComponents(nodes, parentInstance);
+				List<TreeNode> newNodes = new List<TreeNode>();
+				AddProperties(newNodes, type, parentInstance);
+				AddFields(newNodes, type, parentInstance);
+				AddComponents(newNodes, parentInstance);
+				AddSpecialProperties(newNodes, type, parentInstance);
+
+				nodes.AddRange(newNodes.OrderBy(x => x.Text).ToArray());
 			}
 			catch (Exception ex)
 			{
 				while (ex != null)
 				{
+					Talespire.Log.Error($"{ex.GetType().Name} in AddPropertiesToNodes....");
 					MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
 					ex = ex.InnerException;
 				}
@@ -154,7 +200,7 @@ namespace TaleSpireExplore
 			return false;
 		}
 
-		private void AddComponents(TreeNodeCollection nodes, object parentInstance)
+		private void AddComponents(List<TreeNode> nodes, object parentInstance)
 		{
 			if (parentInstance is GameObject gameObject)
 			{
@@ -177,7 +223,7 @@ namespace TaleSpireExplore
 			}
 		}
 
-		private void AddFields(TreeNodeCollection nodes, Type type, object parentInstance)
+		private void AddFields(List<TreeNode> nodes, Type type, object parentInstance)
 		{
 			FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
 			if (fieldInfos != null)
@@ -280,7 +326,7 @@ namespace TaleSpireExplore
 			return false;
 		}
 
-		private void AddProperties(TreeNodeCollection nodes, Type type, object parentInstance)
+		private void AddProperties(List<TreeNode> nodes, Type type, object parentInstance)
 		{
 			PropertyInfo[] propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 			if (propertyInfos != null)
@@ -394,6 +440,7 @@ namespace TaleSpireExplore
 			AddValueEditor(allValueEditors.Register(new EdtFloat()));
 			AddValueEditor(allValueEditors.Register(new EdtInt()));
 			AddValueEditor(allValueEditors.Register(new EdtBool()));
+			AddValueEditor(allValueEditors.Register(new EdtColor()));
 			AddValueEditor(allValueEditors.Register(new EdtVector3()));
 			AddValueEditor(allValueEditors.Register(new EdtMinMaxGradient()));
 			allValueEditors.ValueChanged += AllValueEditors_ValueChanged;
@@ -405,14 +452,26 @@ namespace TaleSpireExplore
 			{
 				HideExistingEditors();
 
+				string typeName;
+
 				if (e.Node is PropertyNode propertyNode)
 				{
-					string typeName = propertyNode.ParentInstance?.GetType().Name;
+					typeName = propertyNode.ParentInstance?.GetType().Name;
 					if (typeName == null)
 						typeName = "(unknown type)";
-					lblPropertyName.Text = $"{propertyNode.ParentInstance.GetType().Name}.{propertyNode.Text}:";
 					ShowValueEditor(propertyNode);
 				}
+				else if (e.Node is MaterialColorPropertyNode materialColorPropertyNode)
+				{
+					typeName = "Color";
+					ShowSpecialEditor(materialColorPropertyNode);
+				}
+				else
+					return;
+
+				lblPropertyName.Text = $"{typeName}.{e.Node.Text}:";
+				
+
 			}
 			catch (Exception ex)
 			{
@@ -456,6 +515,23 @@ namespace TaleSpireExplore
 			}
 		}
 
+		void ShowSpecialEditor(MaterialColorPropertyNode materialColorPropertyNode)
+		{
+			IValueEditor valueEditor = allValueEditors.Get(typeof(UnityEngine.Color));
+			if (valueEditor == null)
+			{
+				valueEditor = noneEditor;
+				Talespire.Log.Debug($"(no valueEditor yet for UnityEngine.Color)");
+			}
+			else
+				Talespire.Log.Debug($"valueEditor found for UnityEngine.Color!");
+
+			if (valueEditor is UserControl userControl)
+				userControl.Visible = true;
+
+			valueEditor.SetValue(materialColorPropertyNode.Material.GetColor(materialColorPropertyNode.Name));
+		}
+
 		private void HideExistingEditors()
 		{
 			noneEditor.Visible = false;
@@ -469,10 +545,16 @@ namespace TaleSpireExplore
 			try
 			{
 				if (trvProperties.SelectedNode is PropertyNode propertyNode)
+				{
 					if (propertyNode.PropertyInfo != null)
 						propertyNode.PropertyInfo.SetValue(propertyNode.ParentInstance, ea.Value);
 					else if (propertyNode.FieldInfo != null)
 						propertyNode.FieldInfo.SetValue(propertyNode.ParentInstance, ea.Value);
+				}
+				else if (trvProperties.SelectedNode is MaterialColorPropertyNode materialColorPropertyNode)
+				{
+					materialColorPropertyNode.Material.SetColor(materialColorPropertyNode.Name, (UnityEngine.Color)ea.Value);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -488,7 +570,7 @@ namespace TaleSpireExplore
 		private void btnTestEffect_Click(object sender, EventArgs e)
 		{
 			ClearTestEffects();
-			CharacterPosition sourcePosition = new CharacterPosition() {  Position = new VectorDto(10, 0.5f, 0) };
+			CharacterPosition sourcePosition = new CharacterPosition() { Position = new VectorDto(10, 0.5f, 0) };
 			CharacterPosition targetPosition = new CharacterPosition() { Position = new VectorDto(0, 0.5f, 0) };
 			AddEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
 		}
@@ -587,15 +669,18 @@ namespace TaleSpireExplore
 			if (!(sender is TreeView treeView))
 				return;
 
-			Brush font = Brushes.Black;
+			Brush fontBrush = Brushes.Black;
 			if (e.Node is PropertyNode propertyNode)
 				if (propertyNode.IsDisabled)
-					font = Brushes.Gray;
+					fontBrush = Brushes.Gray;
+
+			if (e.Node is MaterialColorPropertyNode)
+				fontBrush = Brushes.DarkRed;
 
 			Font nodeFont = e.Node.NodeFont;
 			if (nodeFont == null)
 				nodeFont = treeView.Font;
-			e.Graphics.DrawString(e.Node.Text, nodeFont, font, Rectangle.Inflate(e.Bounds, 2, 0));
+			e.Graphics.DrawString(e.Node.Text, nodeFont, fontBrush, Rectangle.Inflate(e.Bounds, 2, 0));
 
 
 			if ((e.State & TreeNodeStates.Focused) != 0)
@@ -648,6 +733,17 @@ namespace TaleSpireExplore
 			foreach (string instanceId in instanceIds)
 				Talespire.Instances.Delete(instanceId);
 			instanceIds.Clear();
+		}
+
+		private void FrmEffectEditor_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			ClearTestEffects();
+		}
+
+		private void trvEffectHierarchy_AfterCheck(object sender, TreeViewEventArgs e)
+		{
+			if (e.Node is GameObjectNode gameObjectNode && gameObjectNode.GameObject != null)
+				gameObjectNode.GameObject.SetActive(e.Node.Checked);
 		}
 	}
 }

@@ -36,16 +36,27 @@ namespace TaleSpireExplore
 			return typeof(Vector3);
 		}
 
+		bool changingInternally;
 		public void SetValue(object newValue)
 		{
 			if (!(newValue is Vector3 vector3))
 				return;
-			
-			tbxVector3.Text = $"{vector3.x}, {vector3.y}, {vector3.z}";
+			changingInternally = true;
+			try
+			{
+				tbxVector3.Text = $"{vector3.x}, {vector3.y}, {vector3.z}";
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		private void tbxVector3_TextChanged(object sender, EventArgs e)
 		{
+			if (changingInternally)
+				return;
+
 			string[] xyz = tbxVector3.Text.Split(',');
 			if (xyz.Length != 3)
 				return;

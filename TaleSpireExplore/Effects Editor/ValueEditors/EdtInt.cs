@@ -35,14 +35,25 @@ namespace TaleSpireExplore
 			return typeof(int);
 		}
 
+		bool changingInternally;
 		public void SetValue(object newValue)
 		{
-			if (newValue is int @int)
-				tbxValue.Text = @int.ToString();
+			changingInternally = true;
+			try
+			{
+				if (newValue is int @int)
+					tbxValue.Text = @int.ToString();
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		private void tbxValue_TextChanged(object sender, EventArgs e)
 		{
+			if (changingInternally)
+				return;
 			if (int.TryParse(tbxValue.Text.Trim(), out int result))
 				ValueChanged(result);
 		}

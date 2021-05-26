@@ -188,7 +188,16 @@
     <None Include="Decompiles\FactoryItemBehaviour.cs" />
     <None Include="Decompiles\VisualEffect.cs" />
     <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
+    <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\HueSatLight.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtColor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtColor.Designer.cs">
+      <DependentUpon>EdtColor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtNone.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -257,6 +266,11 @@
     <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Effects Editor\CustomNodes\PropertyNode.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TaleSpireExplorePlugin.cs" />
     <None Include="Decompiles\VFXMissile.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
@@ -265,6 +279,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtColor.resx">
+      <DependentUpon>EdtColor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtNone.resx">
       <DependentUpon>EdtNone.cs</DependentUpon>
     </EmbeddedResource>
@@ -288,6 +305,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\FrmSelectPrefab.resx">
       <DependentUpon>FrmSelectPrefab.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
