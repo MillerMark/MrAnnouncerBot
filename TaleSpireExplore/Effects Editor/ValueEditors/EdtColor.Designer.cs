@@ -39,10 +39,13 @@
 			this.trkSat = new System.Windows.Forms.TrackBar();
 			this.trkLight = new System.Windows.Forms.TrackBar();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.label5 = new System.Windows.Forms.Label();
+			this.trkMultiplier = new System.Windows.Forms.TrackBar();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSat)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkLight)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.trkMultiplier)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnSetColor
@@ -138,12 +141,35 @@
 			this.pictureBox1.TabIndex = 8;
 			this.pictureBox1.TabStop = false;
 			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Location = new System.Drawing.Point(7, 218);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(51, 13);
+			this.label5.TabIndex = 6;
+			this.label5.Text = "Multiplier:";
+			// 
+			// trkMultiplier
+			// 
+			this.trkMultiplier.Location = new System.Drawing.Point(57, 210);
+			this.trkMultiplier.Maximum = 200;
+			this.trkMultiplier.Minimum = 10;
+			this.trkMultiplier.Name = "trkMultiplier";
+			this.trkMultiplier.Size = new System.Drawing.Size(170, 45);
+			this.trkMultiplier.TabIndex = 9;
+			this.trkMultiplier.TickFrequency = 10;
+			this.trkMultiplier.Value = 10;
+			this.trkMultiplier.Scroll += new System.EventHandler(this.trkMultiplier_Scroll);
+			// 
 			// EdtColor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.trkMultiplier);
 			this.Controls.Add(this.trkLight);
 			this.Controls.Add(this.trkSat);
+			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.label2);
@@ -153,11 +179,12 @@
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.trkHue);
 			this.Name = "EdtColor";
-			this.Size = new System.Drawing.Size(230, 204);
+			this.Size = new System.Drawing.Size(230, 307);
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSat)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkLight)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.trkMultiplier)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -174,5 +201,7 @@
 		private System.Windows.Forms.TrackBar trkSat;
 		private System.Windows.Forms.TrackBar trkLight;
 		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.TrackBar trkMultiplier;
 	}
 }

@@ -89,6 +89,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeBool.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeColor.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
     <Compile Include="DTOs\CharacterPositions.cs" />

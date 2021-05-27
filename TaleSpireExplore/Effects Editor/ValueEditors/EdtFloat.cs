@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -39,6 +40,11 @@ namespace TaleSpireExplore
 		{
 			if (newValue is float @float)
 				tbxValue.Text = @float.ToString();
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			return null;
 		}
 
 		private void tbxValue_TextChanged(object sender, EventArgs e)

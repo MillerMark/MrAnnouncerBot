@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static UnityEngine.ParticleSystem;
 using UnityEngine;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -91,6 +92,11 @@ namespace TaleSpireExplore
 				changingInternally = false;
 			}
 			//tbxValue.Text = @float.ToString();
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			return null;
 		}
 
 		private void SomethingChanged()

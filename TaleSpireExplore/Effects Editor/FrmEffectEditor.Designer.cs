@@ -46,6 +46,7 @@
 			this.tbxSearch = new System.Windows.Forms.TextBox();
 			this.btnFindPrevious = new System.Windows.Forms.Button();
 			this.btnFindNext = new System.Windows.Forms.Button();
+			this.btnCreateJson = new System.Windows.Forms.Button();
 			this.pnlProperties.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -219,11 +220,23 @@
 			this.btnFindNext.UseVisualStyleBackColor = true;
 			this.btnFindNext.Click += new System.EventHandler(this.btnFindNext_Click);
 			// 
+			// btnCreateJson
+			// 
+			this.btnCreateJson.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnCreateJson.Location = new System.Drawing.Point(727, 12);
+			this.btnCreateJson.Name = "btnCreateJson";
+			this.btnCreateJson.Size = new System.Drawing.Size(90, 26);
+			this.btnCreateJson.TabIndex = 4;
+			this.btnCreateJson.Text = "Create JSON";
+			this.btnCreateJson.UseVisualStyleBackColor = true;
+			this.btnCreateJson.Click += new System.EventHandler(this.btnCreateJson_Click);
+			// 
 			// FrmEffectEditor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(915, 471);
+			this.Controls.Add(this.btnCreateJson);
 			this.Controls.Add(this.btnFindNext);
 			this.Controls.Add(this.btnFindPrevious);
 			this.Controls.Add(this.tbxSearch);
@@ -266,5 +279,6 @@
 		private System.Windows.Forms.Button btnFindPrevious;
 		private System.Windows.Forms.Button btnFindNext;
 		private System.Windows.Forms.Button btnClearEffect;
+		private System.Windows.Forms.Button btnCreateJson;
 	}
 }

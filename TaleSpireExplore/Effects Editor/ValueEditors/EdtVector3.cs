@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UnityEngine;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -45,6 +46,9 @@ namespace TaleSpireExplore
 			try
 			{
 				tbxVector3.Text = $"{vector3.x}, {vector3.y}, {vector3.z}";
+				trkOffsetX.Value = 0;
+				trkOffsetY.Value = 0;
+				trkOffsetZ.Value = 0;
 			}
 			finally
 			{
@@ -54,17 +58,80 @@ namespace TaleSpireExplore
 
 		private void tbxVector3_TextChanged(object sender, EventArgs e)
 		{
+			UpdateValue();
+		}
+
+		private void UpdateValue()
+		{
 			if (changingInternally)
 				return;
+			if (GetXYZ(out float x, out float y, out float z))
+				ValueChanged(new Vector3(x, y, z));
+		}
 
+		private bool GetXYZ(out float x, out float y, out float z)
+		{
+			x = 0;
+			y = 0;
+			z = 0;
 			string[] xyz = tbxVector3.Text.Split(',');
 			if (xyz.Length != 3)
-				return;
+				return false;
 
-			if (float.TryParse(xyz[0].Trim(), out float x))
-				if (float.TryParse(xyz[1].Trim(), out float y))
-					if (float.TryParse(xyz[2].Trim(), out float z))
-						ValueChanged(new Vector3(x, y, z));
+			if (float.TryParse(xyz[0].Trim(), out x))
+				if (float.TryParse(xyz[1].Trim(), out y))
+					if (float.TryParse(xyz[2].Trim(), out z))
+					{
+						x += trkOffsetX.Value / 10f;
+						y += trkOffsetY.Value / 10f;
+						z += trkOffsetZ.Value / 10f;
+						return true;
+					}
+
+			return false;
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			ChangeVector3 result = new ChangeVector3();
+			result.Value = tbxVector3.Text;
+			return result;
+		}
+
+		private void trkOffset_Scroll(object sender, EventArgs e)
+		{
+			if (changingInternally)
+				return;
+			UpdateValue();
+		}
+
+		private void trkOffset_Leave(object sender, EventArgs e)
+		{
+			ApplyAndResetOffsets();
+		}
+
+		private void ApplyAndResetOffsets()
+		{
+			if (GetXYZ(out float x, out float y, out float z))
+			{
+				changingInternally = true;
+				try
+				{
+					tbxVector3.Text = $"{x}, {y}, {z}";
+					trkOffsetX.Value = 0;
+					trkOffsetY.Value = 0;
+					trkOffsetZ.Value = 0;
+				}
+				finally
+				{
+					changingInternally = false;
+				}
+			}
+		}
+
+		private void trkOffset_MouseUp(object sender, MouseEventArgs e)
+		{
+			ApplyAndResetOffsets();
 		}
 	}
 }

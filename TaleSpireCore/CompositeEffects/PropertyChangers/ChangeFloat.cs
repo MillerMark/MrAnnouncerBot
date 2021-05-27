@@ -14,6 +14,19 @@ namespace TaleSpireCore
 		{
 		}
 
+		protected override bool TrySetProperty(object instance, string propertyName)
+		{
+			if (instance is Material material)
+			{
+				// TODO: Verify property name is in the shader????
+				material.SetFloat(propertyName, (float)GetValue());
+			
+				return true;
+			}
+
+			return false;
+		}
+
 		public override object GetValue()
 		{
 			if (float.TryParse(Value, out float result))

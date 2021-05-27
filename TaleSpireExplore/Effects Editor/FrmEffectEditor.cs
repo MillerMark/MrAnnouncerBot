@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TaleSpireCore;
+using Newtonsoft.Json;
 
 namespace TaleSpireExplore
 {
@@ -35,7 +36,7 @@ namespace TaleSpireExplore
 				Text = prefabName,
 				CompositeEffect = new CompositeEffect()
 				{
-					Prefab = prefabName
+					PrefabToCreate = prefabName
 				}
 			};
 
@@ -63,20 +64,20 @@ namespace TaleSpireExplore
 			return instanceId;
 		}
 
-		void AddChildren(GameObjectNode node)
+		void AddChildren(GameObjectNode parentNode)
 		{
-			if (node == null)
+			if (parentNode == null)
 				return;
-			if (node.GameObject == null)
+			if (parentNode.GameObject == null)
 				return;
-			Transform transform = node.GameObject.transform;
+			Transform transform = parentNode.GameObject.transform;
 			if (transform == null)
 				return;
 			int childCount = transform.childCount;
 			if (childCount == 0)
 				return;
 
-			Talespire.Log.Debug($"Adding {childCount} children to {node.Text}");
+			Talespire.Log.Debug($"Adding {childCount} children to {parentNode.Text}");
 
 			for (int i = 0; i < childCount; i++)
 			{
@@ -87,7 +88,7 @@ namespace TaleSpireExplore
 					if (gameObject != null)
 					{
 						Talespire.Log.Debug($"Adding child {gameObject.name}");
-						AddChild(node, gameObject);
+						AddChild(parentNode, gameObject);
 					}
 				}
 			}
@@ -95,9 +96,9 @@ namespace TaleSpireExplore
 
 		List<GameObject> allGameObjectsAdded = new List<GameObject>();
 
-		void AddChild(GameObjectNode node, GameObject gameObject)
+		void AddChild(GameObjectNode parentNode, GameObject gameObject)
 		{
-			if (node == null)
+			if (parentNode == null)
 				return;
 			if (gameObject == null)
 				return;
@@ -111,10 +112,16 @@ namespace TaleSpireExplore
 			allGameObjectsAdded.Add(gameObject);
 
 			GameObjectNode childNode = new GameObjectNode();
+			childNode.CompositeEffect = new CompositeEffect();
+			
+			// TODO: Support adding empty GameObjects, and renaming them later!!!
+			childNode.CompositeEffect.ExistingChildName = gameObject.name;
+			parentNode.CompositeEffect.Children.Add(childNode.CompositeEffect);
+
 			childNode.GameObject = gameObject;
 			childNode.Text = gameObject.name;
 			childNode.Checked = gameObject.activeSelf;
-			node.Nodes.Add(childNode);
+			parentNode.Nodes.Add(childNode);
 			AddChildren(childNode);
 		}
 
@@ -464,7 +471,7 @@ namespace TaleSpireExplore
 				else if (e.Node is MaterialColorPropertyNode materialColorPropertyNode)
 				{
 					typeName = "Color";
-					ShowSpecialEditor(materialColorPropertyNode);
+					ShowMaterialColorEditor(materialColorPropertyNode);
 				}
 				else
 					return;
@@ -483,6 +490,7 @@ namespace TaleSpireExplore
 		EdtNone noneEditor = new EdtNone();
 		private void ShowValueEditor(PropertyNode propertyNode)
 		{
+			activeValueEditor = null;
 			Talespire.Log.Debug("ShowValueEditor...");
 			Type type = propertyNode.ValueInstance?.GetType();
 			if (type == null)
@@ -491,45 +499,47 @@ namespace TaleSpireExplore
 				return;
 			}
 
-			IValueEditor valueEditor = allValueEditors.Get(type);
-			if (valueEditor == null)
+			activeValueEditor = allValueEditors.Get(type);
+			if (activeValueEditor == null)
 			{
-				valueEditor = noneEditor;
+				activeValueEditor = noneEditor;
 				Talespire.Log.Debug($"(no valueEditor yet for {type.FullName})");
 			}
 			else
 				Talespire.Log.Debug($"valueEditor found for {type.FullName}!");
 
-			if (valueEditor is UserControl userControl)
+			if (activeValueEditor is UserControl userControl)
 				userControl.Visible = true;
 
 			if (propertyNode.PropertyInfo != null)
 			{
 				Talespire.Log.Debug("Setting property value...");
-				valueEditor.SetValue(propertyNode.PropertyValue);
+				activeValueEditor.SetValue(propertyNode.PropertyValue);
 			}
 			else if (propertyNode.FieldInfo != null)
 			{
 				Talespire.Log.Debug("Setting field value...");
-				valueEditor.SetValue(propertyNode.FieldValue);
+				activeValueEditor.SetValue(propertyNode.FieldValue);
 			}
 		}
 
-		void ShowSpecialEditor(MaterialColorPropertyNode materialColorPropertyNode)
+		IValueEditor activeValueEditor;
+
+		void ShowMaterialColorEditor(MaterialColorPropertyNode materialColorPropertyNode)
 		{
-			IValueEditor valueEditor = allValueEditors.Get(typeof(UnityEngine.Color));
-			if (valueEditor == null)
+			activeValueEditor = allValueEditors.Get(typeof(UnityEngine.Color));
+			if (activeValueEditor == null)
 			{
-				valueEditor = noneEditor;
+				activeValueEditor = noneEditor;
 				Talespire.Log.Debug($"(no valueEditor yet for UnityEngine.Color)");
 			}
 			else
 				Talespire.Log.Debug($"valueEditor found for UnityEngine.Color!");
 
-			if (valueEditor is UserControl userControl)
+			if (activeValueEditor is UserControl userControl)
 				userControl.Visible = true;
 
-			valueEditor.SetValue(materialColorPropertyNode.Material.GetColor(materialColorPropertyNode.Name));
+			activeValueEditor.SetValue(materialColorPropertyNode.Material.GetColor(materialColorPropertyNode.Name));
 		}
 
 		private void HideExistingEditors()
@@ -542,8 +552,12 @@ namespace TaleSpireExplore
 
 		private void AllValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
+			// TODO: Add a property modification to the Composites structure
 			try
 			{
+				if (!(trvEffectHierarchy.SelectedNode is GameObjectNode gameObjectNode))
+					return;
+
 				if (trvProperties.SelectedNode is PropertyNode propertyNode)
 				{
 					if (propertyNode.PropertyInfo != null)
@@ -554,6 +568,18 @@ namespace TaleSpireExplore
 				else if (trvProperties.SelectedNode is MaterialColorPropertyNode materialColorPropertyNode)
 				{
 					materialColorPropertyNode.Material.SetColor(materialColorPropertyNode.Name, (UnityEngine.Color)ea.Value);
+				}
+				else
+					return;
+
+				Talespire.Log.Debug($"Getting a property changer for {trvProperties.SelectedNode.Name}...");
+				// TODO: We need to get the value change dto
+				BasePropertyChanger propertyChanger = activeValueEditor.GetPropertyChanger();
+				if (propertyChanger != null)
+				{
+					Talespire.Log.Debug($"Found propertyChanger!!!");
+					propertyChanger.Name = trvProperties.SelectedNode.Text;
+					gameObjectNode.CompositeEffect.AddProperty(propertyChanger);
 				}
 			}
 			catch (Exception ex)
@@ -572,10 +598,10 @@ namespace TaleSpireExplore
 			ClearTestEffects();
 			CharacterPosition sourcePosition = new CharacterPosition() { Position = new VectorDto(10, 0.5f, 0) };
 			CharacterPosition targetPosition = new CharacterPosition() { Position = new VectorDto(0, 0.5f, 0) };
-			AddEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
+			CreateEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
 		}
 
-		private void AddEffectsForNodes(CharacterPosition sourcePosition, CharacterPosition targetPosition, TreeNodeCollection nodes)
+		private void CreateEffectsForNodes(CharacterPosition sourcePosition, CharacterPosition targetPosition, TreeNodeCollection nodes)
 		{
 			try
 			{
@@ -583,10 +609,10 @@ namespace TaleSpireExplore
 					if (treeNode is GameObjectNode gameObjectNode)
 					{
 						if (gameObjectNode.CompositeEffect != null)
-							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.Create(sourcePosition, targetPosition, GetNewInstanceId());
+							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.Create(GetNewInstanceId(), sourcePosition, targetPosition);
 
 						if (gameObjectNode.Nodes != null)
-							AddEffectsForNodes(sourcePosition, targetPosition, gameObjectNode.Nodes);
+							CreateEffectsForNodes(sourcePosition, targetPosition, gameObjectNode.Nodes);
 					}
 			}
 			catch (Exception ex)
@@ -744,6 +770,19 @@ namespace TaleSpireExplore
 		{
 			if (e.Node is GameObjectNode gameObjectNode && gameObjectNode.GameObject != null)
 				gameObjectNode.GameObject.SetActive(e.Node.Checked);
+		}
+
+		private void btnCreateJson_Click(object sender, EventArgs e)
+		{
+			if (trvEffectHierarchy.Nodes.Count > 0)
+			{
+				GameObjectNode topNode = trvEffectHierarchy.Nodes[0] as GameObjectNode;
+				if (topNode != null && topNode.CompositeEffect != null)
+				{
+					string serializeObject = JsonConvert.SerializeObject(topNode.CompositeEffect, Formatting.Indented);
+					tbxJson.Text = serializeObject;
+				}
+			}
 		}
 	}
 }

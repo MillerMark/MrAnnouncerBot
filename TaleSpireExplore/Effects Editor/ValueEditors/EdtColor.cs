@@ -27,6 +27,11 @@ namespace TaleSpireExplore
 			ValueChangedListener = valueChangedListener;
 		}
 
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			return null;
+		}
+
 		public void ValueChanged(object newValue)
 		{
 			if (ValueChangedListener != null)
@@ -40,16 +45,30 @@ namespace TaleSpireExplore
 
 		public void SetValue(object newValue)
 		{
+			Talespire.Log.Debug($"EdtColor.SetValue - {newValue}");
 			if (!(newValue is UnityEngine.Color newColor))
 				return;
+			SetMultiplier(newColor);
+			Talespire.Log.Debug($"btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);");
 			btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);
+			Talespire.Log.Debug($"UpdateTrackbars();");
 			UpdateTrackbars();
+			Talespire.Log.Debug($"UpdateHtml();");
 			UpdateHtml();
+		}
+
+		void SetMultiplier(UnityEngine.Color newColor)
+		{
+			float maxValue = Math.Max(1, Math.Max(newColor.g, Math.Max(newColor.r, newColor.b)));
+			trkMultiplier.Value = (int)Math.Floor(maxValue * 10);
 		}
 
 		private void ColorChanged()
 		{
-			UnityEngine.Color color = ColorUtils.ToUnityColor(btnSetColor.BackColor);
+			Talespire.Log.Debug($"EdtColor.ColorChanged");
+			float multiplier = trkMultiplier.Value / 10.0f;
+			UnityEngine.Color color = ColorUtils.ToUnityColor(btnSetColor.BackColor, multiplier);
+			Talespire.Log.Debug($"ValueChanged(color);");
 			ValueChanged(color);
 		}
 
@@ -138,6 +157,11 @@ namespace TaleSpireExplore
 			btnSetColor.BackColor = hueSatLight.AsRGB;
 			ColorChanged();
 			UpdateTrackbars();
+		}
+
+		private void trkMultiplier_Scroll(object sender, EventArgs e)
+		{
+			ColorChanged();
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Drawing;
 using System.Reflection;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ namespace TaleSpireCore
 
 		public abstract object GetValue();
 
-		public float GetFloat(string str)
+		public static float GetFloat(string str)
 		{
 			string trimmedStr = str.Trim();
 			if (float.TryParse(trimmedStr, out float result))
@@ -69,6 +70,12 @@ namespace TaleSpireCore
 					field = nextInstance.GetType().GetField(propertyName);
 					if (field == null)
 					{
+						// TODO: Check to see if this is a material and there's a shader involved. 
+						bool propertySet = TrySetProperty(nextInstance, propertyName);
+
+						if (propertySet)
+							continue;
+
 						Talespire.Log.Error($"Property/Field {propertyName} not found in instance!");
 						return;
 					}
@@ -79,6 +86,7 @@ namespace TaleSpireCore
 			
 			if (property == null && field == null)
 			{
+
 				Talespire.Log.Error($"Property/Field {Name} not found in instance!");
 				return;
 			}
@@ -87,6 +95,12 @@ namespace TaleSpireCore
 				property.SetValue(instanceToSet, GetValue());
 			else
 				field.SetValue(instanceToSet, GetValue());
+		}
+
+		// Descendants can override and return true if successful.
+		protected virtual bool TrySetProperty(object instance, string propertyName)
+		{
+			return false;
 		}
 
 		public PropertyChangerDto ToPropertyChangerDto()

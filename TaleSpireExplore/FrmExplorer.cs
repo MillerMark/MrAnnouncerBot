@@ -1149,7 +1149,7 @@ namespace TaleSpireExplore
 		private static CompositeEffect CreateCustomFireEffect()
 		{
 			CompositeEffect result = new CompositeEffect();
-			result.Prefab = "MediumFire";
+			result.PrefabToCreate = "MediumFire";
 			result.AddProperty(new ChangeVector3("<Transform>.localScale", "3, 3, 3"));
 			result.AddProperty(new ChangeMinMaxGradient("<ParticleSystem>.main.startColor", "#0026ff -> #00ffdd"));
 			return result;
@@ -1188,7 +1188,7 @@ namespace TaleSpireExplore
 
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.Create(merkinPosition, janusPosition, testInstanceId);
+				compositeEffect.Create(testInstanceId, merkinPosition, janusPosition);
 				tbxScratch.Text = JsonConvert.SerializeObject(compositeEffect);
 			}
 			catch (Exception ex)
@@ -1207,7 +1207,7 @@ namespace TaleSpireExplore
 				compositeEffect.RebuildPropertiesAfterLoad();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.Create(merkinPosition, janusPosition, testInstanceId);
+				compositeEffect.Create(testInstanceId, merkinPosition, janusPosition);
 			}
 			catch (Exception ex)
 			{

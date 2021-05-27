@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -33,6 +34,16 @@ namespace TaleSpireExplore
 		public Type GetValueType()
 		{
 			return typeof(bool);
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			ChangeBool result = new ChangeBool();
+			if (rbTrue.Checked)
+				result.Value = "true";
+			else
+				result.Value = "false";
+			return result;
 		}
 
 		public void SetValue(object newValue)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -38,6 +39,11 @@ namespace TaleSpireExplore
 		public void SetValue(object newValue)
 		{
 			tbxClassInfo.Text = $"No editor yet for {newValue.GetType().FullName}.";
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			return null;
 		}
 	}
 }
