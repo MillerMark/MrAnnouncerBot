@@ -32,5 +32,10 @@ namespace TaleSpireCore
 
 			return new Vector3(x, y, z);
 		}
+
+		public void SetValue(string text)
+		{
+			Value = text;
+		}
 	}
 }

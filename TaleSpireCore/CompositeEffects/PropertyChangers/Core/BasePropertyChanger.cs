@@ -70,7 +70,6 @@ namespace TaleSpireCore
 					field = nextInstance.GetType().GetField(propertyName);
 					if (field == null)
 					{
-						// TODO: Check to see if this is a material and there's a shader involved. 
 						bool propertySet = TrySetProperty(nextInstance, propertyName);
 
 						if (propertySet)
@@ -83,17 +82,11 @@ namespace TaleSpireCore
 				instanceToSet = nextInstance;
 				nextInstance = property.GetValue(nextInstance);
 			}
-			
-			if (property == null && field == null)
-			{
 
-				Talespire.Log.Error($"Property/Field {Name} not found in instance!");
-				return;
-			}
-
+			//Talespire.Log.Debug($"Setting {Name} to {GetValue()}...");
 			if (property != null)
 				property.SetValue(instanceToSet, GetValue());
-			else
+			else if (field != null)
 				field.SetValue(instanceToSet, GetValue());
 		}
 

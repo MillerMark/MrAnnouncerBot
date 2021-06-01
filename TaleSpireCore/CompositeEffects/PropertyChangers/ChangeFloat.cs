@@ -34,5 +34,10 @@ namespace TaleSpireCore
 
 			return 0;
 		}
+
+		public void SetValue(float value)
+		{
+			Value = value.ToString();
+		}
 	}
 }

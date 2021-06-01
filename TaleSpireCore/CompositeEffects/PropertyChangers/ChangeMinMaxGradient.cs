@@ -41,5 +41,16 @@ namespace TaleSpireCore
 			Talespire.Log.Error($"Unable to parse \"{Value}\" as an HTML color or gradient.");
 			return new ParticleSystem.MinMaxGradient(Color.black);
 		}
+
+		public void SetValue(ParticleSystem.MinMaxGradient minMaxGradient)
+		{
+			// TODO: Fix this and make it work with GetValue, above.
+			//if (minMaxGradient.mode == ParticleSystemGradientMode.Color)
+			//	Value = $"Color({ColorUtility.ToHtmlStringRGB(minMaxGradient.color)})";
+			//else if (minMaxGradient.mode == ParticleSystemGradientMode.TwoColors)
+			//	Value = $"TwoColors({ColorUtility.ToHtmlStringRGB(minMaxGradient.colorMin)} -> {ColorUtility.ToHtmlStringRGB(minMaxGradient.colorMax)})";
+			//else if (minMaxGradient.mode == ParticleSystemGradientMode.RandomColor)
+			//	Value = $"RandomColor({ColorUtility.ToHtmlStringRGB(minMaxGradient.colorMin)} -> {ColorUtility.ToHtmlStringRGB(minMaxGradient.colorMax)})";
+		}
 	}
 }

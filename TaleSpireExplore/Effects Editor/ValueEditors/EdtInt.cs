@@ -36,11 +36,6 @@ namespace TaleSpireExplore
 			return typeof(int);
 		}
 
-		public BasePropertyChanger GetPropertyChanger()
-		{
-			return null;
-		}
-
 		bool changingInternally;
 		public void SetValue(object newValue)
 		{
@@ -54,6 +49,14 @@ namespace TaleSpireExplore
 			{
 				changingInternally = false;
 			}
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			ChangeInt result = new ChangeInt();
+			if (int.TryParse(tbxValue.Text.Trim(), out int value))
+				result.SetValue(value);
+			return null;
 		}
 
 		private void tbxValue_TextChanged(object sender, EventArgs e)

@@ -31,10 +31,37 @@ namespace TaleSpireCore
 		{
 			// TODO: Support color multipliers, seemingly needed for shaders and materials.
 			// "#aabbcc x4.24"
-			if (ColorUtility.TryParseHtmlString(Value, out Color color))
+
+			int indexOfMultiplier = Value.IndexOf(" x");
+			string html = Value;
+			float multiplier = 1;
+			if (indexOfMultiplier > -1)
+			{
+				html = Value.Substring(0, indexOfMultiplier);
+				string multiplierStr = Value.Substring(indexOfMultiplier + 2);
+				float.TryParse(multiplierStr, out multiplier);
+			}
+
+			if (ColorUtility.TryParseHtmlString(html, out Color color))
+			{
+				if (multiplier > 1)
+				{
+					return color * multiplier;    // bil is never wrong
+					//new Color(color.r * multiplier, color.g * multiplier, color.b * multiplier);
+				}
 				return color;
+			}
 
 			return 0;
+		}
+
+		public void SetValue(string html, float multiplier)
+		{
+			string multiplierStr = string.Empty;
+			if (multiplier > 1)
+				multiplierStr = " x" + multiplier;
+
+			Value = $"{html}{multiplierStr}";
 		}
 	}
 }

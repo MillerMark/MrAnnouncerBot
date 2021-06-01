@@ -78,6 +78,24 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_CoreSpells\CoreEffects.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Google.Apis, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.45.0\lib\net45\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.45.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.45.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.45.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.45.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Sheets.v4, Version=1.45.0.1930, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Sheets.v4.1.45.0.1930\lib\net45\Google.Apis.Sheets.v4.dll</HintPath>
+    </Reference>
     <Reference Include="MagicEffects">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_Magic1\DH_Magic1\MagicEffects.dll</HintPath>
       <Private>False</Private>
@@ -189,9 +207,22 @@
     <None Include="Decompiles\VisualEffect.cs" />
     <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
+    <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\HueSatLight.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtMaterial.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMaterial.Designer.cs">
+      <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtString.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtString.Designer.cs">
+      <DependentUpon>EdtString.cs</DependentUpon>
+    </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtColor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -249,6 +280,7 @@
     </Compile>
     <Compile Include="Effects Editor\ValueEditors\Core\IValueChangedListener.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\IValueEditor.cs" />
+    <Compile Include="Effects Editor\ValueEditors\JumpPlace.cs" />
     <Compile Include="FrmExplorer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -256,12 +288,14 @@
       <DependentUpon>FrmExplorer.cs</DependentUpon>
     </Compile>
     <None Include="Decompiles\ParticleEmitterVisualEffect.cs" />
-    <Compile Include="Effects Editor\FrmSelectPrefab.cs">
+    <Compile Include="Effects Editor\FrmSelectItem.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Effects Editor\FrmSelectPrefab.Designer.cs">
-      <DependentUpon>FrmSelectPrefab.cs</DependentUpon>
+    <Compile Include="Effects Editor\FrmSelectItem.Designer.cs">
+      <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="KnownEffects.cs" />
+    <Compile Include="KnownEffectsFactory.cs" />
     <Compile Include="ModdingUtils.cs" />
     <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -271,6 +305,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TaleSpireEffect.cs" />
     <Compile Include="TaleSpireExplorePlugin.cs" />
     <None Include="Decompiles\VFXMissile.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
@@ -279,6 +314,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMaterial.resx">
+      <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtString.resx">
+      <DependentUpon>EdtString.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtColor.resx">
       <DependentUpon>EdtColor.cs</DependentUpon>
     </EmbeddedResource>
@@ -303,8 +344,8 @@
     <EmbeddedResource Include="FrmExplorer.resx">
       <DependentUpon>FrmExplorer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Effects Editor\FrmSelectPrefab.resx">
-      <DependentUpon>FrmSelectPrefab.cs</DependentUpon>
+    <EmbeddedResource Include="Effects Editor\FrmSelectItem.resx">
+      <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -315,6 +356,10 @@
     <ProjectReference Include="..\..\MrAnnouncerBot\TaleSpireCore\TaleSpireCore.csproj">
       <Project>{08c85a94-9b3c-4f94-a8cd-0132c8f21aef}</Project>
       <Name>TaleSpireCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj">
+      <Project>{25115c30-e684-4018-a8c5-f8a39697e080}</Project>
+      <Name>GoogleHelper</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

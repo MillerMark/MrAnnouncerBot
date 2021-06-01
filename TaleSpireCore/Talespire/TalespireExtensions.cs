@@ -11,6 +11,23 @@ namespace TaleSpireCore
 			return new Vector3(vectorDto.x, vectorDto.y, vectorDto.z);
 		}
 
+		public static GameObject FindChild(this GameObject gameObject, string name)
+		{
+			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>();
+
+			if (childTransforms == null)
+				return null;
+
+			foreach (Transform transform in childTransforms)
+			{
+				GameObject child = transform.gameObject;
+				if (child?.name == name)
+					return child;
+			}
+
+			return null;
+		}
+
 		public static CharacterPosition GetCharacterPosition(this CreatureBoardAsset creatureAsset)
 		{
 			float altitude = 0;

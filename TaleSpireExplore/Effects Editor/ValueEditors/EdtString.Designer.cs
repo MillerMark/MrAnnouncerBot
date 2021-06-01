@@ -1,6 +1,6 @@
 ﻿namespace TaleSpireExplore
 {
-	partial class EdtNone
+	partial class EdtString
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -28,28 +28,26 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.tbxClassInfo = new System.Windows.Forms.TextBox();
+			this.txtStringValue = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
-			// tbxClassInfo
+			// txtStringValue
 			// 
-			this.tbxClassInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			this.txtStringValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbxClassInfo.Location = new System.Drawing.Point(3, 3);
-			this.tbxClassInfo.Multiline = true;
-			this.tbxClassInfo.Name = "tbxClassInfo";
-			this.tbxClassInfo.ReadOnly = true;
-			this.tbxClassInfo.Size = new System.Drawing.Size(224, 288);
-			this.tbxClassInfo.TabIndex = 0;
+			this.txtStringValue.Location = new System.Drawing.Point(3, 3);
+			this.txtStringValue.Name = "txtStringValue";
+			this.txtStringValue.Size = new System.Drawing.Size(224, 20);
+			this.txtStringValue.TabIndex = 0;
+			this.txtStringValue.TextChanged += new System.EventHandler(this.txtStringValue_TextChanged);
 			// 
-			// EdtNone
+			// EdtString
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.tbxClassInfo);
-			this.Name = "EdtNone";
-			this.Size = new System.Drawing.Size(230, 294);
+			this.Controls.Add(this.txtStringValue);
+			this.Name = "EdtString";
+			this.Size = new System.Drawing.Size(230, 28);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -57,6 +55,6 @@
 
 		#endregion
 
-		private System.Windows.Forms.TextBox tbxClassInfo;
+		private System.Windows.Forms.TextBox txtStringValue;
 	}
 }

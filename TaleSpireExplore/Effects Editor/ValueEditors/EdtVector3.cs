@@ -65,8 +65,15 @@ namespace TaleSpireExplore
 		{
 			if (changingInternally)
 				return;
-			if (GetXYZ(out float x, out float y, out float z))
-				ValueChanged(new Vector3(x, y, z));
+			try
+			{
+				if (GetXYZ(out float x, out float y, out float z))
+					ValueChanged(new Vector3(x, y, z));
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Error($"{ex.GetType()} in EdtVector3.UpdateValue: {ex.Message}");
+			}
 		}
 
 		private bool GetXYZ(out float x, out float y, out float z)
@@ -94,7 +101,7 @@ namespace TaleSpireExplore
 		public BasePropertyChanger GetPropertyChanger()
 		{
 			ChangeVector3 result = new ChangeVector3();
-			result.Value = tbxVector3.Text;
+			result.SetValue(tbxVector3.Text);
 			return result;
 		}
 
@@ -126,6 +133,7 @@ namespace TaleSpireExplore
 				{
 					changingInternally = false;
 				}
+				UpdateValue();
 			}
 		}
 

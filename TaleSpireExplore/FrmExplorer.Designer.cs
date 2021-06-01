@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.btnLoadClasses = new System.Windows.Forms.Button();
 			this.tbxScratch = new System.Windows.Forms.TextBox();
 			this.tbxLog = new System.Windows.Forms.TextBox();
@@ -59,8 +60,12 @@
 			this.btnAttackJanus = new System.Windows.Forms.Button();
 			this.btnClearAttack = new System.Windows.Forms.Button();
 			this.btnTestEffects = new System.Windows.Forms.Button();
-			this.btnDeserialize = new System.Windows.Forms.Button();
+			this.btnGetActiveGameObjects = new System.Windows.Forms.Button();
 			this.btnEditPrefabs = new System.Windows.Forms.Button();
+			this.btnTestSetIndicatorColor = new System.Windows.Forms.Button();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.btnSetScale = new System.Windows.Forms.Button();
+			this.txtScale = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -80,7 +85,7 @@
 			this.tbxScratch.Location = new System.Drawing.Point(181, 15);
 			this.tbxScratch.Multiline = true;
 			this.tbxScratch.Name = "tbxScratch";
-			this.tbxScratch.Size = new System.Drawing.Size(366, 465);
+			this.tbxScratch.Size = new System.Drawing.Size(366, 471);
 			this.tbxScratch.TabIndex = 1;
 			this.tbxScratch.WordWrap = false;
 			// 
@@ -91,7 +96,7 @@
 			this.tbxLog.Location = new System.Drawing.Point(563, 31);
 			this.tbxLog.Multiline = true;
 			this.tbxLog.Name = "tbxLog";
-			this.tbxLog.Size = new System.Drawing.Size(423, 449);
+			this.tbxLog.Size = new System.Drawing.Size(423, 455);
 			this.tbxLog.TabIndex = 2;
 			this.tbxLog.WordWrap = false;
 			// 
@@ -149,8 +154,7 @@
 			// 
 			// btnClear
 			// 
-			this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnClear.Location = new System.Drawing.Point(911, 5);
+			this.btnClear.Location = new System.Drawing.Point(911, 2);
 			this.btnClear.Name = "btnClear";
 			this.btnClear.Size = new System.Drawing.Size(75, 23);
 			this.btnClear.TabIndex = 10;
@@ -250,15 +254,15 @@
 			// 
 			this.btnSpectatorMode.Location = new System.Drawing.Point(12, 206);
 			this.btnSpectatorMode.Name = "btnSpectatorMode";
-			this.btnSpectatorMode.Size = new System.Drawing.Size(47, 23);
+			this.btnSpectatorMode.Size = new System.Drawing.Size(75, 23);
 			this.btnSpectatorMode.TabIndex = 21;
-			this.btnSpectatorMode.Text = "Spec";
+			this.btnSpectatorMode.Text = "Spectator";
 			this.btnSpectatorMode.UseVisualStyleBackColor = true;
 			this.btnSpectatorMode.Click += new System.EventHandler(this.btnSpectatorMode_Click);
 			// 
 			// btnPlayer
 			// 
-			this.btnPlayer.Location = new System.Drawing.Point(65, 206);
+			this.btnPlayer.Location = new System.Drawing.Point(93, 206);
 			this.btnPlayer.Name = "btnPlayer";
 			this.btnPlayer.Size = new System.Drawing.Size(48, 23);
 			this.btnPlayer.TabIndex = 21;
@@ -299,7 +303,7 @@
 			// btnParticleSystemOn
 			// 
 			this.btnParticleSystemOn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnParticleSystemOn.Location = new System.Drawing.Point(56, 551);
+			this.btnParticleSystemOn.Location = new System.Drawing.Point(56, 557);
 			this.btnParticleSystemOn.Name = "btnParticleSystemOn";
 			this.btnParticleSystemOn.Size = new System.Drawing.Size(57, 23);
 			this.btnParticleSystemOn.TabIndex = 21;
@@ -310,7 +314,7 @@
 			// btnParticleSystemOff
 			// 
 			this.btnParticleSystemOff.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnParticleSystemOff.Location = new System.Drawing.Point(131, 551);
+			this.btnParticleSystemOff.Location = new System.Drawing.Point(131, 557);
 			this.btnParticleSystemOff.Name = "btnParticleSystemOff";
 			this.btnParticleSystemOff.Size = new System.Drawing.Size(86, 23);
 			this.btnParticleSystemOff.TabIndex = 21;
@@ -322,7 +326,7 @@
 			// 
 			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(10, 527);
+			this.label3.Location = new System.Drawing.Point(10, 533);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(41, 13);
 			this.label3.TabIndex = 23;
@@ -332,7 +336,7 @@
 			// 
 			this.cmbPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.cmbPrefabs.FormattingEnabled = true;
-			this.cmbPrefabs.Location = new System.Drawing.Point(56, 524);
+			this.cmbPrefabs.Location = new System.Drawing.Point(56, 530);
 			this.cmbPrefabs.MaxDropDownItems = 42;
 			this.cmbPrefabs.Name = "cmbPrefabs";
 			this.cmbPrefabs.Size = new System.Drawing.Size(162, 21);
@@ -343,7 +347,7 @@
 			// btnAttackJanus
 			// 
 			this.btnAttackJanus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAttackJanus.Location = new System.Drawing.Point(224, 543);
+			this.btnAttackJanus.Location = new System.Drawing.Point(224, 549);
 			this.btnAttackJanus.Name = "btnAttackJanus";
 			this.btnAttackJanus.Size = new System.Drawing.Size(99, 31);
 			this.btnAttackJanus.TabIndex = 21;
@@ -354,7 +358,7 @@
 			// btnClearAttack
 			// 
 			this.btnClearAttack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnClearAttack.Location = new System.Drawing.Point(329, 543);
+			this.btnClearAttack.Location = new System.Drawing.Point(329, 549);
 			this.btnClearAttack.Name = "btnClearAttack";
 			this.btnClearAttack.Size = new System.Drawing.Size(99, 31);
 			this.btnClearAttack.TabIndex = 21;
@@ -365,7 +369,7 @@
 			// btnTestEffects
 			// 
 			this.btnTestEffects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnTestEffects.Location = new System.Drawing.Point(457, 543);
+			this.btnTestEffects.Location = new System.Drawing.Point(457, 549);
 			this.btnTestEffects.Name = "btnTestEffects";
 			this.btnTestEffects.Size = new System.Drawing.Size(90, 31);
 			this.btnTestEffects.TabIndex = 21;
@@ -373,37 +377,71 @@
 			this.btnTestEffects.UseVisualStyleBackColor = true;
 			this.btnTestEffects.Click += new System.EventHandler(this.btnTestEffects_Click);
 			// 
-			// btnDeserialize
+			// btnGetActiveGameObjects
 			// 
-			this.btnDeserialize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnDeserialize.Location = new System.Drawing.Point(181, 485);
-			this.btnDeserialize.Name = "btnDeserialize";
-			this.btnDeserialize.Size = new System.Drawing.Size(90, 31);
-			this.btnDeserialize.TabIndex = 21;
-			this.btnDeserialize.Text = "Deserialize";
-			this.btnDeserialize.UseVisualStyleBackColor = true;
-			this.btnDeserialize.Click += new System.EventHandler(this.btnDeserialize_Click);
+			this.btnGetActiveGameObjects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnGetActiveGameObjects.Location = new System.Drawing.Point(181, 492);
+			this.btnGetActiveGameObjects.Name = "btnGetActiveGameObjects";
+			this.btnGetActiveGameObjects.Size = new System.Drawing.Size(127, 31);
+			this.btnGetActiveGameObjects.TabIndex = 21;
+			this.btnGetActiveGameObjects.Text = "Get Game Objects";
+			this.btnGetActiveGameObjects.UseVisualStyleBackColor = true;
+			this.btnGetActiveGameObjects.Click += new System.EventHandler(this.btnGetActiveGameObjects_Click);
 			// 
 			// btnEditPrefabs
 			// 
 			this.btnEditPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 543);
+			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 549);
 			this.btnEditPrefabs.Name = "btnEditPrefabs";
 			this.btnEditPrefabs.Size = new System.Drawing.Size(90, 31);
 			this.btnEditPrefabs.TabIndex = 21;
-			this.btnEditPrefabs.Text = "Edit Prefab";
+			this.btnEditPrefabs.Text = "Effect Editor...";
 			this.btnEditPrefabs.UseVisualStyleBackColor = true;
 			this.btnEditPrefabs.Click += new System.EventHandler(this.btnEditPrefabs_Click);
+			// 
+			// btnTestSetIndicatorColor
+			// 
+			this.btnTestSetIndicatorColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnTestSetIndicatorColor.Location = new System.Drawing.Point(992, 31);
+			this.btnTestSetIndicatorColor.Name = "btnTestSetIndicatorColor";
+			this.btnTestSetIndicatorColor.Size = new System.Drawing.Size(115, 31);
+			this.btnTestSetIndicatorColor.TabIndex = 21;
+			this.btnTestSetIndicatorColor.Text = "Set Base Indicator";
+			this.toolTip1.SetToolTip(this.btnTestSetIndicatorColor, "Sets the Base Indicator for Merkin. Shift+click to clear.");
+			this.btnTestSetIndicatorColor.UseVisualStyleBackColor = true;
+			this.btnTestSetIndicatorColor.Click += new System.EventHandler(this.btnTestSetIndicatorColor_Click);
+			// 
+			// btnSetScale
+			// 
+			this.btnSetScale.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnSetScale.Location = new System.Drawing.Point(1061, 68);
+			this.btnSetScale.Name = "btnSetScale";
+			this.btnSetScale.Size = new System.Drawing.Size(77, 31);
+			this.btnSetScale.TabIndex = 21;
+			this.btnSetScale.Text = "Set Scale";
+			this.btnSetScale.UseVisualStyleBackColor = true;
+			this.btnSetScale.Click += new System.EventHandler(this.btnSetScale_Click);
+			// 
+			// txtScale
+			// 
+			this.txtScale.Location = new System.Drawing.Point(992, 73);
+			this.txtScale.Name = "txtScale";
+			this.txtScale.Size = new System.Drawing.Size(63, 20);
+			this.txtScale.TabIndex = 25;
+			this.txtScale.Text = "1";
 			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1004, 586);
+			this.ClientSize = new System.Drawing.Size(1331, 592);
+			this.Controls.Add(this.txtScale);
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.btnParticleSystemOff);
-			this.Controls.Add(this.btnDeserialize);
+			this.Controls.Add(this.btnGetActiveGameObjects);
+			this.Controls.Add(this.btnSetScale);
+			this.Controls.Add(this.btnTestSetIndicatorColor);
 			this.Controls.Add(this.btnEditPrefabs);
 			this.Controls.Add(this.btnTestEffects);
 			this.Controls.Add(this.btnClearAttack);
@@ -474,7 +512,11 @@
 		private System.Windows.Forms.Button btnAttackJanus;
 		private System.Windows.Forms.Button btnClearAttack;
 		private System.Windows.Forms.Button btnTestEffects;
-		private System.Windows.Forms.Button btnDeserialize;
+		private System.Windows.Forms.Button btnGetActiveGameObjects;
 		private System.Windows.Forms.Button btnEditPrefabs;
+		private System.Windows.Forms.Button btnTestSetIndicatorColor;
+		private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.Button btnSetScale;
+		private System.Windows.Forms.TextBox txtScale;
 	}
 }

@@ -21,5 +21,13 @@ namespace TaleSpireCore
 
 			return false;
 		}
+
+		public void SetValue(bool newValue)
+		{
+			if (newValue)
+				Value = "true";
+			else
+				Value = "false";
+		}
 	}
 }

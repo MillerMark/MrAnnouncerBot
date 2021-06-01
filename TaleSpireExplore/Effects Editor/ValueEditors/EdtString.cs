@@ -11,9 +11,9 @@ using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
-	public partial class EdtFloat : UserControl, IValueEditor
+	public partial class EdtString : UserControl, IValueEditor
 	{
-		public EdtFloat()
+		public EdtString()
 		{
 			InitializeComponent();
 		}
@@ -33,27 +33,25 @@ namespace TaleSpireExplore
 
 		public Type GetValueType()
 		{
-			return typeof(float);
-		}
-
-		public void SetValue(object newValue)
-		{
-			if (newValue is float @float)
-				tbxValue.Text = @float.ToString();
+			return typeof(string);
 		}
 
 		public BasePropertyChanger GetPropertyChanger()
 		{
-			ChangeFloat result = new ChangeFloat();
-			if (float.TryParse(tbxValue.Text.Trim(), out float value))
-				result.SetValue(value);
-			return null;
+			ChangeString result = new ChangeString();
+			result.SetValue(txtStringValue.Text);
+			return result;
 		}
 
-		private void tbxValue_TextChanged(object sender, EventArgs e)
+		public void SetValue(object newValue)
 		{
-			if (float.TryParse(tbxValue.Text.Trim(), out float result))
-				ValueChanged(result);
+			if (newValue != null)
+				txtStringValue.Text = $"{newValue}";
+		}
+
+		private void txtStringValue_TextChanged(object sender, EventArgs e)
+		{
+			ValueChanged(txtStringValue.Text);
 		}
 	}
 }

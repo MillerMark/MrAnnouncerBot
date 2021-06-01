@@ -39,10 +39,7 @@ namespace TaleSpireExplore
 		public BasePropertyChanger GetPropertyChanger()
 		{
 			ChangeBool result = new ChangeBool();
-			if (rbTrue.Checked)
-				result.Value = "true";
-			else
-				result.Value = "false";
+			result.SetValue(rbTrue.Checked);
 			return result;
 		}
 

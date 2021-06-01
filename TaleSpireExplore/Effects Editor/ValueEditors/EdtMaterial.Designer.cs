@@ -1,6 +1,6 @@
 ﻿namespace TaleSpireExplore
 {
-	partial class EdtNone
+	partial class EdtMaterial
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -28,35 +28,35 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.tbxClassInfo = new System.Windows.Forms.TextBox();
+			this.cmbMaterial = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
 			// 
-			// tbxClassInfo
+			// cmbMaterial
 			// 
-			this.tbxClassInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbxClassInfo.Location = new System.Drawing.Point(3, 3);
-			this.tbxClassInfo.Multiline = true;
-			this.tbxClassInfo.Name = "tbxClassInfo";
-			this.tbxClassInfo.ReadOnly = true;
-			this.tbxClassInfo.Size = new System.Drawing.Size(224, 288);
-			this.tbxClassInfo.TabIndex = 0;
+			this.cmbMaterial.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+			this.cmbMaterial.FormattingEnabled = true;
+			this.cmbMaterial.Location = new System.Drawing.Point(3, 3);
+			this.cmbMaterial.MaxDropDownItems = 22;
+			this.cmbMaterial.Name = "cmbMaterial";
+			this.cmbMaterial.Size = new System.Drawing.Size(224, 21);
+			this.cmbMaterial.Sorted = true;
+			this.cmbMaterial.TabIndex = 0;
+			this.cmbMaterial.DropDown += new System.EventHandler(this.cmbMaterial_DropDown);
+			this.cmbMaterial.SelectedIndexChanged += new System.EventHandler(this.cmbMaterial_SelectedIndexChanged);
 			// 
-			// EdtNone
+			// EdtMaterial
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.tbxClassInfo);
-			this.Name = "EdtNone";
-			this.Size = new System.Drawing.Size(230, 294);
+			this.Controls.Add(this.cmbMaterial);
+			this.Name = "EdtMaterial";
+			this.Size = new System.Drawing.Size(230, 35);
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
 		}
 
 		#endregion
 
-		private System.Windows.Forms.TextBox tbxClassInfo;
+		private System.Windows.Forms.ComboBox cmbMaterial;
 	}
 }

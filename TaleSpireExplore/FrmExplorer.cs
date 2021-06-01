@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Resources;
 
 namespace TaleSpireExplore
 {
@@ -926,10 +927,27 @@ namespace TaleSpireExplore
 		void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
 		{
 			float diameterTiles = diameterFeet / 5;
-			GameObject particleDome = Talespire.Prefabs.Clone("ParticleDome");
-			particleDome.transform.position = new Vector3(0, 0, 0);
-			particleDome.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
-			particleDome.transform.parent = flashlight.gameObject.transform;
+			//GameObject particleDome = Talespire.Prefabs.Clone("ParticleDome");
+			try
+			{
+				//string targetingSphereJson = resourceManager.GetString("TargetingSphere");
+				string targetingSphereJson = KnownEffects.Get("TargetingSphere")?.Effect;
+				CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
+				GameObject targetingDome = compositeEffect.CreateOrFind();
+
+				//GameObject particleDome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+				//MeshRenderer meshRenderer = particleDome.GetComponent<MeshRenderer>();
+				//meshRenderer.material = Talespire.Material.Get("FXM_RulerSphere");
+				//if (meshRenderer.material == null)
+				//	Talespire.Log.Error($"FXM_RulerSphere not found!");
+				targetingDome.transform.position = new Vector3(0, 0, 0);
+				targetingDome.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+				targetingDome.transform.SetParent(flashlight.gameObject.transform);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
+			}
 		}
 
 		private static void AddTarget(FlashLight flashlight)
@@ -1072,8 +1090,8 @@ namespace TaleSpireExplore
 					cmbPrefabs.Items.Add(item);
 		}
 
-		const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
-		const string MerkinId = "b9529862-8d73-4662-ab13-cf9232b1ccf9";
+		public const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
+		public const string MerkinId = "b9529862-8d73-4662-ab13-cf9232b1ccf9";
 		const string MediumFireEffectId = "MediumFireEffectId";
 
 		private void btnAttackJanus_Click(object sender, EventArgs e)
@@ -1173,6 +1191,7 @@ namespace TaleSpireExplore
 
 		private void btnTestEffects_Click(object sender, EventArgs e)
 		{
+			Talespire.GameObjects.InvalidateFound();
 			CompositeEffect compositeEffect = GetCompositeEffect("TestFireEffect");
 			if (compositeEffect == null)
 			{
@@ -1188,7 +1207,7 @@ namespace TaleSpireExplore
 
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.Create(testInstanceId, merkinPosition, janusPosition);
+				compositeEffect.CreateOrFind(testInstanceId, merkinPosition, janusPosition);
 				tbxScratch.Text = JsonConvert.SerializeObject(compositeEffect);
 			}
 			catch (Exception ex)
@@ -1197,17 +1216,28 @@ namespace TaleSpireExplore
 			}
 		}
 
-		private void btnDeserialize_Click(object sender, EventArgs e)
+		private void btnGetActiveGameObjects_Click(object sender, EventArgs e)
+		{
+			Talespire.Material.Refresh();
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.AppendLine("All Materials: ");
+			foreach (string name in Talespire.Material.GetAllNames())
+				stringBuilder.AppendLine($"  {name}");
+
+			tbxScratch.Text = stringBuilder.ToString();
+		}
+
+		private void Deserialize(string text)
 		{
 			try
 			{
+				Talespire.GameObjects.InvalidateFound();
 				Talespire.Instances.Delete(testInstanceId);
-
-				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(tbxScratch.Text);
+				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(text);
 				compositeEffect.RebuildPropertiesAfterLoad();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.Create(testInstanceId, merkinPosition, janusPosition);
+				compositeEffect.CreateOrFind(testInstanceId, merkinPosition, janusPosition);
 			}
 			catch (Exception ex)
 			{
@@ -1236,6 +1266,26 @@ namespace TaleSpireExplore
 		private void FrmEffectEditor_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			frmEffectEditor = null;
+		}
+
+		bool lastRed;
+		
+		private void btnTestSetIndicatorColor_Click(object sender, EventArgs e)
+		{
+			if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+				Talespire.Minis.IndicatorTurnOff(MerkinId);
+			else if (lastRed)
+				Talespire.Minis.IndicatorChangeColor(MerkinId, UnityEngine.Color.blue, 2);
+			else
+				Talespire.Minis.IndicatorChangeColor(MerkinId, UnityEngine.Color.red);
+
+			lastRed = !lastRed;
+		}
+
+		private void btnSetScale_Click(object sender, EventArgs e)
+		{
+			if (float.TryParse(txtScale.Text, out float result))
+				Talespire.Minis.SetCreatureScale(MerkinId, result);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace TaleSpireExplore
 {
-	partial class FrmSelectPrefab
+	partial class FrmSelectItem
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -31,7 +31,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnCancel = new System.Windows.Forms.Button();
 			this.btnOkay = new System.Windows.Forms.Button();
-			this.lstPrefabs = new System.Windows.Forms.ListBox();
+			this.lstItems = new System.Windows.Forms.ListBox();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -67,14 +67,14 @@
 			// 
 			// lstPrefabs
 			// 
-			this.lstPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.lstItems.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.lstPrefabs.FormattingEnabled = true;
-			this.lstPrefabs.Location = new System.Drawing.Point(12, 30);
-			this.lstPrefabs.Name = "lstPrefabs";
-			this.lstPrefabs.Size = new System.Drawing.Size(438, 316);
-			this.lstPrefabs.TabIndex = 4;
+			this.lstItems.FormattingEnabled = true;
+			this.lstItems.Location = new System.Drawing.Point(12, 30);
+			this.lstItems.Name = "lstPrefabs";
+			this.lstItems.Size = new System.Drawing.Size(438, 316);
+			this.lstItems.TabIndex = 4;
 			// 
 			// FrmSelectPrefab
 			// 
@@ -83,7 +83,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(460, 388);
-			this.Controls.Add(this.lstPrefabs);
+			this.Controls.Add(this.lstItems);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.btnOkay);
 			this.Controls.Add(this.label1);
@@ -91,7 +91,7 @@
 			this.Name = "FrmSelectPrefab";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Select Prefab";
-			this.Load += new System.EventHandler(this.FrmSelectPrefab_Load);
+			this.Load += new System.EventHandler(this.FrmSelectItem_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -102,6 +102,6 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.Button btnOkay;
-		private System.Windows.Forms.ListBox lstPrefabs;
+		private System.Windows.Forms.ListBox lstItems;
 	}
 }

@@ -8,6 +8,8 @@ namespace TaleSpireCore
 {
 	public class CompositeEffect
 	{
+		public static IKnownEffectsBuilder EffectsBuilder { get; set; }
+
 		/// <summary>
 		/// The seconds to delay awakening this effect, in seconds.
 		/// </summary>
@@ -20,6 +22,8 @@ namespace TaleSpireCore
 		/// </summary>
 		public string PrefabToCreate { get; set; }
 		public string ExistingChildName { get; set; }
+		public string ItemToClone { get; set; }
+
 
 
 		/// <summary>
@@ -48,7 +52,12 @@ namespace TaleSpireCore
 		/// The public "Props" property is just for serialization/deserialization.
 		/// </summary>
 		List<BasePropertyChanger> properties { get; set; }
-		
+
+		[JsonIgnore]
+		public CreatureBoardAsset Mini { get; set; }
+		public string ItemToBorrow { get; set; }
+		public string EffectNameToCreate { get; set; }
+
 
 		CharacterPosition sourcePosition;
 		CharacterPosition targetPosition;
@@ -65,20 +74,20 @@ namespace TaleSpireCore
 		{
 			Talespire.Log.Debug("RebuildPropertiesAfterLoad");
 
-			if (Props == null)
-				return;
-
-			properties = new List<BasePropertyChanger>();
-
-			foreach (PropertyChangerDto propertyChangerDto in Props)
+			if (Props != null)
 			{
-				Talespire.Log.Debug($"{propertyChangerDto.Name}: {propertyChangerDto.Type};");
-				BasePropertyChanger changer = PropertyChangerFactory.CreateFrom(propertyChangerDto);
-				if (changer != null)
+				properties = new List<BasePropertyChanger>();
+
+				foreach (PropertyChangerDto propertyChangerDto in Props)
 				{
-					changer.Name = propertyChangerDto.Name;
-					changer.Value = propertyChangerDto.Value;
-					properties.Add(changer);
+					Talespire.Log.Debug($"{propertyChangerDto.Name}: {propertyChangerDto.Type};");
+					BasePropertyChanger changer = PropertyChangerFactory.CreateFrom(propertyChangerDto);
+					if (changer != null)
+					{
+						changer.Name = propertyChangerDto.Name;
+						changer.Value = propertyChangerDto.Value;
+						properties.Add(changer);
+					}
 				}
 			}
 
@@ -119,11 +128,19 @@ namespace TaleSpireCore
 				return;
 
 			foreach (var basePropertyDto in properties)
+			{
+				//Talespire.Log.Debug($"Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
 				basePropertyDto.ModifyProperty(effect);
+			}
 		}
 
-		public GameObject Create(string instanceId, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
+		public GameObject CreateOrFind(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
+			//if (ExistingChildName != null)
+			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
+			//else
+			//	Talespire.Log.Debug($"Creating {PrefabToCreate}...");
+
 			this.targetPosition = targetPosition;
 			this.sourcePosition = sourcePosition;
 			GameObject instance = null;
@@ -131,25 +148,53 @@ namespace TaleSpireCore
 			if (PrefabToCreate != null)
 			{
 				instance = Talespire.Prefabs.Clone(PrefabToCreate, instanceId);
+				// TODO: Figure out spell effect motion/positioning...
+				if (targetPosition != null)
+					instance.transform.position = targetPosition.Position.GetVector3();
 			}
-			else if (ExistingChildName != null && parentInstance != null)
+			else if (ExistingChildName != null)
+				if (parentInstance != null)
+				{
+					Transform childTransform = parentInstance.transform.Find(ExistingChildName);
+					instance = childTransform?.gameObject;
+				}
+				else
+					Talespire.Log.Debug($"parentInstance == null!");
+			else if (ItemToClone != null)
 			{
-				Transform childTransform = parentInstance.transform.Find(ExistingChildName);
-				instance = childTransform?.gameObject;
+				instance = Talespire.GameObjects.Clone(ItemToClone, instanceId);
+				// TODO: Figure out spell effect motion/positioning...
+				if (targetPosition != null)
+					instance.transform.position = targetPosition.Position.GetVector3();
+			}
+			else if (ItemToBorrow != null)
+			{
+				instance = Talespire.GameObjects.Get(ItemToBorrow);
+			}
+			else if (EffectNameToCreate != null)
+			{
+				if (EffectsBuilder != null)
+					instance = EffectsBuilder.Create(EffectNameToCreate, instanceId);
 			}
 
 			if (instance != null)
 			{
-				if (targetPosition != null)
-					instance.transform.position = targetPosition.Position.GetVector3();
+				Talespire.Log.Debug($"ModifyProperties(instance)....");
 				ModifyProperties(instance);
 			}
 
 			if (Children != null)
 				foreach (CompositeEffect nestedEffectDto in Children)
-					nestedEffectDto.Create(instanceId, sourcePosition, targetPosition, instance);
+					nestedEffectDto.CreateOrFind(instanceId, sourcePosition, targetPosition, instance);
 
 			return instance;
+		}
+
+		public static CompositeEffect CreateFrom(string json, string instanceId = null)
+		{
+			CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
+			compositeEffect.RebuildPropertiesAfterLoad();
+			return compositeEffect;
 		}
 	}
 }

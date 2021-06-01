@@ -61,6 +61,7 @@ using System.Collections.Generic;
 using TaleSpireCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using GoogleHelper;
 
 namespace TaleSpireExplore
 {
@@ -268,12 +269,23 @@ namespace TaleSpireExplore
 				try
 				{
 					LoadMultiModAssets();
+					LoadData();
 				}
 				catch (Exception ex)
 				{
 					MessageBox.Show(ex.Message, "Exception!");
 				}
 			}
+		}
+
+		static TaleSpireExplorePlugin()
+		{
+			GoogleSheets.RegisterSpreadsheetID("TaleSpire Effects", "1bF3zEg4c1YUv6BvZ8ru-JhfUn0tFu1HVpe6F267SQvI");
+		}
+
+		void LoadData()
+		{
+			
 		}
 
 		private static void ShowGameObjectsInScene(Scene scene)

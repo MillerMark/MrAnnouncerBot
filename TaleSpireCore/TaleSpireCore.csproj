@@ -42,6 +42,11 @@
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.3rdParty.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Bouncyrock.TaleSpire.AssetManagement, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\Bouncyrock.TaleSpire.AssetManagement.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Bouncyrock.TaleSpire.BounceTools.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.BounceTools.Runtime.dll</HintPath>
@@ -89,8 +94,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositeEffects\IKnownEffectsBuilder.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeBool.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeColor.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeInt.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeMaterial.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
     <Compile Include="DTOs\CharacterPositions.cs" />
@@ -113,6 +122,9 @@
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
+    <Compile Include="Talespire\Talespire.Board.cs" />
+    <Compile Include="Talespire\Talespire.GameObjects.cs" />
+    <Compile Include="Talespire\Talespire.Materials.cs" />
     <Compile Include="Talespire\Talespire.Components.cs" />
     <Compile Include="Talespire\Talespire.Minis.cs" />
     <Compile Include="Talespire\Talespire.Log.cs" />

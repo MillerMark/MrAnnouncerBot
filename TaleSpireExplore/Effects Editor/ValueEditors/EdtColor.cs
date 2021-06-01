@@ -29,7 +29,11 @@ namespace TaleSpireExplore
 
 		public BasePropertyChanger GetPropertyChanger()
 		{
-			return null;
+			ChangeColor result = new ChangeColor();
+			HueSatLight hueSatLight = GetHsl();
+			float multiplier = trkMultiplier.Value / 10.0f;
+			result.SetValue(hueSatLight.AsHtml, multiplier);
+			return result;
 		}
 
 		public void ValueChanged(object newValue)
@@ -135,14 +139,20 @@ namespace TaleSpireExplore
 		{
 			if (changingTrackbarsInternally)
 				return;
-			HueSatLight hueSatLight = new HueSatLight();
-			hueSatLight.Hue = trkHue.Value / 100.0;
-			hueSatLight.Saturation = trkSat.Value / 100.0;
-			hueSatLight.Lightness = trkLight.Value / 100.0;
+			HueSatLight hueSatLight = GetHsl();
 			//Talespire.Log.Debug($"hueSatLight - hue = {hueSatLight.Hue}, saturation = {hueSatLight.Saturation}, lightness = {hueSatLight.Lightness} ");
 			btnSetColor.BackColor = hueSatLight.AsRGB;
 			ColorChanged();
 			UpdateHtml();
+		}
+
+		private HueSatLight GetHsl()
+		{
+			HueSatLight hueSatLight = new HueSatLight();
+			hueSatLight.Hue = trkHue.Value / 100.0;
+			hueSatLight.Saturation = trkSat.Value / 100.0;
+			hueSatLight.Lightness = trkLight.Value / 100.0;
+			return hueSatLight;
 		}
 
 		bool changingTrackbarsInternally;
@@ -153,10 +163,17 @@ namespace TaleSpireExplore
 			if (changingTextInternally)
 				return;
 
-			HueSatLight hueSatLight = new HueSatLight(tbxHtml.Text);
-			btnSetColor.BackColor = hueSatLight.AsRGB;
-			ColorChanged();
-			UpdateTrackbars();
+			try
+			{
+				HueSatLight hueSatLight = new HueSatLight(tbxHtml.Text);
+				btnSetColor.BackColor = hueSatLight.AsRGB;
+				ColorChanged();
+				UpdateTrackbars();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, ex.GetType().ToString());
+			}
 		}
 
 		private void trkMultiplier_Scroll(object sender, EventArgs e)

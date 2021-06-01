@@ -27,7 +27,7 @@ namespace TaleSpireExplore
 
 		private void btnAddPrefab_Click(object sender, EventArgs e)
 		{
-			string prefabName = FrmSelectPrefab.SelectPrefab(this);
+			string prefabName = FrmSelectItem.SelectPrefab(this);
 			if (prefabName == null)
 				return;
 
@@ -41,11 +41,20 @@ namespace TaleSpireExplore
 			};
 
 			TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+			GameObjectNode parentNode = null;
 			if (selectedNode != null)
+			{
 				selectedNode.Nodes.Add(node);
+				parentNode = selectedNode as GameObjectNode;
+			}
 			else
 				trvEffectHierarchy.Nodes.Add(node);
+			
 			node.GameObject = Talespire.Prefabs.Clone(prefabName, GetNewInstanceId());
+			if (parentNode != null)
+			{
+				node.GameObject.transform.SetParent(parentNode.GameObject.transform);
+			}
 			node.Checked = node.GameObject.activeSelf;
 			try
 			{
@@ -108,12 +117,12 @@ namespace TaleSpireExplore
 				//Talespire.Log.Error("allGameObjectsAdded already contains this gameObject!");
 				return;
 			}
-			
+
 			allGameObjectsAdded.Add(gameObject);
 
 			GameObjectNode childNode = new GameObjectNode();
 			childNode.CompositeEffect = new CompositeEffect();
-			
+
 			// TODO: Support adding empty GameObjects, and renaming them later!!!
 			childNode.CompositeEffect.ExistingChildName = gameObject.name;
 			parentNode.CompositeEffect.Children.Add(childNode.CompositeEffect);
@@ -130,11 +139,33 @@ namespace TaleSpireExplore
 			treeNode.Nodes.Add(STR_VirtualNodeKey, "...");
 		}
 
+		void EnableJumpButtons()
+		{
+			btnParticleSystemRenderer.Enabled = false;
+			btnMeshRendererMaterial.Enabled = false;
+			btnLocalPosition.Enabled = false;
+			btnLocalScale.Enabled = false;
+			foreach (TreeNode treeNode in trvProperties.Nodes)
+			{
+				if (treeNode.Text == "<ParticleSystemRenderer>")
+					btnParticleSystemRenderer.Enabled = true;
+				else if (treeNode.Text == "<MeshRenderer>")
+					btnMeshRendererMaterial.Enabled = true;
+				else if (treeNode.Text == "<Transform>")
+				{
+					btnLocalScale.Enabled = true;
+					btnLocalPosition.Enabled = true;
+				}
+			}
+		}
+
 		void ShowProperties(GameObject gameObject)
 		{
 			FlatNodes = null;
 			TreeNodeCollection nodes = trvProperties.Nodes;
 			AddPropertiesToNodes(nodes, gameObject.GetType(), gameObject);
+			HideExistingEditors();
+			EnableJumpButtons();
 		}
 
 		void AddSpecialProperties(List<TreeNode> nodes, Type type, object parentInstance)
@@ -266,25 +297,37 @@ namespace TaleSpireExplore
 			if (instance == null)
 				return false;
 
-			Type type = instance.GetType();
-			if (HasAnyProperties(type, instance, false))
+			try
 			{
-				Talespire.Log.Debug($"{type.Name}.{memberName} has properties (child nodes)!");
-				return true;
-			}
-
-			if (HasAnyFields(type))
-			{
-				Talespire.Log.Debug($"{type.Name}.{memberName} has fields (child nodes)!");
-				return true;
-			}
-
-			if (instance is GameObject gameObject)
-				if (HasAnyComponents(gameObject))
+				Type type = instance.GetType();
+				if (HasAnyProperties(type, instance, false))
 				{
-					Talespire.Log.Debug($"{type.Name}.{memberName} has components (child nodes)!");
+					Talespire.Log.Debug($"{type.Name}.{memberName} has properties (child nodes)!");
 					return true;
 				}
+
+				if (HasAnyFields(type))
+				{
+					Talespire.Log.Debug($"{type.Name}.{memberName} has fields (child nodes)!");
+					return true;
+				}
+
+				if (instance is GameObject gameObject)
+					if (HasAnyComponents(gameObject))
+					{
+						Talespire.Log.Debug($"{type.Name}.{memberName} has components (child nodes)!");
+						return true;
+					}
+			}
+			catch (Exception ex)
+			{
+				while (ex != null)
+				{
+					MessageBox.Show(ex.Message, $"{ex.GetType()} in WillHaveChildNodes!");
+					ex = ex.InnerException;
+				}
+				return false;
+			}
 
 			return false;
 		}
@@ -395,23 +438,27 @@ namespace TaleSpireExplore
 
 		private void trvProperties_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
-			if (e.Node is TreeNode treeNode)
-				if (treeNode.Nodes.ContainsKey(STR_VirtualNodeKey))
-				{
-					try
-					{
-						treeNode.Nodes.Clear();
+			AddChildNodesIfNecessary(e.Node);
+		}
 
-						if (treeNode is PropertyNode propertyNode)
-							FillInPropertyNodes(propertyNode);
-						else if (treeNode is ComponentNode componentNode)
-							FillInComponentNodes(componentNode);
-					}
-					catch
-					{
-						e.Node.Nodes.Clear();
-					}
+		private void AddChildNodesIfNecessary(TreeNode treeNode)
+		{
+			if (treeNode.Nodes.ContainsKey(STR_VirtualNodeKey))
+			{
+				try
+				{
+					treeNode.Nodes.Clear();
+
+					if (treeNode is PropertyNode propertyNode)
+						FillInPropertyNodes(propertyNode);
+					else if (treeNode is ComponentNode componentNode)
+						FillInComponentNodes(componentNode);
 				}
+				catch
+				{
+					treeNode.Nodes.Clear();
+				}
+			}
 		}
 
 		private void FillInPropertyNodes(PropertyNode propertyNode)
@@ -446,7 +493,9 @@ namespace TaleSpireExplore
 			allValueEditors = new AllValueEditors();
 			AddValueEditor(allValueEditors.Register(new EdtFloat()));
 			AddValueEditor(allValueEditors.Register(new EdtInt()));
+			AddValueEditor(allValueEditors.Register(new EdtMaterial()));
 			AddValueEditor(allValueEditors.Register(new EdtBool()));
+			AddValueEditor(allValueEditors.Register(new EdtString()));
 			AddValueEditor(allValueEditors.Register(new EdtColor()));
 			AddValueEditor(allValueEditors.Register(new EdtVector3()));
 			AddValueEditor(allValueEditors.Register(new EdtMinMaxGradient()));
@@ -477,7 +526,7 @@ namespace TaleSpireExplore
 					return;
 
 				lblPropertyName.Text = $"{typeName}.{e.Node.Text}:";
-				
+
 
 			}
 			catch (Exception ex)
@@ -492,7 +541,7 @@ namespace TaleSpireExplore
 		{
 			activeValueEditor = null;
 			Talespire.Log.Debug("ShowValueEditor...");
-			Type type = propertyNode.ValueInstance?.GetType();
+			Type type = propertyNode?.ValueInstance?.GetType();
 			if (type == null)
 			{
 				Talespire.Log.Error("type is null!");
@@ -550,6 +599,49 @@ namespace TaleSpireExplore
 					userControl.Visible = false;
 		}
 
+		string GetFullPropertyName(TreeNode node)
+		{
+			List<string> propNames = new List<string>();
+			while (node != null)
+			{
+				propNames.Insert(0, node.Text);
+				node = node.Parent;
+			}
+			return string.Join(".", propNames);
+		}
+
+		void JumpTo(string propertyJump)
+		{
+			Talespire.Log.Debug($"Jump to: {propertyJump}");
+			string[] parts = propertyJump.Split('.');
+			TreeNodeCollection searchNodes = trvProperties.Nodes;
+			TreeNode foundNode = null;
+			foreach (string part in parts)
+			{
+				foreach (TreeNode treeNode in searchNodes)
+				{
+					if (treeNode.Text == part)
+					{
+						foundNode = treeNode;
+						AddChildNodesIfNecessary(treeNode);
+						searchNodes = treeNode.Nodes;
+						break;
+					}
+				}
+			}
+			if (foundNode != null)
+			{
+				trvProperties.SelectedNode = foundNode;
+				AddChildNodesIfNecessary(foundNode);
+				if (propertyJump.EndsWith(".material"))
+				{
+					foundNode.Expand();
+					if (foundNode.Nodes != null && foundNode.Nodes.Count > 0)
+						trvProperties.SelectedNode = foundNode.Nodes[0];
+				}
+			}
+		}
+
 		private void AllValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
 			// TODO: Add a property modification to the Composites structure
@@ -573,14 +665,15 @@ namespace TaleSpireExplore
 					return;
 
 				Talespire.Log.Debug($"Getting a property changer for {trvProperties.SelectedNode.Name}...");
-				// TODO: We need to get the value change dto
+
 				BasePropertyChanger propertyChanger = activeValueEditor.GetPropertyChanger();
 				if (propertyChanger != null)
 				{
 					Talespire.Log.Debug($"Found propertyChanger!!!");
-					propertyChanger.Name = trvProperties.SelectedNode.Text;
+					propertyChanger.Name = GetFullPropertyName(trvProperties.SelectedNode);
 					gameObjectNode.CompositeEffect.AddProperty(propertyChanger);
 				}
+				CreateJson();
 			}
 			catch (Exception ex)
 			{
@@ -593,12 +686,35 @@ namespace TaleSpireExplore
 			// TODO: add a new node to the effect tree, or change an existing node.
 		}
 
+		const string effectEditorTestId = "EffectEditorTest";
+
 		private void btnTestEffect_Click(object sender, EventArgs e)
 		{
-			ClearTestEffects();
-			CharacterPosition sourcePosition = new CharacterPosition() { Position = new VectorDto(10, 0.5f, 0) };
-			CharacterPosition targetPosition = new CharacterPosition() { Position = new VectorDto(0, 0.5f, 0) };
-			CreateEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
+			//CharacterPosition sourcePosition = new CharacterPosition() { Position = new VectorDto(10, 0.5f, 0) };
+			//CharacterPosition targetPosition = new CharacterPosition() { Position = new VectorDto(0, 0.5f, 0) };
+			//CreateEffectsForNodes(sourcePosition, targetPosition, trvEffectHierarchy.Nodes);
+
+			DeserializeJsonToCreateEffect();
+
+		}
+
+		private GameObject DeserializeJsonToCreateEffect()
+		{
+			try
+			{
+				Talespire.Instances.Delete(effectEditorTestId);
+				Talespire.GameObjects.InvalidateFound();
+				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(tbxJson.Text);
+				compositeEffect.RebuildPropertiesAfterLoad();
+				CharacterPosition janusPosition = Talespire.Minis.GetPosition(FrmExplorer.JanusId);
+				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(FrmExplorer.MerkinId);
+				return compositeEffect.CreateOrFind(effectEditorTestId, merkinPosition, janusPosition);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+				return null;
+			}
 		}
 
 		private void CreateEffectsForNodes(CharacterPosition sourcePosition, CharacterPosition targetPosition, TreeNodeCollection nodes)
@@ -609,7 +725,7 @@ namespace TaleSpireExplore
 					if (treeNode is GameObjectNode gameObjectNode)
 					{
 						if (gameObjectNode.CompositeEffect != null)
-							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.Create(GetNewInstanceId(), sourcePosition, targetPosition);
+							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.CreateOrFind(GetNewInstanceId(), sourcePosition, targetPosition);
 
 						if (gameObjectNode.Nodes != null)
 							CreateEffectsForNodes(sourcePosition, targetPosition, gameObjectNode.Nodes);
@@ -628,7 +744,8 @@ namespace TaleSpireExplore
 
 		List<TreeNode> flatNodes;
 
-		public List<TreeNode> FlatNodes {
+		public List<TreeNode> FlatNodes
+		{
 			get
 			{
 				if (flatNodes == null)
@@ -638,7 +755,7 @@ namespace TaleSpireExplore
 				}
 				return flatNodes;
 			}
-			set => flatNodes = value; 
+			set => flatNodes = value;
 		}
 
 		private void btnFindNext_Click(object sender, EventArgs e)
@@ -751,37 +868,324 @@ namespace TaleSpireExplore
 
 		private void btnClearEffect_Click(object sender, EventArgs e)
 		{
-			ClearTestEffects();
+			if (MessageBox.Show("Delete Everything? Are You Sure?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+				DeleteEverything();
 		}
 
-		private void ClearTestEffects()
+		private void DeleteEverything()
 		{
 			foreach (string instanceId in instanceIds)
 				Talespire.Instances.Delete(instanceId);
 			instanceIds.Clear();
+			trvEffectHierarchy.Nodes.Clear();
+			trvProperties.Nodes.Clear();
+			HideExistingEditors();
 		}
 
 		private void FrmEffectEditor_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			ClearTestEffects();
+			DeleteEverything();
 		}
 
 		private void trvEffectHierarchy_AfterCheck(object sender, TreeViewEventArgs e)
 		{
 			if (e.Node is GameObjectNode gameObjectNode && gameObjectNode.GameObject != null)
-				gameObjectNode.GameObject.SetActive(e.Node.Checked);
+			{
+				try
+				{
+					string boolVal;
+					if (e.Node.Checked)
+						boolVal = "true";
+					else
+						boolVal = "false";
+					gameObjectNode.CompositeEffect.AddProperty(new ChangeBool("active", boolVal));
+					gameObjectNode.GameObject.SetActive(e.Node.Checked);
+				}
+				catch (Exception ex)
+				{
+					while (ex != null)
+					{
+						MessageBox.Show(ex.Message, $"{ex.GetType()} Changing active Property!");
+						ex = ex.InnerException;
+					}
+				}
+				CreateJson();
+			}
 		}
 
-		private void btnCreateJson_Click(object sender, EventArgs e)
+		private void CreateJson()
 		{
-			if (trvEffectHierarchy.Nodes.Count > 0)
+			try
 			{
-				GameObjectNode topNode = trvEffectHierarchy.Nodes[0] as GameObjectNode;
-				if (topNode != null && topNode.CompositeEffect != null)
+				if (trvEffectHierarchy.Nodes.Count > 0)
 				{
-					string serializeObject = JsonConvert.SerializeObject(topNode.CompositeEffect, Formatting.Indented);
-					tbxJson.Text = serializeObject;
+					GameObjectNode topNode = trvEffectHierarchy.Nodes[0] as GameObjectNode;
+					if (topNode != null && topNode.CompositeEffect != null)
+					{
+						string serializeObject = JsonConvert.SerializeObject(topNode.CompositeEffect, Formatting.Indented);
+						tbxJson.Text = serializeObject;
+					}
 				}
+			}
+			catch (Exception ex)
+			{
+				while (ex != null)
+				{
+					MessageBox.Show(ex.Message, $"{ex.GetType()} Serializing to JSON!");
+					ex = ex.InnerException;
+				}
+			}
+		}
+
+		private void btnCopyJson_Click(object sender, EventArgs e)
+		{
+			Clipboard.SetText(tbxJson.Text);
+		}
+
+		List<GameObject> gameObjectsFound = new List<GameObject>();
+
+		void EnableAllParticleSystems(GameObject gameObject, bool value)
+		{
+			if (gameObjectsFound.Contains(gameObject))
+				return;
+
+			gameObjectsFound.Add(gameObject);
+
+			ParticleSystem particleSystem = gameObject.GetComponent<ParticleSystem>();
+			if (particleSystem != null)
+			{
+				ParticleSystem.EmissionModule emission = particleSystem.emission;
+				emission.enabled = value;
+			}
+
+			Transform[] componentsInChildren = gameObject.GetComponentsInChildren<Transform>();
+			if (componentsInChildren != null)
+				foreach (Transform transform in componentsInChildren)
+					EnableAllParticleSystems(transform.gameObject, value);
+		}
+
+		void StartAllParticleSystems(GameObject gameObject)
+		{
+			gameObjectsFound.Clear();
+			EnableAllParticleSystems(gameObject, true);
+		}
+
+		void StopAllParticleSystems(GameObject gameObject)
+		{
+			gameObjectsFound.Clear();
+			EnableAllParticleSystems(gameObject, false);
+		}
+
+		private void btnStartAllParticleSystems_Click(object sender, EventArgs e)
+		{
+			foreach (TreeNode treeNode in trvEffectHierarchy.Nodes)
+				if (treeNode is GameObjectNode gameObjectNode)
+					StartAllParticleSystems(gameObjectNode.GameObject);
+		}
+
+		private void btnStopAllParticleSystems_Click(object sender, EventArgs e)
+		{
+			foreach (TreeNode treeNode in trvEffectHierarchy.Nodes)
+				if (treeNode is GameObjectNode gameObjectNode)
+					StopAllParticleSystems(gameObjectNode.GameObject);
+		}
+
+		private void btnAttackJanus_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				GameObject projectile = DeserializeJsonToCreateEffect();
+				if (projectile == null)
+				{
+					MessageBox.Show("Need Json to Deserialize!", "Error");
+				}
+
+				Translator translator = projectile.AddComponent<Translator>();
+
+				CharacterPosition janusPosition = Talespire.Minis.GetPosition(FrmExplorer.JanusId);
+				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(FrmExplorer.MerkinId);
+
+				if (janusPosition == null)
+				{
+					Talespire.Log.Error("janusPosition is null!");
+					return;
+				}
+
+				if (merkinPosition == null)
+				{
+					Talespire.Log.Error("merkinPosition is null!");
+					return;
+				}
+
+				projectile.transform.position = merkinPosition.Position.GetVector3();
+				translator.StartPosition = GetChest(merkinPosition);
+				translator.StopPosition = GetChest(janusPosition);
+				float distance = Math.Abs((translator.StartPosition - translator.StopPosition).magnitude);
+				float travelTime = 0.06f;
+				if (float.TryParse(tbxTravelTime.Text, out float result))
+					travelTime = result;
+				translator.TravelTime = travelTime * distance;
+				translator.easing = EasingOption.EaseInQuint;
+				translator.StartTravel();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, ex.GetType().ToString());
+			}
+		}
+
+		private static Vector3 GetChest(CharacterPosition position)
+		{
+			Vector3 basePosition = position.Position.GetVector3();
+			return new Vector3(basePosition.x, basePosition.y + 0.7f, basePosition.z);
+		}
+
+		private void JumpToButton_Click(object sender, EventArgs e)
+		{
+			if (sender is Button button)
+				JumpTo(button.Text);
+		}
+
+		private void addScriptToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+		{
+
+		}
+
+		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnCreateEmpty_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnCloneExisting_Click(object sender, EventArgs e)
+		{
+			string existingItemName = FrmSelectItem.SelectGameObject(this);
+			if (existingItemName == null)
+				return;
+
+			try
+			{
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = existingItemName,
+					CompositeEffect = new CompositeEffect()
+					{
+						ItemToClone = existingItemName
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = Talespire.GameObjects.Clone(existingItemName, GetNewInstanceId());
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		private void btnExploreMini_Click(object sender, EventArgs e)
+		{
+			CreatureBoardAsset mini = FrmSelectItem.SelectMini(this);
+			if (mini == null)
+				return;
+
+			try
+			{
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = mini.name,
+					CompositeEffect = new CompositeEffect()
+					{
+						Mini = mini,
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = mini.gameObject;
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		private void btnCreateEffect_Click(object sender, EventArgs e)
+		{
+			string existingEffectName = FrmSelectItem.SelectEffectName(this);
+			if (existingEffectName == null)
+				return;
+
+			try
+			{
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = existingEffectName,
+					CompositeEffect = new CompositeEffect()
+					{
+						EffectNameToCreate = existingEffectName
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = KnownEffects.Create(existingEffectName, GetNewInstanceId());
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		private void btnExploreExisting_Click(object sender, EventArgs e)
+		{
+			string existingItemName = FrmSelectItem.SelectGameObject(this);
+			if (existingItemName == null)
+				return;
+
+			try
+			{
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = existingItemName,
+					CompositeEffect = new CompositeEffect()
+					{
+						ItemToBorrow = existingItemName
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = Talespire.GameObjects.Get(existingItemName);
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
 	}

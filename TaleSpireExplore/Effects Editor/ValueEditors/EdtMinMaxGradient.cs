@@ -41,39 +41,41 @@ namespace TaleSpireExplore
 		bool changingInternally;
 		public void SetValue(object newValue)
 		{
-			if (!(newValue is MinMaxGradient minMaxGradient))
+			if (!(newValue is MinMaxGradient minMaxGrad))
 				return;
+
+			minMaxGradient = minMaxGrad;
 			changingInternally = true;
 			try
 			{
-				switch (minMaxGradient.mode)
+				switch (minMaxGrad.mode)
 				{
 					case ParticleSystemGradientMode.Color:
 						rbColor.Checked = true;
-						btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGradient.color);
+						btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGrad.color);
 						btnSetColor1.Visible = true;
 						break;
 					case ParticleSystemGradientMode.Gradient:
 						rbGradient.Checked = true;
-						if (minMaxGradient.gradient.colorKeys != null)
-							if (minMaxGradient.gradient.colorKeys.Length > 1)
+						if (minMaxGrad.gradient.colorKeys != null)
+							if (minMaxGrad.gradient.colorKeys.Length > 1)
 							{
-								btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGradient.gradient.colorKeys[0].color);
-								btnSetColor2.BackColor = ColorUtils.ToSysDrawColor(minMaxGradient.gradient.colorKeys[1].color);
+								btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGrad.gradient.colorKeys[0].color);
+								btnSetColor2.BackColor = ColorUtils.ToSysDrawColor(minMaxGrad.gradient.colorKeys[1].color);
 							}
 						btnSetColor1.Visible = true;
 						btnSetColor2.Visible = true;
 						break;
 					case ParticleSystemGradientMode.TwoColors:
 						rbTwoColor.Checked = true;
-						btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGradient.colorMin);
-						btnSetColor2.BackColor = ColorUtils.ToSysDrawColor(minMaxGradient.colorMax);
+						btnSetColor1.BackColor = ColorUtils.ToSysDrawColor(minMaxGrad.colorMin);
+						btnSetColor2.BackColor = ColorUtils.ToSysDrawColor(minMaxGrad.colorMax);
 						btnSetColor1.Visible = true;
 						btnSetColor2.Visible = true;
 						break;
 					case ParticleSystemGradientMode.TwoGradients:
 						rbTwoGradients.Checked = true;
-						if (minMaxGradient.gradientMin.colorKeys != null)
+						if (minMaxGrad.gradientMin.colorKeys != null)
 						{
 							// Not supported yet.
 						}
@@ -94,16 +96,13 @@ namespace TaleSpireExplore
 			//tbxValue.Text = @float.ToString();
 		}
 
-		public BasePropertyChanger GetPropertyChanger()
-		{
-			return null;
-		}
+		MinMaxGradient minMaxGradient;
 
 		private void SomethingChanged()
 		{
 			UnityEngine.Color color1 = ColorUtils.ToUnityColor(btnSetColor1.BackColor);
 			UnityEngine.Color color2 = ColorUtils.ToUnityColor(btnSetColor2.BackColor);
-			MinMaxGradient minMaxGradient = null;
+			minMaxGradient = null;
 			if (rbColor.Checked)
 			{
 				minMaxGradient = new MinMaxGradient(ColorUtils.ToUnityColor(btnSetColor1.BackColor));
@@ -190,6 +189,13 @@ namespace TaleSpireExplore
 		private void btnSetColor2_Click(object sender, EventArgs e)
 		{
 			ChangeColor(btnSetColor2);
+		}
+
+		public BasePropertyChanger GetPropertyChanger()
+		{
+			ChangeMinMaxGradient result = new ChangeMinMaxGradient();
+			result.SetValue(minMaxGradient);
+			return result;
 		}
 	}
 }
