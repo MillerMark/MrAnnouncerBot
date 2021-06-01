@@ -880,6 +880,8 @@ namespace TaleSpireExplore
 			trvEffectHierarchy.Nodes.Clear();
 			trvProperties.Nodes.Clear();
 			HideExistingEditors();
+			lblPropertyName.Text = "";
+			txtEffectName.Text = "";
 		}
 
 		private void FrmEffectEditor_FormClosing(object sender, FormClosingEventArgs e)
@@ -1187,6 +1189,16 @@ namespace TaleSpireExplore
 			{
 				MessageBox.Show(ex.Message, "Exception!");
 			}
+		}
+
+		private void txtEffectName_TextChanged(object sender, EventArgs e)
+		{
+			btnSaveEffect.Enabled = txtEffectName.Text != string.Empty;
+		}
+
+		private void btnSaveEffect_Click(object sender, EventArgs e)
+		{
+			KnownEffects.Save(txtEffectName.Text, tbxJson.Text);
 		}
 	}
 }

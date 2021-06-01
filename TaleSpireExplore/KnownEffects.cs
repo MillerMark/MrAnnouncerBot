@@ -50,5 +50,20 @@ namespace TaleSpireExplore
 				gameObject.name = effectName;
 			return gameObject;
 		}
+
+		public static void Save(string name, string effect)
+		{
+			TaleSpireEffect taleSpireEffect = Get(name);
+			if (taleSpireEffect == null)
+			{
+				taleSpireEffect = new TaleSpireEffect()
+				{
+					Name = name,
+					Effect = effect
+				};
+				allKnownEffects.Add(taleSpireEffect);
+			}
+			GoogleSheets.SaveChanges(taleSpireEffect);
+		}
 	}
 }
