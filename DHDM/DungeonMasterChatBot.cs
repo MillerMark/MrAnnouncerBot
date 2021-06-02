@@ -62,6 +62,7 @@ namespace DHDM
 			Commands.Add(new StampedeCommand());
 			Commands.Add(new ApplyCommand());
 			Commands.Add(new TargetMoveCommands());
+			Commands.Add(new TargetTaleSpireCommands());
 			Commands.Add(new ClearDiceCommand());
 			Commands.Add(new ApplyLastDamageCommand());
 			Commands.Add(new ClearNumbersCommand());

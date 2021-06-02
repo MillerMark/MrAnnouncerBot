@@ -2601,6 +2601,8 @@ namespace DHDM
 			ClearWeaponAndSpellEffects(player);
 
 			ActionResult actionResult = PlayerTakingAction(actionShortcut, player);
+
+			PrepareTaleSpireTargeting(actionShortcut);
 			if (actionResult == ActionResult.MustAbort)
 				return ActionType.Abort;
 
@@ -11162,6 +11164,9 @@ namespace DHDM
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
 		{
 			ApiResponse response = TaleSpireClient.SendMessageToServer("GetCreatures");
+			if (response.Result == ResponseType.Failure)
+				return;
+
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
 
 			foreach (CharacterPosition characterPosition in characterPositions.Characters)
@@ -11174,8 +11179,8 @@ namespace DHDM
 			if (ActivePlayer != null)
 			{
 				List<Creature> allCreatures = GetAllPlayingCreatures();
-				
-				
+
+
 				foreach (Creature creature in allCreatures)
 				{
 					if (creature != ActivePlayer)
@@ -11185,11 +11190,24 @@ namespace DHDM
 					}
 					else
 					{
-						
+
 					}
 
 				}
 			}
+		}
+
+		void PrepareTaleSpireTargeting(PlayerActionShortcut actionShortcut)
+		{
+			if (actionShortcut.Spell != null)
+			{
+//				actionShortcut.Spell.
+			}
+		}
+
+		public void TaleSpireTarget(string targetingCommand)
+		{
+			TaleSpireClient.SendMessageToServer("Target", new string[] { targetingCommand });
 		}
 	}
 }

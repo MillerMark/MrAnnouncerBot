@@ -147,14 +147,18 @@ namespace TaleSpireCore
 
 			if (PrefabToCreate != null)
 			{
+				Talespire.Log.Debug($"instance = Talespire.Prefabs.Clone(PrefabToCreate, instanceId);");
 				instance = Talespire.Prefabs.Clone(PrefabToCreate, instanceId);
 				// TODO: Figure out spell effect motion/positioning...
-				if (targetPosition != null)
+				if (targetPosition != null && instance.transform != null)
 					instance.transform.position = targetPosition.Position.GetVector3();
+				else
+					Talespire.Log.Error($"instance.transform == null!");
 			}
 			else if (ExistingChildName != null)
-				if (parentInstance != null)
+				if (parentInstance != null && parentInstance.transform != null)
 				{
+					Talespire.Log.Debug($"Transform childTransform = parentInstance.transform.Find(ExistingChildName);");
 					Transform childTransform = parentInstance.transform.Find(ExistingChildName);
 					instance = childTransform?.gameObject;
 				}
@@ -162,20 +166,29 @@ namespace TaleSpireCore
 					Talespire.Log.Debug($"parentInstance == null!");
 			else if (ItemToClone != null)
 			{
+				Talespire.Log.Debug($"instance = Talespire.GameObjects.Clone(ItemToClone, instanceId);");
 				instance = Talespire.GameObjects.Clone(ItemToClone, instanceId);
 				// TODO: Figure out spell effect motion/positioning...
-				if (targetPosition != null)
+				if (targetPosition != null && instance.transform != null)
 					instance.transform.position = targetPosition.Position.GetVector3();
+				else
+					Talespire.Log.Error($"instance.transform == null!");
 			}
 			else if (ItemToBorrow != null)
 			{
+				Talespire.Log.Debug($"instance = Talespire.GameObjects.Get(ItemToBorrow);");
 				instance = Talespire.GameObjects.Get(ItemToBorrow);
 			}
 			else if (EffectNameToCreate != null)
 			{
 				if (EffectsBuilder != null)
+				{
+					Talespire.Log.Debug($"instance = EffectsBuilder.Create(EffectNameToCreate, instanceId);");
 					instance = EffectsBuilder.Create(EffectNameToCreate, instanceId);
+				}
 			}
+
+			Talespire.Log.Debug($"Creation complete!");
 
 			if (instance != null)
 			{
@@ -183,9 +196,13 @@ namespace TaleSpireCore
 				ModifyProperties(instance);
 			}
 
+			Talespire.Log.Debug($"Repeat with children...");
 			if (Children != null)
 				foreach (CompositeEffect nestedEffectDto in Children)
-					nestedEffectDto.CreateOrFind(instanceId, sourcePosition, targetPosition, instance);
+					if (nestedEffectDto != null)
+						nestedEffectDto.CreateOrFind(instanceId, sourcePosition, targetPosition, instance);
+					else
+						Talespire.Log.Error($"nestedEffectDto == null!");
 
 			return instance;
 		}

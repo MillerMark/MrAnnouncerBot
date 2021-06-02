@@ -359,6 +359,7 @@
     <Compile Include="StreamDeck Commands\StampedeCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowFilter.cs" />
     <Compile Include="StreamDeck Commands\TargetHand.cs" />
+    <Compile Include="StreamDeck Commands\TargetTaleSpireCommands.cs" />
     <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
     <Compile Include="Events\ViewerDieRollStoppedEventArgs.cs" />

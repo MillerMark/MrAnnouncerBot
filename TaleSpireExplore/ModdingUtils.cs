@@ -73,6 +73,7 @@ namespace ModdingTales
 			Commands.Add("GetCurrentBoard", GetCurrentBoard);
 			Commands.Add("LoadBoard", LoadBoard);
 			Commands.Add("GetCreatures", GetCreatures);
+			Commands.Add("Target", Target);
 		}
 
 		private static string AddCreature(string[] input)
@@ -376,6 +377,7 @@ namespace ModdingTales
 		}
 
 		private const string TaleSpireMachine = "192.168.22.42";
+		const string STR_SpherePrefix = "Sphere";
 		private static void StartSocketServer()
 		{
 			if (serverStarted)
@@ -1282,6 +1284,75 @@ namespace ModdingTales
 			return new ApiResponse("Camera Move successful").ToString();
 
 		}
+
+		static void SwitchTargetOn()
+		{
+			Talespire.Target.On(40);
+		}
+
+		static void SwitchTargetOff()
+		{
+			Talespire.Target.Off();
+		}
+
+		static void TargetCleanUp()
+		{
+			Talespire.Target.CleanUp();
+		}
+
+		static void TargetSet()
+		{
+			Talespire.Target.Set();
+		}
+
+		static int ToInt(string value)
+		{
+			if (int.TryParse(value, out int result))
+				return result;
+			return 0;
+		}
+
+		static void ChangeTargetSphereSize(int newSize)
+		{
+			
+		}
+
+		static string Target(string command)
+		{
+			if (command == "On")
+			{
+				SwitchTargetOn();
+				// !crIssue -log "Issue: Inline Method and Delete is not available."
+			}
+			else if (command == "Off")
+				SwitchTargetOff();
+			else if (command == "CleanUp")
+				TargetCleanUp();
+			else if (command == "Set")
+				TargetSet();
+			else if (command.StartsWith(STR_SpherePrefix))
+				ChangeTargetSphereSize(ToInt(command.Substring(STR_SpherePrefix.Length)));
+			else
+				return ApiResponse.InvalidCommand(command);
+			return ApiResponse.Good();
+		}
+
+		static string Target(string[] arg)
+		{
+			Talespire.Log.Debug("Target, with these parameters: ");
+			foreach (string item in arg)
+			{
+				Talespire.Log.Debug($"  {item}");
+			}
+
+			if (arg.Length == 1)
+			{
+				return Target(arg[0]);
+			}
+
+			return ApiResponse.Good();
+		}
+
 		static string GetCreatures(string[] arg)
 		{
 			CharacterPositions characterPositions = Talespire.Minis.GetPositions();

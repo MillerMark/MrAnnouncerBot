@@ -115,6 +115,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeVector3.cs" />
     <Compile Include="DTOs\Euler.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyChangerFactory.cs" />
+    <Compile Include="DTOs\ResponseType.cs" />
     <Compile Include="DTOs\VectorDto.cs" />
     <Compile Include="DTOs\MoveAction.cs" />
     <Compile Include="DTOs\PlayerControlled.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
+    <Compile Include="Talespire\Talespire.Target.cs" />
     <Compile Include="Talespire\Talespire.GameObjects.cs" />
     <Compile Include="Talespire\Talespire.Materials.cs" />
     <Compile Include="Talespire\Talespire.Components.cs" />

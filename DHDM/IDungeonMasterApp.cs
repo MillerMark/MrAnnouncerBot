@@ -85,5 +85,6 @@ namespace DHDM
 		Character GetPlayerFromId(int playerId);
 		void SetDmMood(string moodName);
 		void Contest(string contest);
+		void TaleSpireTarget(string targetingCommand);
 	}
 }

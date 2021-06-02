@@ -5,19 +5,20 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class TargetMoveCommands : BaseStreamDeckCommand, IDungeonMasterCommand
+	public class TargetTaleSpireCommands : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string targetingCommand;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.MoveTarget(targetingCommand);
+			dungeonMasterApp.TaleSpireTarget(targetingCommand);
 		}
 
 		public bool Matches(string message)
 		{
-			if (message == "TargetPreviousCreature" || message == "TargetNextCreature" || message == "TargetNextPlayer" || message == "TargetPreviousPlayer")
+			Match match = Regex.Match(message, @"^TaleSpire Target\s+(\w+)");
+			if (match.Success)
 			{
-				targetingCommand = message;
+				targetingCommand = match.Groups[1].Value;
 				return true;
 			}
 			return false;

@@ -946,5 +946,20 @@ namespace DndCore
 			}
 			return Ability.none;
 		}
+
+		public static TargetDetails ToTargetDetails(string targetData)
+		{
+			return new TargetDetails(targetData);
+		}
+
+		public static TargetType ToTargetType(string targetType)
+		{
+			string lowerTargetType = targetType.ToLower();
+			if (lowerTargetType.Contains("foe"))
+				return TargetType.Foe;
+			if (lowerTargetType.Contains("friend"))
+				return TargetType.Friendly;
+			return TargetType.None;
+		}
 	}
 }

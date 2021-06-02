@@ -14,22 +14,24 @@ namespace TaleSpireCore
 		{
 			public static bool IsOff()
 			{
+				Talespire.Log.Debug($"IsOff");
 				FlashLight flashLight = Get();
 				return flashLight == null;
 			}
 
 			public static bool IsOn()
 			{
+				Talespire.Log.Debug($"IsOn");
 				FlashLight flashLight = Get();
 				return flashLight != null;
 			}
 
-			public static void TurnOn()
+			public static void On()
 			{
 				if (IsOff())
 					Toggle();
 			}
-			public static void TurnOff()
+			public static void Off()
 			{
 				if (IsOn())
 					Toggle();
@@ -37,7 +39,9 @@ namespace TaleSpireCore
 
 			private static void Toggle()
 			{
+				Talespire.Log.Debug($"Toggle - start...");
 				ReflectionHelper.CallNonPublicMethod(typeof(LocalClient), "ToggleFlashLight");
+				Talespire.Log.Debug($"Toggle - out!");
 			}
 
 			public static string GetPositionStr()

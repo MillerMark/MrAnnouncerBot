@@ -235,18 +235,37 @@ namespace TaleSpireExplore
 
 			// TODO: Remove SceneManager.sceneLoaded event and the SceneManager_sceneLoaded handler when we have the explorer driver by commands.
 			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-			//CreatureManager.OnLineOfSightUpdated += CreatureManager_OnLineOfSightUpdated;
+			CreatureManager.OnLineOfSightUpdated += CreatureManager_OnLineOfSightUpdated;
 		}
 
 		DateTime lastLineOfSightUpdateTime = DateTime.Now;
 		public static GameObject startupPrefab;
+
+		bool initializedTarget;
+
+		void InitializeTarget()
+		{
+			LoadKnownEffects();
+			Talespire.Log.Debug($"InitializeTarget / Toggling Flashlight...");
+			Talespire.Log.Debug($"  Talespire.Target.On();");
+			Talespire.Target.On();
+			Talespire.Log.Debug($"  Talespire.Target.Off();");
+			Talespire.Target.Off();
+		}
+
 		private void CreatureManager_OnLineOfSightUpdated(CreatureGuid arg1, LineOfSightManager.LineOfSightResult arg2)
 		{
-			if ((DateTime.Now - lastLineOfSightUpdateTime).TotalSeconds > 3)
+			if (!initializedTarget)
 			{
-				lastLineOfSightUpdateTime = DateTime.Now;
-				DndControllerAppClient.SendEventToServer("LineOfSightUpdated");
+				initializedTarget = true;
+				InitializeTarget();
+				CreatureManager.OnLineOfSightUpdated -= CreatureManager_OnLineOfSightUpdated;
 			}
+			//if ((DateTime.Now - lastLineOfSightUpdateTime).TotalSeconds > 3)
+			//{
+			//	lastLineOfSightUpdateTime = DateTime.Now;
+			//	DndControllerAppClient.SendEventToServer("LineOfSightUpdated");
+			//}
 		}
 
 		private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
@@ -269,7 +288,6 @@ namespace TaleSpireExplore
 				try
 				{
 					LoadMultiModAssets();
-					LoadData();
 				}
 				catch (Exception ex)
 				{
@@ -283,9 +301,16 @@ namespace TaleSpireExplore
 			GoogleSheets.RegisterSpreadsheetID("TaleSpire Effects", "1bF3zEg4c1YUv6BvZ8ru-JhfUn0tFu1HVpe6F267SQvI");
 		}
 
-		void LoadData()
+		void LoadKnownEffects()
 		{
-			
+			Talespire.Log.Debug($"Loading Known Effects...");
+			string targetingSphereJson = KnownEffects.Get("TargetingSphere")?.Effect;
+			if (string.IsNullOrWhiteSpace(targetingSphereJson))
+			{
+				Talespire.Log.Error($"TargetingSphere effect not found!!!");
+				return;
+			}
+			Talespire.Target.SetTargetingSphere(targetingSphereJson);
 		}
 
 		private static void ShowGameObjectsInScene(Scene scene)

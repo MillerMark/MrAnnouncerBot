@@ -22,6 +22,7 @@ namespace TaleSpireExplore
 		const string STR_SpellTestId = "SpellTest";
 		public FrmExplorer()
 		{
+			Talespire.Log.Debug($"FrmExplorer constructor...");
 			InitializeComponent();
 			RegisterEffects();
 		}
@@ -905,68 +906,20 @@ namespace TaleSpireExplore
 
 		private void btnFlashlightOff_Click(object sender, EventArgs e)
 		{
-			Talespire.Flashlight.TurnOff();
+			Talespire.Target.Off();
 		}
 
 		private void btnFlashlightOn_Click(object sender, EventArgs e)
 		{
 			chkTrackFlashlight.Checked = true;
-			Talespire.Flashlight.TurnOn();
 			try
 			{
-				FlashLight flashlight = Talespire.Flashlight.Get();
-				AddTarget(flashlight);
-				AddTargetingSphere(flashlight, 40);
+				Talespire.Target.On(40);
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "Exception calling method!");
 			}
-		}
-
-		void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
-		{
-			float diameterTiles = diameterFeet / 5;
-			//GameObject particleDome = Talespire.Prefabs.Clone("ParticleDome");
-			try
-			{
-				//string targetingSphereJson = resourceManager.GetString("TargetingSphere");
-				string targetingSphereJson = KnownEffects.Get("TargetingSphere")?.Effect;
-				CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
-				GameObject targetingDome = compositeEffect.CreateOrFind();
-
-				//GameObject particleDome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-				//MeshRenderer meshRenderer = particleDome.GetComponent<MeshRenderer>();
-				//meshRenderer.material = Talespire.Material.Get("FXM_RulerSphere");
-				//if (meshRenderer.material == null)
-				//	Talespire.Log.Error($"FXM_RulerSphere not found!");
-				targetingDome.transform.position = new Vector3(0, 0, 0);
-				targetingDome.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
-				targetingDome.transform.SetParent(flashlight.gameObject.transform);
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
-			}
-		}
-
-		private static void AddTarget(FlashLight flashlight)
-		{
-			AddCylinder(flashlight, 0.25f, UnityEngine.Color.red, 0.02f);
-			AddCylinder(flashlight, 0.58f, UnityEngine.Color.white, 0f);
-			AddCylinder(flashlight, 0.92f, UnityEngine.Color.red, -0.02f);
-		}
-
-		private static void AddCylinder(FlashLight flashlight, float diameter, UnityEngine.Color color, float yOffset)
-		{
-			GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-			Renderer renderer = cylinder.GetComponent<Renderer>();
-			if (renderer != null)
-				renderer.material.color = color;
-
-			cylinder.transform.localScale = new Vector3(diameter, 0.07f, diameter);
-			cylinder.transform.parent = flashlight.gameObject.transform;
-			cylinder.transform.localPosition = new Vector3(0, yOffset, 0);
 		}
 
 		private void btnAddEffects_Click(object sender, EventArgs e)

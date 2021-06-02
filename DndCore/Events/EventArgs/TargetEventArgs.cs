@@ -2,13 +2,6 @@
 
 namespace DndCore
 {
-	public enum TargetType
-	{
-		None,
-		Friendly,
-		Foe
-	}
-	
 	public class TargetEventArgs : EventArgs
 	{
 		public Target Target { get; set; }

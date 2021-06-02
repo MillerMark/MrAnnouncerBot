@@ -360,6 +360,8 @@ namespace DndCore
 				return GetSpellRawDieStr();
 			}
 		}
+		public TargetType TargetType { get; set; }
+		public TargetDetails TargetDetails { get; set; }
 
 
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
@@ -415,6 +417,8 @@ namespace DndCore
 				ComponentsStr = GetComponentsStr(spellComponents, spellDto),
 				DurationStr = GetDurationStr(spellDto),
 				SchoolOfMagic = DndUtils.ToSchoolOfMagic(spellDto.school),
+				TargetDetails = DndUtils.ToTargetDetails(spellDto.target),
+				TargetType = DndUtils.ToTargetType(spellDto.targetType),
 				CastingTimeStr = GetCastingTimeStr(spellDto),
 				Hue2 = spellDto.hue2,
 				Bright2 = spellDto.bright2,
@@ -615,6 +619,8 @@ namespace DndCore
 			result.SpellCasterLevel = SpellCasterLevel;
 			result.SpellType = SpellType;
 			result.SchoolOfMagic = SchoolOfMagic;
+			result.TargetDetails = TargetDetails.Clone();
+			result.TargetType = TargetType;
 			result.CastingTimeStr = CastingTimeStr;
 			result.DurationStr = DurationStr;
 			result.RangeStr = RangeStr;

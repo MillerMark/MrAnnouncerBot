@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace TaleSpireCore
@@ -13,12 +14,24 @@ namespace TaleSpireCore
 		}
 
 		public object Data { get; set; }
-		
+		public ResponseType Result { get; set; }
+
 		public static string Good(string message, object data)
 		{
 			ApiResponse apiResponse = new ApiResponse(message);
 			apiResponse.Data = data;
+			apiResponse.Result = ResponseType.Success;
 			return apiResponse.ToString();
+		}
+
+		public static string Good()
+		{
+			return Good("Success", null);
+		}
+
+		public static string InvalidCommand(string command, [CallerMemberName] string memberName = "")
+		{
+			return new ApiResponse("Failure", $"Invalid command \"{command}\" sent to \"{memberName}\".").ToString();
 		}
 
 		public ApiResponse(string message)
@@ -30,6 +43,7 @@ namespace TaleSpireCore
 		{
 			Message = message;
 			ErrorMessage = errorMessage;
+			Result = ResponseType.Failure;
 		}
 
 		public ApiResponse(string errorMessage, string message, object data)
@@ -37,6 +51,7 @@ namespace TaleSpireCore
 			Data = data;
 			ErrorMessage = errorMessage;
 			Message = message;
+			Result = ResponseType.Failure;
 		}
 
 		public string ErrorMessage { get; set; }
