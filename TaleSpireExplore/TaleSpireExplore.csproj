@@ -211,6 +211,12 @@
     <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\HueSatLight.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtMesh.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMesh.Designer.cs">
+      <DependentUpon>EdtMesh.cs</DependentUpon>
+    </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtMaterial.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -313,6 +319,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMesh.resx">
+      <DependentUpon>EdtMesh.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMaterial.resx">
       <DependentUpon>EdtMaterial.cs</DependentUpon>
     </EmbeddedResource>

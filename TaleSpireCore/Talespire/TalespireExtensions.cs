@@ -39,7 +39,7 @@ namespace TaleSpireCore
 			{
 				Name = TaleSpireUtils.GetName(creatureAsset),
 				Position = creaturePosition,
-				ID = creatureAsset.BoardAssetId.ToString(),
+				ID = creatureAsset.WorldId.ToString(),
 				FlyingAltitude = altitude
 			};
 			return characterPosition;

@@ -494,6 +494,7 @@ namespace TaleSpireExplore
 			AddValueEditor(allValueEditors.Register(new EdtFloat()));
 			AddValueEditor(allValueEditors.Register(new EdtInt()));
 			AddValueEditor(allValueEditors.Register(new EdtMaterial()));
+			AddValueEditor(allValueEditors.Register(new EdtMesh()));
 			AddValueEditor(allValueEditors.Register(new EdtBool()));
 			AddValueEditor(allValueEditors.Register(new EdtString()));
 			AddValueEditor(allValueEditors.Register(new EdtColor()));

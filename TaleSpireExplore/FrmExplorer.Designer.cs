@@ -401,7 +401,6 @@
 			// 
 			// btnTestSetIndicatorColor
 			// 
-			this.btnTestSetIndicatorColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.btnTestSetIndicatorColor.Location = new System.Drawing.Point(992, 31);
 			this.btnTestSetIndicatorColor.Name = "btnTestSetIndicatorColor";
 			this.btnTestSetIndicatorColor.Size = new System.Drawing.Size(115, 31);
@@ -413,7 +412,6 @@
 			// 
 			// btnSetScale
 			// 
-			this.btnSetScale.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.btnSetScale.Location = new System.Drawing.Point(1061, 68);
 			this.btnSetScale.Name = "btnSetScale";
 			this.btnSetScale.Size = new System.Drawing.Size(77, 31);

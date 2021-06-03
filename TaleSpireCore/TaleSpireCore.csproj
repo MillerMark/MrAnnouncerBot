@@ -99,6 +99,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeColor.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeInt.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeMaterial.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeMesh.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
@@ -124,9 +125,10 @@
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
+    <Compile Include="Talespire\Talespire.Mesh.cs" />
     <Compile Include="Talespire\Talespire.Target.cs" />
     <Compile Include="Talespire\Talespire.GameObjects.cs" />
-    <Compile Include="Talespire\Talespire.Materials.cs" />
+    <Compile Include="Talespire\Talespire.Material.cs" />
     <Compile Include="Talespire\Talespire.Components.cs" />
     <Compile Include="Talespire\Talespire.Minis.cs" />
     <Compile Include="Talespire\Talespire.Log.cs" />

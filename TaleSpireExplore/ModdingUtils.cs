@@ -1285,26 +1285,6 @@ namespace ModdingTales
 
 		}
 
-		static void SwitchTargetOn()
-		{
-			Talespire.Target.On(40);
-		}
-
-		static void SwitchTargetOff()
-		{
-			Talespire.Target.Off();
-		}
-
-		static void TargetCleanUp()
-		{
-			Talespire.Target.CleanUp();
-		}
-
-		static void TargetSet()
-		{
-			Talespire.Target.Set();
-		}
-
 		static int ToInt(string value)
 		{
 			if (int.TryParse(value, out int result))
@@ -1320,18 +1300,15 @@ namespace ModdingTales
 		static string Target(string command)
 		{
 			if (command == "On")
-			{
-				SwitchTargetOn();
-				// !crIssue -log "Issue: Inline Method and Delete is not available."
-			}
+				Talespire.Target.On(40);
 			else if (command == "Off")
-				SwitchTargetOff();
+				Talespire.Target.Off();
 			else if (command == "CleanUp")
-				TargetCleanUp();
+				Talespire.Target.CleanUp();
 			else if (command == "Set")
-				TargetSet();
+				Talespire.Target.Set();
 			else if (command.StartsWith(STR_SpherePrefix))
-				ChangeTargetSphereSize(ToInt(command.Substring(STR_SpherePrefix.Length)));
+				Talespire.Target.SetSphereScale(ToInt(command.Substring(STR_SpherePrefix.Length)));
 			else
 				return ApiResponse.InvalidCommand(command);
 			return ApiResponse.Good();

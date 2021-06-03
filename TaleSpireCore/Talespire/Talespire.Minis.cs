@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Bounce.Unmanaged;
 
 namespace TaleSpireCore
 {
@@ -39,7 +40,7 @@ namespace TaleSpireCore
 					id = id.Substring(lastIndexOfSeparator + NameIdSeparator.Length);
 
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-					if (creatureAsset.BoardAssetId.ToString() == id)
+					if (creatureAsset.WorldId.ToString() == id)
 						return creatureAsset;
 				return null;
 			}
@@ -76,6 +77,16 @@ namespace TaleSpireCore
 				return GetCreatureBoardAsset(id)?.BaseLoader?.GetComponentInChildren<IndicatorGlowfader>();
 			}
 
+			public static CreatureBoardAsset GetSelected()
+			{
+				CreatureBoardAsset[] assets = CreaturePresenter.AllCreatureAssets.ToArray();
+				foreach (CreatureBoardAsset asset in assets)
+					if (LocalClient.SelectedCreatureId.Value == asset.Creature.CreatureId.Value)
+						return asset;
+
+				return null;
+			}
+
 			public static IReadOnlyList<CreatureBoardAsset> GetAll()
 			{
 				return CreaturePresenter.AllCreatureAssets;
@@ -92,7 +103,7 @@ namespace TaleSpireCore
 				{
 					Creature creature = creatureBoardAsset.GetComponent<Creature>();
 					if (creature != null)
-						result.Add($"{creature.Name}{NameIdSeparator}{creatureBoardAsset.BoardAssetId}");
+						result.Add($"{creature.Name}{NameIdSeparator}{creatureBoardAsset.WorldId}");
 				}
 				return result;
 			}

@@ -44,6 +44,7 @@ namespace TaleSpireExplore
 			tbxLog.Text += "--------------" + Environment.NewLine;
 			tbxLog.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: \n";
 			tbxLog.Text += $"  BoardAssetId: {creatureAsset.BoardAssetId}\n";
+			tbxLog.Text += $"  WorldId: {creatureAsset.WorldId}\n";
 			tbxLog.Text += $"  Position: {creatureAsset.PlacedPosition}\n";
 			tbxLog.Text += $"  Scale: {creatureAsset.CreatureScale}\n";
 			if (creatureAsset.IsGrounded)
@@ -530,7 +531,7 @@ namespace TaleSpireExplore
 					return;
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
 				{
-					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition}, ID: {creatureAsset.BoardAssetId}, Scale: {creatureAsset.CreatureScale}\n";
+					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition}, ID: {creatureAsset.BoardAssetId}, WorldId: {creatureAsset.WorldId}, InstanceId: {creatureAsset.GetInstanceID()}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
 			catch (Exception ex)

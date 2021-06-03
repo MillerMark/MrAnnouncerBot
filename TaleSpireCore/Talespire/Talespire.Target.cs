@@ -48,7 +48,6 @@ namespace TaleSpireCore
 
 			static void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
 			{
-				float diameterTiles = diameterFeet / 5;
 				try
 				{
 					targetingSphere = targetingSphereCompositeEffect?.CreateOrFind();
@@ -58,7 +57,7 @@ namespace TaleSpireCore
 						return;
 					}
 
-					targetingSphere.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+					SetSphereScale(diameterFeet);
 					targetingSphere.transform.SetParent(flashlight.gameObject.transform);
 					targetingSphere.transform.localPosition = new Vector3(0, 0, 0);
 				}
@@ -66,6 +65,14 @@ namespace TaleSpireCore
 				{
 					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
 				}
+			}
+
+			public static void SetSphereScale(int diameterFeet)
+			{
+				if (targetingSphere == null)
+					return;
+				float diameterTiles = diameterFeet / 5;
+				targetingSphere.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
 			}
 
 			static void AddCylinder(Transform parent, float diameter, Color color, float yOffset)
