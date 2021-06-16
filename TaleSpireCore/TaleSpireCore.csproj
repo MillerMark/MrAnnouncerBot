@@ -101,6 +101,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeMaterial.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeMesh.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
+    <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
     <Compile Include="DTOs\CharacterPositions.cs" />

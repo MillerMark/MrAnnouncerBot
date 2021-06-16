@@ -95,6 +95,7 @@ namespace TaleSpireExplore
 		//	return CloneChildAsset<GameObject>(assetName, instanceId, "SpellEffects");
 		//}
 
+		const string STR_UnityMainThreadDispatcher = "UnityMainThreadDispatcher";
 		static FrmExplorer frmExplorer;
 
 		public void LoadMultiModAssets()
@@ -229,7 +230,7 @@ namespace TaleSpireExplore
 		public static GameObject startupPrefab;
 
 		bool initializedTarget;
-
+		
 		void InitializeTarget()
 		{
 			LoadKnownEffects();
@@ -259,12 +260,12 @@ namespace TaleSpireExplore
 		{
 			if (scene.name == "Startup" || scene.name == "Systems" || scene.name == "Login")
 				return;
-
 			//ShowGameObjectsInScene(scene);
-
 			//if (gameObjects != null)
 			//	for (int i = 0; i < gameObjects.Length; i++)
 			//		MessageBox.Show(ReflectionHelper.GetAllProperties(gameObjects[i]), $"GameObject {i}");
+
+			AddDispatcherToScene();
 
 			if (frmExplorer == null)
 			{
@@ -281,6 +282,17 @@ namespace TaleSpireExplore
 					Talespire.Log.Exception(ex);
 				}
 			}
+		}
+
+		private static void AddDispatcherToScene()
+		{
+			GameObject dispatcher = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			dispatcher.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+			dispatcher.name = STR_UnityMainThreadDispatcher;
+			dispatcher.AddComponent<UnityMainThreadDispatcher>();
+			//UnityMainThreadDispatcher dispatcherBehavior = dispatcher.GetComponent<UnityMainThreadDispatcher>();
+			//if (!UnityMainThreadDispatcher.Exists())
+			//	dispatcherBehavior.WakeUp();
 		}
 
 		static TaleSpireExplorePlugin()

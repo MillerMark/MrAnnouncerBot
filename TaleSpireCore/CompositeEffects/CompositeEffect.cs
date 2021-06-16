@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.Collections;
+using System.Threading;
 
 namespace TaleSpireCore
 {
@@ -134,7 +136,18 @@ namespace TaleSpireCore
 			}
 		}
 
-		public GameObject CreateOrFind(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
+		public GameObject CreateOrFindSafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
+		{
+			GameObject gameObject = null;
+			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+			{
+				gameObject = CreateOrFindUnsafe(instanceId, sourcePosition, targetPosition, parentInstance);
+			});
+			
+			return gameObject;
+		}
+
+		private GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
 			//if (ExistingChildName != null)
 			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
@@ -154,8 +167,11 @@ namespace TaleSpireCore
 					instance.transform.position = targetPosition.Position.GetVector3();
 				else
 				{
-					Talespire.Log.Error($"Prefab {PrefabToCreate}'s instance.transform == null!");
-					return null;
+					if (instance.transform == null)
+					{
+						Talespire.Log.Error($"Prefab {PrefabToCreate}'s instance.transform == null!");
+						return null;
+					}
 				}
 			}
 			else if (ExistingChildName != null)
@@ -176,8 +192,11 @@ namespace TaleSpireCore
 					instance.transform.position = targetPosition.Position.GetVector3();
 				else
 				{
-					Talespire.Log.Error($"Clone {ItemToClone}'s instance.transform == null!");
-					return null;
+					if (instance.transform == null)
+					{
+						Talespire.Log.Error($"Clone {ItemToClone}'s instance.transform == null!");
+						return null;
+					}
 				}
 			}
 			else if (ItemToBorrow != null)
@@ -206,7 +225,7 @@ namespace TaleSpireCore
 			if (Children != null)
 				foreach (CompositeEffect nestedEffectDto in Children)
 					if (nestedEffectDto != null)
-						nestedEffectDto.CreateOrFind(instanceId, sourcePosition, targetPosition, instance);
+						nestedEffectDto.CreateOrFindUnsafe(instanceId, sourcePosition, targetPosition, instance);
 					else
 						Talespire.Log.Error($"nestedEffectDto == null!");
 

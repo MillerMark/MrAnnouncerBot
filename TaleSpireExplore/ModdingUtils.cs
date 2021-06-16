@@ -18,6 +18,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.PostProcessing;
 using System.Windows.Forms;
 using TaleSpireCore;
+using System.Threading;
 
 namespace TaleSpireExplore
 {
@@ -1388,14 +1389,22 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		static void TargetDropSafe(string[] creatures)
+		{
+			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+			{
+				foreach (string creatureId in creatures)
+					Talespire.Target.Drop(creatureId);
+			});
+		}
+
 		static string TargetCreatures(string[] creatures)
 		{
 			Talespire.Target.PickupAllDroppedTargets();
 			if (creatures != null)
 				Talespire.Log.Debug($"Targeting {creatures.Length} creatures.");
 
-			foreach (string creatureId in creatures)
-				Talespire.Target.Drop(creatureId);
+			TargetDropSafe(creatures);
 			return ApiResponse.Good();
 		}
 

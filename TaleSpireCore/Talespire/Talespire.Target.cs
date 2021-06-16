@@ -52,13 +52,13 @@ namespace TaleSpireCore
 				if (diameter > 0)
 					AddTargetingSphere(flashlight, diameter);
 			}
-
+			
 			static void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
 			{
 				TargetSphereDiameter = diameterFeet;
 				try
 				{
-					targetingSphere = targetingSphereCompositeEffect?.CreateOrFind();
+					targetingSphere = targetingSphereCompositeEffect?.CreateOrFindSafe();
 					if (targetingSphere == null)
 					{
 						Log.Error($"targetingDome in NULL!!!");

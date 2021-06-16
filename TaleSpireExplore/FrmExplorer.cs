@@ -1164,7 +1164,7 @@ namespace TaleSpireExplore
 
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.CreateOrFind(testInstanceId, merkinPosition, janusPosition);
+				compositeEffect.CreateOrFindSafe(testInstanceId, merkinPosition, janusPosition);
 				tbxScratch.Text = JsonConvert.SerializeObject(compositeEffect);
 			}
 			catch (Exception ex)
@@ -1195,7 +1195,7 @@ namespace TaleSpireExplore
 				compositeEffect.RebuildPropertiesAfterLoad();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
-				compositeEffect.CreateOrFind(testInstanceId, merkinPosition, janusPosition);
+				compositeEffect.CreateOrFindSafe(testInstanceId, merkinPosition, janusPosition);
 			}
 			catch (Exception ex)
 			{

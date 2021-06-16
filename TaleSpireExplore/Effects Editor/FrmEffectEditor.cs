@@ -711,7 +711,7 @@ namespace TaleSpireExplore
 				compositeEffect.RebuildPropertiesAfterLoad();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(FrmExplorer.JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(FrmExplorer.MerkinId);
-				return compositeEffect.CreateOrFind(effectEditorTestId, merkinPosition, janusPosition);
+				return compositeEffect.CreateOrFindSafe(effectEditorTestId, merkinPosition, janusPosition);
 			}
 			catch (Exception ex)
 			{
@@ -729,7 +729,7 @@ namespace TaleSpireExplore
 					if (treeNode is GameObjectNode gameObjectNode)
 					{
 						if (gameObjectNode.CompositeEffect != null)
-							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.CreateOrFind(GetNewInstanceId(), sourcePosition, targetPosition);
+							gameObjectNode.GameObject = gameObjectNode.CompositeEffect.CreateOrFindSafe(GetNewInstanceId(), sourcePosition, targetPosition);
 
 						if (gameObjectNode.Nodes != null)
 							CreateEffectsForNodes(sourcePosition, targetPosition, gameObjectNode.Nodes);
