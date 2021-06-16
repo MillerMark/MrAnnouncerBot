@@ -118,6 +118,7 @@ namespace TaleSpireCore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception calling method!");
 			}
 		}
@@ -164,6 +165,7 @@ namespace TaleSpireCore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}

@@ -9465,6 +9465,7 @@ namespace DHDM
 			PlayerStatsManager.ClearAllTargets();
 			UpdatePlayerStatsInGame();
 		}
+
 		void TargetAllPlayers()
 		{
 			PlayerStatsManager.TargetAll();
@@ -9529,8 +9530,7 @@ namespace DHDM
 						inGameCreature.OnScreen = true;
 					break;
 				case "TargetNone":
-					AllInGameCreatures.ClearAllTargets();
-					UpdateInGameCreatures();
+					TargetNoInGameCreatures();
 					return;
 				case "TargetAll":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9584,6 +9584,12 @@ namespace DHDM
 			}
 			SetInGameCreatures();
 			InitializePlayerStats();
+		}
+
+		private static void TargetNoInGameCreatures()
+		{
+			AllInGameCreatures.ClearAllTargets();
+			UpdateInGameCreatures();
 		}
 
 		private void UpdateOnScreenCreatures()
@@ -11205,9 +11211,96 @@ namespace DHDM
 			}
 		}
 
+		void SetCreatureTarget(Creature creature, bool isTargeted)
+		{
+			bool stateChanged = false;
+			InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(creature);
+			if (inGameCreature != null)
+			{
+				if (inGameCreature.IsTargeted != isTargeted)
+				{
+					stateChanged = true;
+					inGameCreature.IsTargeted = isTargeted;
+					UpdateInGameCreatures();
+				}
+			}
+			else
+			{
+				CreatureStats playerStats = allPlayerStats.GetPlayerStats(creature.IntId);
+				if (playerStats != null)
+				{
+					if (playerStats.IsTargeted != isTargeted)
+					{
+						stateChanged = true;
+						playerStats.IsTargeted = isTargeted;
+						UpdatePlayerStatsInGame();
+					}
+				}
+			}
+
+			if (stateChanged)
+				if (isTargeted)
+					creature.ShowState($"Targeted!", "#A00000", "#000000");
+				else
+					creature.ShowState($"Not Targeted!", "#0000c0", "#000000");
+		}
+
 		public void TaleSpireTarget(string targetingCommand)
 		{
-			TaleSpireClient.SendMessageToServer("Target", new string[] { targetingCommand });
+			string modifiedTargetingCommand = targetingCommand;
+			if (targetingCommand == "AllEnemiesInVolume" || targetingCommand == "AllFriendliesInVolume")
+				modifiedTargetingCommand = "AllInVolume";
+			ApiResponse response = TaleSpireClient.SendMessageToServer("Target", new string[] { modifiedTargetingCommand });
+			if (response == null)
+				return;
+			if (response.Result == ResponseType.Success)
+				if (targetingCommand == "Set")
+					TargetCreature(response, true);
+				else if (targetingCommand == "Clear")
+					TargetCreature(response, false);
+				else if (targetingCommand == "AllInVolume")
+					TargetAllInVolume(response);
+		}
+
+		void TargetAllInVolume(ApiResponse response)
+		{
+			TargetNone();
+			List<CharacterPosition> characterPosition = response.GetList<CharacterPosition>();
+			if (characterPosition == null)
+				return;
+
+			List<string> charactersToTarget = new List<string>();
+			foreach (CharacterPosition character in characterPosition)
+			{
+				Creature creature = GetCreatureFromTaleSpireId(character.ID);
+				if (creature != null)
+				{
+					SetCreatureTarget(creature, true);
+					charactersToTarget.Add(character.ID);
+				}
+			}
+
+			if (charactersToTarget.Count > 0)
+				TaleSpireClient.SendMessageToServer("TargetCreatures", charactersToTarget.ToArray());
+		}
+
+		private void TargetNone()
+		{
+			TargetNoPlayers();
+			TargetNoInGameCreatures();
+		}
+
+		private void TargetCreature(ApiResponse response, bool isTargeted)
+		{
+			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
+			if (characterPosition == null)
+				return;
+			
+			// We know this character was just successfully targeted or untargeted.
+
+			Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
+			if (creature != null)
+				SetCreatureTarget(creature, isTargeted);
 		}
 	}
 }

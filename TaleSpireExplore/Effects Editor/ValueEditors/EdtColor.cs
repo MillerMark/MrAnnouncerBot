@@ -172,6 +172,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, ex.GetType().ToString());
 			}
 		}

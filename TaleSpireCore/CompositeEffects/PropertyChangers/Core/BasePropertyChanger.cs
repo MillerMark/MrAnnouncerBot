@@ -38,56 +38,64 @@ namespace TaleSpireCore
 
 		public void ModifyProperty(GameObject effect)
 		{
-			object instanceToSet = null;
-
-			string[] split = Name.Split('.');
-			object nextInstance = effect;
-			PropertyInfo property = null;
-			FieldInfo field = null;
-			foreach (string propertyName in split)
+			try
 			{
-				field = null;
-				property = null;
+				object instanceToSet = null;
 
-				if (propertyName.StartsWith("<") && propertyName.EndsWith(">"))
+				string[] split = Name.Split('.');
+				object nextInstance = effect;
+				PropertyInfo property = null;
+				FieldInfo field = null;
+				foreach (string propertyName in split)
 				{
-					string componentTypeName = propertyName.Substring(1, propertyName.Length - 2);
-					if (nextInstance is GameObject gameObject)
+					field = null;
+					property = null;
+
+					if (propertyName.StartsWith("<") && propertyName.EndsWith(">"))
 					{
-						nextInstance = gameObject.GetComponent(componentTypeName);
-						if (nextInstance == null)
+						string componentTypeName = propertyName.Substring(1, propertyName.Length - 2);
+						if (nextInstance is GameObject gameObject)
 						{
-							Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
+							nextInstance = gameObject.GetComponent(componentTypeName);
+							if (nextInstance == null)
+							{
+								Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
+								return;
+							}
+							continue;
+						}
+					}
+
+					property = nextInstance.GetType().GetProperty(propertyName);
+					if (property == null)
+					{
+						field = nextInstance.GetType().GetField(propertyName);
+						if (field == null)
+						{
+							bool propertySet = TrySetProperty(nextInstance, propertyName);
+
+							if (propertySet)
+								continue;
+
+							Talespire.Log.Error($"Property/Field {propertyName} not found in instance!");
 							return;
 						}
-						continue;
 					}
+					instanceToSet = nextInstance;
+					nextInstance = property.GetValue(nextInstance);
 				}
 
-				property = nextInstance.GetType().GetProperty(propertyName);
-				if (property == null)
-				{
-					field = nextInstance.GetType().GetField(propertyName);
-					if (field == null)
-					{
-						bool propertySet = TrySetProperty(nextInstance, propertyName);
-
-						if (propertySet)
-							continue;
-
-						Talespire.Log.Error($"Property/Field {propertyName} not found in instance!");
-						return;
-					}
-				}
-				instanceToSet = nextInstance;
-				nextInstance = property.GetValue(nextInstance);
+				//Talespire.Log.Debug($"Setting {Name} to {GetValue()}...");
+				if (property != null)
+					property.SetValue(instanceToSet, GetValue());
+				else if (field != null)
+					field.SetValue(instanceToSet, GetValue());
 			}
-
-			//Talespire.Log.Debug($"Setting {Name} to {GetValue()}...");
-			if (property != null)
-				property.SetValue(instanceToSet, GetValue());
-			else if (field != null)
-				field.SetValue(instanceToSet, GetValue());
+			catch (Exception ex)
+			{
+				Talespire.Log.Error($"Error while modifying property {Name}!");
+				Talespire.Log.Exception(ex);
+			}
 		}
 
 		// Descendants can override and return true if successful.

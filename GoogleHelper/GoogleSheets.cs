@@ -244,7 +244,14 @@ namespace GoogleHelper
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error reading google sheet ({docName} - {tabName}): {ex.Message}");
+				string title = $"{ex.GetType()} reading google sheet ({docName} - {tabName}): ";
+				while (ex != null)
+				{
+					Console.WriteLine($"{title} \"{ex.Message}\"");
+					ex = ex.InnerException;
+					if (ex != null)
+						title = $"Inner {ex.GetType()}: ";
+				}
 			}
 			return result;
 		}

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -74,6 +75,13 @@ namespace TaleSpireCore
 		{
 			if (Data is Newtonsoft.Json.Linq.JObject jobject)
 				return jobject.ToObject<T>();
+			return default;
+		}
+
+		public List<T> GetList<T>()
+		{
+			if (Data is Newtonsoft.Json.Linq.JArray jarray)
+				return jarray.ToObject<T[]>().ToList();
 			return default;
 		}
 	}

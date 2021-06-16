@@ -71,6 +71,7 @@ namespace TaleSpireCore
 					}
 					catch (Exception ex)
 					{
+						Talespire.Log.Exception(ex);
 						System.Windows.Forms.MessageBox.Show(ex.Message, ex.GetType().Name);
 					}
 

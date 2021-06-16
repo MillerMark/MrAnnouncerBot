@@ -39,9 +39,9 @@ namespace TaleSpireCore
 
 			private static void Toggle()
 			{
-				Talespire.Log.Debug($"Toggle - start...");
+				Log.Debug($"Toggle - start...");
 				ReflectionHelper.CallNonPublicMethod(typeof(LocalClient), "ToggleFlashLight");
-				Talespire.Log.Debug($"Toggle - out!");
+				Log.Debug($"Toggle - out!");
 			}
 
 			public static string GetPositionStr()

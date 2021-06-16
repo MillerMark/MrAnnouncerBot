@@ -62,6 +62,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -195,12 +196,14 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					Talespire.Log.Error($"{ex.Message} in AddSpecialProperties....");
-					MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Error($"Exception in AddSpecialProperties....");
+				Talespire.Log.Exception(ex);
+				//while (ex != null)
+				//{
+				//	Talespire.Log.Error($"{ex.Message} in AddSpecialProperties....");
+				//	MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
+				//	ex = ex.InnerException;
+				//}
 			}
 		}
 
@@ -220,12 +223,13 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					Talespire.Log.Error($"{ex.GetType().Name} in AddPropertiesToNodes....");
-					MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
+				//while (ex != null)
+				//{
+				//	Talespire.Log.Error($"{ex.GetType().Name} in AddPropertiesToNodes....");
+				//	MessageBox.Show($"{ex.Message}\n{ex.StackTrace}", $"{ex.GetType().Name}!");
+				//	ex = ex.InnerException;
+				//}
 			}
 		}
 
@@ -321,11 +325,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					MessageBox.Show(ex.Message, $"{ex.GetType()} in WillHaveChildNodes!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
 				return false;
 			}
 
@@ -532,6 +532,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception");
 			}
 		}
@@ -678,6 +679,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception");
 			}
 		}
@@ -713,6 +715,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 				return null;
 			}
@@ -734,6 +737,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -906,11 +910,7 @@ namespace TaleSpireExplore
 				}
 				catch (Exception ex)
 				{
-					while (ex != null)
-					{
-						MessageBox.Show(ex.Message, $"{ex.GetType()} Changing active Property!");
-						ex = ex.InnerException;
-					}
+					Talespire.Log.Exception(ex);
 				}
 				CreateJson();
 			}
@@ -932,11 +932,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					MessageBox.Show(ex.Message, $"{ex.GetType()} Serializing to JSON!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
 			}
 		}
 
@@ -1033,7 +1029,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.Message, ex.GetType().ToString());
+				Talespire.Log.Exception(ex);
 			}
 		}
 
@@ -1092,7 +1088,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.Message, "Exception!");
+				Talespire.Log.Exception(ex);
 			}
 		}
 
@@ -1124,6 +1120,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -1156,6 +1153,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -1188,6 +1186,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}

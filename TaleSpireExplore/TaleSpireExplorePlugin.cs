@@ -48,7 +48,6 @@ StartupPrefab
 
 using BepInEx;
 using BepInEx.Logging;
-using ModdingTales;
 using MultiMod;
 using MultiMod.Interface;
 using MultiMod.Shared;
@@ -118,11 +117,7 @@ namespace TaleSpireExplore
 				}
 				catch (Exception ex)
 				{
-					while (ex != null)
-					{
-						MessageBox.Show(ex.Message, "Exception!");
-						ex = ex.InnerException;
-					}
+					Talespire.Log.Exception(ex);
 				}
 			};
 
@@ -151,11 +146,7 @@ namespace TaleSpireExplore
 				}
 				catch (Exception ex)
 				{
-					while (ex != null)
-					{
-						MessageBox.Show(ex.Message, "Exception!");
-						ex = ex.InnerException;
-					}
+					Talespire.Log.Exception(ex);
 				}
 			};
 
@@ -214,11 +205,7 @@ namespace TaleSpireExplore
 				}
 				catch (Exception ex)
 				{
-					while (ex != null)
-					{
-						MessageBox.Show(ex.Message, "Exception!");
-						ex = ex.InnerException;
-					}
+					Talespire.Log.Exception(ex);
 				}
 			};
 
@@ -291,7 +278,7 @@ namespace TaleSpireExplore
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show(ex.Message, "Exception!");
+					Talespire.Log.Exception(ex);
 				}
 			}
 		}
@@ -301,8 +288,9 @@ namespace TaleSpireExplore
 			GoogleSheets.RegisterSpreadsheetID("TaleSpire Effects", "1bF3zEg4c1YUv6BvZ8ru-JhfUn0tFu1HVpe6F267SQvI");
 		}
 
-		void LoadKnownEffects()
+		public static void LoadKnownEffects()
 		{
+			KnownEffects.Invalidate();
 			Talespire.Log.Debug($"Loading Known Effects...");
 			string targetingSphereJson = KnownEffects.Get("TargetingSphere")?.Effect;
 			if (string.IsNullOrWhiteSpace(targetingSphereJson))

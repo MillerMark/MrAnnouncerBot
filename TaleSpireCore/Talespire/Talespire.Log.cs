@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace TaleSpireCore
 {
@@ -17,27 +18,42 @@ namespace TaleSpireCore
 
 			public static void Info(object data)
 			{
-				manualLogSource.Log(BepInEx.Logging.LogLevel.Info, data);
+				manualLogSource.Log(LogLevel.Info, data);
 			}
 
 			public static void Error(object data)
 			{
-				manualLogSource.Log(BepInEx.Logging.LogLevel.Error, data);
+				manualLogSource.Log(LogLevel.Error, data);
 			}
 
 			public static void Warning(object data)
 			{
-				manualLogSource.Log(BepInEx.Logging.LogLevel.Warning, data);
+				manualLogSource.Log(LogLevel.Warning, data);
 			}
 
 			public static void Debug(object data)
 			{
-				manualLogSource.Log(BepInEx.Logging.LogLevel.Debug, data);
+				manualLogSource.Log(LogLevel.Debug, data);
 			}
 
 			public static void Message(object data)
 			{
-				manualLogSource.Log(BepInEx.Logging.LogLevel.Message, data);
+				manualLogSource.Log(LogLevel.Message, data);
+			}
+
+			public static void Exception(Exception ex, [CallerMemberName] string callerName = "")
+			{
+				string prefix = "";
+				string indent = "";
+				string suffix = $" in {callerName}";
+				while (ex != null)
+				{
+					manualLogSource.Log(LogLevel.Error, $"{indent}{prefix}{ex.GetType().Name}{suffix} - \"{ex.Message}\"");
+					ex = ex.InnerException;
+					prefix = "Inner: ";
+					suffix = "";
+					indent += "  ";
+				}
 			}
 		}
 	}

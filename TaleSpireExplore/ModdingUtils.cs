@@ -19,7 +19,7 @@ using UnityEngine.Rendering.PostProcessing;
 using System.Windows.Forms;
 using TaleSpireCore;
 
-namespace ModdingTales
+namespace TaleSpireExplore
 {
 	public static class ModdingUtils
 	{
@@ -74,6 +74,7 @@ namespace ModdingTales
 			Commands.Add("LoadBoard", LoadBoard);
 			Commands.Add("GetCreatures", GetCreatures);
 			Commands.Add("Target", Target);
+			Commands.Add("TargetCreatures", TargetCreatures);
 		}
 
 		private static string AddCreature(string[] input)
@@ -149,6 +150,7 @@ namespace ModdingTales
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				return new ApiResponse(ex.Message + ex.StackTrace, "Unknown command").ToString();
 			}
 		}
@@ -613,6 +615,7 @@ namespace ModdingTales
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				return new ApiResponse(ex.Message + ex.StackTrace, "Could not get creature list").ToString();
 			}
 		}
@@ -633,6 +636,7 @@ namespace ModdingTales
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				//return new APIResponse(ex.Message + ex.StackTrace, "Could not get hp").ToString();
 			}
 			return "";
@@ -746,7 +750,7 @@ namespace ModdingTales
 			}
 			catch (Exception ex)
 			{
-				Debug.Log(ex.Message + ex.StackTrace);
+				Talespire.Log.Exception(ex);
 				return new ApiResponse(ex.Message + ex.StackTrace, "Could not get slab size").ToString();
 			}
 		}
@@ -905,6 +909,7 @@ namespace ModdingTales
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				parentLogger.LogFatal(ex);
 			}
 		}
@@ -1300,17 +1305,97 @@ namespace ModdingTales
 		static string Target(string command)
 		{
 			if (command == "On")
-				Talespire.Target.On(40);
+			{
+				if (!Talespire.Target.IsTargetingSphereSet())
+					TaleSpireExplorePlugin.LoadKnownEffects();
+				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.Creatures;
+				Talespire.Target.On();
+			}
 			else if (command == "Off")
 				Talespire.Target.Off();
 			else if (command == "CleanUp")
 				Talespire.Target.CleanUp();
+			else if (command == "AllInVolume")
+			{
+				List<CreatureBoardAsset> creatureBoardAssets = Talespire.Minis.GetCreaturesInsideSphere(Talespire.Flashlight.GetPosition(), Talespire.Target.TargetSphereDiameter);
+				string creaturesInRange = string.Join(", ", creatureBoardAssets.Select(x => x.name).ToArray());
+				Talespire.Log.Debug($"{creatureBoardAssets.Count} creatures in sphere: {creaturesInRange}");
+
+				List<CharacterPosition> characterPositions = new List<CharacterPosition>();
+				foreach (CreatureBoardAsset creatureBoardAsset in creatureBoardAssets)
+					characterPositions.Add(creatureBoardAsset.GetCharacterPosition());
+
+				string response = ApiResponse.Good("Success", characterPositions);
+				Talespire.Log.Debug($"response successfully created!");
+				return response;
+			}
 			else if (command == "Set")
-				Talespire.Target.Set();
+			{
+				try
+				{
+					Talespire.Log.Debug($"CreatureBoardAsset asset = Talespire.Target.Set();");
+					CreatureBoardAsset asset = Talespire.Target.Set();
+					if (asset != null)
+					{
+						Talespire.Log.Debug($"Asset found!!!");
+						CharacterPosition characterPosition = asset.GetCharacterPosition();
+						if (characterPosition != null)
+						{
+							Talespire.Log.Debug($"Character position found!");
+							string response = ApiResponse.Good("Success", characterPosition);
+							Talespire.Log.Debug($"response successfully created!");
+							return response;
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Talespire.Log.Exception(ex);
+				}
+			}
+			else if (command == "Ready")
+				Talespire.Target.Ready();
+			else if (command == "Clear")
+			{
+				try
+				{
+					Talespire.Log.Debug($"CreatureBoardAsset asset = Talespire.Target.Clear();");
+					CreatureBoardAsset asset = Talespire.Target.Clear();
+					if (asset != null)
+					{
+						Talespire.Log.Debug($"Asset found!!!");
+						CharacterPosition characterPosition = asset.GetCharacterPosition();
+						if (characterPosition != null)
+						{
+							Talespire.Log.Debug($"characterPosition!!!");
+							return ApiResponse.Good("Success", characterPosition);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Talespire.Log.Exception(ex);
+				}
+			}
 			else if (command.StartsWith(STR_SpherePrefix))
-				Talespire.Target.SetSphereScale(ToInt(command.Substring(STR_SpherePrefix.Length)));
+			{
+				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.Sphere;
+				Talespire.Target.On(ToInt(command.Substring(STR_SpherePrefix.Length)));
+				//Talespire.Target.SetSphereScale();
+			}
 			else
 				return ApiResponse.InvalidCommand(command);
+			return ApiResponse.Good();
+		}
+
+		static string TargetCreatures(string[] creatures)
+		{
+			Talespire.Target.PickupAllDroppedTargets();
+			if (creatures != null)
+				Talespire.Log.Debug($"Targeting {creatures.Length} creatures.");
+
+			foreach (string creatureId in creatures)
+				Talespire.Target.Drop(creatureId);
 			return ApiResponse.Good();
 		}
 

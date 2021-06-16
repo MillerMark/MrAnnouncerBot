@@ -82,6 +82,7 @@ namespace TaleSpireCore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				return new ApiResponse(ex.Message, "Failed to deserialize response!", data);
 			}
 		}

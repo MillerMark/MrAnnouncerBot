@@ -28,6 +28,16 @@ namespace TaleSpireCore
 			return null;
 		}
 
+		public static bool HasChild(this Transform transform, string nameToFind)
+		{
+			Transform[] children = transform.GetComponentsInChildren<Transform>();
+			foreach (Transform child in children)
+				if (child.gameObject.name == nameToFind)
+					return true;
+
+			return false;
+		}
+
 		public static CharacterPosition GetCharacterPosition(this CreatureBoardAsset creatureAsset)
 		{
 			float altitude = 0;

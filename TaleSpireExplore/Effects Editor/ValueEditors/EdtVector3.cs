@@ -72,7 +72,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				Talespire.Log.Error($"{ex.GetType()} in EdtVector3.UpdateValue: {ex.Message}");
+				Talespire.Log.Exception(ex);
 			}
 		}
 

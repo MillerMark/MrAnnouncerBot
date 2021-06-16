@@ -129,7 +129,7 @@ namespace TaleSpireCore
 
 			foreach (var basePropertyDto in properties)
 			{
-				//Talespire.Log.Debug($"Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
+				Talespire.Log.Debug($"Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
 				basePropertyDto.ModifyProperty(effect);
 			}
 		}
@@ -153,7 +153,10 @@ namespace TaleSpireCore
 				if (targetPosition != null && instance.transform != null)
 					instance.transform.position = targetPosition.Position.GetVector3();
 				else
-					Talespire.Log.Error($"instance.transform == null!");
+				{
+					Talespire.Log.Error($"Prefab {PrefabToCreate}'s instance.transform == null!");
+					return null;
+				}
 			}
 			else if (ExistingChildName != null)
 				if (parentInstance != null && parentInstance.transform != null)
@@ -172,7 +175,10 @@ namespace TaleSpireCore
 				if (targetPosition != null && instance.transform != null)
 					instance.transform.position = targetPosition.Position.GetVector3();
 				else
-					Talespire.Log.Error($"instance.transform == null!");
+				{
+					Talespire.Log.Error($"Clone {ItemToClone}'s instance.transform == null!");
+					return null;
+				}
 			}
 			else if (ItemToBorrow != null)
 			{

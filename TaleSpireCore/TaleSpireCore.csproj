@@ -124,6 +124,8 @@
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
+    <Compile Include="Talespire\InteractiveTargetingMode.cs" />
+    <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
     <Compile Include="Talespire\Talespire.Mesh.cs" />
     <Compile Include="Talespire\Talespire.Target.cs" />

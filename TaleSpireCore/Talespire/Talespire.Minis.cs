@@ -13,7 +13,7 @@ namespace TaleSpireCore
 			const string NameIdSeparator = " - ";
 			public static CharacterPositions GetPositions()
 			{
-				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
 				if (allCreatureAssets == null)
 					return null;
 
@@ -30,7 +30,7 @@ namespace TaleSpireCore
 
 			public static CreatureBoardAsset GetCreatureBoardAsset(string id)
 			{
-				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
 				if (allCreatureAssets == null)
 					return null;
 
@@ -79,7 +79,7 @@ namespace TaleSpireCore
 
 			public static CreatureBoardAsset GetSelected()
 			{
-				CreatureBoardAsset[] assets = CreaturePresenter.AllCreatureAssets.ToArray();
+				CreatureBoardAsset[] assets = GetAll();
 				foreach (CreatureBoardAsset asset in assets)
 					if (LocalClient.SelectedCreatureId.Value == asset.Creature.CreatureId.Value)
 						return asset;
@@ -87,14 +87,14 @@ namespace TaleSpireCore
 				return null;
 			}
 
-			public static IReadOnlyList<CreatureBoardAsset> GetAll()
+			public static CreatureBoardAsset[] GetAll()
 			{
-				return CreaturePresenter.AllCreatureAssets;
+				return CreaturePresenter.AllCreatureAssets.ToArray();
 			}
 
 			public static List<string> GetAllNamesAndIds()
 			{
-				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
 				if (allCreatureAssets == null)
 					return null;
 				List<string> result = new List<string>();
@@ -168,6 +168,57 @@ namespace TaleSpireCore
 				}
 
 				transform.localScale = new Vector3(scale, scale, scale);
+			}
+
+			public static CreatureBoardAsset GetCreatureClosestTo(Vector3 position, int maxRadiusFt)
+			{
+				CreatureBoardAsset closestCreature = null;
+				float shortestDistanceSoFar = float.MaxValue;
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
+				if (allCreatureAssets == null)
+					return null;
+				foreach (CreatureBoardAsset creatureBoardAsset in allCreatureAssets)
+				{
+					float distanceFeet = GetDistanceInFeet(position, creatureBoardAsset);
+					if (distanceFeet < shortestDistanceSoFar)
+					{
+						shortestDistanceSoFar = distanceFeet;
+						closestCreature = creatureBoardAsset;
+					}
+				}
+				if (shortestDistanceSoFar > maxRadiusFt)
+					return null;
+
+				return closestCreature;
+			}
+
+			private static float GetDistanceInFeet(Vector3 position, CreatureBoardAsset creatureBoardAsset)
+			{
+				GameObject gameObject = Target.GetBaseGameObject(creatureBoardAsset);
+				if (gameObject == null)
+					return float.MaxValue;
+
+				float distanceTiles = (gameObject.transform.position - position).magnitude;
+				return Convert.TilesToFeet(distanceTiles);
+			}
+
+			public static List<CreatureBoardAsset> GetCreaturesInsideSphere(Vector3 position, float targetSphereDiameterFeet)
+			{
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
+				if (allCreatureAssets == null)
+					return null;
+
+				float radiusFeet = targetSphereDiameterFeet / 2f;
+				List<CreatureBoardAsset> result = new List<CreatureBoardAsset>();
+
+				foreach (CreatureBoardAsset creatureBoardAsset in allCreatureAssets)
+				{
+					float distanceFeet = GetDistanceInFeet(position, creatureBoardAsset);
+					if (distanceFeet <= radiusFeet)
+						result.Add(creatureBoardAsset);
+				}
+
+				return result;
 			}
 		}
 	}

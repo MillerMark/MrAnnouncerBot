@@ -35,6 +35,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -343,17 +344,18 @@ namespace TaleSpireExplore
 
 		private void CampaignSessionManager_OnStatNamesChange(string[] obj)
 		{
-			LogEvent($"CampaignSessionManager.OnStatNamesChange(obj: {obj})");
+			if (obj != null)
+				LogEvent($"CampaignSessionManager.OnStatNamesChange(\"{string.Join(", ", obj.ToArray())}\")");
 		}
 
 		private void CampaignSessionManager_OnStateWillTransition(PhotonSimpleSingletonStateMBehaviour<CampaignSessionManager>.State arg1, PhotonSimpleSingletonStateMBehaviour<CampaignSessionManager>.State arg2)
 		{
-			LogEvent($"CampaignSessionManager.OnStateWillTransition(arg1: {arg1}, arg2: {arg2})");
+			LogEvent($"CampaignSessionManager.OnStateWillTransition(\"{arg1.Name}\", \"{arg2.Name}\")");
 		}
 
 		private void CampaignSessionManager_OnStateChange(PhotonSimpleSingletonStateMBehaviour<CampaignSessionManager>.State obj)
 		{
-			LogEvent($"CampaignSessionManager.OnStateChange(obj: {obj})");
+			LogEvent($"CampaignSessionManager.OnStateChange(\"{obj.Name}\")");
 		}
 
 		private void CampaignSessionManager_OnCampaignUniquesChanged()
@@ -438,12 +440,12 @@ namespace TaleSpireExplore
 
 		private void BoardSessionManager_OnStateWillTransition(PhotonSimpleSingletonStateMBehaviour<BoardSessionManager>.State arg1, PhotonSimpleSingletonStateMBehaviour<BoardSessionManager>.State arg2)
 		{
-			LogEvent($"BoardSessionManager.OnStateWillTransition(arg1: {arg1}, arg2: {arg2})");
+			LogEvent($"BoardSessionManager.OnStateWillTransition(\"{arg1.Name}\", \"{arg2.Name}\")");
 		}
 
 		private void BoardSessionManager_OnStateChange(PhotonSimpleSingletonStateMBehaviour<BoardSessionManager>.State obj)
 		{
-			LogEvent($"BoardSessionManager.OnStateChange(obj: {obj})");
+			LogEvent($"BoardSessionManager.OnStateChange(\"{obj.Name}\")");
 		}
 
 		private void BoardSessionManager_OnLocalClientModeChange(ClientMode obj)
@@ -525,7 +527,7 @@ namespace TaleSpireExplore
 		{
 			try
 			{
-				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+				CreatureBoardAsset[] allCreatureAssets = Talespire.Minis.GetAll();
 				tbxScratch.Text = "";
 				if (allCreatureAssets == null)
 					return;
@@ -536,6 +538,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -647,6 +650,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -683,12 +687,8 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
-				while (ex.InnerException != null)
-				{
-					ex = ex.InnerException;
-					MessageBox.Show(ex.Message, "Inner Exception!");
-				}
 			}
 		}
 
@@ -706,12 +706,13 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					MessageBox.Show(ex.Message, "Exception!");
-					MessageBox.Show(ex.StackTrace, "StackTrace!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
+				//while (ex != null)
+				//{
+				//	MessageBox.Show(ex.Message, "Exception!");
+				//	MessageBox.Show(ex.StackTrace, "StackTrace!");
+				//	ex = ex.InnerException;
+				//}
 			}
 
 		}
@@ -797,12 +798,13 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					MessageBox.Show(ex.Message, $"{ex.GetType().Name} Exception!");
-					MessageBox.Show(ex.StackTrace, "StackTrace!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
+				//while (ex != null)
+				//{
+				//	MessageBox.Show(ex.Message, $"{ex.GetType().Name} Exception!");
+				//	MessageBox.Show(ex.StackTrace, "StackTrace!");
+				//	ex = ex.InnerException;
+				//}
 			}
 		}
 
@@ -908,6 +910,7 @@ namespace TaleSpireExplore
 		private void btnFlashlightOff_Click(object sender, EventArgs e)
 		{
 			Talespire.Target.Off();
+			Talespire.Target.SetInteractiveTargetingMode(InteractiveTargetingMode.Sphere);
 		}
 
 		private void btnFlashlightOn_Click(object sender, EventArgs e)
@@ -915,10 +918,12 @@ namespace TaleSpireExplore
 			chkTrackFlashlight.Checked = true;
 			try
 			{
+				Talespire.Target.SetInteractiveTargetingMode(InteractiveTargetingMode.Creatures);
 				Talespire.Target.On(40);
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception calling method!");
 			}
 		}
@@ -1018,6 +1023,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 				return null;
 			}
@@ -1044,6 +1050,7 @@ namespace TaleSpireExplore
 					cmbPrefabs.Items.Add(item);
 		}
 
+		// TODO: Replace these IDs with the equivalent world IDs:
 		public const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
 		public const string MerkinId = "b9529862-8d73-4662-ab13-cf9232b1ccf9";
 		const string MediumFireEffectId = "MediumFireEffectId";
@@ -1053,7 +1060,7 @@ namespace TaleSpireExplore
 
 			try
 			{
-				IReadOnlyList<CreatureBoardAsset> allCreatureAssets = CreaturePresenter.AllCreatureAssets;
+				CreatureBoardAsset[] allCreatureAssets = Talespire.Minis.GetAll();
 
 				string effectName = "MediumFire";
 				if (lastSelectedPrefab != null)
@@ -1088,11 +1095,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
-				while (ex != null)
-				{
-					MessageBox.Show(ex.Message, "Exception!");
-					ex = ex.InnerException;
-				}
+				Talespire.Log.Exception(ex);
 			}
 		}
 
@@ -1166,6 +1169,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -1195,6 +1199,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
@@ -1213,6 +1218,7 @@ namespace TaleSpireExplore
 			}
 			catch (Exception ex)
 			{
+				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception");
 			}
 		}
