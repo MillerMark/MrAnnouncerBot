@@ -47,7 +47,7 @@ namespace TaleSpireExplore
 			ChangeFloat result = new ChangeFloat();
 			if (float.TryParse(tbxValue.Text.Trim(), out float value))
 				result.SetValue(value);
-			return null;
+			return result;
 		}
 
 		private void tbxValue_TextChanged(object sender, EventArgs e)

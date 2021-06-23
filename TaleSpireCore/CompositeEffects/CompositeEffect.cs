@@ -5,6 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Threading;
+using System.Diagnostics;
+using System.ComponentModel;
 
 namespace TaleSpireCore
 {
@@ -86,6 +88,7 @@ namespace TaleSpireCore
 					BasePropertyChanger changer = PropertyChangerFactory.CreateFrom(propertyChangerDto);
 					if (changer != null)
 					{
+						Talespire.Log.Debug($"Found property changer ({propertyChangerDto.Type})!");
 						changer.Name = propertyChangerDto.Name;
 						changer.Value = propertyChangerDto.Value;
 						properties.Add(changer);
@@ -131,7 +134,7 @@ namespace TaleSpireCore
 
 			foreach (var basePropertyDto in properties)
 			{
-				Talespire.Log.Debug($"Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
+				Talespire.Log.Warning($">> Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
 				basePropertyDto.ModifyProperty(effect);
 			}
 		}
@@ -147,8 +150,10 @@ namespace TaleSpireCore
 			return gameObject;
 		}
 
-		private GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
+		[Browsable(false)]
+		public GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
+			Talespire.Log.Debug($"CreateOrFindUnsafe...");
 			//if (ExistingChildName != null)
 			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
 			//else

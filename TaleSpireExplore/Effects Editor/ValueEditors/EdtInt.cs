@@ -56,7 +56,7 @@ namespace TaleSpireExplore
 			ChangeInt result = new ChangeInt();
 			if (int.TryParse(tbxValue.Text.Trim(), out int value))
 				result.SetValue(value);
-			return null;
+			return result;
 		}
 
 		private void tbxValue_TextChanged(object sender, EventArgs e)

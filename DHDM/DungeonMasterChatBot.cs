@@ -84,7 +84,7 @@ namespace DHDM
 			Commands.Add(new TogglePlayerTargetCommand());
 			Commands.Add(new ToggleNpcCommand());
 			Commands.Add(new ToggleConditionCommand());
-			Commands.Add(new TalkNpcCommand());
+			Commands.Add(new SelectInGameCreatureCommand());
 			Commands.Add(new TargetCommand());
 			Commands.Add(new ChangePlayerStateCommand());
 			Commands.Add(new MoveFredCommand());

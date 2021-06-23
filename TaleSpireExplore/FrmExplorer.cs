@@ -1247,5 +1247,55 @@ namespace TaleSpireExplore
 			if (float.TryParse(txtScale.Text, out float result))
 				Talespire.Minis.SetCreatureScale(MerkinId, result);
 		}
+
+		GameObject sbox2;
+		GameObject sbox1;
+		private void btnTest1_Click(object sender, EventArgs e)
+		{
+			Debug.Log("Multi Selection Started");
+			Vector3 mousePos = Input.mousePosition;
+			Debug.Log("Mouse " + mousePos);
+			mousePos.z = Camera.main.nearClipPlane;
+			Vector3 startSelection = Vector3.zero;
+			startSelection = Camera.main.ScreenToWorldPoint(mousePos, Camera.MonoOrStereoscopicEye.Mono);
+			Debug.Log("World " + startSelection);
+
+			sbox1 = new GameObject();
+			sbox1.name = "MultiSelect";
+			sbox1.AddComponent<LineRenderer>();
+			LineRenderer lr = sbox1.GetComponent<LineRenderer>();
+			lr.name = "MultiSelect.Outline";
+			lr.material = new Material(Shader.Find("Sprites/Default"));
+			lr.startColor = UnityEngine.Color.yellow;
+			lr.endColor = UnityEngine.Color.yellow;
+			lr.widthMultiplier = 0.2f;
+
+			Debug.Log("Found? " + (GameObject.Find("MultiSelect") != null));
+		}
+
+		private void btnTest2_Click(object sender, EventArgs e)
+		{
+			Debug.Log("Multi Selection Started");
+			Vector3 mousePos = Input.mousePosition;
+			Debug.Log("Mouse " + mousePos);
+			mousePos.z = Camera.main.nearClipPlane;
+			Vector3 startSelection = Vector3.zero;
+			startSelection = Camera.main.ScreenToWorldPoint(mousePos, Camera.MonoOrStereoscopicEye.Mono);
+			Debug.Log("World " + startSelection);
+
+			sbox2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			UnityEngine.Object.DontDestroyOnLoad(sbox2);
+			sbox2.name = "MultiSelect";
+			sbox2.AddComponent<LineRenderer>();
+			LineRenderer lr = sbox2.GetComponent<LineRenderer>();
+			lr.name = "MultiSelect.Outline";
+			lr.material = new Material(Shader.Find("Sprites/Default"));
+			lr.startColor = UnityEngine.Color.yellow;
+			lr.endColor = UnityEngine.Color.yellow;
+			lr.widthMultiplier = 0.2f;
+
+			Talespire.Log.Debug($"sbox2.name = {sbox2.name}");
+			Debug.Log("Found? " + (GameObject.Find("MultiSelect") != null));
+		}
 	}
 }

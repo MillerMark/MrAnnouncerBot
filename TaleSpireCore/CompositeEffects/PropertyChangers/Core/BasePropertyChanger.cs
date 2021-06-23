@@ -77,7 +77,7 @@ namespace TaleSpireCore
 							if (propertySet)
 								continue;
 
-							Talespire.Log.Error($"Property/Field {propertyName} not found in instance!");
+							Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
 							return;
 						}
 					}

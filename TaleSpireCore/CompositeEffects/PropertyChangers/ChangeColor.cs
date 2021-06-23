@@ -31,7 +31,7 @@ namespace TaleSpireCore
 		{
 			// TODO: Support color multipliers, seemingly needed for shaders and materials.
 			// "#aabbcc x4.24"
-
+			Talespire.Log.Debug($"ChangeColor.GetValue");
 			int indexOfMultiplier = Value.IndexOf(" x");
 			string html = Value;
 			float multiplier = 1;
@@ -46,7 +46,8 @@ namespace TaleSpireCore
 			{
 				if (multiplier > 1)
 				{
-					return color * multiplier;    // bil is never wrong
+					Talespire.Log.Debug($"Returning multiplied (x{multiplier}) value!");
+					return color * multiplier;    // Bil is never wrong!
 					//new Color(color.r * multiplier, color.g * multiplier, color.b * multiplier);
 				}
 				return color;

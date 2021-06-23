@@ -157,9 +157,15 @@ namespace TaleSpireCore
 				return ApiResponse.FromException(e);
 			}
 		}
+
 		public static ApiResponse SendMessageToServer(string message)
 		{
 			return SendMessageToServer(message, new string[] { });
+		}
+
+		public static ApiResponse SendMessageToServer(string str, string message)
+		{
+			return SendMessageToServer(str, new string[] { message });
 		}
 	}
 }

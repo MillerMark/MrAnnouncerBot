@@ -244,6 +244,11 @@ namespace DndCore
 		{
 			return inGameCreatures.FirstOrDefault(x => x.TaleSpireId == taleSpireId)?.Creature;
 		}
+
+		public static InGameCreature GetSelected()
+		{
+			return inGameCreatures.FirstOrDefault(x => x.IsSelected);
+		}
 	}
 }
 

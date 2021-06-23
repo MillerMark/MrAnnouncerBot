@@ -74,7 +74,7 @@ namespace TaleSpireExplore
 			ChangeMaterial result = new ChangeMaterial();
 			if (cmbMaterial.SelectedItem != null)
 				result.SetValue(cmbMaterial.SelectedItem as string);
-			return null;
+			return result;
 		}
 
 		private void cmbMaterial_SelectedIndexChanged(object sender, EventArgs e)

@@ -74,7 +74,7 @@ namespace TaleSpireExplore
 			ChangeMesh result = new ChangeMesh();
 			if (cmbMesh.SelectedItem != null)
 				result.SetValue(cmbMesh.SelectedItem as string);
-			return null;
+			return result;
 		}
 
 		private void cmbMesh_SelectedIndexChanged(object sender, EventArgs e)

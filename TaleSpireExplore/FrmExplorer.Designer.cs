@@ -66,6 +66,8 @@
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.btnSetScale = new System.Windows.Forms.Button();
 			this.txtScale = new System.Windows.Forms.TextBox();
+			this.btnTest1 = new System.Windows.Forms.Button();
+			this.btnTest2 = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -428,11 +430,33 @@
 			this.txtScale.TabIndex = 25;
 			this.txtScale.Text = "1";
 			// 
+			// btnTest1
+			// 
+			this.btnTest1.Location = new System.Drawing.Point(719, 549);
+			this.btnTest1.Name = "btnTest1";
+			this.btnTest1.Size = new System.Drawing.Size(88, 31);
+			this.btnTest1.TabIndex = 26;
+			this.btnTest1.Text = "Test 1";
+			this.btnTest1.UseVisualStyleBackColor = true;
+			this.btnTest1.Click += new System.EventHandler(this.btnTest1_Click);
+			// 
+			// btnTest2
+			// 
+			this.btnTest2.Location = new System.Drawing.Point(836, 549);
+			this.btnTest2.Name = "btnTest2";
+			this.btnTest2.Size = new System.Drawing.Size(88, 31);
+			this.btnTest2.TabIndex = 26;
+			this.btnTest2.Text = "Test 2";
+			this.btnTest2.UseVisualStyleBackColor = true;
+			this.btnTest2.Click += new System.EventHandler(this.btnTest2_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1331, 592);
+			this.Controls.Add(this.btnTest2);
+			this.Controls.Add(this.btnTest1);
 			this.Controls.Add(this.txtScale);
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
@@ -516,5 +540,7 @@
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Button btnSetScale;
 		private System.Windows.Forms.TextBox txtScale;
+		private System.Windows.Forms.Button btnTest1;
+		private System.Windows.Forms.Button btnTest2;
 	}
 }

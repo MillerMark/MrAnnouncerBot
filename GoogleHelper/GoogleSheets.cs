@@ -104,6 +104,7 @@ namespace GoogleHelper
 			}
 			return type.GetProperty(header);
 		}
+
 		static void TransferValues<T>(T instance, Dictionary<int, string> headers, IList<object> row) where T : new()
 		{
 			Type type = instance.GetType();

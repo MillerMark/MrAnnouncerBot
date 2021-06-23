@@ -220,6 +220,38 @@ namespace TaleSpireCore
 
 				return result;
 			}
+
+			public static void PlayEmote(string creatureId, string emote)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset == null)
+				{
+					Log.Error($"{nameof(PlayEmote)}: Creature with id \"{creatureId}\" not found.");
+					return;
+				}
+
+				creatureBoardAsset.Creature.PlayEmote(emote);
+			}
+
+			public static void Wiggle(string creatureId)
+			{
+				PlayEmote(creatureId, "TLA_Wiggle");
+			}
+
+			public static void Twirl(string creatureId)
+			{
+				PlayEmote(creatureId, "TLA_Twirl");
+			}
+
+			public static void KnockDown(string creatureId)
+			{
+				PlayEmote(creatureId, "TLA_Action_KnockDown");
+			}
+
+			public static void Surprise(string creatureId)
+			{
+				PlayEmote(creatureId, "TLA_Surprise");
+			}
 		}
 	}
 }

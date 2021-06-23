@@ -14,8 +14,10 @@ namespace TaleSpireCore
 			public static int TargetSphereDiameter { get; set; }
 
 			static CompositeEffect targetingSphereCompositeEffect;
+			static CompositeEffect targetingFireCompositeEffect;
 			static List<GameObject> targetDisks = new List<GameObject>();
 			static GameObject targetingSphere;
+			static GameObject targetingFire;
 
 			public static void SetInteractiveTargetingMode(InteractiveTargetingMode mode)
 			{
@@ -25,6 +27,11 @@ namespace TaleSpireCore
 			public static bool IsTargetingSphereSet()
 			{
 				return targetingSphereCompositeEffect != null;
+			}	
+
+			public static bool IsTargetingFireSet()
+			{
+				return targetingFireCompositeEffect != null;
 			}
 
 			public static void SetTargetingSphere(string sphereCompositeEffectJson)
@@ -36,12 +43,18 @@ namespace TaleSpireCore
 					Log.Error($"Targeting Sphere NOT found!");
 			}
 
+			public static void SetTargetingFire(string fireCompositeEffectJson)
+			{
+				targetingFireCompositeEffect = CompositeEffect.CreateFrom(fireCompositeEffectJson);
+				if (targetingFireCompositeEffect != null)
+					Log.Debug($"Targeting Fire found!");
+				else
+					Log.Error($"Targeting Fire NOT found!");
+			}
+
 			public static void On(int diameter = 0)
 			{
-				TargetSphereDiameter = 0;
-
-				CleanUp();
-				Flashlight.On();
+				PrepareForSelection();
 				FlashLight flashlight = Flashlight.Get();
 				if (flashlight == null)
 				{
@@ -52,7 +65,26 @@ namespace TaleSpireCore
 				if (diameter > 0)
 					AddTargetingSphere(flashlight, diameter);
 			}
-			
+
+			public static void SelectCreature(int diameter = 0)
+			{
+				PrepareForSelection();
+				FlashLight flashlight = Flashlight.Get();
+				if (flashlight == null)
+				{
+					Log.Error($"flashlight is null!");
+					return;
+				}
+				AddSelectionIndicator(flashlight);
+			}
+
+			private static void PrepareForSelection()
+			{
+				TargetSphereDiameter = 0;
+				CleanUp();
+				Flashlight.On();
+			}
+
 			static void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
 			{
 				TargetSphereDiameter = diameterFeet;
@@ -61,7 +93,7 @@ namespace TaleSpireCore
 					targetingSphere = targetingSphereCompositeEffect?.CreateOrFindSafe();
 					if (targetingSphere == null)
 					{
-						Log.Error($"targetingDome in NULL!!!");
+						Log.Error($"targetingSphere is NULL!!!");
 						return;
 					}
 
@@ -82,6 +114,26 @@ namespace TaleSpireCore
 					return;
 				float diameterTiles = Convert.FeetToTiles(diameterFeet);
 				targetingSphere.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+			}
+
+			static void AddSelectionIndicator(FlashLight flashlight)
+			{
+				try
+				{
+					targetingFire = targetingFireCompositeEffect?.CreateOrFindSafe();
+					if (targetingFire == null)
+					{
+						Log.Error($"targetingFire is NULL!!!");
+						return;
+					}
+
+					targetingFire.transform.SetParent(flashlight.gameObject.transform);
+					targetingFire.transform.localPosition = new Vector3(0, 0, 0);
+				}
+				catch (Exception ex)
+				{
+					Log.Exception(ex);
+				}
 			}
 
 			static void AddCylinder(Transform parent, float diameter, Color color, float yOffset)
@@ -109,12 +161,17 @@ namespace TaleSpireCore
 
 			static CreatureBoardAsset AddTargetToNearestCreature()
 			{
-				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureClosestTo(Flashlight.GetPosition(), maxDistanceToNearestCreatureFt);
+				CreatureBoardAsset creatureBoardAsset = GetNearestCreature();
 				if (creatureBoardAsset != null)
 				{
 					AddTargetDiskToCreature(creatureBoardAsset);
 				}
 				return creatureBoardAsset;
+			}
+
+			static CreatureBoardAsset GetNearestCreature()
+			{
+				return Minis.GetCreatureClosestTo(Flashlight.GetPosition(), maxDistanceToNearestCreatureFt);
 			}
 
 			/// <summary>
@@ -180,18 +237,33 @@ namespace TaleSpireCore
 
 			public static CreatureBoardAsset Set()
 			{
-				FlashLight flashLight = Flashlight.Get();
-				if (flashLight != null)
+				try
 				{
-					if (InteractiveTargetingMode == InteractiveTargetingMode.Creatures)
-						return AddTargetToNearestCreature();
-					else
+					Log.Debug($"Set - InteractiveTargetingMode = {InteractiveTargetingMode}");
+					FlashLight flashLight = Flashlight.Get();
+					if (flashLight != null)
 					{
-						DropTargetAtFlashlight();
-						Off();
+						if (InteractiveTargetingMode == InteractiveTargetingMode.Creatures)
+							return AddTargetToNearestCreature();
+						else if (InteractiveTargetingMode == InteractiveTargetingMode.CreatureSelect)
+						{
+							CreatureBoardAsset nearestCreature = GetNearestCreature();
+							Log.Debug($"nearestCreature: {nearestCreature}");
+							Off();
+							return nearestCreature;
+						}
+						else
+						{
+							DropTargetAtFlashlight();
+							Off();
+						}
 					}
+					return null;
 				}
-				return null;
+				finally
+				{
+					InteractiveTargetingMode = InteractiveTargetingMode.None;
+				}
 			}
 
 			private static void DropTargetAtFlashlight()
@@ -252,7 +324,6 @@ namespace TaleSpireCore
 					targetDisks.RemoveAt(i);
 				}
 			}
-
 		}
 	}
 }

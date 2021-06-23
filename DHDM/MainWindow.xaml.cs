@@ -11062,6 +11062,7 @@ namespace DHDM
 
 			List<InGameCreature> creaturesChanged = AllInGameCreatures.ClearSelection();
 			creatureToSelect.IsSelected = true;
+			SelectCreatureInTaleSpire(creatureToSelect);
 			DigitManager.SetValue("creature", creatureToSelect.Index);
 			creaturesChanged.Add(creatureToSelect);
 			UpdateInGameCreatureSelection(creatureToSelect, creaturesChanged);
@@ -11258,8 +11259,25 @@ namespace DHDM
 					TargetCreature(response, true);
 				else if (targetingCommand == "Clear")
 					TargetCreature(response, false);
+				else if (targetingCommand == "BindSelectedCreature")
+					BindCreature(response);
 				else if (targetingCommand == "AllInVolume")
 					TargetAllInVolume(response);
+		}
+
+		void BindCreature(ApiResponse response)
+		{
+			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
+			if (characterPosition == null)
+				return;
+			//characterPosition.ID
+			InGameCreature selected = AllInGameCreatures.GetSelected();
+			if (selected == null)
+				return;
+
+			selected.TaleSpireId = characterPosition.ID;
+			selected.Creature.taleSpireId = characterPosition.ID;
+			GoogleSheets.SaveChanges(selected);
 		}
 
 		void TargetAllInVolume(ApiResponse response)
@@ -11301,6 +11319,11 @@ namespace DHDM
 			Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
 			if (creature != null)
 				SetCreatureTarget(creature, isTargeted);
+		}
+
+		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
+		{
+			TaleSpireClient.SendMessageToServer("WiggleCreature", creatureToSelect.TaleSpireId);
 		}
 	}
 }

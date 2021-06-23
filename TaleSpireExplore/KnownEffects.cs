@@ -51,6 +51,26 @@ namespace TaleSpireExplore
 			return gameObject;
 		}
 
+		public static GameObject CreateUnsafe(string effectName, string instanceId = null)
+		{
+			string targetingSphereJson = Get(effectName)?.Effect;
+			if (targetingSphereJson == null)
+				return null;
+			Talespire.GameObjects.InvalidateFound();
+			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
+			Talespire.Log.Debug($"GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);");
+			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
+			
+			if (gameObject != null)
+				Talespire.Log.Debug($"gameObject: {gameObject.name}");
+			else
+				Talespire.Log.Error($"CreateOrFindUnsafe returned null!");
+
+			if (gameObject != null)
+				gameObject.name = effectName;
+			return gameObject;
+		}
+
 		public static void Save(string name, string effect)
 		{
 			TaleSpireEffect taleSpireEffect = Get(name);
@@ -63,6 +83,9 @@ namespace TaleSpireExplore
 				};
 				allKnownEffects.Add(taleSpireEffect);
 			}
+			else
+				taleSpireEffect.Effect = effect;
+
 			GoogleSheets.SaveChanges(taleSpireEffect);
 		}
 	}

@@ -1147,8 +1147,11 @@ namespace TaleSpireExplore
 					selectedNode.Nodes.Add(node);
 				else
 					trvEffectHierarchy.Nodes.Add(node);
-				node.GameObject = KnownEffects.Create(existingEffectName, GetNewInstanceId());
+				Talespire.Log.Debug($"node.GameObject = KnownEffects.CreateUnsafe(existingEffectName, GetNewInstanceId());");
+				node.GameObject = KnownEffects.CreateUnsafe(existingEffectName, GetNewInstanceId());
+				Talespire.Log.Debug($"node.Checked = node.GameObject.activeSelf;");
 				node.Checked = node.GameObject.activeSelf;
+				Talespire.Log.Debug($"AddChildren(node);");
 				AddChildren(node);
 			}
 			catch (Exception ex)

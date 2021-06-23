@@ -302,8 +302,14 @@ namespace TaleSpireExplore
 
 		public static void LoadKnownEffects()
 		{
-			KnownEffects.Invalidate();
 			Talespire.Log.Debug($"Loading Known Effects...");
+			KnownEffects.Invalidate();
+			SetTargetingSphere();
+			SetTargetingFire();
+		}
+
+		private static void SetTargetingSphere()
+		{
 			string targetingSphereJson = KnownEffects.Get("TargetingSphere")?.Effect;
 			if (string.IsNullOrWhiteSpace(targetingSphereJson))
 			{
@@ -311,6 +317,17 @@ namespace TaleSpireExplore
 				return;
 			}
 			Talespire.Target.SetTargetingSphere(targetingSphereJson);
+		}
+
+		private static void SetTargetingFire()
+		{
+			string targetingFireJson = KnownEffects.Get("SelectionFire")?.Effect;
+			if (string.IsNullOrWhiteSpace(targetingFireJson))
+			{
+				Talespire.Log.Error($"BlueFireSmoke effect not found!!!");
+				return;
+			}
+			Talespire.Target.SetTargetingFire(targetingFireJson);
 		}
 
 		private static void ShowGameObjectsInScene(Scene scene)

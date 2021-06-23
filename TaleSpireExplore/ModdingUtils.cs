@@ -76,6 +76,7 @@ namespace TaleSpireExplore
 			Commands.Add("GetCreatures", GetCreatures);
 			Commands.Add("Target", Target);
 			Commands.Add("TargetCreatures", TargetCreatures);
+			Commands.Add("WiggleCreature", WiggleCreature);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1300,7 +1301,7 @@ namespace TaleSpireExplore
 
 		static void ChangeTargetSphereSize(int newSize)
 		{
-			
+
 		}
 
 		static string Target(string command)
@@ -1311,6 +1312,13 @@ namespace TaleSpireExplore
 					TaleSpireExplorePlugin.LoadKnownEffects();
 				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.Creatures;
 				Talespire.Target.On();
+			}
+			else if (command == "SelectCreature")
+			{
+				if (!Talespire.Target.IsTargetingFireSet())
+					TaleSpireExplorePlugin.LoadKnownEffects();
+				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.CreatureSelect;
+				Talespire.Target.SelectCreature();
 			}
 			else if (command == "Off")
 				Talespire.Target.Off();
@@ -1330,24 +1338,11 @@ namespace TaleSpireExplore
 				Talespire.Log.Debug($"response successfully created!");
 				return response;
 			}
-			else if (command == "Set")
+			else if (command == "Set" || command == "BindSelectedCreature")
 			{
 				try
 				{
-					Talespire.Log.Debug($"CreatureBoardAsset asset = Talespire.Target.Set();");
-					CreatureBoardAsset asset = Talespire.Target.Set();
-					if (asset != null)
-					{
-						Talespire.Log.Debug($"Asset found!!!");
-						CharacterPosition characterPosition = asset.GetCharacterPosition();
-						if (characterPosition != null)
-						{
-							Talespire.Log.Debug($"Character position found!");
-							string response = ApiResponse.Good("Success", characterPosition);
-							Talespire.Log.Debug($"response successfully created!");
-							return response;
-						}
-					}
+					return SelectedCreature();
 				}
 				catch (Exception ex)
 				{
@@ -1389,6 +1384,22 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		private static string SelectedCreature()
+		{
+			CreatureBoardAsset asset = Talespire.Target.Set();
+			if (asset != null)
+			{
+				CharacterPosition characterPosition = asset.GetCharacterPosition();
+				if (characterPosition != null)
+				{
+					string response = ApiResponse.Good("Success", characterPosition);
+					return response;
+				}
+			}
+			Talespire.Log.Error($"Character asset not found!");
+			return new ApiResponse("Character asset not found!").ToString();
+		}
+
 		static void TargetDropSafe(string[] creatures)
 		{
 			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
@@ -1419,6 +1430,47 @@ namespace TaleSpireExplore
 			if (arg.Length == 1)
 			{
 				return Target(arg[0]);
+			}
+
+			return ApiResponse.Good();
+		}
+
+		static string WiggleCreature(string creatureId)
+		{
+			/* 
+				"TLA_Twirl"
+				"TLA_Action_Knockdown"
+				"TLA_Wiggle"
+				"TLA_MeleeAttack"
+				"TLA_Surprise"
+				"TLA_MagicMissileAttack" */
+			Talespire.Minis.Wiggle(creatureId);
+			return ApiResponse.Good();
+		}
+
+		private static void ListCreatureAnimationNames()
+		{
+			Dictionary<string, ActionTimeline> dictionary = ReflectionHelper.GetNonPublicField<Dictionary<string, ActionTimeline>>(typeof(ActionTimelineDatabase), ActionTimelineDatabase.Resource, "_data");
+			if (dictionary != null)
+			{
+				foreach (string key in dictionary.Keys)
+				{
+					Talespire.Log.Debug($"  \"{key}\"");
+				}
+			}
+		}
+
+		static string WiggleCreature(string[] arg)
+		{
+			Talespire.Log.Debug("WiggleCreature, with these parameters: ");
+			foreach (string item in arg)
+			{
+				Talespire.Log.Debug($"  {item}");
+			}
+
+			if (arg.Length == 1)
+			{
+				return WiggleCreature(arg[0]);
 			}
 
 			return ApiResponse.Good();

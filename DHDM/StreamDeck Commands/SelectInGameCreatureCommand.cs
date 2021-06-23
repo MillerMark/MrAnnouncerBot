@@ -5,7 +5,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class TalkNpcCommand : BaseStreamDeckCommand, IDungeonMasterCommand
+	public class SelectInGameCreatureCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
