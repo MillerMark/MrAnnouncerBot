@@ -238,6 +238,7 @@ class DragonBackGame extends DragonGame {
 		super.initialize();
 
 		this.inGameCreatureManager.initialize(this, null, this.dragonBackSounds);
+		//this.inGameCreatureManager.conditionManager.topMarginOffset = -30;
 
 		Folders.assets = 'GameDev/Assets/DragonH/';
 

@@ -27,7 +27,7 @@ namespace TaleSpireCore
 			public static bool IsTargetingSphereSet()
 			{
 				return targetingSphereCompositeEffect != null;
-			}	
+			}
 
 			public static bool IsTargetingFireSet()
 			{
@@ -202,7 +202,7 @@ namespace TaleSpireCore
 				// Bump the target position up a bit...
 				Vector3 targetPosition = new Vector3(basePosition.x, basePosition.y + 0.05f, basePosition.z);
 
-				AddTargetDisk(targetPosition, baseTransform);
+				AddTargetDisk(targetPosition, baseTransform, creatureBoardAsset.CreatureScale);
 			}
 
 			public static GameObject GetBaseGameObject(CreatureBoardAsset creatureBoardAsset)
@@ -224,7 +224,7 @@ namespace TaleSpireCore
 				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
 
 				Transform[] children = baseGameObject.GetComponentsInChildren<Transform>();
-				
+
 				foreach (Transform transform in children)
 					if (transform.gameObject.name == STR_TargetDisk)
 					{
@@ -237,57 +237,63 @@ namespace TaleSpireCore
 
 			public static CreatureBoardAsset Set()
 			{
-				try
+				Log.Debug($"Set - InteractiveTargetingMode = {InteractiveTargetingMode}");
+				FlashLight flashLight = Flashlight.Get();
+				if (flashLight != null)
 				{
-					Log.Debug($"Set - InteractiveTargetingMode = {InteractiveTargetingMode}");
-					FlashLight flashLight = Flashlight.Get();
-					if (flashLight != null)
+					if (InteractiveTargetingMode == InteractiveTargetingMode.Creatures)
+						return AddTargetToNearestCreature();
+					else if (InteractiveTargetingMode == InteractiveTargetingMode.CreatureSelect)
 					{
-						if (InteractiveTargetingMode == InteractiveTargetingMode.Creatures)
-							return AddTargetToNearestCreature();
-						else if (InteractiveTargetingMode == InteractiveTargetingMode.CreatureSelect)
-						{
-							CreatureBoardAsset nearestCreature = GetNearestCreature();
-							Log.Debug($"nearestCreature: {nearestCreature}");
-							Off();
-							return nearestCreature;
-						}
-						else
-						{
-							DropTargetAtFlashlight();
-							Off();
-						}
+						CreatureBoardAsset nearestCreature = GetNearestCreature();
+						Log.Debug($"nearestCreature: {nearestCreature}");
+						Off();
+						InteractiveTargetingMode = InteractiveTargetingMode.None;
+						return nearestCreature;
 					}
-					return null;
+					else
+					{
+						DropTargetAtFlashlight();
+						Off();
+						InteractiveTargetingMode = InteractiveTargetingMode.None;
+					}
 				}
-				finally
-				{
-					InteractiveTargetingMode = InteractiveTargetingMode.None;
-				}
+				return null;
 			}
 
 			private static void DropTargetAtFlashlight()
 			{
 				Vector3 targetPosition = Flashlight.GetPosition();
-				AddTargetDisk(targetPosition, null);
+				AddTargetDisk(targetPosition, null, 1);
 			}
 
-			private static void AddTargetDisk(Vector3 targetPosition, Transform parent)
+			private static void AddTargetDisk(Vector3 targetPosition, Transform parent, float scale = 1)
 			{
 				GameObject targetDisk = new GameObject(STR_TargetDisk);
 				targetDisk.transform.position = targetPosition;
 				if (parent != null)
 					targetDisk.transform.SetParent(parent);
 				float percentAdjust = 0.65f;
-				AddCylinder(targetDisk.transform, 0.25f * percentAdjust, Color.red, 0.02f);
-				AddCylinder(targetDisk.transform, 0.58f * percentAdjust, Color.white, 0f);
-				AddCylinder(targetDisk.transform, 0.92f * percentAdjust, Color.red, -0.02f);
+				float yOffset = 0;
+				if (scale == 0.5)
+					yOffset = -0.025f;
+				else if (scale == 1)
+					yOffset = 0.0f;
+				else if (scale == 2)
+					yOffset = 0.1f;
+				else if (scale == 3)
+					yOffset = 0.2f;
+				else if (scale == 4)
+					yOffset = 0.27f;
+				AddCylinder(targetDisk.transform, scale * 0.25f * percentAdjust, Color.red, 0.02f + yOffset);
+				AddCylinder(targetDisk.transform, scale * 0.58f * percentAdjust, Color.white, 0f + yOffset);
+				AddCylinder(targetDisk.transform, scale * 0.92f * percentAdjust, Color.red, -0.02f + yOffset);
 				targetDisks.Add(targetDisk);
 			}
 
 			private static void AddTargetDisk(Transform parent)
 			{
-				AddTargetDisk(parent.position, parent);
+				AddTargetDisk(parent.position, parent, 1);
 			}
 
 			public static void CleanUp()

@@ -11,6 +11,7 @@ namespace TaleSpireCore
 		public static class Minis
 		{
 			const string NameIdSeparator = " - ";
+			static GameObject activeTurnIndicator;
 			public static CharacterPositions GetPositions()
 			{
 				CreatureBoardAsset[] allCreatureAssets = GetAll();
@@ -251,6 +252,96 @@ namespace TaleSpireCore
 			public static void Surprise(string creatureId)
 			{
 				PlayEmote(creatureId, "TLA_Surprise");
+			}
+
+			static void ModifyColor(GameObject gameObject, string childName, string propertyName, string valueStr)
+			{
+				GameObject child = gameObject.FindChild(childName);
+				if (child == null)
+				{
+					Log.Error($"Unable to find child named \"{childName}\".");
+					return;
+				}
+				Log.Debug($"ModifyColor - ChangeColor changeColor = new ChangeColor(propertyName, valueStr);");
+				ChangeColor changeColor = new ChangeColor(propertyName, valueStr);
+				Log.Debug($"changeColor.ModifyProperty(child);");
+				changeColor.ModifyProperty(child);
+			}
+
+			static void SetTurnIndicatorColor(GameObject gameObject, string htmlColorStr, float creatureScale)
+			{
+				float multiplier = 1;
+				HueSatLight hueSatLight = new HueSatLight(htmlColorStr);
+				double relativeLuminance = hueSatLight.GetRelativeLuminance();
+				Talespire.Log.Debug($"hueSatLight.GetRelativeLuminance: {relativeLuminance}");
+				if (relativeLuminance > 0.24)
+					multiplier = 0.5f;
+				else if (relativeLuminance > 0.5)
+					multiplier = 0.4f;
+				if (creatureScale < 1)
+					multiplier *= 0.75f;
+				// relativeLuminance 1
+				ModifyColor(gameObject, "Particle System", "<ParticleSystemRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 4f}");
+				ModifyColor(gameObject, "Decal_FireRing", "<MeshRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 7f}");
+			}
+
+			public static CreatureBoardAsset SetActiveTurn(string creatureId, string color)
+			{
+				Log.Debug($"SetActiveTurn...");
+
+				ClearActiveTurnIndicator();
+
+				CreatureBoardAsset creatureAsset = GetCreatureBoardAsset(creatureId);
+				if (creatureAsset == null)
+				{
+					Log.Error($"SetActiveTurn - creatureId {creatureId} not found.");
+					return null;
+				}
+
+				GameObject baseGameObject = Target.GetBaseGameObject(creatureAsset);
+				if (baseGameObject == null)
+				{
+					Log.Error($"SetActiveTurn - baseGameObject for {creatureId} not found.");
+					return null;
+				}
+
+				string effectName;
+				if (creatureAsset.CreatureScale == 2)
+					effectName = "ActiveTurn2x2";
+				else if (creatureAsset.CreatureScale == 3)
+					effectName = "ActiveTurn3x3";
+				else if (creatureAsset.CreatureScale == 4)
+					effectName = "ActiveTurn4x4";
+				else if (creatureAsset.CreatureScale == 0.5)
+					effectName = "ActiveTurn0.5x0.5";
+				else
+					effectName = "ActiveTurn1x1";
+
+				Log.Debug($"activeTurnIndicator = Prefabs.Clone(\"{effectName}\");");
+				activeTurnIndicator = Prefabs.Clone(effectName);
+
+				if (activeTurnIndicator == null)
+				{
+					Log.Error($"SetActiveTurn - Prefabs.Clone(\"{effectName}\") returned null.");
+					return null;
+				}
+
+				SetTurnIndicatorColor(activeTurnIndicator, color, creatureAsset.CreatureScale);
+
+				Log.Debug($"activeTurnIndicator.transform.SetParent(baseGameObject.transform);");
+				activeTurnIndicator.transform.SetParent(baseGameObject.transform);
+				activeTurnIndicator.transform.position = creatureAsset.transform.position;
+				return creatureAsset;
+			}
+
+			// TODO: We might need a universal cleanup mechanism to call this when we unload the game board.
+			public static void ClearActiveTurnIndicator()
+			{
+				if (activeTurnIndicator != null)
+				{
+					GameObject.Destroy(activeTurnIndicator);
+					activeTurnIndicator = null;
+				}
 			}
 		}
 	}

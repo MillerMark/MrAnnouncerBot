@@ -5319,6 +5319,7 @@ namespace DHDM
 			PlayerStatsManager.ClearAllActiveTurns();
 			UpdateInGameCreatures();
 			UpdatePlayerStatsInGame();
+			TaleSpireClient.ClearActiveTurnIndicator();
 		}
 
 		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e)
@@ -5330,6 +5331,9 @@ namespace DHDM
 				TellDungeonMaster($"{Icons.WarningSign} -- Exit combat before rolling non-combat initiative.");
 				return;
 			}
+
+			ClearAllInGameActiveTurnIndicators();
+
 			game.Clock.InTimeFreeze = !game.Clock.InTimeFreeze;
 			if (game.Clock.InTimeFreeze)
 			{
@@ -6098,6 +6102,7 @@ namespace DHDM
 				}
 			});
 		}
+
 		void ExitCombat()
 		{
 			SafeInvoke(() =>
@@ -9732,12 +9737,6 @@ namespace DHDM
 				btnInitializeOnly_Click(null, null);
 		}
 
-		public void NextTurn()
-		{
-			lock (game)
-				game.NextTurn();
-		}
-
 		private void Game_ActivePlayerChanged(object sender, EventArgs e)
 		{
 			AllInGameCreatures.ClearAllActiveTurns();
@@ -11170,7 +11169,7 @@ namespace DHDM
 
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
 		{
-			ApiResponse response = TaleSpireClient.SendMessageToServer("GetCreatures");
+			ApiResponse response = TaleSpireClient.Invoke("GetCreatures");
 			if (response.Result == ResponseType.Failure)
 				return;
 
@@ -11251,7 +11250,7 @@ namespace DHDM
 			string modifiedTargetingCommand = targetingCommand;
 			if (targetingCommand == "AllEnemiesInVolume" || targetingCommand == "AllFriendliesInVolume")
 				modifiedTargetingCommand = "AllInVolume";
-			ApiResponse response = TaleSpireClient.SendMessageToServer("Target", new string[] { modifiedTargetingCommand });
+			ApiResponse response = TaleSpireClient.Invoke("Target", new string[] { modifiedTargetingCommand });
 			if (response == null)
 				return;
 			if (response.Result == ResponseType.Success)
@@ -11299,7 +11298,7 @@ namespace DHDM
 			}
 
 			if (charactersToTarget.Count > 0)
-				TaleSpireClient.SendMessageToServer("TargetCreatures", charactersToTarget.ToArray());
+				TaleSpireClient.Invoke("TargetCreatures", charactersToTarget.ToArray());
 		}
 
 		private void TargetNone()
@@ -11323,7 +11322,18 @@ namespace DHDM
 
 		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
 		{
-			TaleSpireClient.SendMessageToServer("WiggleCreature", creatureToSelect.TaleSpireId);
+			TaleSpireClient.Invoke("WiggleCreature", creatureToSelect.TaleSpireId);
+		}
+
+		public void NextTurn()
+		{
+			lock (game)
+				game.NextTurn();
+			string activeTurnCreatureId = game.ActiveTurnCreatureId;
+			if (activeTurnCreatureId != null)
+				TaleSpireClient.Invoke("SetActiveTurn", new string[] { activeTurnCreatureId, game.ActiveTurnCreatureColor });
+			else
+				TaleSpireClient.ClearActiveTurnIndicator();
 		}
 	}
 }

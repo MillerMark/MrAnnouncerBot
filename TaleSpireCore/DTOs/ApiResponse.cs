@@ -61,7 +61,16 @@ namespace TaleSpireCore
 
 		public override string ToString()
 		{
-			return JsonConvert.SerializeObject(this, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+			try
+			{
+				return JsonConvert.SerializeObject(this, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Error($"Error serializing (check Data!).");
+				Talespire.Log.Exception(ex);
+				return string.Empty;
+			}
 		}
 
 		public static ApiResponse FromException(Exception e, string message = "")
@@ -73,16 +82,24 @@ namespace TaleSpireCore
 
 		public T GetData<T>() where T : class
 		{
-			if (Data is Newtonsoft.Json.Linq.JObject jobject)
-				return jobject.ToObject<T>();
+			if (Data is Newtonsoft.Json.Linq.JObject jObject)
+				return jObject.ToObject<T>();
 			return default;
 		}
 
 		public List<T> GetList<T>()
 		{
-			if (Data is Newtonsoft.Json.Linq.JArray jarray)
-				return jarray.ToObject<T[]>().ToList();
+			if (Data is Newtonsoft.Json.Linq.JArray jArray)
+				return jArray.ToObject<T[]>().ToList();
 			return default;
+		}
+
+		public static string Bad(string message, [CallerMemberName] string callerName = "")
+		{
+			Talespire.Log.Error($"Error in {callerName} - " + message);
+			ApiResponse apiResponse = new ApiResponse($"Error in {callerName}", message);
+			apiResponse.Result = ResponseType.Failure;
+			return apiResponse.ToString();
 		}
 	}
 }

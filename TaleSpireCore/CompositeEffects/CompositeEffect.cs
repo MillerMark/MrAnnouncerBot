@@ -12,7 +12,7 @@ namespace TaleSpireCore
 {
 	public class CompositeEffect
 	{
-		public static IKnownEffectsBuilder EffectsBuilder { get; set; }
+		public static IKnownEffectsBuilder KnownEffectsBuilder { get; set; }
 
 		/// <summary>
 		/// The seconds to delay awakening this effect, in seconds.
@@ -165,7 +165,7 @@ namespace TaleSpireCore
 
 			if (PrefabToCreate != null)
 			{
-				Talespire.Log.Debug($"instance = Talespire.Prefabs.Clone(PrefabToCreate, instanceId);");
+				Talespire.Log.Debug($"instance = Talespire.Prefabs.Clone(\"{PrefabToCreate}\", instanceId);");
 				instance = Talespire.Prefabs.Clone(PrefabToCreate, instanceId);
 				// TODO: Figure out spell effect motion/positioning...
 				if (targetPosition != null && instance.transform != null)
@@ -182,7 +182,7 @@ namespace TaleSpireCore
 			else if (ExistingChildName != null)
 				if (parentInstance != null && parentInstance.transform != null)
 				{
-					Talespire.Log.Debug($"Transform childTransform = parentInstance.transform.Find(ExistingChildName);");
+					Talespire.Log.Debug($"Transform childTransform = parentInstance.transform.Find(\"{ExistingChildName}\");");
 					Transform childTransform = parentInstance.transform.Find(ExistingChildName);
 					instance = childTransform?.gameObject;
 				}
@@ -190,7 +190,7 @@ namespace TaleSpireCore
 					Talespire.Log.Debug($"parentInstance == null!");
 			else if (ItemToClone != null)
 			{
-				Talespire.Log.Debug($"instance = Talespire.GameObjects.Clone(ItemToClone, instanceId);");
+				Talespire.Log.Debug($"instance = Talespire.GameObjects.Clone(\"{ItemToClone}\", instanceId);");
 				instance = Talespire.GameObjects.Clone(ItemToClone, instanceId);
 				// TODO: Figure out spell effect motion/positioning...
 				if (targetPosition != null && instance.transform != null)
@@ -206,15 +206,15 @@ namespace TaleSpireCore
 			}
 			else if (ItemToBorrow != null)
 			{
-				Talespire.Log.Debug($"instance = Talespire.GameObjects.Get(ItemToBorrow);");
+				Talespire.Log.Debug($"instance = Talespire.GameObjects.Get(\"{ItemToBorrow}\");");
 				instance = Talespire.GameObjects.Get(ItemToBorrow);
 			}
 			else if (EffectNameToCreate != null)
 			{
-				if (EffectsBuilder != null)
+				if (KnownEffectsBuilder != null)
 				{
-					Talespire.Log.Debug($"instance = EffectsBuilder.Create(EffectNameToCreate, instanceId);");
-					instance = EffectsBuilder.Create(EffectNameToCreate, instanceId);
+					Talespire.Log.Debug($"instance = KnownEffectsBuilder.Create(\"{EffectNameToCreate}\", instanceId);");
+					instance = KnownEffectsBuilder.Create(EffectNameToCreate, instanceId);
 				}
 			}
 
@@ -234,7 +234,18 @@ namespace TaleSpireCore
 					else
 						Talespire.Log.Error($"nestedEffectDto == null!");
 
+			Talespire.Log.Debug($"return instance;");
 			return instance;
+		}
+
+		public static GameObject CreateKnownEffect(string effectName, string instanceId = null)
+		{
+			if (KnownEffectsBuilder != null)
+			{
+				Talespire.Log.Debug($"KnownEffectsBuilder.Create(EffectNameToCreate, instanceId);");
+				return KnownEffectsBuilder.Create(effectName, instanceId);
+			}
+			return null;
 		}
 
 		public static CompositeEffect CreateFrom(string json, string instanceId = null)

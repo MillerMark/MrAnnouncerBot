@@ -32,7 +32,8 @@ class InGameCreatureManager implements IGetCreatureX {
 	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, topMarginOffset = 0) {
 		this.conditionManager.initialize(iGetPlayerX, iNameplateRenderer, soundManager);
 		this.topMarginOffset = topMarginOffset;
-		this.conditionManager.topMarginOffset = topMarginOffset;
+		if (topMarginOffset !== 0)
+			this.conditionManager.topMarginOffset = topMarginOffset;
 	}
 
 	loadResources() {
@@ -428,7 +429,7 @@ class InGameCreatureManager implements IGetCreatureX {
 
 		if (existingCreature.Conditions !== updatedGameCreature.Conditions) {
 			const rightAnchor: number = this.getConditionRightAnchor(existingCreature);
-			const hueShift: number = this.getHueShift(existingCreature);;
+			const hueShift: number = this.getCreatureHueShift(existingCreature);
 			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightAnchor, ConditionManager.npcConditionScale, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
 			existingCreature.Conditions = updatedGameCreature.Conditions;
 		}
@@ -639,7 +640,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		const existingSprite: SpriteProxy = this.getSelectionIndicatorSpriteForCreature(creature);
 		if (existingSprite)
 			return;
-		const hueShift = this.getHueShift(creature);
+		const hueShift: number = this.getCreatureHueShift(creature);
 		const x: number = this.getX(creature);
 		const activeTurnIndicatorSprite: SpriteProxy = this.creatureSelection.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
@@ -659,7 +660,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	private addInGameCreature(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
 		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
 		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
-		const scrollSmokeHueShift = this.getHueShift(inGameCreature);
+		const scrollSmokeHueShift = this.getEnemyAllyHueShift(inGameCreature);
 		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, this.getScrollTop(), 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
@@ -672,7 +673,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.addActiveTurnIndicator(soundManager, inGameCreature, x, delayMs);
 		}
 
-		const hueShift: number = this.getHueShift(inGameCreature);
+		const hueShift: number = this.getCreatureHueShift(inGameCreature);
 		const rightEdge: number = this.getConditionRightAnchor(inGameCreature);
 		this.conditionManager.updateConditions(Conditions.None, inGameCreature.Conditions, inGameCreature.Index, rightEdge,
 			ConditionManager.npcConditionScale, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
@@ -718,7 +719,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	}
 
 	private addTarget(inGameCreature: InGameCreature, x: number, delayMs = 0) {
-		const hueShift = this.getHueShift(inGameCreature);
+		const hueShift = this.getEnemyAllyHueShift(inGameCreature);
 		const targetSprite: SpriteProxy = this.target.addShifted(x, this.getScrollTop() + InGameCreatureManager.targetTop, -1, hueShift);
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
@@ -726,7 +727,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	}
 
 	private addActiveTurnIndicator(soundManager: SoundManager, creature: InGameCreature, x: number, delayMs = 0) {
-		const hueShift = this.getHueShift(creature);
+		const hueShift: number = this.getCreatureHueShift(creature);
 		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
 		activeTurnIndicatorSprite.delayStart = delayMs;
@@ -737,7 +738,13 @@ class InGameCreatureManager implements IGetCreatureX {
 			soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}`);
 	}
 
-	private getHueShift(inGameCreature: InGameCreature) {
+	private getCreatureHueShift(inGameCreature: InGameCreature) {
+		if (inGameCreature.hue === -1)
+			inGameCreature.hue = HueSatLight.fromHex(inGameCreature.BackgroundHex).hue * 360;
+		return inGameCreature.hue;
+	}
+
+	private getEnemyAllyHueShift(inGameCreature: InGameCreature) {
 		if (inGameCreature.IsEnemy)
 			return 0;
 		if (inGameCreature.IsAlly)
@@ -820,7 +827,7 @@ class InGameCreatureManager implements IGetCreatureX {
 
 			if (deathXSprite)
 				deathXSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
-			const scrollSmokeHueShift = this.getHueShift(inGameCreature);
+			const scrollSmokeHueShift = this.getEnemyAllyHueShift(inGameCreature);
 			const disappearAnimation: SpriteProxy = this.scrollDisappear.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
 			disappearAnimation.delayStart = delayMs;
 			disappearAnimation.data = inGameCreature;

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Drawing;
 
-namespace TaleSpireExplore
+namespace TaleSpireCore
 {
 	public class HueSatLight
 	{

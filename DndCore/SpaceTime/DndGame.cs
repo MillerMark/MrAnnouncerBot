@@ -936,6 +936,33 @@ namespace DndCore
 			InitiativeIndex = initiativeIds.IndexOf(InGameCreature.GetUniversalIndex(creature.Index));
 		}
 
+		public string ActiveTurnCreatureId
+		{
+			get
+			{
+				object activeTurnCreature = GetActiveTurnCreature();
+				if (activeTurnCreature is InGameCreature inGameCreature)
+					return inGameCreature.Creature.taleSpireId;
+				if (activeTurnCreature is Character character)
+					return character.taleSpireId;
+				return null;
+			}
+		}
+
+		public string ActiveTurnCreatureColor
+		{
+			get
+			{
+				object activeTurnCreature = GetActiveTurnCreature();
+				if (activeTurnCreature is InGameCreature inGameCreature)
+					return inGameCreature.Creature.dieBackColor;
+				if (activeTurnCreature is Character character)
+					return character.dieBackColor;
+				return null;
+			}
+		}
+
+
 		public object GetActiveTurnCreature()
 		{
 			if (InitiativeIndex < 0 || InitiativeIndex >= initiativeIds.Count)

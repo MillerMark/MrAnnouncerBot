@@ -209,7 +209,6 @@
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
-    <Compile Include="Effects Editor\ValueEditors\Core\HueSatLight.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtMesh.cs">
       <SubType>UserControl</SubType>

@@ -71,7 +71,7 @@ namespace TaleSpireCore
 
 		public static ApiResponse SendMessageToServer(string command, float num)
 		{
-			return SendMessageToServer(command, new string[] { num.ToString() });
+			return Invoke(command, new string[] { num.ToString() });
 		}
 
 		static ApiResponse ToApiResponse(string data)
@@ -87,7 +87,7 @@ namespace TaleSpireCore
 			}
 		}
 
-		public static ApiResponse SendMessageToServer(string command, string[] msgparams)
+		public static ApiResponse Invoke(string command, string[] msgparams)
 		{
 			// Data buffer for incoming data.  
 			byte[] bytes = new byte[4 * 1024 * 1024];
@@ -158,14 +158,19 @@ namespace TaleSpireCore
 			}
 		}
 
-		public static ApiResponse SendMessageToServer(string message)
+		public static ApiResponse Invoke(string message)
 		{
-			return SendMessageToServer(message, new string[] { });
+			return Invoke(message, new string[] { });
 		}
 
-		public static ApiResponse SendMessageToServer(string str, string message)
+		public static ApiResponse Invoke(string str, string message)
 		{
-			return SendMessageToServer(str, new string[] { message });
+			return Invoke(str, new string[] { message });
+		}
+
+		public static void ClearActiveTurnIndicator()
+		{
+			Invoke("ClearActiveTurnIndicator");
 		}
 	}
 }

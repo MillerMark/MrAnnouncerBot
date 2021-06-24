@@ -27,6 +27,7 @@
 	image: HTMLImageElement;
 	removing = false;
 	justAdded: boolean;
+  hue = -1;
 
 	setImageUrl(imageURL: string) {
 		this.imageLoaded = false;

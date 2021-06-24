@@ -77,6 +77,8 @@ namespace TaleSpireExplore
 			Commands.Add("Target", Target);
 			Commands.Add("TargetCreatures", TargetCreatures);
 			Commands.Add("WiggleCreature", WiggleCreature);
+			Commands.Add("SetActiveTurn", SetActiveTurn);
+			Commands.Add("ClearActiveTurnIndicator", ClearActiveTurnIndicator);
 		}
 
 		private static string AddCreature(string[] input)
@@ -153,6 +155,7 @@ namespace TaleSpireExplore
 			catch (Exception ex)
 			{
 				Talespire.Log.Exception(ex);
+				Talespire.Log.Error($"command = \"{command}\"");
 				return new ApiResponse(ex.Message + ex.StackTrace, "Unknown command").ToString();
 			}
 		}
@@ -1460,6 +1463,37 @@ namespace TaleSpireExplore
 			}
 		}
 
+		static string ClearActiveTurnIndicator(string[] arg)
+		{
+			Talespire.Minis.ClearActiveTurnIndicator();
+			return ApiResponse.Good();
+		}
+
+		static string SetActiveTurn(string[] arg)
+		{
+			Talespire.Log.Debug($"SetActiveTurn...");
+			// TODO: Additional args? 1 player color?
+			const int expectedArgs = 2;
+			if (arg.Length != expectedArgs)
+				return ApiResponse.Bad($"Expecting {expectedArgs}.");
+
+			string id = arg[0];
+			string color = arg[1];
+
+
+			CreatureBoardAsset creature = null;
+
+			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+			{
+				creature = Talespire.Minis.SetActiveTurn(id, color);
+			});
+
+			if (creature == null)
+				return ApiResponse.Bad($"Creature with {id} not found.");
+			
+			Talespire.Log.Debug($"SetActiveTurn - Success!");
+			return ApiResponse.Good("Success", creature.GetCharacterPosition());
+		}
 		static string WiggleCreature(string[] arg)
 		{
 			Talespire.Log.Debug("WiggleCreature, with these parameters: ");

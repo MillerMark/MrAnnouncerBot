@@ -11,7 +11,7 @@ namespace TaleSpireExplore
 	{
 		static KnownEffects()
 		{
-			CompositeEffect.EffectsBuilder = new KnownEffectsFactory();
+			CompositeEffect.KnownEffectsBuilder = new KnownEffectsFactory();
 		}
 
 		static List<TaleSpireEffect> allKnownEffects;
