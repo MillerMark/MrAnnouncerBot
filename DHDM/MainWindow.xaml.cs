@@ -6869,6 +6869,7 @@ namespace DHDM
 				sheet.SetFromCharacter(player);
 			});
 		}
+
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
 			if (damageHealthChange == null)
@@ -6899,6 +6900,12 @@ namespace DHDM
 					player.ChangeHealth(damageHealthChange.DamageHealth);
 				UpdatePlayerScrollInGame(player);
 				UpdatePlayerScrollUI(player);
+				if (damageHealthChange.DamageHealth < 0)
+					TaleSpireClient.ShowDamage(player.taleSpireId, -damageHealthChange.DamageHealth, player.bloodColor);
+				else if (damageHealthChange.IsTempHitPoints)
+					TaleSpireClient.AddTempHitPoints(player.taleSpireId, damageHealthChange.DamageHealth);
+				else
+					TaleSpireClient.AddHitPoints(player.taleSpireId, damageHealthChange.DamageHealth);
 			}
 
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
@@ -9647,6 +9654,7 @@ namespace DHDM
 				{
 					// TODO: Get damage type and attack kind parameters right from the last roll!
 					inGameCreature.TakeDamage(DamageType.None, AttackKind.Any, damage);
+					TaleSpireClient.ShowDamage(inGameCreature.Creature.taleSpireId, damage, inGameCreature.Creature.bloodColor);
 
 					if (inGameCreature.PercentDamageJustInflicted != 0)
 						changed = true;
@@ -9659,12 +9667,21 @@ namespace DHDM
 				UpdateInGameCreatures();
 		}
 
+		void ChangeHealth(InGameCreature inGameCreature, int amount)
+		{
+			inGameCreature.ChangeHealth(amount);
+			if (amount < 0)
+				TaleSpireClient.ShowDamage(inGameCreature.Creature.taleSpireId, -amount, inGameCreature.Creature.bloodColor);
+			else
+				TaleSpireClient.AddHitPoints(inGameCreature.Creature.taleSpireId, amount);
+		}
+
 		void ChangeTargetedCreatureHealth(int amount, InGameCreatureFilter inGameCreatureFilter)
 		{
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter))
 				{
-					inGameCreature.ChangeHealth(amount);
+					ChangeHealth(inGameCreature, amount);
 					TellDmCreatureHp(inGameCreature);
 				}
 			UpdateInGameCreatures();
@@ -10089,7 +10106,7 @@ namespace DHDM
 					break;
 				case "LastHealth":
 					foreach (InGameCreature inGameCreature in onScreenCreatures)
-						inGameCreature.ChangeHealth(lastHealth);
+						ChangeHealth(inGameCreature, lastHealth);
 					break;
 				case "HealthToAllCreatures":
 					ChangeTargetedCreatureHealth(value, InGameCreatureFilter.All);

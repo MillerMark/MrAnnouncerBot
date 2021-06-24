@@ -24,6 +24,7 @@ namespace DndCore
 		public string sourceName { get; set; }
 		public string sceneName { get; set; }
 		public string taleSpireId { get; set; }
+		public string bloodColor { get; set; }
 		public double videoAnchorHorizontal { get; set; }
 		public double videoAnchorVertical { get; set; }
 		public double videoWidth { get; set; }

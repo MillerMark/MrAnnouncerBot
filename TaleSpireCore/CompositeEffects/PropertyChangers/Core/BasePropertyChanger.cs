@@ -36,14 +36,14 @@ namespace TaleSpireCore
 			return 0f;
 		}
 
-		public void ModifyProperty(GameObject effect)
+		public void ModifyProperty(object instance)
 		{
 			try
 			{
 				object instanceToSet = null;
 
 				string[] split = Name.Split('.');
-				object nextInstance = effect;
+				object nextInstance = instance;
 				PropertyInfo property = null;
 				FieldInfo field = null;
 				foreach (string propertyName in split)
@@ -51,38 +51,53 @@ namespace TaleSpireCore
 					field = null;
 					property = null;
 
+					//Talespire.Log.Debug($"propertyName = \"{propertyName}\"...");
+
 					if (propertyName.StartsWith("<") && propertyName.EndsWith(">"))
 					{
 						string componentTypeName = propertyName.Substring(1, propertyName.Length - 2);
+						//Talespire.Log.Debug($"Getting <\"{componentTypeName}\">...");
 						if (nextInstance is GameObject gameObject)
 						{
 							nextInstance = gameObject.GetComponent(componentTypeName);
 							if (nextInstance == null)
 							{
-								Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
+								//Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
 								return;
 							}
 							continue;
 						}
 					}
 
+					//Talespire.Log.Debug($"property = nextInstance.GetType().GetProperty(\"{propertyName}\");");
 					property = nextInstance.GetType().GetProperty(propertyName);
 					if (property == null)
 					{
+						//Talespire.Log.Debug($"property not found. Trying field...");
 						field = nextInstance.GetType().GetField(propertyName);
 						if (field == null)
 						{
+							//Talespire.Log.Debug($"field not found. Trying TrySetProperty...");
 							bool propertySet = TrySetProperty(nextInstance, propertyName);
 
 							if (propertySet)
 								continue;
 
-							Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
+							//Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
 							return;
 						}
 					}
 					instanceToSet = nextInstance;
-					nextInstance = property.GetValue(nextInstance);
+					//Talespire.Log.Debug($"nextInstance = property.GetValue(nextInstance);");
+					if (property != null)
+						nextInstance = property.GetValue(nextInstance);
+					else if (field != null)
+						nextInstance = field.GetValue(nextInstance);
+					else
+						nextInstance = null;
+
+					//if (nextInstance == null)
+					//	Talespire.Log.Debug($"nextInstance is null!");
 				}
 
 				//Talespire.Log.Debug($"Setting {Name} to {GetValue()}...");

@@ -18,6 +18,21 @@ namespace DndCore
 
 		[JsonIgnore]
 		public string taleSpireId { get; set; }
+		string _bloodColor;
+
+		[JsonIgnore]
+		public string bloodColor {
+			get
+			{
+				if (string.IsNullOrWhiteSpace(_bloodColor))
+					_bloodColor = "#980000";
+				return _bloodColor;
+			}
+			set
+			{
+				_bloodColor = value;
+			}
+		}
 		public const int invalidCreatureId = -2147483648;
 		string _dieBackColor = "#ffffff";
 		string _dieFontColor = "#000000";

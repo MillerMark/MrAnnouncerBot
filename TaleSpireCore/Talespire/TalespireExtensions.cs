@@ -11,6 +11,18 @@ namespace TaleSpireCore
 			return new Vector3(vectorDto.x, vectorDto.y, vectorDto.z);
 		}
 
+
+		/// <summary>
+		/// Returns the height of the ground at the creature's position.
+		/// </summary>
+		public static float GetGroundHeight(this CreatureBoardAsset creatureAsset)
+		{
+			float groundHeight = creatureAsset.PlacedPosition.y;
+			if (creatureAsset.IsFlying)
+				groundHeight -= creatureAsset.FlyingIndicator.ElevationAmount;
+			return groundHeight;
+		}
+
 		public static GameObject FindChild(this GameObject gameObject, string name)
 		{
 			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>();

@@ -19,6 +19,9 @@ namespace DndCore
 		[Column]
 		public string TaleSpireId { get; set; }
 
+		[Column]
+		public string BloodColor { get; set; }
+
 		[Column("BgHex")]
 		public string BackgroundHex { get; set; }
 
@@ -213,6 +216,7 @@ namespace DndCore
 						monster.dieBackColor = BackgroundHex;
 						monster.dieFontColor = ForegroundHex;
 						monster.taleSpireId = TaleSpireId;
+						monster.bloodColor = BloodColor;
 						creature = monster;
 					}
 				}

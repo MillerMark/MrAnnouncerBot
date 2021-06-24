@@ -79,6 +79,9 @@ namespace TaleSpireExplore
 			Commands.Add("WiggleCreature", WiggleCreature);
 			Commands.Add("SetActiveTurn", SetActiveTurn);
 			Commands.Add("ClearActiveTurnIndicator", ClearActiveTurnIndicator);
+			Commands.Add("ShowDamage", ShowDamage);
+			Commands.Add("AddHitPoints", AddHitPoints);
+			Commands.Add("AddTempHitPoints", AddTempHitPoints);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1469,10 +1472,43 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		static string ShowDamage(string[] arg)
+		{
+			if (arg.Length < 2 || arg.Length > 3)
+				return ApiResponse.Bad($"ShowDamage - Expecting 2-3 args.");
+
+			string bloodColor = "#980000";
+			if (arg.Length >= 3)
+				bloodColor = arg[2];
+			if (int.TryParse(arg[1], out int damageAmount))
+				Talespire.Minis.ShowDamage(arg[0], damageAmount, bloodColor);
+			return ApiResponse.Good();
+		}
+
+		static string AddHitPoints(string[] arg)
+		{
+			if (arg.Length != 2)
+				return ApiResponse.Bad($"AddHitPoints - Expecting 2 args.");
+
+			if (int.TryParse(arg[1], out int healthAmount))
+				Talespire.Minis.AddHitPoints(arg[0], healthAmount);
+			return ApiResponse.Good();
+		}
+
+		static string AddTempHitPoints(string[] arg)
+		{
+			if (arg.Length != 2)
+				return ApiResponse.Bad($"AddTempHitPoints - Expecting 2 args.");
+
+			if (int.TryParse(arg[1], out int healthAmount))
+				Talespire.Minis.AddTempHitPoints(arg[0], healthAmount);
+			return ApiResponse.Good();
+		}
+
 		static string SetActiveTurn(string[] arg)
 		{
 			Talespire.Log.Debug($"SetActiveTurn...");
-			// TODO: Additional args? 1 player color?
+
 			const int expectedArgs = 2;
 			if (arg.Length != expectedArgs)
 				return ApiResponse.Bad($"Expecting {expectedArgs}.");

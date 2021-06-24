@@ -158,19 +158,34 @@ namespace TaleSpireCore
 			}
 		}
 
-		public static ApiResponse Invoke(string message)
+		public static ApiResponse Invoke(string command)
 		{
-			return Invoke(message, new string[] { });
+			return Invoke(command, new string[] { });
 		}
 
-		public static ApiResponse Invoke(string str, string message)
+		public static ApiResponse Invoke(string command, string msgparams)
 		{
-			return Invoke(str, new string[] { message });
+			return Invoke(command, new string[] { msgparams });
 		}
 
 		public static void ClearActiveTurnIndicator()
 		{
 			Invoke("ClearActiveTurnIndicator");
+		}
+
+		public static void ShowDamage(string taleSpireId, int damageHealth, string bloodColor = "#980000")
+		{
+			Invoke("ShowDamage", new string[] { taleSpireId, damageHealth.ToString(), bloodColor });
+		}
+
+		public static void AddHitPoints(string taleSpireId, int health)
+		{
+			Invoke("AddHitPoints", new string[] { taleSpireId, health.ToString() });
+		}
+
+		public static void AddTempHitPoints(string taleSpireId, int health)
+		{
+			Invoke("AddTempHitPoints", new string[] { taleSpireId, health.ToString() });
 		}
 	}
 }

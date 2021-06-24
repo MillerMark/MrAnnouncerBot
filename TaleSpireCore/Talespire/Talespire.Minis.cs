@@ -254,26 +254,23 @@ namespace TaleSpireCore
 				PlayEmote(creatureId, "TLA_Surprise");
 			}
 
-			static void ModifyColor(GameObject gameObject, string childName, string propertyName, string valueStr)
-			{
-				GameObject child = gameObject.FindChild(childName);
-				if (child == null)
-				{
-					Log.Error($"Unable to find child named \"{childName}\".");
-					return;
-				}
-				Log.Debug($"ModifyColor - ChangeColor changeColor = new ChangeColor(propertyName, valueStr);");
-				ChangeColor changeColor = new ChangeColor(propertyName, valueStr);
-				Log.Debug($"changeColor.ModifyProperty(child);");
-				changeColor.ModifyProperty(child);
-			}
-
 			static void SetTurnIndicatorColor(GameObject gameObject, string htmlColorStr, float creatureScale)
 			{
 				float multiplier = 1;
-				HueSatLight hueSatLight = new HueSatLight(htmlColorStr);
+				Log.Debug($"htmlColorStr = \"{htmlColorStr}\"");
+				HueSatLight hueSatLight;
+				try
+				{
+					hueSatLight = new HueSatLight(htmlColorStr);
+				}
+				catch (Exception ex)
+				{
+					Log.Exception(ex);
+					htmlColorStr = "#ff0000";
+					hueSatLight = new HueSatLight("#ff0000");
+				}
 				double relativeLuminance = hueSatLight.GetRelativeLuminance();
-				Talespire.Log.Debug($"hueSatLight.GetRelativeLuminance: {relativeLuminance}");
+				Log.Debug($"hueSatLight.GetRelativeLuminance: {relativeLuminance}");
 				if (relativeLuminance > 0.24)
 					multiplier = 0.5f;
 				else if (relativeLuminance > 0.5)
@@ -281,8 +278,8 @@ namespace TaleSpireCore
 				if (creatureScale < 1)
 					multiplier *= 0.75f;
 				// relativeLuminance 1
-				ModifyColor(gameObject, "Particle System", "<ParticleSystemRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 4f}");
-				ModifyColor(gameObject, "Decal_FireRing", "<MeshRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 7f}");
+				Property.ModifyColor(gameObject, "Particle System", "<ParticleSystemRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 4f}");
+				Property.ModifyColor(gameObject, "Decal_FireRing", "<MeshRenderer>.material._TintColor", $"{htmlColorStr} x{multiplier * 7f}");
 			}
 
 			public static CreatureBoardAsset SetActiveTurn(string creatureId, string color)
@@ -342,6 +339,137 @@ namespace TaleSpireCore
 					GameObject.Destroy(activeTurnIndicator);
 					activeTurnIndicator = null;
 				}
+			}
+
+			static Unity.Mathematics.Random random = new Unity.Mathematics.Random((uint)DateTime.Now.Ticks);
+			
+			static string GetRandomSmallBloodPrefab()
+			{
+				int[] smallIndices = new int[] { 4, 5, 6, 7 };
+				int index = random.NextInt(smallIndices.Length);
+				return $"Blood{smallIndices[index]}";
+			}
+
+			static string GetRandomLargeBloodPrefab()
+			{
+				int[] largeIndices = new int[] { 1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15 };
+				int index = random.NextInt(largeIndices.Length);
+				return $"Blood{largeIndices[index]}";
+			}
+
+			static void ChangeBloodEffectColor(GameObject bloodEffect, string bloodColor)
+			{
+				Log.Debug($"ChangeBloodEffectColor to {bloodColor}...");
+				Transform[] componentsInChildren = bloodEffect.transform.GetComponentsInChildren<Transform>();
+				foreach (Transform transform in componentsInChildren)
+				{
+					MeshRenderer meshRenderer = transform.gameObject.GetComponent<MeshRenderer>();
+					if (meshRenderer == null)
+						continue;
+
+					//Log.Debug($"Found a GameObject (\"{transform.gameObject.name}\") with a MeshRenderer!!!");
+					
+					Shader shader = meshRenderer.material?.shader;
+					if (shader == null)
+						continue;
+
+					int propertyCount = shader.GetPropertyCount();
+					for (int i = 0; i < propertyCount; i++)
+						if (shader.GetPropertyType(i) == UnityEngine.Rendering.ShaderPropertyType.Color)
+						{
+							//Log.Debug($"  Color prop name = \"{shader.GetPropertyName(i)}\"");
+							Property.ModifyColor(transform.gameObject, null, $"<MeshRenderer>.material.{shader.GetPropertyName(i)}", bloodColor);
+						}
+				}
+			}
+			public static void ShowDamage(string creatureId, int damageAmount, string bloodColor, float rotationOffset = 0)
+			{
+				CreatureBoardAsset creatureAsset = GetCreatureBoardAsset(creatureId);
+				if (creatureAsset == null)
+				{
+					Log.Error($"ShowDamage - creatureId {creatureId} not found.");
+					return;
+				}
+
+				if (damageAmount > 30)
+				{
+					ShowDamage(creatureId, damageAmount - 30, bloodColor, random.NextInt(60) - 30);
+					damageAmount = 30;
+				}
+
+				float scale = 0.65f * creatureAsset.CreatureScale;  // 0.5, 1, 2, 3, 4
+
+				string prefabName;
+				float scaleMultiplier;
+
+				if (damageAmount < 15)
+				{
+					prefabName = GetRandomSmallBloodPrefab();
+					scaleMultiplier = 1;
+				}
+				else
+				{
+					prefabName = GetRandomLargeBloodPrefab();
+					scaleMultiplier = 1 + damageAmount / 70f;
+				}
+
+				Log.Debug($"prefabName = \"{prefabName}\"");
+				GameObject bloodPrefab = Prefabs.Get(prefabName);
+
+				if (bloodPrefab == null)
+				{
+					Log.Error($"Prefab \"{prefabName}\" not found!");
+					bloodPrefab = Prefabs.Get("Blood4");
+				}
+
+				// TODO: Change the blood color... bloodColor
+
+				scale *= scaleMultiplier;
+
+				GameObject bloodEffect = null;
+				float groundHeight = creatureAsset.GetGroundHeight();
+
+				//Log.Debug($"groundHeight = {groundHeight}");
+
+				UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+				{
+					bloodEffect = UnityEngine.Object.Instantiate(bloodPrefab, creatureAsset.HookHitTarget.position, creatureAsset.HookHitTarget.rotation);
+					Property.ModifyFloat(bloodEffect, null, "<BFX_BloodSettings>.GroundHeight", groundHeight);
+					ChangeBloodEffectColor(bloodEffect, bloodColor);
+					bloodEffect.transform.Rotate(Vector3.up, 180 + rotationOffset);
+					bloodEffect.transform.localScale = new Vector3(scale, scale, scale);
+				}
+				);
+
+				Instances.AddTemporal(bloodEffect, 16);
+			}
+
+			static void ShowHealth(string creatureId, int healthAmount, string effectName)
+			{
+				CreatureBoardAsset creatureAsset = GetCreatureBoardAsset(creatureId);
+				if (creatureAsset == null)
+				{
+					Log.Error($"AddHitPoints - creatureId {creatureId} not found.");
+					return;
+				}
+
+				GameObject heal = CompositeEffect.CreateKnownEffect(effectName);
+				heal.transform.position = creatureAsset.transform.position;
+				float scale = creatureAsset.CreatureScale / 2.0f;
+				heal.transform.localScale = new Vector3(scale, scale, scale);
+				Property.ModifyFloat(heal, "ParticlesHeal", "<ParticleSystem>.startSize", 0.4f * creatureAsset.CreatureScale);
+				Property.ModifyFloat(heal, "ParticlesHealPlus", "<ParticleSystem>.startSize", 0.3f * creatureAsset.CreatureScale);
+				Instances.AddTemporal(heal, Math.Min(healthAmount, 14));
+			}
+
+			public static void AddHitPoints(string creatureId, int healthAmount)
+			{
+				ShowHealth(creatureId, healthAmount, "Heal");
+			}
+
+			public static void AddTempHitPoints(string creatureId, int healthAmount)
+			{
+				ShowHealth(creatureId, healthAmount, "TempHitPoints");
 			}
 		}
 	}
