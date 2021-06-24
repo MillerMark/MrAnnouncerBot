@@ -9709,6 +9709,7 @@ namespace DHDM
 				{
 					inGameCreature.Creature.ChangeTempHP(amount);
 					TellDmCreatureHp(inGameCreature);
+					TaleSpireClient.AddTempHitPoints(inGameCreature.Creature.taleSpireId, amount);
 				}
 			UpdateInGameCreatures();
 		}
@@ -11281,6 +11282,8 @@ namespace DHDM
 					TargetAllInVolume(response);
 		}
 
+		string lastIdOverwriteId;
+
 		void BindCreature(ApiResponse response)
 		{
 			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
@@ -11291,9 +11294,29 @@ namespace DHDM
 			if (selected == null)
 				return;
 
-			selected.TaleSpireId = characterPosition.ID;
-			selected.Creature.taleSpireId = characterPosition.ID;
-			GoogleSheets.SaveChanges(selected);
+			
+			if (characterPosition.ID == selected.TaleSpireId && characterPosition.ID == selected.Creature.taleSpireId)
+			{
+				TaleSpireClient.Wiggle(characterPosition.ID);
+				lastIdOverwriteId = null;
+				// Already set.
+			}
+			else if ((!string.IsNullOrEmpty(selected.TaleSpireId) || !string.IsNullOrEmpty(selected.Creature.taleSpireId)) && 
+				(lastIdOverwriteId != selected.TaleSpireId && lastIdOverwriteId != selected.Creature.taleSpireId))
+			{
+				// About to overwrite an existing id!
+				TaleSpireClient.Wiggle(selected.TaleSpireId);
+				lastIdOverwriteId = selected.TaleSpireId;
+				HubtasticBaseStation.ShowValidationIssue(selected.Creature.IntId, ValidationAction.Warn, "Overwrite existing binding?");
+			}
+			else
+			{
+				TaleSpireClient.Wiggle(characterPosition.ID);
+				lastIdOverwriteId = null;
+				selected.TaleSpireId = characterPosition.ID;
+				selected.Creature.taleSpireId = characterPosition.ID;
+				GoogleSheets.SaveChanges(selected);
+			}
 		}
 
 		void TargetAllInVolume(ApiResponse response)
@@ -11339,7 +11362,7 @@ namespace DHDM
 
 		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
 		{
-			TaleSpireClient.Invoke("WiggleCreature", creatureToSelect.TaleSpireId);
+			TaleSpireClient.Wiggle(creatureToSelect.TaleSpireId);
 		}
 
 		public void NextTurn()

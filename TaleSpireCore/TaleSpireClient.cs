@@ -187,5 +187,10 @@ namespace TaleSpireCore
 		{
 			Invoke("AddTempHitPoints", new string[] { taleSpireId, health.ToString() });
 		}
+
+		public static void Wiggle(string taleSpireId)
+		{
+			Invoke("WiggleCreature", taleSpireId);
+		}
 	}
 }
