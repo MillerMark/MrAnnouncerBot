@@ -1501,7 +1501,10 @@ namespace TaleSpireExplore
 				return ApiResponse.Bad($"AddTempHitPoints - Expecting 2 args.");
 
 			if (int.TryParse(arg[1], out int healthAmount))
+			{
+				//Talespire.Log.Debug($"Talespire.Minis.AddTempHitPoints(\"{arg[0]}\", {healthAmount});");
 				Talespire.Minis.AddTempHitPoints(arg[0], healthAmount);
+			}
 			return ApiResponse.Good();
 		}
 

@@ -7,11 +7,25 @@ namespace TaleSpireCore
 	{
 		public static BasePropertyChanger CreateFrom(PropertyChangerDto propertyChangerDto)
 		{
-			string typeName = nameof(TaleSpireCore) + "." + BasePropertyChanger.STR_ChangePrefix + propertyChangerDto.Type;
-			Type changerToCreate = Type.GetType(typeName);
+			return CreateFromTypeName(propertyChangerDto.Type);
+		}
+
+		public static BasePropertyChanger CreateFromModDetails(PropertyModDetails propertyModDetails)
+		{
+			BasePropertyChanger propertyChanger = CreateFromTypeName(propertyModDetails.GetPropertyType().Name);
+			propertyChanger.Name = propertyModDetails.GetName();
+			return propertyChanger;
+		}
+
+		public static BasePropertyChanger CreateFromTypeName(string typeName)
+		{
+			if (typeName == "Single")
+				typeName = "Float";
+			string fullTypeName = nameof(TaleSpireCore) + "." + BasePropertyChanger.STR_ChangePrefix + typeName;
+			Type changerToCreate = Type.GetType(fullTypeName);
 			if (changerToCreate == null)
 			{
-				Talespire.Log.Error($"Unable to find type \"{typeName}\"!");
+				Talespire.Log.Error($"Unable to find type \"{fullTypeName}\"!");
 				return null;
 			}
 			return Activator.CreateInstance(changerToCreate) as BasePropertyChanger;

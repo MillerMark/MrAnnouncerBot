@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		}
 
 
-		public override object GetValue()
+		protected override object ParseValue()
 		{
 			return Talespire.Mesh.Get(Value);
 		}

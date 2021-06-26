@@ -50,6 +50,16 @@ namespace TaleSpireCore
 				mortalityCheckTimer.Start();
 			}
 
+			static void TurnOffAllParticleSystems(GameObject gameObject)
+			{
+				ParticleSystem[] particleSystems = gameObject.GetComponentsInChildren<ParticleSystem>();
+				foreach (ParticleSystem particleSystem in particleSystems)
+				{
+					ParticleSystem.EmissionModule emission = particleSystem.emission;
+					emission.enabled = false;
+				}
+			}
+
 			private static void MortalityCheckTimer_Elapsed(object sender, ElapsedEventArgs e)
 			{
 				List<GameObject> gameObjectsToDestroy = new List<GameObject>();
@@ -58,6 +68,10 @@ namespace TaleSpireCore
 					{
 						gameObjectsToDestroy.Add(MortalGameObjects[i].GameObject);
 						MortalGameObjects.RemoveAt(i);
+					}
+					else if (MortalGameObjects[i].ParticleShutoffTime <= DateTime.Now)
+					{
+						TurnOffAllParticleSystems(MortalGameObjects[i].GameObject);
 					}
 
 				if (MortalGameObjects.Count == 0 && mortalityCheckTimer != null)
@@ -73,9 +87,10 @@ namespace TaleSpireCore
 				});
 			}
 
-			public static void AddTemporal(GameObject instance, double lifetimeSeconds)
+			public static void AddTemporal(GameObject instance, double lifetimeSeconds, double particleShutoffTimeSeconds = 0)
 			{
-				MortalGameObjects.Add(new MortalGameObject(instance, DateTime.Now + TimeSpan.FromSeconds(lifetimeSeconds)));
+				DateTime expireTime = DateTime.Now + TimeSpan.FromSeconds(lifetimeSeconds);
+				MortalGameObjects.Add(new MortalGameObject(instance, expireTime, expireTime - TimeSpan.FromSeconds(particleShutoffTimeSeconds)));
 				MakeSureTimerIsRunning();
 			}
 		}

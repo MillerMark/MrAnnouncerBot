@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		{
 		}
 
-		protected override bool TrySetProperty(object instance, string propertyName)
+		public override bool TrySetProperty(object instance, string propertyName)
 		{
 			if (instance is Material material)
 			{
@@ -27,7 +27,12 @@ namespace TaleSpireCore
 			return false;
 		}
 
-		public override object GetValue()
+		public override bool CanSetProperty(object instance, string propertyName)
+		{
+			return instance is Material;
+		}
+
+		protected override object ParseValue()
 		{
 			if (float.TryParse(Value, out float result))
 				return result;

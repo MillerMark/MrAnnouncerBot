@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		{
 		}
 
-		protected override bool TrySetProperty(object instance, string propertyName)
+		public override bool TrySetProperty(object instance, string propertyName)
 		{
 			if (instance is Material material)
 			{
@@ -27,11 +27,16 @@ namespace TaleSpireCore
 			return false;
 		}
 
-		public override object GetValue()
+		public override bool CanSetProperty(object instance, string propertyName)
+		{
+			return instance is Material;
+		}
+
+		protected override object ParseValue()
 		{
 			// TODO: Support color multipliers, seemingly needed for shaders and materials.
 			// "#aabbcc x4.24"
-			Talespire.Log.Debug($"ChangeColor.GetValue");
+			//Talespire.Log.Debug($"ChangeColor.ParseValue");
 			int indexOfMultiplier = Value.IndexOf(" x");
 			string html = Value;
 			float multiplier = 1;
@@ -46,7 +51,7 @@ namespace TaleSpireCore
 			{
 				if (multiplier > 1)
 				{
-					Talespire.Log.Debug($"Returning multiplied (x{multiplier}) value!");
+					//Talespire.Log.Debug($"Returning multiplied (x{multiplier}) value!");
 					return color * multiplier;    // Bil is never wrong!
 					//new Color(color.r * multiplier, color.g * multiplier, color.b * multiplier);
 				}

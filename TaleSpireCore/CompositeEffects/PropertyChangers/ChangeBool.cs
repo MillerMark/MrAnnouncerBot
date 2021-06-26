@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		}
 
 
-		public override object GetValue()
+		protected override object ParseValue()
 		{
 			if (bool.TryParse(Value, out bool result))
 				return result;

@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		{
 		}
 
-		public override object GetValue()
+		protected override object ParseValue()
 		{
 			string[] parts = Value.Split(',');
 			float x = 0;

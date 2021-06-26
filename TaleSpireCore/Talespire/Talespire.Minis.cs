@@ -457,9 +457,12 @@ namespace TaleSpireCore
 				heal.transform.position = creatureAsset.transform.position;
 				float scale = creatureAsset.CreatureScale / 2.0f;
 				heal.transform.localScale = new Vector3(scale, scale, scale);
-				Property.ModifyFloat(heal, "ParticlesHeal", "<ParticleSystem>.startSize", 0.4f * creatureAsset.CreatureScale);
-				Property.ModifyFloat(heal, "ParticlesHealPlus", "<ParticleSystem>.startSize", 0.3f * creatureAsset.CreatureScale);
-				Instances.AddTemporal(heal, Math.Min(healthAmount, 14));
+				Property.Modify(heal, "ParticlesHeal", "<ParticleSystem>.startSize", 0.4f * creatureAsset.CreatureScale);
+				Property.Modify(heal, "ParticlesHealPlus", "<ParticleSystem>.startSize", 0.3f * creatureAsset.CreatureScale);
+
+				double lifetimeSeconds = Math.Max(5, Math.Min(healthAmount, 16));
+				double particleFadeOutTime = Math.Max(lifetimeSeconds / 2.0, 3);
+				Instances.AddTemporal(heal, lifetimeSeconds, particleFadeOutTime);
 			}
 
 			public static void AddHitPoints(string creatureId, int healthAmount)
