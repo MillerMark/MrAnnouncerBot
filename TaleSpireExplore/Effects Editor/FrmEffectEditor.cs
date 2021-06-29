@@ -383,37 +383,55 @@ namespace TaleSpireExplore
 				Talespire.Log.Debug($"AddProperties - count == {propertyInfos.Length}");
 			else
 				Talespire.Log.Debug($"no properties found");
+			string lastPropertyName = string.Empty;
 			if (propertyInfos != null)
 				foreach (PropertyInfo propertyInfo in propertyInfos)
 				{
-					if (CanSkipProperty(propertyInfo, parentInstance, true))
+					try
 					{
-						Talespire.Log.Debug($"Skipping property {propertyInfo.Name} because it has no set method.");
-						continue;
+						lastPropertyName = propertyInfo.Name;
+						if (CanSkipProperty(propertyInfo, parentInstance, true))
+						{
+							Talespire.Log.Debug($"Skipping property {propertyInfo.Name} because it has no set method.");
+							continue;
+						}
+
+						PropertyNode prop = new PropertyNode()
+						{
+							PropertyName = propertyInfo.Name,
+							Text = propertyInfo.Name,
+							PropertyInfo = propertyInfo,
+							ValueInstance = propertyInfo.GetValue(parentInstance),
+							ParentInstance = parentInstance
+						};
+
+						PropertyInfo enabledProperty = propertyInfo.PropertyType.GetProperty("enabled", BindingFlags.Public | BindingFlags.Instance);
+						if (enabledProperty != null)
+						{
+							Talespire.Log.Debug($"Found an enabledProperty.");
+							if (prop.ValueInstance == null)
+							{
+								Talespire.Log.Error($"prop.ValueInstance is null for \"{propertyInfo.Name}\"");
+							}
+							else
+							{
+								bool enabled = (bool)enabledProperty.GetValue(prop.ValueInstance);
+								Talespire.Log.Debug($"enabled = {enabled}");
+								if (!enabled)
+									prop.IsDisabled = true;
+							}
+						}
+
+						Talespire.Log.Debug($"WillHaveChildNodes({prop.ValueInstance}, {prop.PropertyName})...");
+						if (WillHaveChildNodes(prop.ValueInstance, prop.PropertyName))
+							AddVirtualNode(prop);
+						nodes.Add(prop);
 					}
-
-					PropertyNode prop = new PropertyNode()
+					catch (Exception ex)
 					{
-						PropertyName = propertyInfo.Name,
-						Text = propertyInfo.Name,
-						PropertyInfo = propertyInfo,
-						ValueInstance = propertyInfo.GetValue(parentInstance),
-						ParentInstance = parentInstance
-					};
-
-					PropertyInfo enabledProperty = propertyInfo.PropertyType.GetProperty("enabled", BindingFlags.Public | BindingFlags.Instance);
-					if (enabledProperty != null)
-					{
-						Talespire.Log.Debug($"Found an enabledProperty.");
-						bool enabled = (bool)enabledProperty.GetValue(prop.ValueInstance);
-						Talespire.Log.Debug($"enabled = {enabled}");
-						if (!enabled)
-							prop.IsDisabled = true;
+						Talespire.Log.Error($"Exception working on {lastPropertyName}");
+						Talespire.Log.Exception(ex);
 					}
-
-					if (WillHaveChildNodes(prop.ValueInstance, prop.PropertyName))
-						AddVirtualNode(prop);
-					nodes.Add(prop);
 				}
 		}
 
@@ -1147,11 +1165,11 @@ namespace TaleSpireExplore
 					selectedNode.Nodes.Add(node);
 				else
 					trvEffectHierarchy.Nodes.Add(node);
-				Talespire.Log.Debug($"node.GameObject = KnownEffects.CreateUnsafe(existingEffectName, GetNewInstanceId());");
+				//Talespire.Log.Debug($"node.GameObject = KnownEffects.CreateUnsafe(existingEffectName, GetNewInstanceId());");
 				node.GameObject = KnownEffects.CreateUnsafe(existingEffectName, GetNewInstanceId());
-				Talespire.Log.Debug($"node.Checked = node.GameObject.activeSelf;");
+				//Talespire.Log.Debug($"node.Checked = node.GameObject.activeSelf;");
 				node.Checked = node.GameObject.activeSelf;
-				Talespire.Log.Debug($"AddChildren(node);");
+				//Talespire.Log.Debug($"AddChildren(node);");
 				AddChildren(node);
 			}
 			catch (Exception ex)

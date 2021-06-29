@@ -147,6 +147,7 @@
     <Compile Include="TaleSpireClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Talespire\TalespireExtensions.cs" />
+    <Compile Include="Talespire\TargetKind.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
     <Compile Include="Talespire\Talespire.Flashlight.cs" />

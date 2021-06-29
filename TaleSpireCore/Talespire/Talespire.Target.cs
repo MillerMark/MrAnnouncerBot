@@ -267,27 +267,41 @@ namespace TaleSpireCore
 				AddTargetDisk(targetPosition, null, 1);
 			}
 
-			private static void AddTargetDisk(Vector3 targetPosition, Transform parent, float scale = 1)
+			private static void AddTargetDisk(Vector3 targetPosition, Transform parent, float scale = 1, TargetKind targetKind = TargetKind.Enemy)
 			{
 				GameObject targetDisk = new GameObject(STR_TargetDisk);
+
+				GameObject targetDiskPrefab;
+				if (targetKind == TargetKind.Friendly)
+					targetDiskPrefab = Prefabs.Clone("TargetFriendly");
+				else
+					targetDiskPrefab = Prefabs.Clone("TargetEnemy");
+
+				targetDisk.name = STR_TargetDisk;
+				const float percentAdjust = 0.6f;
+				Property.Modify(targetDiskPrefab, "<TargetScale>.Scale", scale * percentAdjust);
+
 				targetDisk.transform.position = targetPosition;
 				if (parent != null)
 					targetDisk.transform.SetParent(parent);
-				float percentAdjust = 0.65f;
+
+				targetDiskPrefab.transform.parent = targetDisk.transform;
+
 				float yOffset = 0;
 				if (scale == 0.5)
-					yOffset = -0.025f;
+					yOffset = -2.13f + 2.46f - 1.2f;  //x  was 0.1. Needs to go to 2.56. So + 2.46
+																		 // Needs to go to -2.35
 				else if (scale == 1)
-					yOffset = 0.0f;
+					yOffset = -1.03f + 0.17f; //x   Was 0.05000009. Needs to go to 0.22, so + 0.17f
 				else if (scale == 2)
-					yOffset = 0.1f;
+					yOffset = -0.51f - 0.125f - 0.07f;  //x  Was 0.025. Needs to go to -0.1f. 
 				else if (scale == 3)
-					yOffset = 0.2f;
+					yOffset = -0.34f - 0.094f - 0.07f;  //x  Was 0.0167. Needs to go to -0.094.
 				else if (scale == 4)
-					yOffset = 0.27f;
-				AddCylinder(targetDisk.transform, scale * 0.25f * percentAdjust, Color.red, 0.02f + yOffset);
-				AddCylinder(targetDisk.transform, scale * 0.58f * percentAdjust, Color.white, 0f + yOffset);
-				AddCylinder(targetDisk.transform, scale * 0.92f * percentAdjust, Color.red, -0.02f + yOffset);
+					yOffset = -0.26f + -0.0825f - 0.09f; //x  Was 0.01250029. Needs to go to -0.07
+																			 // 0.01250029  Needs to go to -0.04
+				targetDiskPrefab.transform.localPosition = new Vector3(0, 0.9f + yOffset, 0);
+
 				targetDisks.Add(targetDisk);
 			}
 

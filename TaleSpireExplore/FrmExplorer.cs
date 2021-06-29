@@ -1006,9 +1006,9 @@ namespace TaleSpireExplore
 		{
 			try
 			{
-				GameObject effect;
+				GameObject effect = Talespire.Prefabs.Clone(spellEffectName, instanceId);
 
-				effect = Talespire.Prefabs.Clone(spellEffectName, instanceId);
+				Talespire.Property.Modify(effect, "<FX_LifeTime>.LifeTime", 0, false);
 
 				if (effect == null)
 				{
@@ -1024,7 +1024,6 @@ namespace TaleSpireExplore
 			catch (Exception ex)
 			{
 				Talespire.Log.Exception(ex);
-				MessageBox.Show(ex.Message, "Exception!");
 				return null;
 			}
 		}
@@ -1032,6 +1031,7 @@ namespace TaleSpireExplore
 		private void btnParticleSystemOff_Click(object sender, EventArgs e)
 		{
 			Talespire.Instances.Delete(STR_SpellTestId);
+			//Talespire.Property.Modify(effect, "<FX_LifeTime>.DieNow", true);
 		}
 
 		string lastSelectedPrefab;

@@ -34,7 +34,17 @@ namespace TaleSpireCore
 			else if (field != null)
 				field.SetValue(instanceToSet, propertyChanger.GetValue());
 			else
+			{
 				propertyChanger.TrySetProperty(instanceToSet, attachedPropertyName);
+				return;
+			}
+
+			//	object value = null;
+			//	if (property != null && property.Name.EndsWith("LifeTime"))
+			//		value = property.GetValue(instanceToSet);
+			//	else if (field != null && field.Name.EndsWith("LifeTime"))
+			//		value = field.GetValue(instanceToSet);
+			//	Talespire.Log.Warning($"After setting LifeTime, the set value is \"{value}\".");
 		}
 
 		public Type GetPropertyType()
@@ -56,5 +66,7 @@ namespace TaleSpireCore
 			else
 				return attachedPropertyName;
 		}
+
+		public bool Found => GetPropertyType() != null;
 	}
 }

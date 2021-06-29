@@ -49,6 +49,7 @@ namespace TaleSpireCore
 				while (ex != null)
 				{
 					manualLogSource.Log(LogLevel.Error, $"{indent}{prefix}{ex.GetType().Name}{suffix} - \"{ex.Message}\"");
+					manualLogSource.Log(LogLevel.Warning, ex.StackTrace);
 					ex = ex.InnerException;
 					prefix = "Inner: ";
 					suffix = "";

@@ -51,7 +51,8 @@ namespace TaleSpireCore
 			{
 				PropertyModDetails propertyModDetails = GetPropertyModDetails(instance, Name);
 
-				//Talespire.Log.Debug($"Setting {Name} to {GetValue()}...");
+				if (Name.EndsWith("LifeTime"))
+					Talespire.Log.Debug($"Setting {Name} to {GetValue()} (in {GetType().Name})...");
 				propertyModDetails.SetValue(this);
 			}
 			catch (Exception ex)
@@ -121,8 +122,9 @@ namespace TaleSpireCore
 			return false;
 		}
 
-		public static PropertyModDetails GetPropertyModDetails(object instance, string fullPropertyName)
+		public static PropertyModDetails GetPropertyModDetails(object instance, string fullPropertyName, bool logErrors = false)
 		{
+			bool logDetails = logErrors; // fullPropertyName.EndsWith("LifeTime");
 			PropertyModDetails propertyModDetails = new PropertyModDetails();
 			propertyModDetails.instanceToSet = null;
 			string[] split = fullPropertyName.Split('.');
@@ -135,33 +137,55 @@ namespace TaleSpireCore
 				propertyModDetails.field = null;
 				propertyModDetails.property = null;
 
-				//Talespire.Log.Debug($"propertyName = \"{propertyName}\"...");
+				if (logDetails)
+					Talespire.Log.Debug($"propertyName = \"{propertyName}\"...");
 
 				if (propertyName.StartsWith("<") && propertyName.EndsWith(">"))
 				{
 					string componentTypeName = propertyName.Substring(1, propertyName.Length - 2);
-					//Talespire.Log.Debug($"Getting <\"{componentTypeName}\">...");
+					if (logDetails)
+						Talespire.Log.Debug($"Getting <\"{componentTypeName}\">...");
 					if (nextInstance is GameObject gameObject)
 					{
 						nextInstance = gameObject.GetComponent(componentTypeName);
 						if (nextInstance == null)
 						{
-							//Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
-							break;
+							Component[] components = gameObject.GetComponents(typeof(Component));
+							foreach (Component component in components)
+							{
+								if (component.GetType().Name == componentTypeName)
+								{
+									if (logDetails)
+										Talespire.Log.Warning($"  Found \"{component.GetType().Name}\" through iteration!");
+									nextInstance = component;
+									break;
+								}
+							}
+
+							if (nextInstance == null)
+							{
+								if (logDetails)
+									Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
+
+								break;
+							}
 						}
 						continue;
 					}
 				}
 
-				//Talespire.Log.Debug($"property = nextInstance.GetType().GetProperty(\"{propertyName}\");");
+				if (logDetails)
+					Talespire.Log.Debug($"property = nextInstance.GetType().GetProperty(\"{propertyName}\");");
 				propertyModDetails.property = nextInstance.GetType().GetProperty(propertyName);
 				if (propertyModDetails.property == null)
 				{
-					//Talespire.Log.Debug($"property not found. Trying field...");
+					if (logDetails)
+						Talespire.Log.Debug($"property not found. Trying field...");
 					propertyModDetails.field = nextInstance.GetType().GetField(propertyName);
 					if (propertyModDetails.field == null)
 					{
-						//Talespire.Log.Debug($"field not found. Trying TrySetProperty...");
+						if (logDetails)
+							Talespire.Log.Debug($"field not found. Trying TrySetProperty...");
 						if (IsAttachedProperty(nextInstance, propertyName, out Type propertyType))
 						{
 							propertyModDetails.instanceToSet = nextInstance;
@@ -171,13 +195,15 @@ namespace TaleSpireCore
 						}
 
 						propertyModDetails.instanceToSet = null;
-						//Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
+						if (logDetails)
+							Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
 						break;
 					}
 				}
 				propertyModDetails.SetInstance(ref nextInstance);
-				//if (nextInstance == null)
-				//	Talespire.Log.Debug($"nextInstance is null!");
+				if (logDetails)
+					if (nextInstance == null)
+						Talespire.Log.Debug($"nextInstance is null!");
 			}
 			return propertyModDetails;
 		}

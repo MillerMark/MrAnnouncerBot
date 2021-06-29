@@ -153,7 +153,7 @@ namespace TaleSpireCore
 		[Browsable(false)]
 		public GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
-			Talespire.Log.Debug($"CreateOrFindUnsafe...");
+			//Talespire.Log.Debug($"CreateOrFindUnsafe...");
 			//if (ExistingChildName != null)
 			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
 			//else
@@ -218,15 +218,15 @@ namespace TaleSpireCore
 				}
 			}
 
-			Talespire.Log.Debug($"Creation complete!");
+			//Talespire.Log.Debug($"Creation complete!");
 
 			if (instance != null)
 			{
-				Talespire.Log.Debug($"ModifyProperties(instance)....");
+				//Talespire.Log.Debug($"ModifyProperties(instance)....");
 				ModifyProperties(instance);
 			}
 
-			Talespire.Log.Debug($"Repeat with children...");
+			//Talespire.Log.Debug($"Repeat with children...");
 			if (Children != null)
 				foreach (CompositeEffect nestedEffectDto in Children)
 					if (nestedEffectDto != null)
@@ -234,7 +234,7 @@ namespace TaleSpireCore
 					else
 						Talespire.Log.Error($"nestedEffectDto == null!");
 
-			Talespire.Log.Debug($"return instance;");
+			//Talespire.Log.Debug($"return instance;");
 			return instance;
 		}
 
@@ -242,7 +242,7 @@ namespace TaleSpireCore
 		{
 			if (KnownEffectsBuilder != null)
 			{
-				Talespire.Log.Debug($"KnownEffectsBuilder.Create(EffectNameToCreate, instanceId);");
+				//Talespire.Log.Debug($"KnownEffectsBuilder.Create(EffectNameToCreate, instanceId);");
 				return KnownEffectsBuilder.Create(effectName, instanceId);
 			}
 			return null;

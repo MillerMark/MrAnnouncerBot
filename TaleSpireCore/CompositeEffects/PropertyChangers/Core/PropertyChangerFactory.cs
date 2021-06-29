@@ -10,14 +10,18 @@ namespace TaleSpireCore
 			return CreateFromTypeName(propertyChangerDto.Type);
 		}
 
-		public static BasePropertyChanger CreateFromModDetails(PropertyModDetails propertyModDetails)
+		public static BasePropertyChanger CreateFromModDetails(PropertyModDetails propertyModDetails, bool logErrors = true)
 		{
-			BasePropertyChanger propertyChanger = CreateFromTypeName(propertyModDetails.GetPropertyType().Name);
-			propertyChanger.Name = propertyModDetails.GetName();
+			Type propertyType = propertyModDetails.GetPropertyType();
+			if (propertyType == null)
+				return null;
+			BasePropertyChanger propertyChanger = CreateFromTypeName(propertyType.Name, logErrors);
+			if (propertyChanger != null)
+				propertyChanger.Name = propertyModDetails.GetName();
 			return propertyChanger;
 		}
 
-		public static BasePropertyChanger CreateFromTypeName(string typeName)
+		public static BasePropertyChanger CreateFromTypeName(string typeName, bool logErrors = true)
 		{
 			if (typeName == "Single")
 				typeName = "Float";
@@ -25,7 +29,8 @@ namespace TaleSpireCore
 			Type changerToCreate = Type.GetType(fullTypeName);
 			if (changerToCreate == null)
 			{
-				Talespire.Log.Error($"Unable to find type \"{fullTypeName}\"!");
+				if (logErrors)
+					Talespire.Log.Error($"Unable to find type \"{fullTypeName}\"!");
 				return null;
 			}
 			return Activator.CreateInstance(changerToCreate) as BasePropertyChanger;
