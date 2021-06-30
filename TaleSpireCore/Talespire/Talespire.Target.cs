@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using Bounce.Unmanaged;
 using UnityEngine;
 
 namespace TaleSpireCore
@@ -18,6 +19,53 @@ namespace TaleSpireCore
 			static List<GameObject> targetDisks = new List<GameObject>();
 			static GameObject targetingSphere;
 			static GameObject targetingFire;
+
+			static List<string> allies = new List<string>();
+			static List<string> neutrals = new List<string>();
+
+			public static void RegisterAllies(string[] allyList)
+			{
+				allies.Clear();
+				allies.AddRange(allyList);
+			}
+
+			public static void RegisterNeutrals(string[] neutralList)
+			{
+				neutrals.Clear();
+				neutrals.AddRange(neutralList);
+			}
+
+			public static bool IsAlly(string worldId)
+			{
+				return allies.Contains(worldId);
+			}
+
+			public static bool IsNeutral(string worldId)
+			{
+				return neutrals.Contains(worldId);
+			}
+
+			public static bool IsEnemy(string worldId)
+			{
+				return !IsAlly(worldId) && !IsNeutral(worldId);
+			}
+
+			public static TargetKind WhatSide(string worldId)
+			{
+				if (IsAlly(worldId))
+					return TargetKind.Friendly;
+
+				if (IsNeutral(worldId))
+					return TargetKind.Neutral;
+
+				return TargetKind.Enemy;
+			}
+
+			static TargetKind WhatSide(NGuid worldId)
+			{
+				return WhatSide(worldId.ToString());
+			}
+
 
 			public static void SetInteractiveTargetingMode(InteractiveTargetingMode mode)
 			{
@@ -90,7 +138,7 @@ namespace TaleSpireCore
 				TargetSphereDiameter = diameterFeet;
 				try
 				{
-					targetingSphere = targetingSphereCompositeEffect?.CreateOrFindSafe();
+					targetingSphere = targetingSphereCompositeEffect?.CreateOrFindUnsafe();
 					if (targetingSphere == null)
 					{
 						Log.Error($"targetingSphere is NULL!!!");
@@ -120,7 +168,7 @@ namespace TaleSpireCore
 			{
 				try
 				{
-					targetingFire = targetingFireCompositeEffect?.CreateOrFindSafe();
+					targetingFire = targetingFireCompositeEffect?.CreateOrFindUnsafe();
 					if (targetingFire == null)
 					{
 						Log.Error($"targetingFire is NULL!!!");
@@ -162,10 +210,7 @@ namespace TaleSpireCore
 			static CreatureBoardAsset AddTargetToNearestCreature()
 			{
 				CreatureBoardAsset creatureBoardAsset = GetNearestCreature();
-				if (creatureBoardAsset != null)
-				{
-					AddTargetDiskToCreature(creatureBoardAsset);
-				}
+				AddTargetTo(creatureBoardAsset);
 				return creatureBoardAsset;
 			}
 
@@ -185,24 +230,55 @@ namespace TaleSpireCore
 				if (creatureBoardAsset != null)
 				{
 					Log.Debug($"creature found!");
-					AddTargetDiskToCreature(creatureBoardAsset);
+					AddTargetTo(creatureBoardAsset);
 				}
 			}
 
-			private static void AddTargetDiskToCreature(CreatureBoardAsset creatureBoardAsset)
+			static bool IsTargeted(CreatureBoardAsset creatureBoardAsset)
 			{
+				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
+				if (baseGameObject == null)
+					return false;
+				Transform baseTransform = baseGameObject.transform;
+				if (baseTransform == null)
+					return false;
+
+				return baseTransform.HasChild(STR_TargetDisk);
+			}
+
+
+			private static void RemoveTargetFrom(CreatureBoardAsset creatureBoardAsset)
+			{
+				if (creatureBoardAsset == null)
+					return;
+				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
+				GameObject targetDisk = baseGameObject.transform.GetChild(STR_TargetDisk);
+				if (targetDisk != null)
+				{
+					targetDisks.Remove(targetDisk);
+					UnityEngine.Object.Destroy(targetDisk);
+				}
+			}
+
+			private static void AddTargetTo(CreatureBoardAsset creatureBoardAsset)
+			{
+				if (creatureBoardAsset == null)
+					return;
 				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
 				Transform baseTransform = baseGameObject.transform;
 
 				if (baseTransform.HasChild(STR_TargetDisk))
+				{
+					Log.Warning($"{creatureBoardAsset.name}'s base transform already has a child STR_TargetDisk!");
 					return;
+				}
 
 				Vector3 basePosition = baseTransform.position;
 
 				// Bump the target position up a bit...
 				Vector3 targetPosition = new Vector3(basePosition.x, basePosition.y + 0.05f, basePosition.z);
 
-				AddTargetDisk(targetPosition, baseTransform, creatureBoardAsset.CreatureScale);
+				AddTarget(targetPosition, baseTransform, creatureBoardAsset.CreatureScale, WhatSide(creatureBoardAsset.WorldId));
 			}
 
 			public static GameObject GetBaseGameObject(CreatureBoardAsset creatureBoardAsset)
@@ -220,24 +296,14 @@ namespace TaleSpireCore
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureClosestTo(Flashlight.GetPosition(), maxDistanceToNearestCreatureFt);
 				if (creatureBoardAsset == null)
 					return null;
+				RemoveTargetFrom(creatureBoardAsset);
 
-				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
-
-				Transform[] children = baseGameObject.GetComponentsInChildren<Transform>();
-
-				foreach (Transform transform in children)
-					if (transform.gameObject.name == STR_TargetDisk)
-					{
-						targetDisks.Remove(transform.gameObject);
-						UnityEngine.Object.Destroy(transform.gameObject);
-						return creatureBoardAsset;
-					}
 				return creatureBoardAsset;
 			}
 
-			public static CreatureBoardAsset Set()
+			public static CreatureBoardAsset StartTargeting()
 			{
-				Log.Debug($"Set - InteractiveTargetingMode = {InteractiveTargetingMode}");
+				Log.Debug($"StartTargeting - InteractiveTargetingMode = {InteractiveTargetingMode}");
 				FlashLight flashLight = Flashlight.Get();
 				if (flashLight != null)
 				{
@@ -264,16 +330,18 @@ namespace TaleSpireCore
 			private static void DropTargetAtFlashlight()
 			{
 				Vector3 targetPosition = Flashlight.GetPosition();
-				AddTargetDisk(targetPosition, null, 1);
+				AddTarget(targetPosition, Flashlight.Get().transform, 1);
 			}
 
-			private static void AddTargetDisk(Vector3 targetPosition, Transform parent, float scale = 1, TargetKind targetKind = TargetKind.Enemy)
+			private static void AddTarget(Vector3 targetPosition, Transform parent, float scale = 1, TargetKind targetKind = TargetKind.Enemy)
 			{
 				GameObject targetDisk = new GameObject(STR_TargetDisk);
 
 				GameObject targetDiskPrefab;
 				if (targetKind == TargetKind.Friendly)
-					targetDiskPrefab = Prefabs.Clone("TargetFriendly");
+					targetDiskPrefab = Prefabs.Clone("TargetFriend");
+				else if (targetKind == TargetKind.Neutral)
+					targetDiskPrefab = Prefabs.Clone("TargetNeutral");
 				else
 					targetDiskPrefab = Prefabs.Clone("TargetEnemy");
 
@@ -289,17 +357,15 @@ namespace TaleSpireCore
 
 				float yOffset = 0;
 				if (scale == 0.5)
-					yOffset = -2.13f + 2.46f - 1.2f;  //x  was 0.1. Needs to go to 2.56. So + 2.46
-																		 // Needs to go to -2.35
+					yOffset = -0.89f;
 				else if (scale == 1)
-					yOffset = -1.03f + 0.17f; //x   Was 0.05000009. Needs to go to 0.22, so + 0.17f
+					yOffset = -0.86f;
 				else if (scale == 2)
-					yOffset = -0.51f - 0.125f - 0.07f;  //x  Was 0.025. Needs to go to -0.1f. 
+					yOffset = -0.765f;  
 				else if (scale == 3)
-					yOffset = -0.34f - 0.094f - 0.07f;  //x  Was 0.0167. Needs to go to -0.094.
+					yOffset = -0.674f;  
 				else if (scale == 4)
-					yOffset = -0.26f + -0.0825f - 0.09f; //x  Was 0.01250029. Needs to go to -0.07
-																			 // 0.01250029  Needs to go to -0.04
+					yOffset = -0.5725f; 
 				targetDiskPrefab.transform.localPosition = new Vector3(0, 0.9f + yOffset, 0);
 
 				targetDisks.Add(targetDisk);
@@ -307,7 +373,7 @@ namespace TaleSpireCore
 
 			private static void AddTargetDisk(Transform parent)
 			{
-				AddTargetDisk(parent.position, parent, 1);
+				AddTarget(parent.position, parent, 1);
 			}
 
 			public static void CleanUp()
@@ -340,9 +406,39 @@ namespace TaleSpireCore
 					if (gameObject.transform.parent == flashLightTransform)
 						continue;
 					else
+					{
+						gameObject.transform.SetParent(null);
 						UnityEngine.Object.Destroy(gameObject);
+					}
+
 					targetDisks.RemoveAt(i);
 				}
+			}
+
+			public static CreatureBoardAsset Set(string creatureId, bool targeted)
+			{
+				if (string.IsNullOrWhiteSpace(creatureId))
+					return null;
+				Log.Debug($"Target.Set {creatureId}!");
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset != null)
+				{
+					if (IsTargeted(creatureBoardAsset) == targeted)
+					{
+						if (targeted)
+							Log.Warning($"creature {creatureId} is already targeted.");
+						else
+							Log.Warning($"creature {creatureId} is already NOT targeted.");
+
+						return creatureBoardAsset;
+					}
+
+					if (targeted)
+						AddTargetTo(creatureBoardAsset);
+					else
+						RemoveTargetFrom(creatureBoardAsset);
+				}
+				return creatureBoardAsset;
 			}
 		}
 	}

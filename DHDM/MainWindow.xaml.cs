@@ -1861,7 +1861,7 @@ namespace DHDM
 				}
 				if (speechCommand != null)
 				{
-					HubtasticBaseStation.SpeechBubble($"{playerId}{textColor} {speechCommand}: {message}");
+					SaySomething(message, textColor, playerId, speechCommand);
 					return true;
 				}
 			}
@@ -2799,8 +2799,8 @@ namespace DHDM
 				foreach (WindupDto windupDto in windups)
 				{
 					windupDto.Scale *= scale;
-					
-					
+
+
 					if (windupDto.IsForAmmunition)
 					{
 						if (player.ReadiedAmmunition != null)
@@ -3570,7 +3570,7 @@ namespace DHDM
 			{
 				if (!string.IsNullOrWhiteSpace(diceRoll.SpellID))
 				{
-					
+
 				}
 			}
 		}
@@ -3956,7 +3956,7 @@ namespace DHDM
 					lastHourUpdated = timeIntoToday.TotalHours;
 					TaleSpireClient.SendMessageToServer("SetTime", TaleSpireUtils.HoursToNormalizedTime(timeIntoToday.TotalHours));
 				}
-				
+
 				double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
 
 				string afterSpinMp3 = null;
@@ -6491,6 +6491,7 @@ namespace DHDM
 			spAllMonsters.DataContext = AllMonsters.Monsters;
 			SetInGameCreatures();
 			InitializePlayerStats();
+			TellTaleSpireWhoIsOnWhatSide();
 		}
 
 		private void AddPlayersToGame()
@@ -9192,6 +9193,7 @@ namespace DHDM
 			if (inGameCreature.IsTargeted)
 				inGameCreature.OnScreen = true;
 			UpdateInGameCreatures();
+			TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, inGameCreature.IsTargeted);
 		}
 
 		private static void CreatureDigitsUsed()
@@ -9212,7 +9214,17 @@ namespace DHDM
 				return;
 
 			PlayerStatsManager.ToggleTarget(playerId);
+
 			UpdatePlayerStatsInGame();
+
+			CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(playerId);
+			if (playerStats != null)
+			{
+				Character player = GetPlayerFromId(playerStats.CreatureId);
+				if (player != null)
+					TaleSpireClient.SetTargeted(player.taleSpireId, playerStats.IsTargeted);
+			}
+
 		}
 
 		void ToggleReadyRollD20(string data)
@@ -9489,26 +9501,31 @@ namespace DHDM
 			switch (command)
 			{
 				case "TargetShown":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted = inGameCreature.OnScreen;
+					TargetOnScreenNpcsInTaleSpire();
 					UpdateInGameCreatures();
 					return;
 				case "TargetNoPlayers":
+					ClearPlayerTargetingInTaleSpire();
 					TargetNoPlayers();
 					return;
 				case "TargetAllPlayers":
 					TargetAllPlayers();
+					TargetAllPlayersInTaleSpire();
 					return;
 				case "ClearDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						if (inGameCreature.Health == 0)
 							inGameCreature.OnScreen = false;
+					// TODO: Remove dead players from board? With Talespire.Minis.Delete()
 					UpdateInGameCreatures();
 					return;
 				case "UntargetDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						if (inGameCreature.Health == 0)
+						if (inGameCreature.Health == 0 && inGameCreature.IsTargeted)
+						{
+							TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, false);
 							inGameCreature.IsTargeted = false;
+						}
 					UpdateInGameCreatures();
 					return;
 				case "ShowNone":
@@ -9542,29 +9559,47 @@ namespace DHDM
 						inGameCreature.OnScreen = true;
 					break;
 				case "TargetNone":
+					ClearTargetedInGameCreaturesInTaleSpire();
 					TargetNoInGameCreatures();
 					return;
 				case "TargetAll":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
-						inGameCreature.IsTargeted = true;
+						if (!inGameCreature.IsTargeted)
+						{
+							inGameCreature.IsTargeted = true;
+							TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, true);
+						}
 						inGameCreature.OnScreen = true;
 					}
 					UpdateInGameCreatures();
 					return;
 				case "TargetOnScreenFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted = inGameCreature.OnScreen && inGameCreature.IsAlly;
+					{
+						bool shouldTarget = inGameCreature.OnScreen && inGameCreature.IsAlly;
+						TargetInGameCreature(inGameCreature, shouldTarget);
+					}
+
 					UpdateInGameCreatures();
 					return;
+
 				case "TargetOnScreenNeutrals":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted = inGameCreature.OnScreen && !inGameCreature.IsAlly && !inGameCreature.IsEnemy;
+					{
+						bool shouldTarget = inGameCreature.OnScreen && !inGameCreature.IsAlly && !inGameCreature.IsEnemy;
+						TargetInGameCreature(inGameCreature, shouldTarget);
+					}
+
 					UpdateInGameCreatures();
 					return;
+
 				case "TargetOnScreenEnemies":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted = inGameCreature.OnScreen && inGameCreature.IsEnemy;
+					{
+						bool shouldTarget = inGameCreature.OnScreen && inGameCreature.IsEnemy;
+						TargetInGameCreature(inGameCreature, shouldTarget);
+					}
 					UpdateInGameCreatures();
 					return;
 				case "ShowFriends":
@@ -9598,6 +9633,15 @@ namespace DHDM
 			InitializePlayerStats();
 		}
 
+		private static void TargetInGameCreature(InGameCreature inGameCreature, bool shouldTarget)
+		{
+			if (inGameCreature.IsTargeted != shouldTarget)
+			{
+				inGameCreature.IsTargeted = shouldTarget;
+				TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, shouldTarget);
+			}
+		}
+
 		private static void TargetNoInGameCreatures()
 		{
 			AllInGameCreatures.ClearAllTargets();
@@ -9613,6 +9657,7 @@ namespace DHDM
 
 			RestoreTargetData(targetSaveData);
 			UpdateInGameCreatures();
+			TellTaleSpireWhoIsOnWhatSide();
 		}
 
 		private static void RestoreTargetData(Dictionary<int, TargetSaveData> targetSaveData)
@@ -11083,6 +11128,7 @@ namespace DHDM
 			DigitManager.SetValue("creature", creatureToSelect.Index);
 			creaturesChanged.Add(creatureToSelect);
 			UpdateInGameCreatureSelection(creatureToSelect, creaturesChanged);
+			TaleSpireClient.SelectOne(creatureToSelect.TaleSpireId);
 		}
 
 		public void SelectNextInGameCreature()
@@ -11176,13 +11222,16 @@ namespace DHDM
 			return result;
 		}
 
-		private static Creature GetCreatureFromTaleSpireId(string taleSpireId)
+		private static Creature GetCreatureFromTaleSpireId(string taleSpireId, WhatSide whatSide = WhatSide.All)
 		{
-			Creature creature = AllInGameCreatures.GetByTaleSpireId(taleSpireId);
+			Creature creature = AllInGameCreatures.GetByTaleSpireId(taleSpireId, whatSide);
 			if (creature != null)
 				return creature;
 
-			return AllPlayers.GetFromTaleSpireId(taleSpireId);
+			if (whatSide.HasFlag(WhatSide.Friendly))
+				return AllPlayers.GetFromTaleSpireId(taleSpireId);
+
+			return null;
 		}
 
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
@@ -11225,7 +11274,7 @@ namespace DHDM
 		{
 			if (actionShortcut.Spell != null)
 			{
-//				actionShortcut.Spell.
+				//				actionShortcut.Spell.
 			}
 		}
 
@@ -11266,8 +11315,17 @@ namespace DHDM
 		public void TaleSpireTarget(string targetingCommand)
 		{
 			string modifiedTargetingCommand = targetingCommand;
-			if (targetingCommand == "AllEnemiesInVolume" || targetingCommand == "AllFriendliesInVolume")
+			if (targetingCommand == "AllEnemiesInVolume" ||
+				targetingCommand == "AllNeutralsInVolume" ||
+				targetingCommand == "AllFriendliesInVolume" ||
+				targetingCommand == "AllFriendliesNeutralsInVolume" ||
+				targetingCommand == "AllEnemiesFriendliesInVolume" ||
+				targetingCommand == "AllEnemiesNeutralsInVolume")
 				modifiedTargetingCommand = "AllInVolume";
+			if (targetingCommand == "CleanUp")
+			{
+				TargetNone();
+			}
 			ApiResponse response = TaleSpireClient.Invoke("Target", new string[] { modifiedTargetingCommand });
 			if (response == null)
 				return;
@@ -11279,7 +11337,19 @@ namespace DHDM
 				else if (targetingCommand == "BindSelectedCreature")
 					BindCreature(response);
 				else if (targetingCommand == "AllInVolume")
-					TargetAllInVolume(response);
+					TargetAllInVolume(response, WhatSide.All);
+				else if (targetingCommand == "AllEnemiesInVolume")
+					TargetAllInVolume(response, WhatSide.Enemy);
+				else if (targetingCommand == "AllFriendliesInVolume")
+					TargetAllInVolume(response, WhatSide.Friendly);
+				else if (targetingCommand == "AllNeutralsInVolume")
+					TargetAllInVolume(response, WhatSide.Neutral);
+				else if (targetingCommand == "AllFriendliesNeutralsInVolume")
+					TargetAllInVolume(response, WhatSide.Friendly | WhatSide.Neutral);
+				else if (targetingCommand == "AllEnemiesFriendliesInVolume")
+					TargetAllInVolume(response, WhatSide.Friendly | WhatSide.Enemy);
+				else if (targetingCommand == "AllEnemiesNeutralsInVolume")
+					TargetAllInVolume(response, WhatSide.Neutral | WhatSide.Enemy);
 		}
 
 		string lastIdOverwriteId;
@@ -11294,15 +11364,17 @@ namespace DHDM
 			if (selected == null)
 				return;
 
-			
-			if (characterPosition.ID == selected.TaleSpireId && characterPosition.ID == selected.Creature.taleSpireId)
+
+			bool sameIdAlreadySet = characterPosition.ID == selected.TaleSpireId && characterPosition.ID == selected.Creature.taleSpireId;
+			bool overwriteExistingId = (!string.IsNullOrEmpty(selected.TaleSpireId) || !string.IsNullOrEmpty(selected.Creature.taleSpireId)) &&
+							(lastIdOverwriteId != selected.TaleSpireId && lastIdOverwriteId != selected.Creature.taleSpireId);
+			if (sameIdAlreadySet)
 			{
 				TaleSpireClient.Wiggle(characterPosition.ID);
 				lastIdOverwriteId = null;
 				// Already set.
 			}
-			else if ((!string.IsNullOrEmpty(selected.TaleSpireId) || !string.IsNullOrEmpty(selected.Creature.taleSpireId)) && 
-				(lastIdOverwriteId != selected.TaleSpireId && lastIdOverwriteId != selected.Creature.taleSpireId))
+			else if (overwriteExistingId)
 			{
 				// About to overwrite an existing id!
 				TaleSpireClient.Wiggle(selected.TaleSpireId);
@@ -11316,10 +11388,11 @@ namespace DHDM
 				selected.TaleSpireId = characterPosition.ID;
 				selected.Creature.taleSpireId = characterPosition.ID;
 				GoogleSheets.SaveChanges(selected);
+				TellTaleSpireWhoIsOnWhatSide();
 			}
 		}
 
-		void TargetAllInVolume(ApiResponse response)
+		void TargetAllInVolume(ApiResponse response, WhatSide whatSide)
 		{
 			TargetNone();
 			List<CharacterPosition> characterPosition = response.GetList<CharacterPosition>();
@@ -11329,7 +11402,7 @@ namespace DHDM
 			List<string> charactersToTarget = new List<string>();
 			foreach (CharacterPosition character in characterPosition)
 			{
-				Creature creature = GetCreatureFromTaleSpireId(character.ID);
+				Creature creature = GetCreatureFromTaleSpireId(character.ID, whatSide);
 				if (creature != null)
 				{
 					SetCreatureTarget(creature, true);
@@ -11338,7 +11411,7 @@ namespace DHDM
 			}
 
 			if (charactersToTarget.Count > 0)
-				TaleSpireClient.Invoke("TargetCreatures", charactersToTarget.ToArray());
+				TaleSpireClient.TargetCreatures(charactersToTarget);
 		}
 
 		private void TargetNone()
@@ -11352,7 +11425,7 @@ namespace DHDM
 			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
 			if (characterPosition == null)
 				return;
-			
+
 			// We know this character was just successfully targeted or untargeted.
 
 			Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
@@ -11375,5 +11448,86 @@ namespace DHDM
 			else
 				TaleSpireClient.ClearActiveTurnIndicator();
 		}
+
+		void TellTaleSpireWhoIsOnWhatSide()
+		{
+			List<string> allies = new List<string>();
+			List<string> neutrals = new List<string>();
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				// Hot key - Secret Mod + ! (whatever key has the Exclamation mark on it)
+				// 
+				if (!string.IsNullOrWhiteSpace(inGameCreature.TaleSpireId))
+					if (inGameCreature.IsAlly)
+						allies.Add(inGameCreature.TaleSpireId);
+					else if (!inGameCreature.IsEnemy)
+						neutrals.Add(inGameCreature.TaleSpireId);
+			}
+
+			List<Character> activePlayers = AllPlayers.GetActive();
+			foreach (Character character in activePlayers)
+			{
+				if (!string.IsNullOrWhiteSpace(character.taleSpireId))
+					allies.Add(character.taleSpireId);
+			}
+
+			TaleSpireClient.RegisterAllies(allies);
+			TaleSpireClient.RegisterNeutrals(neutrals);
+		}
+
+		void ClearTargetedInGameCreaturesInTaleSpire()
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreature.IsTargeted)
+					TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, false);
+		}
+
+		private static void TargetOnScreenNpcsInTaleSpire()
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreature.OnScreen && !inGameCreature.IsTargeted)
+				{
+					inGameCreature.IsTargeted = inGameCreature.OnScreen;
+					TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, true);
+				}
+		}
+
+		void ClearPlayerTargetingInTaleSpire()
+		{
+			foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+			{
+				if (creatureStats.IsTargeted)
+				{
+					Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
+					if (player != null)
+						TaleSpireClient.SetTargeted(player.taleSpireId, false);
+				}
+			}
+		}
+
+		void TargetAllPlayersInTaleSpire()
+		{
+			foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+			{
+				if (creatureStats.IsTargeted)
+				{
+					Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
+					if (player != null)
+						TaleSpireClient.SetTargeted(player.taleSpireId, true);
+				}
+			}
+		}
+
+		private static void SaySomething(string message, string textColor, int creatureId, string speechCommand)
+		{
+			HubtasticBaseStation.SpeechBubble($"{creatureId}{textColor} {speechCommand}: {message}");
+			Creature creature = GetCreatureFromId(creatureId);
+			if (creature != null)
+			{
+				TaleSpireClient.Speak(creature.taleSpireId, message);
+			}
+		}
 	}
 }
+
+

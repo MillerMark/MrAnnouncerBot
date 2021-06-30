@@ -397,6 +397,19 @@ namespace DndCore
 		{
 			Creature.RollingSavingThrowNow();
 		}
+
+		public bool SideMatches(WhatSide whatSide)
+		{
+			if (whatSide.HasFlag(WhatSide.All))
+				return true;
+			if (whatSide.HasFlag(WhatSide.Friendly) && IsAlly)
+				return true;
+			if (whatSide.HasFlag(WhatSide.Enemy) && IsEnemy)
+				return true;
+			if (whatSide.HasFlag(WhatSide.Neutral) && !IsAlly && !IsEnemy)
+				return true;
+			return false;
+		}
 	}
 }
 

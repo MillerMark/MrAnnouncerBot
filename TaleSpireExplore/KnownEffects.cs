@@ -45,7 +45,7 @@ namespace TaleSpireExplore
 				return null;
 			Talespire.GameObjects.InvalidateFound();
 			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
-			GameObject gameObject = compositeEffect.CreateOrFindSafe(instanceId);
+			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
 			if (gameObject != null)
 				gameObject.name = effectName;
 			return gameObject;

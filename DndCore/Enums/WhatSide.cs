@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 
-namespace TaleSpireCore
+namespace DndCore
 {
 	[Flags]
-	public enum TargetKind
+	public enum WhatSide
 	{
 		Enemy = 1,
 		Friendly = 2,

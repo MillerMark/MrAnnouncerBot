@@ -3,6 +3,7 @@ using System.Net;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace TaleSpireCore
@@ -191,6 +192,43 @@ namespace TaleSpireCore
 		public static void Wiggle(string taleSpireId)
 		{
 			Invoke("WiggleCreature", taleSpireId);
+		}
+
+		public static void RegisterAllies(List<string> allies)
+		{
+			Invoke("RegisterAllies", allies.ToArray());
+		}
+
+		public static void RegisterNeutrals(List<string> neutrals)
+		{
+			Invoke("RegisterNeutrals", neutrals.ToArray());
+		}
+
+		public static void TargetCreatures(List<string> charactersToTarget)
+		{
+			Invoke("TargetCreatures", charactersToTarget.ToArray());
+		}
+
+		public static void SetTargeted(string taleSpireId, bool isTargeted)
+		{
+			if (string.IsNullOrWhiteSpace(taleSpireId))
+				return;
+			Invoke("SetTargeted", new string[] { taleSpireId, isTargeted.ToString() });
+		}
+
+		public static void Speak(string taleSpireId, string message)
+		{
+			Invoke("Speak", new string[] { taleSpireId, message });
+		}
+
+		public static void Select(string taleSpireId)
+		{
+			Invoke("Select", new string[] { taleSpireId });
+		}
+
+		public static void SelectOne(string taleSpireId)
+		{
+			Invoke("SelectOne", new string[] { taleSpireId });
 		}
 	}
 }

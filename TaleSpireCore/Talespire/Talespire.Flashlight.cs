@@ -14,14 +14,14 @@ namespace TaleSpireCore
 		{
 			public static bool IsOff()
 			{
-				Talespire.Log.Debug($"IsOff");
+				Log.Debug($"IsOff");
 				FlashLight flashLight = Get();
 				return flashLight == null;
 			}
 
 			public static bool IsOn()
 			{
-				Talespire.Log.Debug($"IsOn");
+				Log.Debug($"IsOn");
 				FlashLight flashLight = Get();
 				return flashLight != null;
 			}

@@ -78,10 +78,16 @@ namespace TaleSpireExplore
 			Commands.Add("TargetCreatures", TargetCreatures);
 			Commands.Add("WiggleCreature", WiggleCreature);
 			Commands.Add("SetActiveTurn", SetActiveTurn);
+			Commands.Add("SetTargeted", SetTargeted);
 			Commands.Add("ClearActiveTurnIndicator", ClearActiveTurnIndicator);
 			Commands.Add("ShowDamage", ShowDamage);
 			Commands.Add("AddHitPoints", AddHitPoints);
 			Commands.Add("AddTempHitPoints", AddTempHitPoints);
+			Commands.Add("RegisterAllies", RegisterAllies);
+			Commands.Add("RegisterNeutrals", RegisterNeutrals);
+			Commands.Add("Speak", Speak);
+			Commands.Add("SelectOne", SelectOne);
+			Commands.Add("Select", Select);
 		}
 
 		private static string AddCreature(string[] input)
@@ -153,7 +159,14 @@ namespace TaleSpireExplore
 				var parts = command.Split(' ');
 				UnityEngine.Debug.Log(parts[0].Trim());
 				//UnityEngine.Debug.Log(string.Join(" ", parts.Skip(1)).Trim().Split(','));
-				return Commands[parts[0].Trim()].Invoke(string.Join(" ", parts.Skip(1)).Trim().Split(','));
+
+				string result = "";
+				UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+				{
+					result = Commands[parts[0].Trim()].Invoke(string.Join(" ", parts.Skip(1)).Trim().Split(','));
+				});
+				return result;
+
 			}
 			catch (Exception ex)
 			{
@@ -1392,7 +1405,7 @@ namespace TaleSpireExplore
 
 		private static string SelectedCreature()
 		{
-			CreatureBoardAsset asset = Talespire.Target.Set();
+			CreatureBoardAsset asset = Talespire.Target.StartTargeting();
 			if (asset != null)
 			{
 				CharacterPosition characterPosition = asset.GetCharacterPosition();
@@ -1410,8 +1423,7 @@ namespace TaleSpireExplore
 		{
 			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
 			{
-				foreach (string creatureId in creatures)
-					Talespire.Target.Drop(creatureId);
+				
 			});
 		}
 
@@ -1421,7 +1433,8 @@ namespace TaleSpireExplore
 			if (creatures != null)
 				Talespire.Log.Debug($"Targeting {creatures.Length} creatures.");
 
-			TargetDropSafe(creatures);
+			foreach (string creatureId in creatures)
+				Talespire.Target.Drop(creatureId);
 			return ApiResponse.Good();
 		}
 
@@ -1495,6 +1508,53 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		static string RegisterAllies(string[] args)
+		{
+			Talespire.Target.RegisterAllies(args);
+			return ApiResponse.Good();
+		}
+
+		static string RegisterNeutrals(string[] args)
+		{
+			Talespire.Target.RegisterNeutrals(args);
+			return ApiResponse.Good();
+		}
+
+		static string SelectOne(string[] args)
+		{
+			if (args.Length != 1)
+				return ApiResponse.Bad($"SelectOne - Expecting 1 arg.");
+			string id = args[0];
+			CreatureBoardAsset creature = Talespire.Minis.SelectOne(id);
+			if (creature == null)
+				return ApiResponse.Bad($"Unable to SelectOne. Creature with id {id} not found.");
+			return ApiResponse.Good("SelectOne", creature.GetCharacterPosition());
+
+		}
+		static string Select(string[] args)
+		{
+			if (args.Length != 1)
+				return ApiResponse.Bad($"Select - Expecting 1 arg.");
+			string id = args[0];
+			CreatureBoardAsset creature = Talespire.Minis.Select(id);
+			if (creature == null)
+				return ApiResponse.Bad($"Unable to Select. Creature with id {id} not found.");
+			return ApiResponse.Good("Select", creature.GetCharacterPosition());
+
+		}
+
+		static string Speak(string[] args)
+		{
+			if (args.Length != 2)
+				return ApiResponse.Bad($"Speak - Expecting 2 args.");
+			string id = args[0];
+			string message = args[1];
+			CreatureBoardAsset creature = Talespire.Minis.Speak(id, message);
+			if (creature == null)
+				return ApiResponse.Bad($"Unable to Speak. Creature with id {id} not found.");
+			return ApiResponse.Good("Speak", creature.GetCharacterPosition());
+		}
+
 		static string AddTempHitPoints(string[] arg)
 		{
 			if (arg.Length != 2)
@@ -1506,6 +1566,24 @@ namespace TaleSpireExplore
 				Talespire.Minis.AddTempHitPoints(arg[0], healthAmount);
 			}
 			return ApiResponse.Good();
+		}
+
+		static string SetTargeted(string[] arg)
+		{
+			Talespire.Log.Debug($"SetTargeted...");
+
+			const int expectedArgs = 2;
+			if (arg.Length != expectedArgs)
+				return ApiResponse.Bad($"Expecting {expectedArgs}.");
+
+			string id = arg[0];
+			string isTargetedStr = arg[1];
+			bool.TryParse(isTargetedStr, out bool isTargeted);
+			Talespire.Log.Debug($"isTargeted = {isTargeted}");
+			CreatureBoardAsset creatureBoardAsset = Talespire.Target.Set(id, isTargeted);
+			if (creatureBoardAsset == null)
+				return ApiResponse.Bad($"Creature with id {id} not found!");
+			return ApiResponse.Good("SetTargeted", creatureBoardAsset.GetCharacterPosition());
 		}
 
 		static string SetActiveTurn(string[] arg)
@@ -1520,12 +1598,7 @@ namespace TaleSpireExplore
 			string color = arg[1];
 
 
-			CreatureBoardAsset creature = null;
-
-			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
-			{
-				creature = Talespire.Minis.SetActiveTurn(id, color);
-			});
+			CreatureBoardAsset creature = Talespire.Minis.SetActiveTurn(id, color);
 
 			if (creature == null)
 				return ApiResponse.Bad($"Creature with {id} not found.");

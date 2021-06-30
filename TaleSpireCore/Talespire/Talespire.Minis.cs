@@ -35,15 +35,37 @@ namespace TaleSpireCore
 				if (allCreatureAssets == null)
 					return null;
 
+				string searchId = GetSearch(id);
+
+				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
+					if (creatureAsset.WorldId.ToString() == searchId)
+						return creatureAsset;
+				return null;
+			}
+
+			public static CreatureBoardAsset[] GetAllCreatureBoardAssetsExcept(string id)
+			{
+				List<CreatureBoardAsset> results = new List<CreatureBoardAsset>();
+				CreatureBoardAsset[] allCreatureAssets = GetAll();
+				if (allCreatureAssets == null)
+					return null;
+				
+				string searchId = GetSearch(id);
+
+				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
+					if (creatureAsset.WorldId.ToString() != searchId)
+						results.Add(creatureAsset);
+
+				return results.ToArray();
+			}
+
+			private static string GetSearch(string id)
+			{
 				int lastIndexOfSeparator = id.LastIndexOf(NameIdSeparator);
 
 				if (lastIndexOfSeparator >= 0)
 					id = id.Substring(lastIndexOfSeparator + NameIdSeparator.Length);
-
-				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-					if (creatureAsset.WorldId.ToString() == id)
-						return creatureAsset;
-				return null;
+				return id;
 			}
 
 			public static CharacterPosition GetPosition(string id)
@@ -130,7 +152,7 @@ namespace TaleSpireCore
 				return creatureBoardAsset?.CreatureLoader?.LoadedAsset;
 			}
 
-			public static void SpeakClientOnly(string id, string message)
+			public static void SpeakOnlyOnClientMachine(string id, string message)
 			{
 				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
 				if (asset == null)
@@ -141,15 +163,48 @@ namespace TaleSpireCore
 				asset.Creature.Speak(message);
 			}
 
-			public static void Speak(string id, string message)
+			public static CreatureBoardAsset SelectOne(string id)
+			{
+				CreatureBoardAsset[] otherCreatureAssets = GetAllCreatureBoardAssetsExcept(id);
+				foreach (CreatureBoardAsset creatureBoardAsset in otherCreatureAssets)
+					creatureBoardAsset.Creature.Deselect();
+
+				return Select(id);
+			}
+
+			public static CreatureBoardAsset Select(string id)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (asset == null)
+				{
+					Log.Error($"Select: Creature with id \"{id}\" not found.");
+					return new CreatureBoardAsset();
+				}
+				asset.Creature.Select();
+				return asset;
+			}
+
+			public static CreatureBoardAsset Speak(string id, string message)
 			{
 				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
 				if (asset == null)
 				{
 					Log.Error($"Speak: Creature with id \"{id}\" not found.");
-					return;
+					return null;
 				}
 				ChatManager.SendChatMessage(message, asset.Creature.CreatureId.Value);
+				return asset;
+			}
+
+			public static void Delete(string id)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (asset == null)
+				{
+					Log.Error($"{nameof(Delete)}: Creature with id \"{id}\" not found.");
+					return;
+				}
+				asset.RequestDelete();
 			}
 
 			public static void SetCreatureScale(string id, float scale)
@@ -431,15 +486,11 @@ namespace TaleSpireCore
 
 				//Log.Debug($"groundHeight = {groundHeight}");
 
-				UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
-				{
-					bloodEffect = UnityEngine.Object.Instantiate(bloodPrefab, creatureAsset.HookHitTarget.position, creatureAsset.HookHitTarget.rotation);
-					Property.ModifyFloat(bloodEffect, null, "<BFX_BloodSettings>.GroundHeight", groundHeight);
-					ChangeBloodEffectColor(bloodEffect, bloodColor);
-					bloodEffect.transform.Rotate(Vector3.up, 180 + rotationOffset);
-					bloodEffect.transform.localScale = new Vector3(scale, scale, scale);
-				}
-				);
+				bloodEffect = UnityEngine.Object.Instantiate(bloodPrefab, creatureAsset.HookHitTarget.position, creatureAsset.HookHitTarget.rotation);
+				Property.ModifyFloat(bloodEffect, null, "<BFX_BloodSettings>.GroundHeight", groundHeight);
+				ChangeBloodEffectColor(bloodEffect, bloodColor);
+				bloodEffect.transform.Rotate(Vector3.up, 180 + rotationOffset);
+				bloodEffect.transform.localScale = new Vector3(scale, scale, scale);
 
 				Instances.AddTemporal(bloodEffect, 16);
 			}
