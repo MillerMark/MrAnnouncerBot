@@ -936,7 +936,7 @@ namespace DndCore
 			InitiativeIndex = initiativeIds.IndexOf(InGameCreature.GetUniversalIndex(creature.Index));
 		}
 
-		public string ActiveTurnCreatureId
+		public string ActiveTurnTaleSpireId
 		{
 			get
 			{

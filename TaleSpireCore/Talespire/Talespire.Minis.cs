@@ -250,7 +250,7 @@ namespace TaleSpireCore
 
 			private static float GetDistanceInFeet(Vector3 position, CreatureBoardAsset creatureBoardAsset)
 			{
-				GameObject gameObject = Target.GetBaseGameObject(creatureBoardAsset);
+				GameObject gameObject = creatureBoardAsset.GetBase();
 				if (gameObject == null)
 					return float.MaxValue;
 
@@ -350,7 +350,7 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				GameObject baseGameObject = Target.GetBaseGameObject(creatureAsset);
+				GameObject baseGameObject = creatureAsset.GetBase();
 				if (baseGameObject == null)
 				{
 					Log.Error($"SetActiveTurn - baseGameObject for {creatureId} not found.");

@@ -13,6 +13,8 @@ namespace TaleSpireCore
 
 			public static GameObject Get(string name)
 			{
+				if (name == "$Camera$")
+					return CameraController.GetCamera().gameObject;
 				if (allFoundGameObjects == null)
 					Refresh();
 				if (allFoundGameObjects.TryGetValue(name, out GameObject gameObject))

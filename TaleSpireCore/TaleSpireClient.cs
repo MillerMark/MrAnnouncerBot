@@ -230,5 +230,20 @@ namespace TaleSpireCore
 		{
 			Invoke("SelectOne", new string[] { taleSpireId });
 		}
+
+		public static void LookAt(string taleSpireId)
+		{
+			Invoke("LookAt", new string[] { taleSpireId });
+		}
+
+		public static void SpinAround(string taleSpireId)
+		{
+			Invoke("SpinAround", new string[] { taleSpireId });
+		}
+
+		public static void RestoreCamera()
+		{
+			Invoke("RestoreCamera");
+		}
 	}
 }

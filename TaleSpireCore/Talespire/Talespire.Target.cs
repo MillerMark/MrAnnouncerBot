@@ -236,7 +236,7 @@ namespace TaleSpireCore
 
 			static bool IsTargeted(CreatureBoardAsset creatureBoardAsset)
 			{
-				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
+				GameObject baseGameObject = creatureBoardAsset.GetBase();
 				if (baseGameObject == null)
 					return false;
 				Transform baseTransform = baseGameObject.transform;
@@ -251,7 +251,7 @@ namespace TaleSpireCore
 			{
 				if (creatureBoardAsset == null)
 					return;
-				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
+				GameObject baseGameObject = creatureBoardAsset.GetBase();
 				GameObject targetDisk = baseGameObject.transform.GetChild(STR_TargetDisk);
 				if (targetDisk != null)
 				{
@@ -264,7 +264,7 @@ namespace TaleSpireCore
 			{
 				if (creatureBoardAsset == null)
 					return;
-				GameObject baseGameObject = GetBaseGameObject(creatureBoardAsset);
+				GameObject baseGameObject = creatureBoardAsset.GetBase();
 				Transform baseTransform = baseGameObject.transform;
 
 				if (baseTransform.HasChild(STR_TargetDisk))
@@ -279,16 +279,6 @@ namespace TaleSpireCore
 				Vector3 targetPosition = new Vector3(basePosition.x, basePosition.y + 0.05f, basePosition.z);
 
 				AddTarget(targetPosition, baseTransform, creatureBoardAsset.CreatureScale, WhatSide(creatureBoardAsset.WorldId));
-			}
-
-			public static GameObject GetBaseGameObject(CreatureBoardAsset creatureBoardAsset)
-			{
-				GameObject baseGameObject;
-				if (creatureBoardAsset.IsFlying)
-					baseGameObject = creatureBoardAsset.FlyingIndicator.gameObject;
-				else
-					baseGameObject = creatureBoardAsset.BaseLoader.LoadedAsset;
-				return baseGameObject;
 			}
 
 			static CreatureBoardAsset RemoveTargetFromNearestCreature()

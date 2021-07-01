@@ -86,5 +86,6 @@ namespace DHDM
 		void SetDmMood(string moodName);
 		void Contest(string contest);
 		void TaleSpireTarget(string targetingCommand);
+		void TaleSpireCamera(string cameraCommand);
 	}
 }

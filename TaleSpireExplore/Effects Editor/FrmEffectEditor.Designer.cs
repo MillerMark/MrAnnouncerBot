@@ -40,15 +40,15 @@
 			this.addScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.btnAddPrefab = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.tbxSearch = new System.Windows.Forms.TextBox();
+			this.btnFindPrevious = new System.Windows.Forms.Button();
+			this.btnFindNext = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.pnlProperties = new System.Windows.Forms.Panel();
 			this.btnClearEffect = new System.Windows.Forms.Button();
 			this.btnTestEffect = new System.Windows.Forms.Button();
 			this.lblPropertyName = new System.Windows.Forms.Label();
 			this.trvProperties = new System.Windows.Forms.TreeView();
-			this.tbxSearch = new System.Windows.Forms.TextBox();
-			this.btnFindPrevious = new System.Windows.Forms.Button();
-			this.btnFindNext = new System.Windows.Forms.Button();
 			this.btnStopAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnStartAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnAttackJanus = new System.Windows.Forms.Button();
@@ -67,6 +67,8 @@
 			this.label5 = new System.Windows.Forms.Label();
 			this.txtEffectName = new System.Windows.Forms.TextBox();
 			this.label6 = new System.Windows.Forms.Label();
+			this.btnTaleSpireCamera = new System.Windows.Forms.Button();
+			this.btnLocalEulerAngles = new System.Windows.Forms.Button();
 			this.ctxGameObjects.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -84,7 +86,7 @@
 			// btnCopyJson
 			// 
 			this.btnCopyJson.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnCopyJson.Location = new System.Drawing.Point(891, 12);
+			this.btnCopyJson.Location = new System.Drawing.Point(953, 12);
 			this.btnCopyJson.Name = "btnCopyJson";
 			this.btnCopyJson.Size = new System.Drawing.Size(84, 26);
 			this.btnCopyJson.TabIndex = 2;
@@ -97,16 +99,16 @@
 			this.tbxJson.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbxJson.Location = new System.Drawing.Point(725, 43);
+			this.tbxJson.Location = new System.Drawing.Point(751, 43);
 			this.tbxJson.Multiline = true;
 			this.tbxJson.Name = "tbxJson";
-			this.tbxJson.Size = new System.Drawing.Size(250, 442);
+			this.tbxJson.Size = new System.Drawing.Size(286, 544);
 			this.tbxJson.TabIndex = 3;
 			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(722, 24);
+			this.label1.Location = new System.Drawing.Point(748, 23);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(38, 13);
 			this.label1.TabIndex = 4;
@@ -119,9 +121,9 @@
 			this.trvEffectHierarchy.CheckBoxes = true;
 			this.trvEffectHierarchy.ContextMenuStrip = this.ctxGameObjects;
 			this.trvEffectHierarchy.HideSelection = false;
-			this.trvEffectHierarchy.Location = new System.Drawing.Point(12, 100);
+			this.trvEffectHierarchy.Location = new System.Drawing.Point(12, 133);
 			this.trvEffectHierarchy.Name = "trvEffectHierarchy";
-			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 385);
+			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 454);
 			this.trvEffectHierarchy.TabIndex = 5;
 			this.trvEffectHierarchy.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.trvEffectHierarchy_AfterCheck);
 			this.trvEffectHierarchy.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.trvEffectHierarchy_NodeMouseClick);
@@ -165,69 +167,6 @@
 			this.btnAddPrefab.UseVisualStyleBackColor = true;
 			this.btnAddPrefab.Click += new System.EventHandler(this.btnAddPrefab_Click);
 			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(284, 11);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(57, 13);
-			this.label2.TabIndex = 4;
-			this.label2.Text = "Properties:";
-			// 
-			// pnlProperties
-			// 
-			this.pnlProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-			this.pnlProperties.Location = new System.Drawing.Point(483, 164);
-			this.pnlProperties.Name = "pnlProperties";
-			this.pnlProperties.Size = new System.Drawing.Size(232, 321);
-			this.pnlProperties.TabIndex = 7;
-			// 
-			// btnClearEffect
-			// 
-			this.btnClearEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnClearEffect.Location = new System.Drawing.Point(172, 491);
-			this.btnClearEffect.Name = "btnClearEffect";
-			this.btnClearEffect.Size = new System.Drawing.Size(109, 26);
-			this.btnClearEffect.TabIndex = 3;
-			this.btnClearEffect.Text = "Delete Everything";
-			this.btnClearEffect.UseVisualStyleBackColor = true;
-			this.btnClearEffect.Click += new System.EventHandler(this.btnClearEffect_Click);
-			// 
-			// btnTestEffect
-			// 
-			this.btnTestEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnTestEffect.Location = new System.Drawing.Point(795, 12);
-			this.btnTestEffect.Name = "btnTestEffect";
-			this.btnTestEffect.Size = new System.Drawing.Size(90, 26);
-			this.btnTestEffect.TabIndex = 3;
-			this.btnTestEffect.Text = "Test Effect";
-			this.btnTestEffect.UseVisualStyleBackColor = true;
-			this.btnTestEffect.Click += new System.EventHandler(this.btnTestEffect_Click);
-			// 
-			// lblPropertyName
-			// 
-			this.lblPropertyName.AutoSize = true;
-			this.lblPropertyName.Location = new System.Drawing.Point(479, 148);
-			this.lblPropertyName.Name = "lblPropertyName";
-			this.lblPropertyName.Size = new System.Drawing.Size(37, 13);
-			this.lblPropertyName.TabIndex = 8;
-			this.lblPropertyName.Text = "Value:";
-			// 
-			// trvProperties
-			// 
-			this.trvProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-			this.trvProperties.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
-			this.trvProperties.HideSelection = false;
-			this.trvProperties.Location = new System.Drawing.Point(287, 53);
-			this.trvProperties.Name = "trvProperties";
-			this.trvProperties.Size = new System.Drawing.Size(186, 432);
-			this.trvProperties.TabIndex = 9;
-			this.trvProperties.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.trvProperties_BeforeExpand);
-			this.trvProperties.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.trvProperties_DrawNode);
-			this.trvProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.trvProperties_AfterSelect);
-			// 
 			// tbxSearch
 			// 
 			this.tbxSearch.Location = new System.Drawing.Point(320, 29);
@@ -259,10 +198,73 @@
 			this.btnFindNext.UseVisualStyleBackColor = true;
 			this.btnFindNext.Click += new System.EventHandler(this.btnFindNext_Click);
 			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(284, 11);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(57, 13);
+			this.label2.TabIndex = 4;
+			this.label2.Text = "Properties:";
+			// 
+			// pnlProperties
+			// 
+			this.pnlProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+			this.pnlProperties.Location = new System.Drawing.Point(483, 192);
+			this.pnlProperties.Name = "pnlProperties";
+			this.pnlProperties.Size = new System.Drawing.Size(262, 395);
+			this.pnlProperties.TabIndex = 7;
+			// 
+			// btnClearEffect
+			// 
+			this.btnClearEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnClearEffect.Location = new System.Drawing.Point(172, 593);
+			this.btnClearEffect.Name = "btnClearEffect";
+			this.btnClearEffect.Size = new System.Drawing.Size(109, 26);
+			this.btnClearEffect.TabIndex = 3;
+			this.btnClearEffect.Text = "Delete Everything";
+			this.btnClearEffect.UseVisualStyleBackColor = true;
+			this.btnClearEffect.Click += new System.EventHandler(this.btnClearEffect_Click);
+			// 
+			// btnTestEffect
+			// 
+			this.btnTestEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnTestEffect.Location = new System.Drawing.Point(857, 12);
+			this.btnTestEffect.Name = "btnTestEffect";
+			this.btnTestEffect.Size = new System.Drawing.Size(90, 26);
+			this.btnTestEffect.TabIndex = 3;
+			this.btnTestEffect.Text = "Test Effect";
+			this.btnTestEffect.UseVisualStyleBackColor = true;
+			this.btnTestEffect.Click += new System.EventHandler(this.btnTestEffect_Click);
+			// 
+			// lblPropertyName
+			// 
+			this.lblPropertyName.AutoSize = true;
+			this.lblPropertyName.Location = new System.Drawing.Point(480, 176);
+			this.lblPropertyName.Name = "lblPropertyName";
+			this.lblPropertyName.Size = new System.Drawing.Size(37, 13);
+			this.lblPropertyName.TabIndex = 8;
+			this.lblPropertyName.Text = "Value:";
+			// 
+			// trvProperties
+			// 
+			this.trvProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+			this.trvProperties.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
+			this.trvProperties.HideSelection = false;
+			this.trvProperties.Location = new System.Drawing.Point(287, 53);
+			this.trvProperties.Name = "trvProperties";
+			this.trvProperties.Size = new System.Drawing.Size(186, 534);
+			this.trvProperties.TabIndex = 9;
+			this.trvProperties.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.trvProperties_BeforeExpand);
+			this.trvProperties.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.trvProperties_DrawNode);
+			this.trvProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.trvProperties_AfterSelect);
+			// 
 			// btnStopAllParticleSystems
 			// 
 			this.btnStopAllParticleSystems.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnStopAllParticleSystems.Location = new System.Drawing.Point(387, 491);
+			this.btnStopAllParticleSystems.Location = new System.Drawing.Point(387, 593);
 			this.btnStopAllParticleSystems.Name = "btnStopAllParticleSystems";
 			this.btnStopAllParticleSystems.Size = new System.Drawing.Size(86, 26);
 			this.btnStopAllParticleSystems.TabIndex = 4;
@@ -273,7 +275,7 @@
 			// btnStartAllParticleSystems
 			// 
 			this.btnStartAllParticleSystems.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnStartAllParticleSystems.Location = new System.Drawing.Point(287, 491);
+			this.btnStartAllParticleSystems.Location = new System.Drawing.Point(287, 593);
 			this.btnStartAllParticleSystems.Name = "btnStartAllParticleSystems";
 			this.btnStartAllParticleSystems.Size = new System.Drawing.Size(86, 26);
 			this.btnStartAllParticleSystems.TabIndex = 4;
@@ -284,7 +286,7 @@
 			// btnAttackJanus
 			// 
 			this.btnAttackJanus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAttackJanus.Location = new System.Drawing.Point(625, 491);
+			this.btnAttackJanus.Location = new System.Drawing.Point(655, 593);
 			this.btnAttackJanus.Name = "btnAttackJanus";
 			this.btnAttackJanus.Size = new System.Drawing.Size(90, 26);
 			this.btnAttackJanus.TabIndex = 3;
@@ -296,7 +298,7 @@
 			// 
 			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(482, 498);
+			this.label3.Location = new System.Drawing.Point(482, 600);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(66, 13);
 			this.label3.TabIndex = 11;
@@ -305,9 +307,9 @@
 			// tbxTravelTime
 			// 
 			this.tbxTravelTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.tbxTravelTime.Location = new System.Drawing.Point(548, 495);
+			this.tbxTravelTime.Location = new System.Drawing.Point(548, 597);
 			this.tbxTravelTime.Name = "tbxTravelTime";
-			this.tbxTravelTime.Size = new System.Drawing.Size(71, 20);
+			this.tbxTravelTime.Size = new System.Drawing.Size(100, 20);
 			this.tbxTravelTime.TabIndex = 12;
 			// 
 			// btnMeshRendererMaterial
@@ -407,7 +409,7 @@
 			// 
 			this.btnSaveEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnSaveEffect.Enabled = false;
-			this.btnSaveEffect.Location = new System.Drawing.Point(891, 491);
+			this.btnSaveEffect.Location = new System.Drawing.Point(953, 593);
 			this.btnSaveEffect.Name = "btnSaveEffect";
 			this.btnSaveEffect.Size = new System.Drawing.Size(84, 26);
 			this.btnSaveEffect.TabIndex = 15;
@@ -419,7 +421,7 @@
 			// 
 			this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(723, 498);
+			this.label5.Location = new System.Drawing.Point(748, 600);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(38, 13);
 			this.label5.TabIndex = 11;
@@ -429,9 +431,9 @@
 			// 
 			this.txtEffectName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtEffectName.Location = new System.Drawing.Point(761, 495);
+			this.txtEffectName.Location = new System.Drawing.Point(789, 597);
 			this.txtEffectName.Name = "txtEffectName";
-			this.txtEffectName.Size = new System.Drawing.Size(124, 20);
+			this.txtEffectName.Size = new System.Drawing.Size(158, 20);
 			this.txtEffectName.TabIndex = 12;
 			this.txtEffectName.TextChanged += new System.EventHandler(this.txtEffectName_TextChanged);
 			// 
@@ -444,11 +446,33 @@
 			this.label6.TabIndex = 16;
 			this.label6.Text = "Find:";
 			// 
+			// btnTaleSpireCamera
+			// 
+			this.btnTaleSpireCamera.Location = new System.Drawing.Point(12, 101);
+			this.btnTaleSpireCamera.Name = "btnTaleSpireCamera";
+			this.btnTaleSpireCamera.Size = new System.Drawing.Size(123, 26);
+			this.btnTaleSpireCamera.TabIndex = 2;
+			this.btnTaleSpireCamera.Text = "TaleSpire Camera";
+			this.btnTaleSpireCamera.UseVisualStyleBackColor = true;
+			this.btnTaleSpireCamera.Click += new System.EventHandler(this.btnTaleSpireCamera_Click);
+			// 
+			// btnLocalEulerAngles
+			// 
+			this.btnLocalEulerAngles.Enabled = false;
+			this.btnLocalEulerAngles.Location = new System.Drawing.Point(479, 143);
+			this.btnLocalEulerAngles.Name = "btnLocalEulerAngles";
+			this.btnLocalEulerAngles.Size = new System.Drawing.Size(169, 23);
+			this.btnLocalEulerAngles.TabIndex = 17;
+			this.btnLocalEulerAngles.Text = "<Transform>.localEulerAngles";
+			this.btnLocalEulerAngles.UseVisualStyleBackColor = true;
+			this.btnLocalEulerAngles.Click += new System.EventHandler(this.JumpToButton_Click);
+			// 
 			// FrmEffectEditor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(983, 524);
+			this.ClientSize = new System.Drawing.Size(1045, 626);
+			this.Controls.Add(this.btnLocalEulerAngles);
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.btnSaveEffect);
 			this.Controls.Add(this.btnLocalPosition);
@@ -476,6 +500,7 @@
 			this.Controls.Add(this.tbxJson);
 			this.Controls.Add(this.btnCopyJson);
 			this.Controls.Add(this.btnExploreMini);
+			this.Controls.Add(this.btnTaleSpireCamera);
 			this.Controls.Add(this.btnExploreExisting);
 			this.Controls.Add(this.btnCreateEffect);
 			this.Controls.Add(this.btnCloneExisting);
@@ -532,5 +557,7 @@
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.TextBox txtEffectName;
 		private System.Windows.Forms.Label label6;
+		private System.Windows.Forms.Button btnTaleSpireCamera;
+		private System.Windows.Forms.Button btnLocalEulerAngles;
 	}
 }

@@ -1257,5 +1257,15 @@ namespace TaleSpireExplore
 		{
 			
 		}
+
+		private void btnSetCameraPosition_Click(object sender, EventArgs e)
+		{
+			Talespire.Camera.SetPosition(tbxCameraPosition.Text);
+		}
+
+		private void btnSetCameraHeight_Click(object sender, EventArgs e)
+		{
+			Talespire.Camera.SetCameraHeight(tbxCameraHeight.Text);
+		}
 	}
 }

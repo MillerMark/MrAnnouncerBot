@@ -349,6 +349,7 @@
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
     <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
+    <Compile Include="StreamDeck Commands\CameraCommand.cs" />
     <Compile Include="StreamDeck Commands\CodeRushDemo.cs" />
     <Compile Include="StreamDeck Commands\ContestCommand.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />

@@ -68,6 +68,10 @@
 			this.txtScale = new System.Windows.Forms.TextBox();
 			this.btnTest1 = new System.Windows.Forms.Button();
 			this.btnTest2 = new System.Windows.Forms.Button();
+			this.btnSetCameraPosition = new System.Windows.Forms.Button();
+			this.tbxCameraPosition = new System.Windows.Forms.TextBox();
+			this.btnSetCameraHeight = new System.Windows.Forms.Button();
+			this.tbxCameraHeight = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -450,6 +454,42 @@
 			this.btnTest2.UseVisualStyleBackColor = true;
 			this.btnTest2.Click += new System.EventHandler(this.btnTest2_Click);
 			// 
+			// btnSetCameraPosition
+			// 
+			this.btnSetCameraPosition.Location = new System.Drawing.Point(1061, 115);
+			this.btnSetCameraPosition.Name = "btnSetCameraPosition";
+			this.btnSetCameraPosition.Size = new System.Drawing.Size(126, 26);
+			this.btnSetCameraPosition.TabIndex = 21;
+			this.btnSetCameraPosition.Text = "Set Camera Position";
+			this.btnSetCameraPosition.UseVisualStyleBackColor = true;
+			this.btnSetCameraPosition.Click += new System.EventHandler(this.btnSetCameraPosition_Click);
+			// 
+			// tbxCameraPosition
+			// 
+			this.tbxCameraPosition.Location = new System.Drawing.Point(992, 119);
+			this.tbxCameraPosition.Name = "tbxCameraPosition";
+			this.tbxCameraPosition.Size = new System.Drawing.Size(63, 20);
+			this.tbxCameraPosition.TabIndex = 25;
+			this.tbxCameraPosition.Text = "0, 0, 0";
+			// 
+			// btnSetCameraHeight
+			// 
+			this.btnSetCameraHeight.Location = new System.Drawing.Point(1061, 149);
+			this.btnSetCameraHeight.Name = "btnSetCameraHeight";
+			this.btnSetCameraHeight.Size = new System.Drawing.Size(126, 26);
+			this.btnSetCameraHeight.TabIndex = 21;
+			this.btnSetCameraHeight.Text = "Set Camera Height";
+			this.btnSetCameraHeight.UseVisualStyleBackColor = true;
+			this.btnSetCameraHeight.Click += new System.EventHandler(this.btnSetCameraHeight_Click);
+			// 
+			// tbxCameraHeight
+			// 
+			this.tbxCameraHeight.Location = new System.Drawing.Point(992, 153);
+			this.tbxCameraHeight.Name = "tbxCameraHeight";
+			this.tbxCameraHeight.Size = new System.Drawing.Size(63, 20);
+			this.tbxCameraHeight.TabIndex = 25;
+			this.tbxCameraHeight.Text = "10";
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -457,10 +497,14 @@
 			this.ClientSize = new System.Drawing.Size(1331, 592);
 			this.Controls.Add(this.btnTest2);
 			this.Controls.Add(this.btnTest1);
+			this.Controls.Add(this.tbxCameraHeight);
+			this.Controls.Add(this.tbxCameraPosition);
 			this.Controls.Add(this.txtScale);
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.btnParticleSystemOff);
+			this.Controls.Add(this.btnSetCameraHeight);
+			this.Controls.Add(this.btnSetCameraPosition);
 			this.Controls.Add(this.btnGetActiveGameObjects);
 			this.Controls.Add(this.btnSetScale);
 			this.Controls.Add(this.btnTestSetIndicatorColor);
@@ -542,5 +586,9 @@
 		private System.Windows.Forms.TextBox txtScale;
 		private System.Windows.Forms.Button btnTest1;
 		private System.Windows.Forms.Button btnTest2;
+		private System.Windows.Forms.Button btnSetCameraPosition;
+		private System.Windows.Forms.TextBox tbxCameraPosition;
+		private System.Windows.Forms.Button btnSetCameraHeight;
+		private System.Windows.Forms.TextBox tbxCameraHeight;
 	}
 }

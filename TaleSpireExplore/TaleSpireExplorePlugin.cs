@@ -345,6 +345,7 @@ namespace TaleSpireExplore
 
 		void Update()
 		{
+			//Talespire.Camera.ShowPosition();
 			ModdingUtils.OnUpdate();
 		}
 	}

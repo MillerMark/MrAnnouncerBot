@@ -88,6 +88,9 @@ namespace TaleSpireExplore
 			Commands.Add("Speak", Speak);
 			Commands.Add("SelectOne", SelectOne);
 			Commands.Add("Select", Select);
+			Commands.Add("LookAt", LookAt);
+			Commands.Add("SpinAround", SpinAround);
+			Commands.Add("RestoreCamera", RestoreCamera);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1540,7 +1543,34 @@ namespace TaleSpireExplore
 			if (creature == null)
 				return ApiResponse.Bad($"Unable to Select. Creature with id {id} not found.");
 			return ApiResponse.Good("Select", creature.GetCharacterPosition());
+		}
 
+		static string LookAt(string[] args)
+		{
+			if (args.Length != 1)
+				return ApiResponse.Bad($"LookAt - Expecting 1 arg.");
+			string id = args[0];
+			CreatureBoardAsset creature = Talespire.Camera.LookAt(id);
+			if (creature == null)
+				return ApiResponse.Bad($"Unable to LookAt creature. Creature with id {id} not found.");
+			return ApiResponse.Good("LookAt", creature.GetCharacterPosition());
+		}
+
+		static string SpinAround(string[] args)
+		{
+			if (args.Length != 1)
+				return ApiResponse.Bad($"SpinAround - Expecting 1 arg.");
+			string id = args[0];
+			CreatureBoardAsset creature = Talespire.Camera.SpinAround(id);
+			if (creature == null)
+				return ApiResponse.Bad($"Unable to SpinAround creature. Creature with id {id} not found.");
+			return ApiResponse.Good("SpinAround", creature.GetCharacterPosition());
+		}
+
+		static string RestoreCamera(string[] args)
+		{
+			Talespire.Camera.RestoreCamera();
+			return ApiResponse.Good();
 		}
 
 		static string Speak(string[] args)
@@ -1570,8 +1600,6 @@ namespace TaleSpireExplore
 
 		static string SetTargeted(string[] arg)
 		{
-			Talespire.Log.Debug($"SetTargeted...");
-
 			const int expectedArgs = 2;
 			if (arg.Length != expectedArgs)
 				return ApiResponse.Bad($"Expecting {expectedArgs}.");
@@ -1588,8 +1616,6 @@ namespace TaleSpireExplore
 
 		static string SetActiveTurn(string[] arg)
 		{
-			Talespire.Log.Debug($"SetActiveTurn...");
-
 			const int expectedArgs = 2;
 			if (arg.Length != expectedArgs)
 				return ApiResponse.Bad($"Expecting {expectedArgs}.");
@@ -1603,12 +1629,10 @@ namespace TaleSpireExplore
 			if (creature == null)
 				return ApiResponse.Bad($"Creature with {id} not found.");
 			
-			Talespire.Log.Debug($"SetActiveTurn - Success!");
 			return ApiResponse.Good("Success", creature.GetCharacterPosition());
 		}
 		static string WiggleCreature(string[] arg)
 		{
-			Talespire.Log.Debug("WiggleCreature, with these parameters: ");
 			foreach (string item in arg)
 			{
 				Talespire.Log.Debug($"  {item}");

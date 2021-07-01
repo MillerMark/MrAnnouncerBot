@@ -11435,16 +11435,22 @@ namespace DHDM
 
 		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
 		{
+			if (creatureToSelect == null)
+				return;
 			TaleSpireClient.Wiggle(creatureToSelect.TaleSpireId);
+			TaleSpireClient.LookAt(creatureToSelect.TaleSpireId);
 		}
 
 		public void NextTurn()
 		{
 			lock (game)
 				game.NextTurn();
-			string activeTurnCreatureId = game.ActiveTurnCreatureId;
-			if (activeTurnCreatureId != null)
-				TaleSpireClient.Invoke("SetActiveTurn", new string[] { activeTurnCreatureId, game.ActiveTurnCreatureColor });
+			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
+			if (activeTurnTaleSpireId != null)
+			{
+				TaleSpireClient.Invoke("SetActiveTurn", new string[] { activeTurnTaleSpireId, game.ActiveTurnCreatureColor });
+				TaleSpireClient.LookAt(activeTurnTaleSpireId);
+			}
 			else
 				TaleSpireClient.ClearActiveTurnIndicator();
 		}
@@ -11526,6 +11532,59 @@ namespace DHDM
 			{
 				TaleSpireClient.Speak(creature.taleSpireId, message);
 			}
+		}
+
+		void LookAtSelectedCreature()
+		{
+			InGameCreature inGameCreature = AllInGameCreatures.GetSelected();
+			if (inGameCreature != null)
+			{
+				TaleSpireClient.LookAt(inGameCreature.TaleSpireId);
+				TaleSpireClient.Wiggle(inGameCreature.TaleSpireId);
+			}
+		}
+
+		public void TaleSpireCamera(string cameraCommand)
+		{
+			switch (cameraCommand)
+			{
+				case "LookAtSelected":
+					LookAtSelectedCreature();
+					break;
+				case "SpinAroundSelected":
+					SpinAroundSelected();
+					break;
+				case "LookAtActive":
+					LookAtActiveCreature();
+					break;
+				case "SpinAroundActive":
+					SpinAroundActiveCreature();
+					break;
+				case "RestoreCamera":
+					TaleSpireClient.RestoreCamera();
+					break;
+			}
+		}
+
+		private void SpinAroundSelected()
+		{
+			InGameCreature inGameCreature = AllInGameCreatures.GetSelected();
+			if (inGameCreature != null)
+				TaleSpireClient.SpinAround(inGameCreature.TaleSpireId);
+		}
+
+		private void LookAtActiveCreature()
+		{
+			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
+			if (activeTurnTaleSpireId != null)
+				TaleSpireClient.LookAt(activeTurnTaleSpireId);
+		}
+
+		private void SpinAroundActiveCreature()
+		{
+			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
+			if (activeTurnTaleSpireId != null)
+				TaleSpireClient.SpinAround(activeTurnTaleSpireId);
 		}
 	}
 }

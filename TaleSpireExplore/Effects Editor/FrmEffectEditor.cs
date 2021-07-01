@@ -146,6 +146,7 @@ namespace TaleSpireExplore
 			btnMeshRendererMaterial.Enabled = false;
 			btnLocalPosition.Enabled = false;
 			btnLocalScale.Enabled = false;
+			btnLocalEulerAngles.Enabled = false;
 			foreach (TreeNode treeNode in trvProperties.Nodes)
 			{
 				if (treeNode.Text == "<ParticleSystemRenderer>")
@@ -156,6 +157,7 @@ namespace TaleSpireExplore
 				{
 					btnLocalScale.Enabled = true;
 					btnLocalPosition.Enabled = true;
+					btnLocalEulerAngles.Enabled = true;
 				}
 			}
 		}
@@ -1220,6 +1222,35 @@ namespace TaleSpireExplore
 		private void btnSaveEffect_Click(object sender, EventArgs e)
 		{
 			KnownEffects.Save(txtEffectName.Text, tbxJson.Text);
+		}
+
+		private void btnTaleSpireCamera_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = "CameraRoot",
+					CompositeEffect = new CompositeEffect()
+					{
+						ItemToBorrow = "CameraRoot"
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = Talespire.Camera.GetRoot();
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex);
+				MessageBox.Show(ex.Message, "Exception!");
+			}
 		}
 	}
 }

@@ -56,6 +56,11 @@ namespace TaleSpireCore
 					indent += "  ";
 				}
 			}
+
+			public static void Vector(string message, UnityEngine.Vector3 vector)
+			{
+				Debug($"{message} = ({vector.x:N}, {vector.y:N}, {vector.z:N})");
+			}
 		}
 	}
 }

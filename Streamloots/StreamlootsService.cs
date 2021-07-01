@@ -140,7 +140,7 @@ namespace Streamloots
 				}
 				catch (Exception ex)
 				{
-					System.Diagnostics.Debugger.Break();
+					//System.Diagnostics.Debugger.Break();
 					Console.WriteLine(ex.ToString());
 
 					webRequest = WebRequest.Create(string.Format("https://widgets.streamloots.com/alerts/{0}/media-stream", streamlootsID.GetStr()));

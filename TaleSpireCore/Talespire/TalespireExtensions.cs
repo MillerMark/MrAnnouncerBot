@@ -84,5 +84,15 @@ namespace TaleSpireCore
 		{
 			return new VectorDto(creatureAsset.PlacedPosition.x, creatureAsset.PlacedPosition.y, creatureAsset.PlacedPosition.z);
 		}
+
+		public static GameObject GetBase(this CreatureBoardAsset creatureBoardAsset)
+		{
+			GameObject baseGameObject;
+			if (creatureBoardAsset.IsFlying)
+				baseGameObject = creatureBoardAsset.FlyingIndicator.gameObject;
+			else
+				baseGameObject = creatureBoardAsset.BaseLoader.LoadedAsset;
+			return baseGameObject;
+		}
 	}
 }
