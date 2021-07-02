@@ -91,6 +91,9 @@ namespace TaleSpireExplore
 			Commands.Add("LookAt", LookAt);
 			Commands.Add("SpinAround", SpinAround);
 			Commands.Add("RestoreCamera", RestoreCamera);
+			Commands.Add("AttachEffect", AttachEffect);
+			Commands.Add("PlayEffect", PlayEffect);
+			Commands.Add("ClearAttached", ClearAttached);
 		}
 
 		private static string AddCreature(string[] input)
@@ -166,7 +169,11 @@ namespace TaleSpireExplore
 				string result = "";
 				UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
 				{
-					result = Commands[parts[0].Trim()].Invoke(string.Join(" ", parts.Skip(1)).Trim().Split(','));
+					string commandName = parts[0].Trim();
+					if (Commands.ContainsKey(commandName))
+						result = Commands[commandName].Invoke(string.Join(" ", parts.Skip(1)).Trim().Split(','));
+					else
+						Talespire.Log.Error($"Command {commandName} not registered!");
 				});
 				return result;
 
@@ -1570,6 +1577,34 @@ namespace TaleSpireExplore
 		static string RestoreCamera(string[] args)
 		{
 			Talespire.Camera.RestoreCamera();
+			return ApiResponse.Good();
+		}
+
+		static string AttachEffect(string[] args)
+		{
+			if (args.Length != 3)
+				return ApiResponse.Bad($"AttachEffect - Expecting 3 args.");
+			Talespire.Spells.AttachEffect(args[0], args[1], args[2]);
+			return ApiResponse.Good();
+		}
+
+		static string PlayEffect(string[] args)
+		{
+			if (args.Length < 3 || args.Length > 4)
+				return ApiResponse.Bad($"PlayEffect - Expecting 3-4 args.");
+			float lifeTime = 0;
+			if (args.Length > 3)
+			{
+				float.TryParse(args[3], out lifeTime);
+			}
+			Talespire.Spells.PlayEffect(args[0], args[1], args[2], lifeTime);
+			return ApiResponse.Good();
+		}
+		static string ClearAttached(string[] args)
+		{
+			if (args.Length != 2)
+				return ApiResponse.Bad($"ClearAttached - Expecting 2 args.");
+			Talespire.Spells.ClearAttached(args[0], args[1]);
 			return ApiResponse.Good();
 		}
 

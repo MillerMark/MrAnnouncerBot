@@ -114,6 +114,7 @@ namespace DHDM
 			ChangingInternally = true;
 			try
 			{
+				SpellManager.Initialize();
 				InitializeGame();
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//`! !!!                                                                                      !!!
@@ -1247,7 +1248,7 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
-				reconnectToTwitchDungeonMasterTimer.Stop();
+				reconnectToTwitchDragonHumpersTimer.Stop();
 				Background = Brushes.White;
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
 			});
@@ -4718,7 +4719,7 @@ namespace DHDM
 			{
 				if (!string.IsNullOrWhiteSpace(stopRollingData.spellName))
 				{
-					Creature creature = GetCreatureFromId(stopRollingData.singleOwnerId);
+					Creature creature = CreatureHelper.GetCreatureFromId(stopRollingData.singleOwnerId);
 					if (creature == null)
 					{
 						History.Log("Error: stopRollingData.singleOwnerId not set!");
@@ -4765,25 +4766,15 @@ namespace DHDM
 			}
 		}
 
-		private static Creature GetCreatureFromId(int creatureId)
-		{
-			if (creatureId >= 0)
-				return AllPlayers.GetFromId(creatureId);
-			else
-			{
-				InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
-				if (inGameCreature != null)
-					return inGameCreature.Creature;
-			}
-			return null;
-		}
+
+
 
 		void ResetRollBasedState(RollResults stopRollingData)
 		{
 			List<Creature> creatures = new List<Creature>();
 			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
 			{
-				Creature creature = GetCreatureFromId(individualRoll.creatureId);
+				Creature creature = CreatureHelper.GetCreatureFromId(individualRoll.creatureId);
 				if (creature != null && creatures.IndexOf(creature) < 0)
 					creatures.Add(creature);
 			}
@@ -8013,7 +8004,8 @@ namespace DHDM
 			spell.OnGetAttackAbility = latestSpell.OnGetAttackAbility;
 			spell.OnDispel = latestSpell.OnDispel;
 			spell.OnPlayerPreparesAttack = latestSpell.OnPlayerPreparesAttack;
-			spell.OnDieRollStopped = latestSpell.OnDieRollStopped;
+			spell.OnAnyDieRollStopped = latestSpell.OnAnyDieRollStopped;
+			spell.OnSpellCastDieRollStopped = latestSpell.OnSpellCastDieRollStopped;
 			spell.OnPlayerAttacks = latestSpell.OnPlayerAttacks;
 			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
 		}
@@ -10463,7 +10455,7 @@ namespace DHDM
 					cardHandManager.SelectPreviousCard(creatureId);
 					return;
 				case CardCommandType.PlaySelectedCard:
-					Creature creature = GetCreatureFromId(creatureId);
+					Creature creature = CreatureHelper.GetCreatureFromId(creatureId);
 					cardHandManager.PlaySelectedCard(creatureId, creature);
 					return;
 				case CardCommandType.RevealSecretCard:
@@ -10609,7 +10601,7 @@ namespace DHDM
 
 		private void TriggerCardReceivedEvent(CardEventArgs ea)
 		{
-			Creature recipientCreature = GetCreatureFromId(ea.CardDto.OwningCharacterId);
+			Creature recipientCreature = CreatureHelper.GetCreatureFromId(ea.CardDto.OwningCharacterId);
 			Target recipientTarget = GetTarget(recipientCreature);
 			SystemVariables.CardRecipient = recipientTarget;
 			SystemVariables.ThisCard = ea.CardDto.Card;
@@ -11527,7 +11519,7 @@ namespace DHDM
 		private static void SaySomething(string message, string textColor, int creatureId, string speechCommand)
 		{
 			HubtasticBaseStation.SpeechBubble($"{creatureId}{textColor} {speechCommand}: {message}");
-			Creature creature = GetCreatureFromId(creatureId);
+			Creature creature = CreatureHelper.GetCreatureFromId(creatureId);
 			if (creature != null)
 			{
 				TaleSpireClient.Speak(creature.taleSpireId, message);

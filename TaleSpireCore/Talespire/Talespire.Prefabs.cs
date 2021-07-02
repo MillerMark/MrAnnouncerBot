@@ -13,9 +13,14 @@ namespace TaleSpireCore
 
 			public static GameObject Get(string prefabName)
 			{
-				if (prefabs.ContainsKey(prefabName))
+				if (Has(prefabName))
 					return prefabs[prefabName];
 				return null;
+			}
+
+			public static bool Has(string prefabName)
+			{
+				return prefabs.ContainsKey(prefabName);
 			}
 
 			public static void Add(GameObject prefab)

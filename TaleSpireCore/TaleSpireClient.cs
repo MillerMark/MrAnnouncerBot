@@ -123,7 +123,7 @@ namespace TaleSpireCore
 					int sleeps = 0;
 					while (sender.Available == 0 && sleeps < 3000)
 					{
-						System.Threading.Thread.Sleep(1);
+						System.Threading.Thread.Sleep(3);
 						sleeps++;
 					}
 					while (sender.Available > 0)
@@ -244,6 +244,21 @@ namespace TaleSpireCore
 		public static void RestoreCamera()
 		{
 			Invoke("RestoreCamera");
+		}
+
+		public static void AttachEffect(string effectName, string spellId, string taleSpireId)
+		{
+			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId });
+		}
+
+		public static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime = 0)
+		{
+			Invoke("PlayEffect", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString() });
+		}
+
+		public static void ClearAttached(string spellId, string taleSpireId)
+		{
+			Invoke("ClearAttached", new string[] { spellId, taleSpireId });
 		}
 	}
 }

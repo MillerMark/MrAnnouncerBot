@@ -333,6 +333,7 @@
     <Compile Include="Contests\ContestGroup.cs" />
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
+    <Compile Include="CreatureHelper.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
     <Compile Include="DmMoods\DmMood.cs" />
@@ -348,6 +349,7 @@
     </Compile>
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
+    <Compile Include="SpellManager.cs" />
     <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
     <Compile Include="StreamDeck Commands\CameraCommand.cs" />
     <Compile Include="StreamDeck Commands\CodeRushDemo.cs" />

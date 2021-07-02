@@ -5,6 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+
 	[Tooltip("Adds the specified mod to the next roll.")]
 	[Param(1, typeof(string), "modType", "The type of card mod to add (e.g., TotalDamage, TotalScore, or TotalScorePlusDamage).", ParameterIs.Required)]
 	[Param(2, typeof(int), "valueOffset", "The value of the mod (e.g., -1, 1, 2, 3, etc.).", ParameterIs.Required)]

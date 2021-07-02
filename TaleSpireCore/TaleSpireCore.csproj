@@ -137,6 +137,7 @@
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
     <Compile Include="Talespire\Talespire.Camera.cs" />
+    <Compile Include="Talespire\Talespire.Spells.cs" />
     <Compile Include="Talespire\Talespire.Property.cs" />
     <Compile Include="Talespire\Talespire.Mesh.cs" />
     <Compile Include="Talespire\Talespire.Target.cs" />

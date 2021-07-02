@@ -62,7 +62,8 @@ namespace DndCore
 		public string onPreparing { get; set; }
 		public string onGetAttackAbility { get; set; }
 		public string onPlayerPreparesAttack { get; set; }
-		public string onDieRollStopped { get; set; }
+		public string onAnyDieRollStopped { get; set; }
+		public string onSpellCastDieRollStopped { get; set; }
 		public string onPlayerAttacks { get; set; }
 		public string onPlayerHitsTarget { get; set; }
 		public string onDispel { get; set; }

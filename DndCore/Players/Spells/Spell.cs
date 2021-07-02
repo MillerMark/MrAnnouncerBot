@@ -114,7 +114,11 @@ namespace DndCore
 
 		[DndEvent]
 		[Column]
-		public string OnDieRollStopped { get; set; }
+		public string OnAnyDieRollStopped { get; set; }
+
+		[DndEvent]
+		[Column]
+		public string OnSpellCastDieRollStopped { get; set; }
 
 		[DndEvent]
 		[Column]
@@ -407,7 +411,8 @@ namespace DndCore
 				OnTargetSaves = spellDto.onTargetSaves,
 				OnGetAttackAbility = spellDto.onGetAttackAbility,
 				OnPlayerPreparesAttack = spellDto.onPlayerPreparesAttack,
-				OnDieRollStopped = spellDto.onDieRollStopped,
+				OnAnyDieRollStopped = spellDto.onAnyDieRollStopped,
+				OnSpellCastDieRollStopped = spellDto.onSpellCastDieRollStopped,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
 				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
 				OnDispel = spellDto.onDispel,
@@ -563,7 +568,13 @@ namespace DndCore
 		public void TriggerDieRollStopped(Creature player, Target target, CastedSpell castedSpell, RollResults dice)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnDieRollStopped, player, target, castedSpell, dice);
+			Expressions.Do(OnAnyDieRollStopped, player, target, castedSpell, dice);
+		}
+
+		public void TriggerSpellCastDieRollStopped(Creature player, Target target, CastedSpell castedSpell, RollResults dice)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnSpellCastDieRollStopped, player, target, castedSpell, dice);
 		}
 
 		public void TriggerPlayerAttacks(Creature player, Target target, CastedSpell castedSpell)
@@ -602,7 +613,8 @@ namespace DndCore
 			result.OnGetAttackAbility = OnGetAttackAbility;
 			result.OnDispel = OnDispel;
 			result.OnPlayerPreparesAttack = OnPlayerPreparesAttack;
-			result.OnDieRollStopped = OnDieRollStopped;
+			result.OnAnyDieRollStopped = OnAnyDieRollStopped;
+			result.OnSpellCastDieRollStopped = OnSpellCastDieRollStopped;
 			result.OnPlayerAttacks = OnPlayerAttacks;
 			result.OnPlayerHitsTarget = OnPlayerHitsTarget;
 			result.OriginalDieStr = OriginalDieStr;

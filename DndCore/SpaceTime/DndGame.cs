@@ -595,7 +595,8 @@ namespace DndCore
 				castedSpell.Spell.TriggerPlayerHitsTarget(player, WaitingForRollTarget, castedSpell);
 			}
 		}
-		void OnDieRollStopped(Creature creature, RollResults diceStoppedRollingData, Target target)
+
+		void OnDieRollStopped(Creature creature, RollResults rollResults, Target target)
 		{
 			if (WaitingForRollHiddenThreshold == int.MinValue || creature != WaitingForRollCreature)
 				return;
@@ -625,7 +626,9 @@ namespace DndCore
 				for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
 				{
 					CastedSpell castedSpell = playersActiveSpells[i];
-					castedSpell.Spell.TriggerDieRollStopped(player, target, castedSpell, diceStoppedRollingData);
+					if (castedSpell.ID == rollResults.spellId)
+						castedSpell.Spell.TriggerSpellCastDieRollStopped(player, target, castedSpell, rollResults);
+					castedSpell.Spell.TriggerDieRollStopped(player, target, castedSpell, rollResults);
 				}
 		}
 
