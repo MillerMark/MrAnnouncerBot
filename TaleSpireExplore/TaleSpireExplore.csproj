@@ -210,6 +210,12 @@
     <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtEnum.Designer.cs">
+      <DependentUpon>EdtEnum.cs</DependentUpon>
+    </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtMesh.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -221,6 +227,12 @@
     </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtMaterial.Designer.cs">
       <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtNGuid.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtNGuid.Designer.cs">
+      <DependentUpon>EdtNGuid.cs</DependentUpon>
     </Compile>
     <Compile Include="Effects Editor\ValueEditors\EdtString.cs">
       <SubType>UserControl</SubType>
@@ -318,11 +330,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtEnum.resx">
+      <DependentUpon>EdtEnum.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMesh.resx">
       <DependentUpon>EdtMesh.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMaterial.resx">
       <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtNGuid.resx">
+      <DependentUpon>EdtNGuid.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtString.resx">
       <DependentUpon>EdtString.cs</DependentUpon>

@@ -143,6 +143,7 @@ namespace TaleSpireExplore
 		void EnableJumpButtons()
 		{
 			btnParticleSystemRenderer.Enabled = false;
+			btnShapeRadius.Enabled = false;
 			btnMeshRendererMaterial.Enabled = false;
 			btnLocalPosition.Enabled = false;
 			btnLocalScale.Enabled = false;
@@ -159,6 +160,8 @@ namespace TaleSpireExplore
 					btnLocalPosition.Enabled = true;
 					btnLocalEulerAngles.Enabled = true;
 				}
+				else if (treeNode.Text == "<ParticleSystem>")
+					btnShapeRadius.Enabled = true;
 			}
 		}
 
@@ -512,7 +515,9 @@ namespace TaleSpireExplore
 		{
 			allValueEditors = new AllValueEditors();
 			AddValueEditor(allValueEditors.Register(new EdtFloat()));
+			AddValueEditor(allValueEditors.Register(new EdtEnum()));
 			AddValueEditor(allValueEditors.Register(new EdtInt()));
+			AddValueEditor(allValueEditors.Register(new EdtNGuid()));
 			AddValueEditor(allValueEditors.Register(new EdtMaterial()));
 			AddValueEditor(allValueEditors.Register(new EdtMesh()));
 			AddValueEditor(allValueEditors.Register(new EdtBool()));
@@ -1250,6 +1255,35 @@ namespace TaleSpireExplore
 			{
 				Talespire.Log.Exception(ex);
 				MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		private void btnAddPropTest_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				GameObject prop = Talespire.GameObjects.TryAddProp();
+				GameObjectNode node = new GameObjectNode()
+				{
+					Text = prop.name,
+					CompositeEffect = new CompositeEffect()
+					{
+						ItemToBorrow = prop.name
+					}
+				};
+
+				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
+				if (selectedNode != null)
+					selectedNode.Nodes.Add(node);
+				else
+					trvEffectHierarchy.Nodes.Add(node);
+				node.GameObject = prop;
+				node.Checked = node.GameObject.activeSelf;
+				AddChildren(node);
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex);
 			}
 		}
 	}

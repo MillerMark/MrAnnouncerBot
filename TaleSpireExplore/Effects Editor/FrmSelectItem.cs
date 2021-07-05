@@ -48,7 +48,11 @@ namespace TaleSpireExplore
 						lstItems.Items.Add(item);
 				else if (SelectionType == SelectionType.ExistingGameObjects)
 					foreach (string item in Talespire.GameObjects.GetAllNames((ModifierKeys & Keys.Shift) != Keys.Shift).OrderBy(x => x).ToList())
+					{
+						if (item.Contains("lb") || item.Contains("pot") || item.Contains("Pot") || item.Contains("Bottle") || item.Contains("bottle"))
+							Talespire.Log.Warning($"Found a \"{item}\"!");
 						lstItems.Items.Add(item);
+					}
 				else if (SelectionType == SelectionType.Minis)
 					foreach (string miniId in Talespire.Minis.GetAllNamesAndIds().OrderBy(x => x).ToList())
 						lstItems.Items.Add(miniId);

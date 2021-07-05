@@ -36,6 +36,8 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
+			this.btnAllZeros = new System.Windows.Forms.Button();
+			this.btnAllOnes = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetX)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetY)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetZ)).BeginInit();
@@ -131,10 +133,32 @@
 			this.label4.TabIndex = 0;
 			this.label4.Text = "y:";
 			// 
+			// btnAllZeros
+			// 
+			this.btnAllZeros.Location = new System.Drawing.Point(7, 36);
+			this.btnAllZeros.Name = "btnAllZeros";
+			this.btnAllZeros.Size = new System.Drawing.Size(55, 23);
+			this.btnAllZeros.TabIndex = 3;
+			this.btnAllZeros.Text = "0, 0, 0";
+			this.btnAllZeros.UseVisualStyleBackColor = true;
+			this.btnAllZeros.Click += new System.EventHandler(this.btnAllZeros_Click);
+			// 
+			// btnAllOnes
+			// 
+			this.btnAllOnes.Location = new System.Drawing.Point(7, 67);
+			this.btnAllOnes.Name = "btnAllOnes";
+			this.btnAllOnes.Size = new System.Drawing.Size(55, 23);
+			this.btnAllOnes.TabIndex = 3;
+			this.btnAllOnes.Text = "1, 1, 1";
+			this.btnAllOnes.UseVisualStyleBackColor = true;
+			this.btnAllOnes.Click += new System.EventHandler(this.btnAllOnes_Click);
+			// 
 			// EdtVector3
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.btnAllOnes);
+			this.Controls.Add(this.btnAllZeros);
 			this.Controls.Add(this.trkOffsetY);
 			this.Controls.Add(this.trkOffsetZ);
 			this.Controls.Add(this.tbxVector3);
@@ -163,5 +187,7 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Button btnAllZeros;
+		private System.Windows.Forms.Button btnAllOnes;
 	}
 }

@@ -101,9 +101,11 @@
     <Compile Include="CompositeEffects\IKnownEffectsBuilder.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeBool.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeColor.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeEnum.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeInt.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeMaterial.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeMesh.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\ChangeNGuid.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />

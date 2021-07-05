@@ -149,7 +149,10 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				return creatureBoardAsset?.CreatureLoader?.LoadedAsset;
+				AssetLoader[] creatureLoaders = creatureBoardAsset?.CreatureLoaders;
+				if (creatureLoaders.Length > 0)
+					return creatureLoaders[0].LoadedAsset;
+				return null;
 			}
 
 			public static void SpeakOnlyOnClientMachine(string id, string message)

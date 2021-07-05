@@ -17,12 +17,15 @@ namespace TaleSpireExplore
 		}
 
 		Dictionary<Type, IValueEditor> editors = new Dictionary<Type, IValueEditor>();
+		IValueEditor enumEditor;
 
 		public Dictionary<Type, IValueEditor> Editors { get => editors; }
 
 		public UserControl Register(IValueEditor valueEditor)
 		{
 			Type key = valueEditor.GetValueType();
+			if (key == typeof(Enum))
+				enumEditor = valueEditor;
 			if (editors.ContainsKey(key))
 			{
 				MessageBox.Show($"Value editor for this type {key.FullName} already registered...", "Error");
@@ -39,6 +42,10 @@ namespace TaleSpireExplore
 		{
 			if (editors.ContainsKey(key))
 				return editors[key];
+
+			if (key.IsEnum)
+				return enumEditor;
+
 			return null;
 		}
 

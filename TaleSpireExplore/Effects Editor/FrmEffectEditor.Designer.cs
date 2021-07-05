@@ -69,6 +69,8 @@
 			this.label6 = new System.Windows.Forms.Label();
 			this.btnTaleSpireCamera = new System.Windows.Forms.Button();
 			this.btnLocalEulerAngles = new System.Windows.Forms.Button();
+			this.btnShapeRadius = new System.Windows.Forms.Button();
+			this.btnAddPropTest = new System.Windows.Forms.Button();
 			this.ctxGameObjects.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -315,9 +317,9 @@
 			// btnMeshRendererMaterial
 			// 
 			this.btnMeshRendererMaterial.Enabled = false;
-			this.btnMeshRendererMaterial.Location = new System.Drawing.Point(479, 56);
+			this.btnMeshRendererMaterial.Location = new System.Drawing.Point(481, 81);
 			this.btnMeshRendererMaterial.Name = "btnMeshRendererMaterial";
-			this.btnMeshRendererMaterial.Size = new System.Drawing.Size(151, 23);
+			this.btnMeshRendererMaterial.Size = new System.Drawing.Size(137, 23);
 			this.btnMeshRendererMaterial.TabIndex = 13;
 			this.btnMeshRendererMaterial.Text = "<MeshRenderer>.material";
 			this.btnMeshRendererMaterial.UseVisualStyleBackColor = true;
@@ -335,9 +337,9 @@
 			// btnParticleSystemRenderer
 			// 
 			this.btnParticleSystemRenderer.Enabled = false;
-			this.btnParticleSystemRenderer.Location = new System.Drawing.Point(479, 27);
+			this.btnParticleSystemRenderer.Location = new System.Drawing.Point(481, 59);
 			this.btnParticleSystemRenderer.Name = "btnParticleSystemRenderer";
-			this.btnParticleSystemRenderer.Size = new System.Drawing.Size(195, 23);
+			this.btnParticleSystemRenderer.Size = new System.Drawing.Size(181, 23);
 			this.btnParticleSystemRenderer.TabIndex = 13;
 			this.btnParticleSystemRenderer.Text = "<ParticleSystemRenderer>.material";
 			this.btnParticleSystemRenderer.UseVisualStyleBackColor = true;
@@ -346,9 +348,9 @@
 			// btnLocalScale
 			// 
 			this.btnLocalScale.Enabled = false;
-			this.btnLocalScale.Location = new System.Drawing.Point(479, 114);
+			this.btnLocalScale.Location = new System.Drawing.Point(481, 125);
 			this.btnLocalScale.Name = "btnLocalScale";
-			this.btnLocalScale.Size = new System.Drawing.Size(151, 23);
+			this.btnLocalScale.Size = new System.Drawing.Size(126, 23);
 			this.btnLocalScale.TabIndex = 14;
 			this.btnLocalScale.Text = "<Transform>.localScale";
 			this.btnLocalScale.UseVisualStyleBackColor = true;
@@ -357,9 +359,9 @@
 			// btnLocalPosition
 			// 
 			this.btnLocalPosition.Enabled = false;
-			this.btnLocalPosition.Location = new System.Drawing.Point(479, 85);
+			this.btnLocalPosition.Location = new System.Drawing.Point(481, 103);
 			this.btnLocalPosition.Name = "btnLocalPosition";
-			this.btnLocalPosition.Size = new System.Drawing.Size(151, 23);
+			this.btnLocalPosition.Size = new System.Drawing.Size(137, 23);
 			this.btnLocalPosition.TabIndex = 14;
 			this.btnLocalPosition.Text = "<Transform>.localPosition";
 			this.btnLocalPosition.UseVisualStyleBackColor = true;
@@ -459,13 +461,34 @@
 			// btnLocalEulerAngles
 			// 
 			this.btnLocalEulerAngles.Enabled = false;
-			this.btnLocalEulerAngles.Location = new System.Drawing.Point(479, 143);
+			this.btnLocalEulerAngles.Location = new System.Drawing.Point(481, 147);
 			this.btnLocalEulerAngles.Name = "btnLocalEulerAngles";
-			this.btnLocalEulerAngles.Size = new System.Drawing.Size(169, 23);
+			this.btnLocalEulerAngles.Size = new System.Drawing.Size(155, 23);
 			this.btnLocalEulerAngles.TabIndex = 17;
 			this.btnLocalEulerAngles.Text = "<Transform>.localEulerAngles";
 			this.btnLocalEulerAngles.UseVisualStyleBackColor = true;
 			this.btnLocalEulerAngles.Click += new System.EventHandler(this.JumpToButton_Click);
+			// 
+			// btnShapeRadius
+			// 
+			this.btnShapeRadius.Enabled = false;
+			this.btnShapeRadius.Location = new System.Drawing.Point(479, 37);
+			this.btnShapeRadius.Name = "btnShapeRadius";
+			this.btnShapeRadius.Size = new System.Drawing.Size(161, 23);
+			this.btnShapeRadius.TabIndex = 13;
+			this.btnShapeRadius.Text = "<ParticleSystem>.shape.radius";
+			this.btnShapeRadius.UseVisualStyleBackColor = true;
+			this.btnShapeRadius.Click += new System.EventHandler(this.JumpToButton_Click);
+			// 
+			// btnAddPropTest
+			// 
+			this.btnAddPropTest.Location = new System.Drawing.Point(141, 100);
+			this.btnAddPropTest.Name = "btnAddPropTest";
+			this.btnAddPropTest.Size = new System.Drawing.Size(123, 26);
+			this.btnAddPropTest.TabIndex = 2;
+			this.btnAddPropTest.Text = "Add Prop";
+			this.btnAddPropTest.UseVisualStyleBackColor = true;
+			this.btnAddPropTest.Click += new System.EventHandler(this.btnAddPropTest_Click);
 			// 
 			// FrmEffectEditor
 			// 
@@ -477,6 +500,7 @@
 			this.Controls.Add(this.btnSaveEffect);
 			this.Controls.Add(this.btnLocalPosition);
 			this.Controls.Add(this.btnLocalScale);
+			this.Controls.Add(this.btnShapeRadius);
 			this.Controls.Add(this.btnParticleSystemRenderer);
 			this.Controls.Add(this.btnMeshRendererMaterial);
 			this.Controls.Add(this.txtEffectName);
@@ -500,6 +524,7 @@
 			this.Controls.Add(this.tbxJson);
 			this.Controls.Add(this.btnCopyJson);
 			this.Controls.Add(this.btnExploreMini);
+			this.Controls.Add(this.btnAddPropTest);
 			this.Controls.Add(this.btnTaleSpireCamera);
 			this.Controls.Add(this.btnExploreExisting);
 			this.Controls.Add(this.btnCreateEffect);
@@ -559,5 +584,7 @@
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.Button btnTaleSpireCamera;
 		private System.Windows.Forms.Button btnLocalEulerAngles;
+		private System.Windows.Forms.Button btnShapeRadius;
+		private System.Windows.Forms.Button btnAddPropTest;
 	}
 }

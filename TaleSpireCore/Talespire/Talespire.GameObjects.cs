@@ -10,6 +10,7 @@ namespace TaleSpireCore
 		public static class GameObjects
 		{
 			static Dictionary<string, GameObject> allFoundGameObjects;
+			static Dictionary<GameObject, string> allFoundGameObjectNames;
 
 			public static GameObject Get(string name)
 			{
@@ -85,20 +86,56 @@ namespace TaleSpireCore
 			public static void InvalidateFound()
 			{
 				allFoundGameObjects = null;
+				allFoundGameObjectNames = null;
 			}
 
 			public static void Refresh()
 			{
 				allFoundGameObjects = new Dictionary<string, GameObject>();
+				allFoundGameObjectNames = new Dictionary<GameObject, string>();
+				GameObject[] allGameObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 				Transform[] allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
 				if (allTransforms != null)
 					foreach (Transform transform in allTransforms)
+						AddGameObject(transform.gameObject);
+
+				if (allGameObjects != null)
+					foreach (GameObject gameObject in allGameObjects)
+						AddGameObject(gameObject);
+			}
+
+			private static void AddGameObject(GameObject gameObject)
+			{
+				int index = 1;
+				string indexStr = "";
+				if (gameObject != null && !allFoundGameObjectNames.ContainsKey(gameObject))
+				{
+					while (allFoundGameObjects.ContainsKey(gameObject.name + indexStr))
 					{
-						GameObject gameObject = transform.gameObject;
-						if (gameObject != null)
-							if (!allFoundGameObjects.ContainsKey(gameObject.name))
-								allFoundGameObjects.Add(gameObject.name, gameObject);
+						index++;
+						indexStr = "." + index.ToString();
 					}
+					string key = gameObject.name + indexStr;
+					allFoundGameObjects.Add(key, gameObject);
+					allFoundGameObjectNames.Add(gameObject, key);
+
+					//"5d3e85d0-e2e8-436a-9c16-f35a493bc854"
+					//PropPreviewBoardAsset.Spawn(boardAssetGuid, position, rotation)
+					//new PropPreviewBoardAsset().AssetId; /*  */
+					//TsAssetResources - where is this?
+				}
+			}
+
+			public static GameObject TryAddProp()
+			{
+				// "Bottle_TallRoundCorkTop_lp" - "5d3e85d0-e2e8-436a-9c16-f35a493bc854"
+				PropPreviewBoardAsset spawn = PropPreviewBoardAsset.Spawn(new Bounce.Unmanaged.NGuid("5d3e85d0-e2e8-436a-9c16-f35a493bc854"), Vector3.zero, Quaternion.identity);
+				if (spawn != null)
+				{
+					spawn.name = "_Added Prop Bottle";
+					spawn.gameObject.name = spawn.name;
+				}
+				return spawn.gameObject;
 			}
 		}
 	}

@@ -141,5 +141,15 @@ namespace TaleSpireExplore
 		{
 			ApplyAndResetOffsets();
 		}
+
+		private void btnAllZeros_Click(object sender, EventArgs e)
+		{
+			tbxVector3.Text = "0, 0, 0";
+		}
+
+		private void btnAllOnes_Click(object sender, EventArgs e)
+		{
+			tbxVector3.Text = "1, 1, 1";
+		}
 	}
 }
