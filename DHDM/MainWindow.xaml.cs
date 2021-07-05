@@ -619,9 +619,9 @@ namespace DHDM
 		private void GetNumTargets_RequestTargetCount(object sender, TargetCountEventArgs ea)
 		{
 			int playerCount = 0;
-			if (ea.TargetStatus.HasFlag(TargetStatus.Friendly))
+			if (ea.WhatSide.HasFlag(WhatSide.Friendly))
 				playerCount = GetNumPlayersTargeted();
-			ea.Count = playerCount + AllInGameCreatures.GetTargetCount(ea.TargetStatus);
+			ea.Count = playerCount + AllInGameCreatures.GetTargetCount(ea.WhatSide);
 		}
 
 		int GetNumPlayersTargeted()
@@ -682,7 +682,7 @@ namespace DHDM
 				return;
 
 			//Old_SelectInGameTargets(ea);
-			AskQuestionBlockUI("Select Target:", GetTargetAnswers(ea.TargetStatus, ea.MaxTargets), 1, ea.MaxTargets);
+			AskQuestionBlockUI("Select Target:", GetTargetAnswers(ea.WhatSide, ea.MaxTargets), 1, ea.MaxTargets);
 			if (lastRemoteAnswers != null)
 				foreach (AnswerEntry answerEntry in lastRemoteAnswers)
 				{
@@ -702,11 +702,11 @@ namespace DHDM
 
 		}
 
-		List<AnswerEntry> GetTargetAnswers(TargetStatus targetStatus, int maxSelected)
+		List<AnswerEntry> GetTargetAnswers(WhatSide whatSide, int maxSelected)
 		{
 			int numSelected = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
-			if (targetStatus.HasFlag(TargetStatus.Friendly))
+			if (whatSide.HasFlag(WhatSide.Friendly))
 				foreach (CreatureStats playerStats in allPlayerStats.Players)
 				{
 					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.CreatureId, AllPlayers.GetFromId(playerStats.CreatureId).Name);
@@ -723,9 +723,9 @@ namespace DHDM
 				if (!inGameCreature.OnScreen)
 					continue;
 
-				if (targetStatus.HasFlag(TargetStatus.Friendly) && inGameCreature.IsAlly ||
-					targetStatus.HasFlag(TargetStatus.Adversarial) && inGameCreature.IsEnemy ||
-					targetStatus.HasFlag(TargetStatus.AllTargets))
+				if (whatSide.HasFlag(WhatSide.Friendly) && inGameCreature.IsAlly ||
+					whatSide.HasFlag(WhatSide.Enemy) && inGameCreature.IsEnemy ||
+					whatSide.HasFlag(WhatSide.All))
 				{
 					AnswerEntry answer = new AnswerEntry(result.Count, InGameCreature.GetUniversalIndex(inGameCreature.Index), inGameCreature.Name);
 					result.Add(answer);

@@ -145,16 +145,16 @@ namespace DndCore
 				inGameCreature.IsTargeted = false;
 		}
 
-		public static int GetTargetCount(TargetStatus targetStatus)
+		public static int GetTargetCount(WhatSide targetStatus)
 		{
 			int count = 0;
 			foreach (InGameCreature inGameCreature in Creatures)
 				if (inGameCreature.IsTargeted)
-					if (targetStatus.HasFlag(TargetStatus.Friendly) && inGameCreature.IsAlly)
+					if (targetStatus.HasFlag(WhatSide.Friendly) && inGameCreature.IsAlly)
 						count++;
-					else if (targetStatus.HasFlag(TargetStatus.Adversarial) && inGameCreature.IsEnemy)
+					else if (targetStatus.HasFlag(WhatSide.Enemy) && inGameCreature.IsEnemy)
 						count++;
-					else if (targetStatus.HasFlag(TargetStatus.AllTargets))
+					else if (targetStatus.HasFlag(WhatSide.All))
 						count++;
 			return count;
 		}

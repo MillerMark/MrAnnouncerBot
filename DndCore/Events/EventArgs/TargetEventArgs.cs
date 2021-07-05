@@ -11,7 +11,7 @@ namespace DndCore
 		public int MinTargets { get; set; } = 1;
 		public int MaxTargets { get; set; } = 1;
 		public TargetType SuggestedTargetType { get; set; }
-		public TargetStatus TargetStatus { get; set; }
+		public WhatSide WhatSide { get; set; }
 		public TargetEventArgs()
 		{
 

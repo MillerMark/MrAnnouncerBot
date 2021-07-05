@@ -787,9 +787,9 @@ namespace DndCore
 			return DamageType.None;
 		}
 
-		public static TargetStatus GetTargetStatus(string value)
+		public static WhatSide GetSide(string value)
 		{
-			return GetElement<TargetStatus>(value);
+			return GetElement<WhatSide>(value);
 		}
 
 		/// <summary>

@@ -6,7 +6,7 @@ namespace DndCore
 	public class TargetCountEventArgs : EventArgs
 	{
 		public int Count { get; set; }
-		public TargetStatus TargetStatus { get; set; }
+		public WhatSide WhatSide { get; set; }
 		public TargetCountEventArgs()
 		{
 

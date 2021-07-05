@@ -493,7 +493,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<Skills>());
 			AddVariable(new DndEnumValue<SpellRangeType>());
 			AddVariable(new DndEnumValue<SpellType>());
-			AddVariable(new DndEnumValue<TargetStatus>());
+			AddVariable(new DndEnumValue<WhatSide>());
 			AddVariable(new DndEnumValue<TimeMeasure>());
 			AddVariable(new DndEnumValue<TimePoint>());
 			AddVariable(new DndEnumValue<TurnPart>());

@@ -7,7 +7,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Selects a target for a spell (currently not implemented in DHDM).")]
-	[Param(1, typeof(TargetStatus), "targetStatus", "The kinds of targets we can select.", ParameterIs.Required)]
+	[Param(1, typeof(WhatSide), "whatSide", "The kinds of targets we can select (Enemy, Friendly, Neutral, All).", ParameterIs.Required)]
 	[Param(2, typeof(int), "minTargets", "The fewest targets that can be selected.", ParameterIs.Optional)]
 	[Param(3, typeof(int), "maxTargets", "The most targets that can be selected.", ParameterIs.Optional)]
 	
@@ -49,7 +49,7 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature creature, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1, 3);
-			TargetStatus targetStatus = Expressions.Get<TargetStatus>(args[0], creature, target, spell, dice);
+			WhatSide whatSide = Expressions.Get<WhatSide>(args[0], creature, target, spell, dice);
 			ea = new TargetEventArgs();
 			if (args.Count > 1)
 			{
@@ -64,7 +64,7 @@ namespace DndCore
 			ea.Target = target;
 			
 			ea.ShowUI = true; 
-			ea.TargetStatus = targetStatus;
+			ea.WhatSide = whatSide;
 			OnRequestSelectTarget(ea);
 			return ea.Target;
 		}
