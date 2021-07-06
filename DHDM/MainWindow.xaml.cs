@@ -10973,7 +10973,7 @@ namespace DHDM
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
 			int numTargetsSelected = 0;
-			if (ea.SuggestedTargetType == TargetType.Friendly)
+			if (ea.WhatSide == WhatSide.Friendly)
 			{
 				List<CreatureStats> targetedPlayers = allPlayerStats.GetTargeted();
 				foreach (CreatureStats creatureStats in targetedPlayers)

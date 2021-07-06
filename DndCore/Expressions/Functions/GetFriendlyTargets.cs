@@ -21,7 +21,7 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 			TargetEventArgs ea = new TargetEventArgs();
-			ea.SuggestedTargetType = TargetType.Friendly;
+			ea.WhatSide = WhatSide.Friendly;
 			ea.MaxTargets = Expressions.GetInt(args[0], player, target, spell);
 
 			OnRequestTarget(ea);

@@ -10,7 +10,6 @@ namespace DndCore
 		public bool ShowUI { get; set; }
 		public int MinTargets { get; set; } = 1;
 		public int MaxTargets { get; set; } = 1;
-		public TargetType SuggestedTargetType { get; set; }
 		public WhatSide WhatSide { get; set; }
 		public TargetEventArgs()
 		{

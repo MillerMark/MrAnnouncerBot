@@ -364,7 +364,7 @@ namespace DndCore
 				return GetSpellRawDieStr();
 			}
 		}
-		public TargetType TargetType { get; set; }
+		public WhatSide WhatSide { get; set; }
 		public TargetDetails TargetDetails { get; set; }
 
 
@@ -423,7 +423,7 @@ namespace DndCore
 				DurationStr = GetDurationStr(spellDto),
 				SchoolOfMagic = DndUtils.ToSchoolOfMagic(spellDto.school),
 				TargetDetails = DndUtils.ToTargetDetails(spellDto.target),
-				TargetType = DndUtils.ToTargetType(spellDto.targetType),
+				WhatSide = DndUtils.GetSide(spellDto.targetType),
 				CastingTimeStr = GetCastingTimeStr(spellDto),
 				Hue2 = spellDto.hue2,
 				Bright2 = spellDto.bright2,
@@ -632,7 +632,7 @@ namespace DndCore
 			result.SpellType = SpellType;
 			result.SchoolOfMagic = SchoolOfMagic;
 			result.TargetDetails = TargetDetails.Clone();
-			result.TargetType = TargetType;
+			result.WhatSide = WhatSide;
 			result.CastingTimeStr = CastingTimeStr;
 			result.DurationStr = DurationStr;
 			result.RangeStr = RangeStr;
