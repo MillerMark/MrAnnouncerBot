@@ -7,6 +7,9 @@ namespace DHDM
 {
 	public static class SpellManager
 	{
+		public static string nextSpellIdWeAreCasting = null;
+		public static string activeSpellName = null;
+
 		public static void Initialize()
 		{
 			AttachEffectFunction.AttachEffect += AttachEffectFunction_AttachEffect;

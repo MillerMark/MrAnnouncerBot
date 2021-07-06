@@ -9,15 +9,15 @@ namespace DHDM
 {
 	public class PlayerStatManager
 	{
-		public string LatestCommand { get; set; }
-		public string LatestData { get; set; }
-		public bool RollingTheDiceNow { get; set; }
-		public bool HideSpellScrolls { get; set; }
-		public int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
-		
+		public static string LatestCommand { get; set; }
+		public static string LatestData { get; set; }
+		public static bool RollingTheDiceNow { get; set; }
+		public static bool HideSpellScrolls { get; set; }
+		public static int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
 
-		List<CreatureStats> players;
-		public List<CreatureStats> Players
+
+		static List<CreatureStats> players;
+		public static List<CreatureStats> Players
 		{
 			get
 			{
@@ -32,15 +32,10 @@ namespace DHDM
 			}
 		}
 
-		public PlayerStatManager()
-		{
-
-		}
-
-		public bool AnyoneIsReadyToRoll => Players.FirstOrDefault(x => x.ReadyToRollDice) != null;
+		public static bool AnyoneIsReadyToRoll => Players.FirstOrDefault(x => x.ReadyToRollDice) != null;
 		
 
-		public CreatureStats GetPlayerStats(int creatureId)
+		public static CreatureStats GetPlayerStats(int creatureId)
 		{
 			CreatureStats foundPlayer = Players.FirstOrDefault(x => x.CreatureId == creatureId);
 			if (foundPlayer != null)
@@ -51,7 +46,7 @@ namespace DHDM
 			return playerState;
 		}
 
-		public void ToggleReadyRollD20(int playerId)
+		public static void ToggleReadyRollD20(int playerId)
 		{
 			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.DiceStack.Clear();
@@ -63,7 +58,7 @@ namespace DHDM
 				playerStats.Vantage = VantageKind.Normal;
 		}
 
-		public void ToggleCondition(int playerId, Conditions conditions)
+		public static void ToggleCondition(int playerId, Conditions conditions)
 		{
 			CreatureStats playerStats = GetPlayerStats(playerId);
 			if (playerStats.Conditions.HasFlag(conditions))  // Bit is set.
@@ -72,13 +67,13 @@ namespace DHDM
 				playerStats.Conditions |= conditions;
 		}
 
-		public void ClearConditions(int playerId)
+		public static void ClearConditions(int playerId)
 		{
 			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.Conditions = Conditions.None;
 		}
 
-		public void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)
+		public static void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)
 		{
 			CreatureStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = newValue;
@@ -87,7 +82,7 @@ namespace DHDM
 				playerState.AddRoll(roll);
 		}
 
-		public void ReadyRollVantage(int playerId, VantageKind vantage)
+		public static void ReadyRollVantage(int playerId, VantageKind vantage)
 		{
 			CreatureStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = true;
@@ -96,12 +91,12 @@ namespace DHDM
 			playerState.Vantage = vantage;
 		}
 
-		public List<int> GetReadyToRollPlayerIds()
+		public static List<int> GetReadyToRollPlayerIds()
 		{
 			return Players.Where(x => x.ReadyToRollDice).Select(x => x.CreatureId).ToList();
 		}
 		
-		public void ClearReadyToRollState()
+		public static void ClearReadyToRollState()
 		{
 			foreach (CreatureStats playerStats in Players)
 			{
@@ -110,7 +105,7 @@ namespace DHDM
 			}
 		}
 		
-		public void ReadyRollDice(string data)
+		public static void ReadyRollDice(string data)
 		{
 			bool newReadyState = false;
 			if (data == "All")
@@ -125,48 +120,60 @@ namespace DHDM
 			}
 		}
 
-		public void ClearAllActiveTurns()
+		public static void ClearAllActiveTurns()
 		{
 			ActiveTurnCreatureID = -1;
 		}
 
-		public void ClearAll()
+		public static void ClearAll()
 		{
 			ClearAllActiveTurns();
 			Players = null;
 		}
 
-		public void ToggleTarget(int playerId)
+		public static void ToggleTarget(int playerId)
 		{
 			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.IsTargeted = !playerStats.IsTargeted;
 		}
 
-		public void ClearAllTargets()
+		public static void ClearAllTargets()
 		{
 			foreach (CreatureStats playerStats in Players)
 				playerStats.IsTargeted = false;
 		}
 
-		public void TargetAll()
+		public static void TargetAll()
 		{
 			foreach (CreatureStats playerStats in Players)
 				playerStats.IsTargeted = true;
 		}
 
-		public List<CreatureStats> GetTargeted()
+		public static List<CreatureStats> GetTargeted()
 		{
 			return Players.Where(x => x.IsTargeted).ToList();
 		}
 
-		public bool HasOnlyOnePlayerReadyToRollDice()
+		public static bool HasOnlyOnePlayerReadyToRollDice()
 		{
 			return Players.Count(x => x.ReadyToRollDice) == 1;
 		}
 
-		public int GetFirstPlayerIdWhoIsReadyToRoll()
+		public static int GetFirstPlayerIdWhoIsReadyToRoll()
 		{
 			return Players.FirstOrDefault(x => x.ReadyToRollDice).CreatureId;
+		}
+
+		public static PlayerStatManagerDto GetDto()
+		{
+			PlayerStatManagerDto result = new PlayerStatManagerDto();
+			result.LatestCommand = LatestCommand;
+			result.LatestData = LatestData;
+			result.RollingTheDiceNow = RollingTheDiceNow;
+			result.HideSpellScrolls = HideSpellScrolls;
+			result.ActiveTurnCreatureID = ActiveTurnCreatureID;
+			result.Players = Players;
+			return result;
 		}
 	}
 }

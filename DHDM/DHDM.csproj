@@ -334,6 +334,7 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="CreatureManager.cs" />
     <Compile Include="DieRollManager.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
@@ -348,6 +349,7 @@
     <Compile Include="ObsManager.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PlayerStats\PlayerStatManagerDto.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
     <Compile Include="SpellManager.cs" />

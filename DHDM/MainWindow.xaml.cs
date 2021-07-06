@@ -55,7 +55,6 @@ namespace DHDM
 		MySecureString dragonHumpersAccessToken;
 		bool _changingInternally;
 		LeapCalibrator leapCalibrator;
-		PlayerStatManager allPlayerStats;
 		Dictionary<Creature, List<AskUI>> askUIs = new Dictionary<Creature, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
@@ -73,16 +72,6 @@ namespace DHDM
 		TwitchClient dungeonMasterClient;
 		TwitchClient dhClient;
 		TwitchPubSub dhPubSub;
-
-		public PlayerStatManager PlayerStatsManager
-		{
-			get
-			{
-				if (allPlayerStats == null)
-					allPlayerStats = new PlayerStatManager();
-				return allPlayerStats;
-			}
-		}
 
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		CardHandManager cardHandManager = new CardHandManager();
@@ -171,11 +160,10 @@ namespace DHDM
 
 		private void InitializeGame()
 		{
-			RollSavingThrowsForAllTargetsFunction.SavingThrowForTargetsRequested += SavingThrowForTargetsRequested;
-			//DieRollManager.Initialize();
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
+			DieRollManager.Initialize(game);
 			viewerManager = new ViewerManager(this);
 			obsManager.Initialize(game, this);
 			dmMoodManager = new DmMoodManager(obsManager);
@@ -628,7 +616,7 @@ namespace DHDM
 
 		int GetNumPlayersTargeted()
 		{
-			return allPlayerStats.Players.Count(p => p.IsTargeted);
+			return PlayerStatManager.Players.Count(p => p.IsTargeted);
 		}
 
 		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
@@ -664,7 +652,7 @@ namespace DHDM
 			bool foundAny = false;
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
-			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
@@ -709,7 +697,7 @@ namespace DHDM
 			int numSelected = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
 			if (whatSide.HasFlag(DndCore.WhatSide.Friendly))
-				foreach (CreatureStats playerStats in allPlayerStats.Players)
+				foreach (CreatureStats playerStats in PlayerStatManager.Players)
 				{
 					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.CreatureId, AllPlayers.GetFromId(playerStats.CreatureId).Name);
 					result.Add(answer);
@@ -2103,12 +2091,12 @@ namespace DHDM
 			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
 			{
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
-				CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(ea.CastedSpell.SpellCaster.IntId);
+				CreatureStats playerStats = PlayerStatManager.GetPlayerStats(ea.CastedSpell.SpellCaster.IntId);
 				playerStats.PercentConcentrationComplete = 100;
 				playerStats.ConcentratedSpell = "";
 				playerStats.ConcentratedSpellDurationSeconds = 0;
 				playerStats.JustBrokeConcentration = false;
-				UpdatePlayerStatsInGame();
+				CreatureManager.UpdatePlayerStatsInGame();
 			}
 
 			UpdateStateUIForPlayer(ActivePlayer, true);
@@ -2175,7 +2163,6 @@ namespace DHDM
 
 		string activeTrailingEffects;
 		string activeDieRollEffects;
-		string activeSpellName;
 		CastedSpell castedSpellNeedingCompletion = null;
 		Character spellCaster = null;
 
@@ -2472,7 +2459,7 @@ namespace DHDM
 
 		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut)
 		{
-			PlayerStatsManager.ClearReadyToRollState();
+			PlayerStatManager.ClearReadyToRollState();
 
 			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt)
 			{
@@ -2484,7 +2471,7 @@ namespace DHDM
 				{
 					dieRollDetails.AddRoll(actionShortcut.Dice);
 				}
-				PlayerStatsManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
+				PlayerStatManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 			}
 			else if (DiceDto.IsDamage(actionShortcut.Type))
 			{
@@ -2500,12 +2487,12 @@ namespace DHDM
 						{
 							System.Diagnostics.Debugger.Break();
 						}
-						PlayerStatsManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
+						PlayerStatManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 					}
 				}
 			}
 
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
 		{
@@ -2766,7 +2753,7 @@ namespace DHDM
 		{
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
-			activeSpellName = null;
+			SpellManager.activeSpellName = null;
 		}
 
 		private void SetControlUiFromShortcut(PlayerActionShortcut actionShortcut)
@@ -2795,7 +2782,7 @@ namespace DHDM
 
 		private void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
 		{
-			double scale = GetScaleById(player.playerID);
+			double scale = DieRollManager.GetPlayerDieScaleById(player.playerID);
 			if (actionShortcut.Windups.Count > 0)
 			{
 				List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
@@ -2846,7 +2833,7 @@ namespace DHDM
 		private async Task<bool> ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
 		{
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
-			nextSpellIdWeAreCasting = castedSpell.ID;
+			SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 
 			PlayerSpellCastState playerSpellCastState = await GetPlayerSpellCastState(ActivePlayer, castedSpell);
 
@@ -2884,7 +2871,7 @@ namespace DHDM
 		{
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			Spell spell = actionShortcut.Spell;
-			activeSpellName = spell.Name;
+			SpellManager.activeSpellName = spell.Name;
 			KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
 			if (matchingSpell != null && matchingSpell.CanBeRecharged())
 			{
@@ -2893,7 +2880,7 @@ namespace DHDM
 				if (castedSpell == null)
 				{
 					castedSpell = new CastedSpell(spell, player);
-					nextSpellIdWeAreCasting = castedSpell.ID;
+					SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 				}
 				castedSpell.CastingWithItem();
 				if (spellCaster == null)
@@ -2957,7 +2944,7 @@ namespace DHDM
 					if (inGameCreature.IsTargeted)
 						target.AddCreature(inGameCreature.Creature);
 
-				foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+				foreach (CreatureStats creatureStats in PlayerStatManager.Players)
 					if (creatureStats.IsTargeted)
 						target.AddCreature(AllPlayers.GetFromId(creatureStats.CreatureId));
 
@@ -3285,9 +3272,7 @@ namespace DHDM
 
 		private void RollTheDiceNow(DiceRoll diceRoll)
 		{
-			HubtasticBaseStation.ClearWindup("Weapon.*!");
-			HubtasticBaseStation.ClearWindup("Windup.*!");
-			SystemVariables.DiceRoll = diceRoll;
+			DieRollManager.RollingDiceNow(diceRoll);
 
 			CompleteCast(diceRoll);
 
@@ -3319,7 +3304,8 @@ namespace DHDM
 				PrepareForClear();
 			});
 
-			SeriouslyRollTheDice(diceRoll);
+			DynamicThrottlingForDieRoll();
+			DieRollManager.SeriouslyRollTheDice(diceRoll);
 
 			if (diceRoll.DiceGroup == DiceGroup.Players)
 				ResetPlayerState(diceRoll, player);
@@ -3453,97 +3439,14 @@ namespace DHDM
 				diceRoll.AddTrailingEffects(creature.trailingEffectsThisRoll);
 		}
 
-		DateTime lastDieRollTime;
-		void LastChanceToModifyDiceBeforeRoll(DiceRoll diceRoll)
+		private void DynamicThrottlingForDieRoll()
 		{
-			AddVantageDice(diceRoll);
-			ScaleDiceToMatchPlayers(diceRoll);
-		}
-
-		private void AddVantageDice(DiceRoll diceRoll)
-		{
-			VantageKind vantageKind = diceRoll.VantageKind;
-			if (diceRoll.IsOnePlayer)
-			{
-				List<int> creatureIds = diceRoll.GetCreatureIds();
-				if (creatureIds != null && creatureIds.Count == 1)
-				{
-
-					diceRoll.VantageKind = vantageKind;
-					foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
-						if (playerRollOptions.PlayerID == creatureIds[0])
-						{
-							vantageKind = playerRollOptions.VantageKind;
-							BeforePlayerRolls(creatureIds[0], diceRoll, ref vantageKind);
-							playerRollOptions.VantageKind = vantageKind;
-							break;
-						}
-				}
-			}
-			else
-			{
-				foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
-				{
-					vantageKind = playerRollOptions.VantageKind;
-					BeforePlayerRolls(playerRollOptions.PlayerID, diceRoll, ref vantageKind);
-				}
-			}
-		}
-
-		private void ScaleDiceToMatchPlayers(DiceRoll diceRoll)
-		{
-			if (diceRoll.IsOnePlayer)
-			{
-				List<int> creatureIds = diceRoll.GetCreatureIds();
-				if (creatureIds != null && creatureIds.Count == 1 && creatureIds[0] >= 0)
-					diceRoll.OverallDieScale = GetScaleById(creatureIds[0]);
-			}
-			else
-			{
-				foreach (DiceDto diceDto in diceRoll.DiceDtos)
-				{
-					if (diceDto.CreatureId >= 0)
-						diceDto.Scale = GetScaleById(diceDto.CreatureId);
-				}
-
-				foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
-				{
-					playerRollOptions.Scale = GetScaleById(playerRollOptions.PlayerID);
-				}
-			}
-		}
-
-		private double GetScaleById(int playerID)
-		{
-			Character player = Game.GetPlayerFromId(playerID);
-			if (player != null)
-			{
-				double dieScale = player.GetStateDouble("_dieScale");
-				if (!double.IsNaN(dieScale))
-					return dieScale;
-			}
-			return 1;
-		}
-
-		private void SeriouslyRollTheDice(DiceRoll diceRoll)
-		{
-			CardEventManager.ConditionRoll(diceRoll);
-			LastChanceToModifyDiceBeforeRoll(diceRoll);
-			lastDieRollTime = DateTime.Now;
 			if (dynamicThrottling)
 			{
 				ChangeFrameRateAndUI(Overlays.Back, 30);
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 30);
 			}
-			if (nextSpellIdWeAreCasting != null)
-			{
-				diceRoll.SpellID = nextSpellIdWeAreCasting;
-				nextSpellIdWeAreCasting = null;
-			}
-			activeSpellName = null;
-			string serializedObject = JsonConvert.SerializeObject(diceRoll);
-			HubtasticBaseStation.RollDice(serializedObject);
 		}
 
 		Dictionary<string, Target> diceRollTargets = new Dictionary<string, Target>();
@@ -3633,14 +3536,6 @@ namespace DHDM
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type) || type == DiceRollType.SkillCheck);
 		}
 
-		void BeforePlayerRolls(int playerId, DiceRoll diceRoll, ref VantageKind vantageKind)
-		{
-			Character player = game.GetPlayerFromId(playerId);
-			if (player == null)
-				return;
-			player.BeforePlayerRollsDice(diceRoll, ref vantageKind);
-		}
-
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
 			VantageKind diceRollKind = VantageKind.Normal;
@@ -3660,8 +3555,8 @@ namespace DHDM
 			DiceRoll diceRoll = new DiceRoll(type, diceRollKind, damageDice);
 			diceRoll.AdditionalDiceOnHit = tbxAddDiceOnHit.Text;
 			diceRoll.AdditionalDiceOnHitMessage = tbxMessageAddDiceOnHit.Text;
-			if (activeSpellName != null)
-				diceRoll.SpellName = activeSpellName;
+			if (SpellManager.activeSpellName != null)
+				diceRoll.SpellName = SpellManager.activeSpellName;
 
 			if (int.TryParse(tbxMinDamage.Text, out int result))
 				diceRoll.MinDamage = result;
@@ -3904,7 +3799,7 @@ namespace DHDM
 			{
 				if (player.concentratedSpell != null)
 				{
-					CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
+					CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 					if (playerStats != null)
 					{
 						// TODO: Consider adding side-effect to PercentConcentrationComplete property setter to trigger event.
@@ -4035,10 +3930,10 @@ namespace DHDM
 
 		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
 		{
-			SafeInvoke(() =>
-			{
-				//Title = "All Dice Destroyed.";
-			});
+			//SafeInvoke(() =>
+			//{
+			//	Title = "All Dice Destroyed.";
+			//});
 			//History.Log("All Dice Destroyed.");
 			CheckForFollowUpRolls(ea.StopRollingData);
 			DynamicallyThrottleFrameRate();
@@ -4047,12 +3942,15 @@ namespace DHDM
 
 		private void DynamicallyThrottleFrameRate()
 		{
-			if (dynamicThrottling && DateTime.Now - lastDieRollTime > TimeSpan.FromSeconds(3))
-			{
-				ChangeFrameRateAndUI(Overlays.Back, 30);
-				ChangeFrameRateAndUI(Overlays.Front, 30);
-				ChangeFrameRateAndUI(Overlays.Dice, 1);
-			}
+			if (!dynamicThrottling)
+				return;
+			
+			if (!DieRollManager.LastRollIsOlderThan(3))
+				return;
+
+			ChangeFrameRateAndUI(Overlays.Back, 30);
+			ChangeFrameRateAndUI(Overlays.Front, 30);
+			ChangeFrameRateAndUI(Overlays.Dice, 1);
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -4963,7 +4861,7 @@ namespace DHDM
 				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
 			else if (thoseWhoCritSaved.Count == 1)
 				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and takes no damage!");
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		string GetPlayerEmoticon(int playerId)
@@ -5309,9 +5207,9 @@ namespace DHDM
 		{
 			game.ClearInitiativeOrder();
 			AllInGameCreatures.ClearAllActiveTurns();
-			PlayerStatsManager.ClearAllActiveTurns();
-			UpdateInGameCreatures();
-			UpdatePlayerStatsInGame();
+			PlayerStatManager.ClearAllActiveTurns();
+			CreatureManager.UpdateInGameCreatures();
+			CreatureManager.UpdatePlayerStatsInGame();
 			TaleSpireClient.ClearActiveTurnIndicator();
 		}
 
@@ -6196,7 +6094,7 @@ namespace DHDM
 			int delayRollMs = 0;
 			if (playerIds == null)
 			{
-				playerIds = PlayerStatsManager.GetReadyToRollPlayerIds();
+				playerIds = PlayerStatManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
 			}
@@ -6250,7 +6148,7 @@ namespace DHDM
 			int delayRollMs = 0;
 			if (playerIds == null)
 			{
-				playerIds = PlayerStatsManager.GetReadyToRollPlayerIds();
+				playerIds = PlayerStatManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
 			}
@@ -6288,10 +6186,10 @@ namespace DHDM
 
 		private void SelectedPlayersAboutToRoll()
 		{
-			PlayerStatsManager.RollingTheDiceNow = true;
-			UpdatePlayerStatsInGame();
-			PlayerStatsManager.RollingTheDiceNow = false;
-			PlayerStatsManager.ClearReadyToRollState();
+			PlayerStatManager.RollingTheDiceNow = true;
+			CreatureManager.UpdatePlayerStatsInGame();
+			PlayerStatManager.RollingTheDiceNow = false;
+			PlayerStatManager.ClearReadyToRollState();
 		}
 
 		public void InstantDiceRolledByTargets(DiceRollType diceRollType, string dieStr)
@@ -6847,7 +6745,7 @@ namespace DHDM
 			List<int> results = new List<int>();
 			foreach (Character player in game.Players)
 			{
-				CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
+				CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 				if (playerStats != null && playerStats.IsTargeted)
 					results.Add(player.playerID);
 			}
@@ -7083,8 +6981,8 @@ namespace DHDM
 			SafeInvoke(() =>
 			{
 				SetPlayerVantageUI(playerId, vantageKind);
-				PlayerStatsManager.ReadyRollVantage(playerId, vantageKind);
-				UpdatePlayerStatsInGame();
+				PlayerStatManager.ReadyRollVantage(playerId, vantageKind);
+				CreatureManager.UpdatePlayerStatsInGame();
 			});
 		}
 
@@ -7496,7 +7394,7 @@ namespace DHDM
 				return;
 			Spell spell = AllSpells.Get(selectedItem.name, player, lastSpellSlotTested);
 			CastedSpell castedSpell = new CastedSpell(spell, player);
-			nextSpellIdWeAreCasting = castedSpell.ID;
+			SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 			player.PrepareSpell(castedSpell);
 		}
 
@@ -7685,8 +7583,6 @@ namespace DHDM
 				}
 		}
 
-		string nextSpellIdWeAreCasting = null;
-
 		void PrepareContestRoll(ContestDto contestDto, DiceRoll diceRoll)
 		{
 			foreach (Contestant contestant in contestDto.BottomContestants.Contestants)
@@ -7733,9 +7629,9 @@ namespace DHDM
 				}
 			}
 
-			if (spellWeAreCasting == null && !string.IsNullOrEmpty(activeSpellName))
+			if (spellWeAreCasting == null && !string.IsNullOrEmpty(SpellManager.activeSpellName))
 			{
-				spellWeAreCasting = AllSpells.Get(activeSpellName);
+				spellWeAreCasting = AllSpells.Get(SpellManager.activeSpellName);
 			}
 
 			CheckSpellForSavingThrows(spellWeAreCasting, ref needToAddSavingThrows, ref spellSaveDc);
@@ -7743,14 +7639,14 @@ namespace DHDM
 			if (NextDieRollType != DiceRollType.None)
 			{
 				int delayMs = 0;
-				if (PlayerStatsManager.AnyoneIsReadyToRoll)
+				if (PlayerStatManager.AnyoneIsReadyToRoll)
 				{
 					delayMs = INT_TimeToDropDragonDice;
 					SelectedPlayersAboutToRoll();
 				}
 
 				DiceRoll diceRoll = PrepareRoll(NextDieRollType);
-				diceRoll.SpellID = nextSpellIdWeAreCasting;
+				diceRoll.SpellID = SpellManager.nextSpellIdWeAreCasting;
 				if (needToAddSavingThrows)
 				{
 					AddSavingThrowsForTargetedCreatures(diceRoll, spellSaveDc, nextSavingThrowAbility);
@@ -7760,7 +7656,7 @@ namespace DHDM
 				NextRollScope = RollScope.ActivePlayer;
 				NextDieStr = "";
 			}
-			activeSpellName = null;
+			SpellManager.activeSpellName = null;
 		}
 
 		private void CheckSpellForSavingThrows(Spell spell, ref bool needToAddSavingThrows, ref int spellSaveDc)
@@ -9159,15 +9055,6 @@ namespace DHDM
 			SetInGameCreatures();
 		}
 
-		private static void UpdateInGameCreatures()
-		{
-			HubtasticBaseStation.UpdateInGameCreatures("Update", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
-				inGameCreature.PercentDamageJustInflicted = 0;
-				inGameCreature.PercentHealthJustGiven = 0;
-			}
-		}
 		private static void RestackInGameCreatureConditions()
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("RestackNpcConditions", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
@@ -9187,7 +9074,7 @@ namespace DHDM
 			inGameCreature.IsTargeted = !inGameCreature.IsTargeted;
 			if (inGameCreature.IsTargeted)
 				inGameCreature.OnScreen = true;
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 			TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, inGameCreature.IsTargeted);
 		}
 
@@ -9208,11 +9095,11 @@ namespace DHDM
 			if (playerId < 0)
 				return;
 
-			PlayerStatsManager.ToggleTarget(playerId);
+			PlayerStatManager.ToggleTarget(playerId);
 
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 
-			CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(playerId);
+			CreatureStats playerStats = PlayerStatManager.GetPlayerStats(playerId);
 			if (playerStats != null)
 			{
 				Character player = GetPlayerFromId(playerStats.CreatureId);
@@ -9228,7 +9115,7 @@ namespace DHDM
 			if (playerId < 0)
 				return;
 			lastPlayerIdUnchecked = -1;
-			PlayerStatsManager.ToggleReadyRollD20(playerId);
+			PlayerStatManager.ToggleReadyRollD20(playerId);
 		}
 
 		public void ToggleCondition(string data, string condition)
@@ -9250,9 +9137,9 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			PlayerStatsManager.ToggleCondition(playerId, conditions);
+			PlayerStatManager.ToggleCondition(playerId, conditions);
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		private void ClearPlayerCondition(string data)
@@ -9260,56 +9147,56 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			PlayerStatsManager.ClearConditions(playerId);
+			PlayerStatManager.ClearConditions(playerId);
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		void ToggleTargetedPlayerConditions(Conditions conditions)
 		{
 			bool toggledAtLeastOne = false;
-			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					toggledAtLeastOne = true;
-					PlayerStatsManager.ToggleCondition(playerStats.CreatureId, conditions);
+					PlayerStatManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
 			if (!toggledAtLeastOne)
 			{
 				// Toggle all players...
-				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatManager.Players)
 				{
-					PlayerStatsManager.ToggleCondition(playerStats.CreatureId, conditions);
+					PlayerStatManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		void ClearTargetedPlayerConditions()
 		{
 			bool clearedAtLeastOne = false;
-			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					clearedAtLeastOne = true;
-					PlayerStatsManager.ClearConditions(playerStats.CreatureId);
+					PlayerStatManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
 
 			if (!clearedAtLeastOne)
 			{
 				// Clear for all players...
-				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatManager.Players)
 				{
-					PlayerStatsManager.ClearConditions(playerStats.CreatureId);
+					PlayerStatManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		private void ToggleTargetedCreatureConditions(Conditions conditions)
@@ -9317,7 +9204,7 @@ namespace DHDM
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
 				creature.ToggleCondition(conditions);
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		private void ToggleSelectedCreatureConditions(Conditions conditions)
@@ -9325,7 +9212,7 @@ namespace DHDM
 			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
 			foreach (InGameCreature creature in selectedCreatures)
 				creature.ToggleCondition(conditions);
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		private void ClearTargetedCreatureConditions()
@@ -9333,7 +9220,7 @@ namespace DHDM
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
 				creature.ClearAllConditions();
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		private void ClearSelectedCreatureConditions()
@@ -9341,7 +9228,7 @@ namespace DHDM
 			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
 			foreach (InGameCreature creature in selectedCreatures)
 				creature.ClearAllConditions();
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
@@ -9349,7 +9236,7 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			PlayerStatsManager.ReadyRollVantage(playerId, vantage);
+			PlayerStatManager.ReadyRollVantage(playerId, vantage);
 		}
 
 		public void ChangePlayerStateCommand(string command, string data)
@@ -9363,7 +9250,7 @@ namespace DHDM
 					QuickRefresh();
 					break;
 				case "ReadyRollDice":
-					PlayerStatsManager.ReadyRollDice(data);
+					PlayerStatManager.ReadyRollDice(data);
 					break;
 				case "ToggleReadyRollDiceAdvantage":
 					ReadyRollVantage(data, VantageKind.Advantage);
@@ -9375,7 +9262,7 @@ namespace DHDM
 					return;
 			}
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 		void UpdateUIForPlayerStats(CreatureStats playerStats)
 		{
@@ -9387,23 +9274,17 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
-				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatManager.Players)
 				{
 					UpdateUIForPlayerStats(playerStats);
 				}
 			});
 		}
 
-		void UpdatePlayerStatsInGame()
-		{
-			PlayerStatsManager.LatestCommand = "Update";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
-		}
-
 		void UpdateConcentratedSpellHourglassesInGame()
 		{
-			PlayerStatsManager.LatestCommand = "HourglassUpdate";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
+			PlayerStatManager.LatestCommand = "HourglassUpdate";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatManager.GetDto()));
 		}
 
 		void AddInGameCreature(InGameCreature inGameCreature)
@@ -9481,14 +9362,14 @@ namespace DHDM
 
 		void TargetNoPlayers()
 		{
-			PlayerStatsManager.ClearAllTargets();
-			UpdatePlayerStatsInGame();
+			PlayerStatManager.ClearAllTargets();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		void TargetAllPlayers()
 		{
-			PlayerStatsManager.TargetAll();
-			UpdatePlayerStatsInGame();
+			PlayerStatManager.TargetAll();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		public void TargetCommand(string command)
@@ -9497,7 +9378,7 @@ namespace DHDM
 			{
 				case "TargetShown":
 					TargetOnScreenNpcsInTaleSpire();
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "TargetNoPlayers":
 					ClearPlayerTargetingInTaleSpire();
@@ -9512,7 +9393,7 @@ namespace DHDM
 						if (inGameCreature.Health == 0)
 							inGameCreature.OnScreen = false;
 					// TODO: Remove dead players from board? With Talespire.Minis.Delete()
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "UntargetDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9521,12 +9402,12 @@ namespace DHDM
 							TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, false);
 							inGameCreature.IsTargeted = false;
 						}
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "ShowNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.OnScreen = false;
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "ShowAllTargets":
 					bool allTargetsAreShown = true;
@@ -9543,7 +9424,7 @@ namespace DHDM
 							if (!inGameCreature.IsTargeted)
 								inGameCreature.OnScreen = false;
 
-						UpdateInGameCreatures();
+						CreatureManager.UpdateInGameCreatures();
 						return;
 					}
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9567,7 +9448,7 @@ namespace DHDM
 						}
 						inGameCreature.OnScreen = true;
 					}
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "TargetOnScreenFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9576,7 +9457,7 @@ namespace DHDM
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
 
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 
 				case "TargetOnScreenNeutrals":
@@ -9586,7 +9467,7 @@ namespace DHDM
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
 
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 
 				case "TargetOnScreenEnemies":
@@ -9595,7 +9476,7 @@ namespace DHDM
 						bool shouldTarget = inGameCreature.OnScreen && inGameCreature.IsEnemy;
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
-					UpdateInGameCreatures();
+					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "ShowFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9640,7 +9521,7 @@ namespace DHDM
 		private static void TargetNoInGameCreatures()
 		{
 			AllInGameCreatures.ClearAllTargets();
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		private void UpdateOnScreenCreatures()
@@ -9651,7 +9532,7 @@ namespace DHDM
 			AddCreaturesToGame();
 
 			RestoreTargetData(targetSaveData);
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 			TellTaleSpireWhoIsOnWhatSide();
 		}
 
@@ -9704,7 +9585,7 @@ namespace DHDM
 				}
 			}
 			if (changed)
-				UpdateInGameCreatures();
+				CreatureManager.UpdateInGameCreatures();
 		}
 
 		void ChangeHealth(InGameCreature inGameCreature, int amount)
@@ -9724,7 +9605,7 @@ namespace DHDM
 					ChangeHealth(inGameCreature, amount);
 					TellDmCreatureHp(inGameCreature);
 				}
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		private static bool CreatureMatchesFilter(InGameCreature inGameCreature, InGameCreatureFilter inGameCreatureFilter)
@@ -9751,7 +9632,7 @@ namespace DHDM
 					TellDmCreatureHp(inGameCreature);
 					TaleSpireClient.AddTempHitPoints(inGameCreature.Creature.taleSpireId, amount);
 				}
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		public enum InGameCreatureFilter
@@ -9781,11 +9662,11 @@ namespace DHDM
 
 		private void InitializePlayerStats()
 		{
-			PlayerStatsManager.ClearAll();
+			PlayerStatManager.ClearAll();
 			foreach (Character character in game.Players)
 			{
 				if (!character.Hidden)
-					PlayerStatsManager.GetPlayerStats(character.playerID);  // Will ensure player is known.
+					PlayerStatManager.GetPlayerStats(character.playerID);  // Will ensure player is known.
 			}
 		}
 
@@ -9798,36 +9679,36 @@ namespace DHDM
 		private void Game_ActivePlayerChanged(object sender, EventArgs e)
 		{
 			AllInGameCreatures.ClearAllActiveTurns();
-			PlayerStatsManager.ClearAllActiveTurns();
+			PlayerStatManager.ClearAllActiveTurns();
 
 			object activeTurnCreature = game.GetActiveTurnCreature();
 			if (activeTurnCreature is InGameCreature inGameCreature)
 			{
 				AllInGameCreatures.SetActiveTurn(inGameCreature);
-				PlayerStatsManager.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+				PlayerStatManager.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
 				SelectTheActiveNpc();
 			}
 
 			if (activeTurnCreature is Character character)
 			{
-				PlayerStatsManager.ActiveTurnCreatureID = character.playerID;
+				PlayerStatManager.ActiveTurnCreatureID = character.playerID;
 				ActivePlayerId = character.playerID;
 			}
 
-			UpdateInGameCreatures();
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdateInGameCreatures();
+			CreatureManager.UpdatePlayerStatsInGame();
 			UpdateConcentratedSpells();
 			ShowCardsForActivePlayer();
 		}
 
 		void SelectTheActiveNpc()
 		{
-			SelectInGameCreature(-PlayerStatsManager.ActiveTurnCreatureID);
+			SelectInGameCreature(-PlayerStatManager.ActiveTurnCreatureID);
 		}
 
 		private void ShowCardsForActivePlayer()
 		{
-			CardCommand(CardCommandType.ShowHandIfHidden, PlayerStatsManager.ActiveTurnCreatureID);
+			CardCommand(CardCommandType.ShowHandIfHidden, PlayerStatManager.ActiveTurnCreatureID);
 		}
 
 		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
@@ -9979,7 +9860,7 @@ namespace DHDM
 		{
 			if (ea.Creature == null)
 				return;
-			CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(ea.Creature.IntId);
+			CreatureStats playerStats = PlayerStatManager.GetPlayerStats(ea.Creature.IntId);
 			if (playerStats == null)
 				return;
 
@@ -10005,7 +9886,7 @@ namespace DHDM
 					break;
 			}
 
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea)
@@ -10016,8 +9897,8 @@ namespace DHDM
 
 		public void ReStackConditions()
 		{
-			PlayerStatsManager.LatestCommand = "ReStackConditions";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
+			PlayerStatManager.LatestCommand = "ReStackConditions";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatManager.GetDto()));
 			RestackInGameCreatureConditions();
 		}
 
@@ -10039,9 +9920,9 @@ namespace DHDM
 						characterSheet.ChangePage(ScrollPage.skills);
 						string itemID = DndUtils.ToSkillItemName(skillCheck);
 						int playerId = ActivePlayerId;
-						if (PlayerStatsManager.HasOnlyOnePlayerReadyToRollDice())
+						if (PlayerStatManager.HasOnlyOnePlayerReadyToRollDice())
 						{
-							playerId = PlayerStatsManager.GetFirstPlayerIdWhoIsReadyToRoll();
+							playerId = PlayerStatManager.GetFirstPlayerIdWhoIsReadyToRoll();
 						}
 						//HubtasticBaseStation.ChangePlayerStats();
 						SelectCharacter(playerId);    // SelectCharacter clears NextDieRollType. Need to re-set it for this roll.
@@ -10168,7 +10049,7 @@ namespace DHDM
 					ChangeInGameCreatureTempHp(value, InGameCreatureFilter.SelectedOnly);
 					break;
 			}
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 			HealthDigitsUsed();
 		}
 
@@ -10200,21 +10081,21 @@ namespace DHDM
 
 		public void MovePlayerTarget(string targetingCommand)
 		{
-			List<CreatureStats> targetedPlayers = PlayerStatsManager.GetTargeted();
+			List<CreatureStats> targetedPlayers = PlayerStatManager.GetTargeted();
 			CreatureStats firstTargeted = targetedPlayers.FirstOrDefault();
 			CreatureStats creatureToTarget;
 
 			if (targetingCommand.Contains("Next"))
-				creatureToTarget = PlayerStatsManager.Players.Next(firstTargeted);
+				creatureToTarget = PlayerStatManager.Players.Next(firstTargeted);
 			else
-				creatureToTarget = PlayerStatsManager.Players.Previous(firstTargeted);
+				creatureToTarget = PlayerStatManager.Players.Previous(firstTargeted);
 
 			if (creatureToTarget == null)
 				return;
 
-			PlayerStatsManager.ClearAllTargets();
+			PlayerStatManager.ClearAllTargets();
 			creatureToTarget.IsTargeted = true;
-			UpdatePlayerStatsInGame();
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		public void MoveCreatureTarget(string targetingCommand)
@@ -10235,13 +10116,13 @@ namespace DHDM
 
 			AllInGameCreatures.ClearAllTargets();
 			creatureToTarget.IsTargeted = true;
-			UpdateInGameCreatures();
+			CreatureManager.UpdateInGameCreatures();
 		}
 
 		public void SpellScrollsToggle()
 		{
-			PlayerStatsManager.HideSpellScrolls = !PlayerStatsManager.HideSpellScrolls;
-			UpdatePlayerStatsInGame();
+			PlayerStatManager.HideSpellScrolls = !PlayerStatManager.HideSpellScrolls;
+			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
 		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
@@ -10588,7 +10469,7 @@ namespace DHDM
 			if (spell != null)
 			{
 				castedSpell = new CastedSpell(spell, viewerSpellcaster);
-				nextSpellIdWeAreCasting = castedSpell.ID;
+				SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 			}
 
 			return castedSpell;
@@ -10744,7 +10625,7 @@ namespace DHDM
 			ReportSavingThrowResults(results, damage);
 
 			if (whatTargetChanged.HasFlag(WhatTargetChanged.NpcMonster))
-				UpdateInGameCreatures();
+				CreatureManager.UpdateInGameCreatures();
 		}
 
 		int GetDamageTotal(Dictionary<DamageType, int> damage, double multiplier)
@@ -10978,7 +10859,7 @@ namespace DHDM
 			int numTargetsSelected = 0;
 			if (ea.WhatSide == DndCore.WhatSide.Friendly)
 			{
-				List<CreatureStats> targetedPlayers = allPlayerStats.GetTargeted();
+				List<CreatureStats> targetedPlayers = PlayerStatManager.GetTargeted();
 				foreach (CreatureStats creatureStats in targetedPlayers)
 				{
 					if (numTargetsSelected >= ea.MaxTargets)
@@ -11052,7 +10933,7 @@ namespace DHDM
 					inGameCreature.CreatureRollingSavingThrow();
 				}
 
-			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
@@ -11209,26 +11090,6 @@ namespace DHDM
 			NextDieRollType = DiceRollType.Contest;
 		}
 
-		List<Creature> GetAllPlayingCreatures()
-		{
-			List<Creature> result = new List<Creature>();
-			result.AddRange(AllInGameCreatures.Creatures.Where(x => x.OnScreen).Select(x => x.Creature));
-			result.AddRange(AllPlayers.GetActive());
-			return result;
-		}
-
-		private static Creature GetCreatureFromTaleSpireId(string taleSpireId, DndCore.WhatSide whatSide = DndCore.WhatSide.All)
-		{
-			Creature creature = AllInGameCreatures.GetByTaleSpireId(taleSpireId, whatSide);
-			if (creature != null)
-				return creature;
-
-			if (whatSide.HasFlag(DndCore.WhatSide.Friendly))
-				return AllPlayers.GetFromTaleSpireId(taleSpireId);
-
-			return null;
-		}
-
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
 		{
 			ApiResponse response = TaleSpireClient.Invoke("GetCreatures");
@@ -11239,14 +11100,14 @@ namespace DHDM
 
 			foreach (CharacterPosition characterPosition in characterPositions.Characters)
 			{
-				Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
+				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
 				if (creature != null)
 					creature.SetMapPosition(characterPosition.Position.x, characterPosition.Position.y, characterPosition.Position.z);
 			}
 
 			if (ActivePlayer != null)
 			{
-				List<Creature> allCreatures = GetAllPlayingCreatures();
+				List<Creature> allCreatures = CreatureManager.GetAllPlayingCreatures();
 
 
 				foreach (Creature creature in allCreatures)
@@ -11286,40 +11147,6 @@ namespace DHDM
 					TaleSpireClient.StartTargeting(targetDetails.Shape.ToString(), targetDetails.Dimensions, player.taleSpireId, rangeInFeet);
 				}
 			}
-		}
-
-		void SetCreatureTarget(Creature creature, bool isTargeted)
-		{
-			bool stateChanged = false;
-			InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(creature);
-			if (inGameCreature != null)
-			{
-				if (inGameCreature.IsTargeted != isTargeted)
-				{
-					stateChanged = true;
-					inGameCreature.IsTargeted = isTargeted;
-					UpdateInGameCreatures();
-				}
-			}
-			else
-			{
-				CreatureStats playerStats = allPlayerStats.GetPlayerStats(creature.IntId);
-				if (playerStats != null)
-				{
-					if (playerStats.IsTargeted != isTargeted)
-					{
-						stateChanged = true;
-						playerStats.IsTargeted = isTargeted;
-						UpdatePlayerStatsInGame();
-					}
-				}
-			}
-
-			if (stateChanged)
-				if (isTargeted)
-					creature.ShowState($"Targeted!", "#A00000", "#000000");
-				else
-					creature.ShowState($"Not Targeted!", "#0000c0", "#000000");
 		}
 
 		public void TaleSpireTarget(string targetingCommand)
@@ -11417,10 +11244,10 @@ namespace DHDM
 			List<string> charactersToTarget = new List<string>();
 			foreach (CharacterPosition character in characterPosition)
 			{
-				Creature creature = GetCreatureFromTaleSpireId(character.ID, whatSide);
+				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(character.ID, whatSide);
 				if (creature != null)
 				{
-					SetCreatureTarget(creature, true);
+					CreatureManager.SetCreatureTarget(creature, true);
 					charactersToTarget.Add(character.ID);
 				}
 			}
@@ -11443,9 +11270,9 @@ namespace DHDM
 
 			// We know this character was just successfully targeted or untargeted.
 
-			Creature creature = GetCreatureFromTaleSpireId(characterPosition.ID);
+			Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
 			if (creature != null)
-				SetCreatureTarget(creature, isTargeted);
+				CreatureManager.SetCreatureTarget(creature, isTargeted);
 		}
 
 		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
@@ -11515,7 +11342,7 @@ namespace DHDM
 
 		void ClearPlayerTargetingInTaleSpire()
 		{
-			foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
 			{
 				if (creatureStats.IsTargeted)
 				{
@@ -11528,7 +11355,7 @@ namespace DHDM
 
 		void TargetAllPlayersInTaleSpire()
 		{
-			foreach (CreatureStats creatureStats in PlayerStatsManager.Players)
+			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
 			{
 				if (creatureStats.IsTargeted)
 				{
@@ -11600,22 +11427,6 @@ namespace DHDM
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 				TaleSpireClient.SpinAround(activeTurnTaleSpireId);
-		}
-
-		private void SavingThrowForTargetsRequested(object sender, SavingThrowRollEventArgs ea)
-		{
-			// TODO: Get all the targets.
-			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
-			{
-				CharacterPositions allTargetsInVolume = TargetManager.GetAllCreaturesInVolume();
-				if (allTargetsInVolume == null)
-					return;
-				foreach (CharacterPosition characterPosition in allTargetsInVolume.Characters)
-				{
-					// Add ea.SpellGuid so we can undo the effect after the roll.
-					// TODO: Add saving throw dice
-				}
-			}
 		}
 	}
 }
