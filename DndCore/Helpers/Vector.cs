@@ -30,6 +30,11 @@ namespace DndCore
 			this.z = z;
 		}
 
+		public string GetXyzStr()
+		{
+			return $"{x}, {y}, {z}";
+		}
+
 		public double DistanceTo(Vector location)
 		{
 			double deltaX = location.x - x;

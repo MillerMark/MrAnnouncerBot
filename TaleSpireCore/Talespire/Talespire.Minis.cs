@@ -79,20 +79,20 @@ namespace TaleSpireCore
 
 			public static void IndicatorChangeColor(string id, Color newColor, float multiplier = 1)
 			{
-				IndicatorGlowfader indicatorGlowfader = GetIndicatorGlowFader(id);
+				IndicatorGlowfader indicatorGlowFader = GetIndicatorGlowFader(id);
 
 				Color color = new Color(newColor.r * multiplier, newColor.g * multiplier, newColor.b * multiplier);
 
-				if (indicatorGlowfader != null)
-					indicatorGlowfader.Glow(true, color);
+				if (indicatorGlowFader != null)
+					indicatorGlowFader.Glow(true, color);
 			}
 
 			public static void IndicatorTurnOff(string id)
 			{
-				IndicatorGlowfader indicatorGlowfader = GetIndicatorGlowFader(id);
+				IndicatorGlowfader indicatorGlowFader = GetIndicatorGlowFader(id);
 
-				if (indicatorGlowfader != null)
-					indicatorGlowfader.Glow(false, Color.black);
+				if (indicatorGlowFader != null)
+					indicatorGlowFader.Glow(false, Color.black);
 			}
 
 			static IndicatorGlowfader GetIndicatorGlowFader(string id)
@@ -527,6 +527,111 @@ namespace TaleSpireCore
 			public static void AddTempHitPoints(string creatureId, int healthAmount)
 			{
 				ShowHealth(creatureId, healthAmount, "TempHitPoints");
+			}
+
+			static CharacterPositions GetAllInSphere(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float diameter)
+			{
+				CharacterPositions result = new CharacterPositions();
+				foreach (CharacterPosition characterPosition in characterPositions)
+					if (characterPosition.IsInsideSphere(volumeCenter, diameter / 2.0f))
+						result.Characters.Add(characterPosition);
+
+				return result;
+			}
+
+			static CharacterPositions GetAllInCube(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float sideEdgeLength)
+			{
+				CharacterPositions result = new CharacterPositions();
+				foreach (CharacterPosition characterPosition in characterPositions)
+					if (characterPosition.IsInsideCube(volumeCenter, sideEdgeLength))
+						result.Characters.Add(characterPosition);
+				return result;
+			}
+
+			static CharacterPositions GetAllInCircle(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float diameter)
+			{
+				CharacterPositions result = new CharacterPositions();
+				foreach (CharacterPosition characterPosition in characterPositions)
+					if (characterPosition.IsInsideCircle(volumeCenter, diameter / 2.0f))
+						result.Characters.Add(characterPosition);
+				return result;
+			}
+
+			static CharacterPositions GetAllInCylinder(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float dimension1, float dimension2)
+			{
+				// TODO: Implement this.
+				return null;
+			}
+
+			static CharacterPositions GetAllInCone(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float dimension1, float dimension2)
+			{
+				// TODO: Implement this.
+				return null;
+			}
+
+			static CharacterPositions GetAllInSquare(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float sideEdgeLength)
+			{
+				CharacterPositions result = new CharacterPositions();
+				foreach (CharacterPosition characterPosition in characterPositions)
+					if (characterPosition.IsInsideSquare(volumeCenter, sideEdgeLength))
+						result.Characters.Add(characterPosition);
+
+				return result;
+			}
+
+			public static CharacterPositions GetAllInSquare(VectorDto volumeCenter, float sideEdgeLengthFeet)
+			{
+				float sideEdgeLengthTiles = Convert.FeetToTiles(sideEdgeLengthFeet);
+				return GetAllInSquare(GetAllCharacterPositions(), volumeCenter, sideEdgeLengthTiles);
+			}
+
+			public static CharacterPositions GetAllInCircle(VectorDto volumeCenter, float diameterFeet)
+			{
+				float diameterTiles = Convert.FeetToTiles(diameterFeet);
+				return GetAllInCircle(GetAllCharacterPositions(), volumeCenter, diameterTiles);
+			}
+
+			public static CharacterPositions GetAllInSphere(VectorDto volumeCenter, float diameterFeet)
+			{
+				float diameterTiles = Convert.FeetToTiles(diameterFeet);
+				return GetAllInSphere(GetAllCharacterPositions(), volumeCenter, diameterTiles);
+			}
+
+			public static CharacterPositions GetAllInCube(VectorDto volumeCenter, float sideEdgeLengthFeet)
+			{
+				float sideEdgeLengthTiles = Convert.FeetToTiles(sideEdgeLengthFeet);
+				return GetAllInCube(GetAllCharacterPositions(), volumeCenter, sideEdgeLengthTiles);
+			}
+
+			static List<CharacterPosition> GetAllCharacterPositions()
+			{
+				return GetAll().ToList().ConvertAll(x => x.GetCharacterPosition());
+			}
+
+			public static CharacterPositions GetAllInVolume(VectorDto volumeCenter, TargetVolume volume, float dimensionFeet1, float dimensionFeet2 = 0, float dimensionFeet3 = 0, float dimensionFeet4 = 0)
+			{
+				float dimensionTiles1 = Convert.FeetToTiles(dimensionFeet1);
+				float dimensionTiles2 = Convert.FeetToTiles(dimensionFeet2);
+				float dimensionTiles3 = Convert.FeetToTiles(dimensionFeet3);
+				float dimensionTiles4 = Convert.FeetToTiles(dimensionFeet4);
+
+				List<CharacterPosition> characterPositions = GetAll().ToList().ConvertAll(x => x.GetCharacterPosition());
+				switch (volume)
+				{
+					case TargetVolume.Sphere:
+						return GetAllInSphere(characterPositions, volumeCenter, dimensionTiles1);
+					case TargetVolume.Cube:
+						return GetAllInCube(characterPositions, volumeCenter, dimensionTiles1);
+					case TargetVolume.Circle:
+						return GetAllInCircle(characterPositions, volumeCenter, dimensionTiles1);
+					case TargetVolume.Cylinder:
+						return GetAllInCylinder(characterPositions, volumeCenter, dimensionTiles1, dimensionTiles2);
+					case TargetVolume.Cone:
+						return GetAllInCone(characterPositions, volumeCenter, dimensionTiles1, dimensionTiles2);
+					case TargetVolume.Square:
+						return GetAllInSquare(characterPositions, volumeCenter, dimensionTiles1);
+				}
+				return null;
 			}
 		}
 	}

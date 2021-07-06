@@ -358,7 +358,7 @@ namespace DndCore
 			if (Enum.TryParse(elementName.Trim().Replace(" ", ""), true, out T result))
 				return result;
 			else
-				return default(T);
+				return default;
 		}
 
 		public static Weapons ToWeapon(string weaponStr)

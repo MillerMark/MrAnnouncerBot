@@ -14,7 +14,7 @@ namespace DndCore
 
 		static void OnAttachChargingEffect(string effectName, string iD, string taleSpireId)
 		{
-			AttachEffect?.Invoke(null, new SpellEffectEventArgs(effectName, iD, taleSpireId));
+			AttachEffect?.Invoke(null, new SpellEffectEventArgs(effectName, iD, taleSpireId, EffectLocation.ActiveCreaturePosition));
 		}
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)

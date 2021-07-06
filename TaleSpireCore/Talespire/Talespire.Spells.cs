@@ -36,7 +36,31 @@ namespace TaleSpireCore
 				return "Attached." + spellId;
 			}
 
-			public static void PlayEffect(string effectName, string spellId, string creatureId, float lifeTime = 0)
+			static GameObject GetSpell(string effectName, string spellId, float lifeTime)
+			{
+				GameObject spell = GetEffect(effectName);
+
+				if (spell == null)
+				{
+					Log.Error($"Spell effect \"{effectName}\" not found. Unable to Play the effect.");
+					return null;
+				}
+
+				spell.name = GetSpellName(spellId);
+				if (lifeTime > 0)
+					Instances.AddTemporal(spell, lifeTime, Math.Min(2, lifeTime / 5));
+				else
+					Instances.AddSpell(spellId, spell);
+
+				return spell;
+			}
+
+			private static string GetSpellName(string spellId)
+			{
+				return "Spell." + spellId;
+			}
+
+			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0)
 			{
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
 				if (creatureBoardAsset == null)
@@ -45,19 +69,21 @@ namespace TaleSpireCore
 					return;
 				}
 
-				GameObject spell = GetEffect(effectName);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime);
 
 				if (spell == null)
-				{
-					Log.Error($"Spell effect \"{effectName}\" not found. Unable to Play the effect.");
 					return;
-				}
-
-				spell.name = "Play." + spellId;
+				
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				spell.transform.position = creatureBase.transform.position;
-				if (lifeTime > 0)
-					Instances.AddTemporal(spell, lifeTime, Math.Min(2, lifeTime / 5));
+			}
+
+			public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0)
+			{
+				GameObject spell = GetSpell(effectName, spellId, lifeTime);
+
+				if (spell != null)
+					spell.transform.position = vector.GetVector3();
 			}
 
 			private static GameObject GetEffect(string effectName)
@@ -88,6 +114,11 @@ namespace TaleSpireCore
 
 				childEffect.transform.SetParent(null);
 				Instances.AddTemporal(childEffect, 2, 2);
+			}
+
+			public static void Clear(string spellId)
+			{
+				Instances.DeleteSpellSoon(spellId);
 			}
 		}
 	}

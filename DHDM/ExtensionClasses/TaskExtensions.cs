@@ -7,7 +7,6 @@ namespace DHDM
 {
 	public static class TaskExtensions
 	{
-		
 		public static async void SafeFireAndForget(this Task task, bool continueOnCapturedContext = true, Action<Exception> onException = null)
 		{
 			try

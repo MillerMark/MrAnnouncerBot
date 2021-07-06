@@ -479,6 +479,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<AttackType>());
 			AddVariable(new DndEnumValue<Conditions>());
 			AddVariable(new DndEnumValue<CreatureKinds>());
+			AddVariable(new DndEnumValue<EffectLocation>());
 			AddVariable(new DndEnumValue<CreatureSize>());
 			AddVariable(new DndEnumValue<CardModType>());
 			AddVariable(new DndEnumValue<DamageType>());

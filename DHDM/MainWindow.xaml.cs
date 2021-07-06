@@ -171,6 +171,8 @@ namespace DHDM
 
 		private void InitializeGame()
 		{
+			RollSavingThrowsForAllTargetsFunction.SavingThrowForTargetsRequested += SavingThrowForTargetsRequested;
+			//DieRollManager.Initialize();
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
@@ -5918,7 +5920,8 @@ namespace DHDM
 		{
 			if (!(sender is CharacterSheets characterSheets))
 				return;
-			Character player = game.GetPlayerFromId(characterSheets.playerID);
+			Character player
+				= game.GetPlayerFromId(characterSheets.playerID);
 			if (player == null)
 				return;
 			player.SetState(e.Key, e.NewValue);
@@ -11341,6 +11344,11 @@ namespace DHDM
 					TargetCreature(response, true);
 				else if (targetingCommand == "Clear")
 					TargetCreature(response, false);
+				else if (targetingCommand == "Point")
+				{
+					TargetManager.TargetPoint(response);
+					Targeting.Ready();
+				}
 				else if (targetingCommand == "BindSelectedCreature")
 					BindCreature(response);
 				else if (targetingCommand == "AllInVolume")
@@ -11592,6 +11600,22 @@ namespace DHDM
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 				TaleSpireClient.SpinAround(activeTurnTaleSpireId);
+		}
+
+		private void SavingThrowForTargetsRequested(object sender, SavingThrowRollEventArgs ea)
+		{
+			// TODO: Get all the targets.
+			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
+			{
+				CharacterPositions allTargetsInVolume = TargetManager.GetAllCreaturesInVolume();
+				if (allTargetsInVolume == null)
+					return;
+				foreach (CharacterPosition characterPosition in allTargetsInVolume.Characters)
+				{
+					// Add ea.SpellGuid so we can undo the effect after the roll.
+					// TODO: Add saving throw dice
+				}
+			}
 		}
 	}
 }

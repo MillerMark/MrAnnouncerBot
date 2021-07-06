@@ -1,11 +1,22 @@
 ﻿using Leap;
 using System;
 using System.Linq;
+using TaleSpireCore;
 
 namespace DHDM
 {
 	public static class VectorExtensions
 	{
+		public static VectorDto ToVectorDto(this DndCore.Vector vector)
+		{
+			return new VectorDto((float)vector.x, (float)vector.y, (float)vector.z);
+		}
+
+		public static DndCore.Vector ToVector(this VectorDto vector)
+		{
+			return new DndCore.Vector(vector.x, vector.y, vector.z);
+		}
+
 		public static Vector ToMetersPerSecond(this Vector leapVectorMmPerSecond)
 		{
 			const int mmPerMeter = 100;

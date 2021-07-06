@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace DndCore
 {
+	public delegate void SavingThrowRollEventHandler(object sender, SavingThrowRollEventArgs ea);
 	public delegate void SpellEffectEventHandler(object sender, SpellEffectEventArgs ea);
 	public delegate void ObsSceneFilterEventHandler(object sender, ObsSceneFilterEventArgs ea);
 	public delegate void QueueEffectEventHandler(object sender, QueueEffectEventArgs ea);

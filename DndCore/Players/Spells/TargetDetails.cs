@@ -102,7 +102,8 @@ namespace DndCore
 				if (int.TryParse(dimensionStr, out int dimensions))
 					Dimensions = dimensions;
 				Shape = DndUtils.ToShape(sizeShape.Groups[2].Value);
-				Kind |= TargetKind.Creatures;  // Is there ever a time when there's a shape but no creatures? If so, consider changing the text in the target column of the Spells data to indicate that (and modify code here to detect/parse that).
+				Kind |= TargetKind.Volume | TargetKind.Creatures;
+				// Is there ever a time when there's a shape but no creatures? If so, consider changing the text in the target column of the Spells data to indicate that (and modify code here to detect/parse that).
 			}
 			else
 			{

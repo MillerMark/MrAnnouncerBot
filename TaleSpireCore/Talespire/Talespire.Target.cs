@@ -171,6 +171,7 @@ namespace TaleSpireCore
 					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
 				}
 			}
+
 			static void AddTargetingSquare(FlashLight flashlight, int edgeLengthFeet)
 			{
 				TargetSquareEdgeLength = edgeLengthFeet;
@@ -208,7 +209,7 @@ namespace TaleSpireCore
 					return;
 				float diameterTiles = Convert.FeetToTiles(diameterFeet);
 				targetingPrefab.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
-				
+
 			}
 
 			static void AddSelectionIndicator(FlashLight flashlight)
@@ -343,7 +344,21 @@ namespace TaleSpireCore
 				return creatureBoardAsset;
 			}
 
-			public static CreatureBoardAsset StartTargeting()
+			public static VectorDto GetTargetedPoint()
+			{
+				FlashLight flashLight = Flashlight.Get();
+				if (flashLight != null)
+				{
+					Vector3 position = flashLight.transform.position;
+					VectorDto result = new VectorDto(position.x, position.y, position.z);
+					Off();
+					InteractiveTargetingMode = InteractiveTargetingMode.None;
+					return result;
+				}
+				return null;
+			}
+
+			public static CreatureBoardAsset GetTargetedCreature()
 			{
 				Log.Debug($"StartTargeting - InteractiveTargetingMode = {InteractiveTargetingMode}");
 				FlashLight flashLight = Flashlight.Get();

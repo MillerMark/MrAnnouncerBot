@@ -94,8 +94,12 @@ namespace TaleSpireExplore
 			Commands.Add("SpinAround", SpinAround);
 			Commands.Add("RestoreCamera", RestoreCamera);
 			Commands.Add("AttachEffect", AttachEffect);
-			Commands.Add("PlayEffect", PlayEffect);
+			Commands.Add("PlayEffectOverCreature", PlayEffectOverCreature);
+			Commands.Add("PlayEffectAtPosition", PlayEffectAtPosition);
 			Commands.Add("ClearAttached", ClearAttached);
+			Commands.Add("ClearSpell", ClearSpell);
+			Commands.Add("GetAllTargetsInVolume", GetAllTargetsInVolume);
+
 		}
 
 		private static string AddCreature(string[] input)
@@ -173,7 +177,13 @@ namespace TaleSpireExplore
 				{
 					string commandName = parts[0].Trim();
 					if (Commands.ContainsKey(commandName))
-						result = Commands[commandName].Invoke(string.Join(" ", parts.Skip(1)).Trim().Split(','));
+					{
+						string[] args = string.Join(" ", parts.Skip(1)).Trim().Split(',');
+						for (int i = 0; i < args.Length; i++)  // Decode commas.
+							args[i] = args[i].Replace('⁞', ',');
+						//
+						result = Commands[commandName].Invoke(args);
+					}
 					else
 						Talespire.Log.Error($"Command {commandName} not registered!");
 				});
@@ -1380,8 +1390,17 @@ namespace TaleSpireExplore
 					Talespire.Log.Exception(ex);
 				}
 			}
+			else if (command == "Point")
+				try
+				{
+					return ActivePoint();
+				}
+				catch (Exception ex)
+				{
+					Talespire.Log.Exception(ex);
+				}
 			else if (command == "Ready")
-				Talespire.Target.Ready();
+						Talespire.Target.Ready();
 			else if (command == "Clear")
 			{
 				try
@@ -1415,9 +1434,18 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		static string ActivePoint()
+		{
+			VectorDto vector = Talespire.Target.GetTargetedPoint();
+			if (vector != null)
+				return ApiResponse.Good("Success", vector);
+
+			return ApiResponse.Bad("Target Point not found!");
+		}
+
 		private static string SelectedCreature()
 		{
-			CreatureBoardAsset asset = Talespire.Target.StartTargeting();
+			CreatureBoardAsset asset = Talespire.Target.GetTargetedCreature();
 			if (asset != null)
 			{
 				CharacterPosition characterPosition = asset.GetCharacterPosition();
@@ -1608,24 +1636,82 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
-		static string PlayEffect(string[] args)
+		static string PlayEffectOverCreature(string[] args)
 		{
 			if (args.Length < 3 || args.Length > 4)
-				return ApiResponse.Bad($"PlayEffect - Expecting 3-4 args.");
+				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-4 args.");
 			float lifeTime = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
 			}
-			Talespire.Spells.PlayEffect(args[0], args[1], args[2], lifeTime);
+			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime);
 			return ApiResponse.Good();
 		}
+
+		static string PlayEffectAtPosition(string[] args)
+		{
+			if (args.Length < 3 || args.Length > 4)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-4 args. Got {args.Length}.");
+			float lifeTime = 0;
+			if (args.Length > 3)
+			{
+				float.TryParse(args[3], out lifeTime);
+			}
+
+			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
+
+			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime);
+			return ApiResponse.Good();
+		}
+
 		static string ClearAttached(string[] args)
 		{
 			if (args.Length != 2)
 				return ApiResponse.Bad($"ClearAttached - Expecting 2 args.");
 			Talespire.Spells.ClearAttached(args[0], args[1]);
 			return ApiResponse.Good();
+		}
+		static string ClearSpell(string[] args)
+		{
+			if (args.Length != 1)
+				return ApiResponse.Bad($"ClearSpell - Expecting 1 args.");
+			Talespire.Spells.Clear(args[0]);
+			return ApiResponse.Good();
+		}
+		static string GetAllTargetsInVolume(string[] args)
+		{
+			if (args.Length < 3)
+				return ApiResponse.Bad($"{nameof(GetAllTargetsInVolume)} - Expecting 3 args.");
+			string volumeCenterStr = args[0];
+			string shapeName = args[1];
+			string dimensionsStr = args[2];
+			VectorDto volumeCenter = Talespire.Convert.ToVectorDto(volumeCenterStr);
+			TargetVolume volume = Talespire.Convert.ToTargetVolume(shapeName);
+			string[] split = dimensionsStr.Split('x');  // 10x20
+			float dimension1 = 0;
+			float dimension2 = 0;
+			float dimension3 = 0;
+			float dimension4 = 0;
+			if (split.Length > 0)
+			{
+				float.TryParse(split[0], out dimension1);
+				if (split.Length > 1)
+				{
+					float.TryParse(split[1], out dimension2);
+					if (split.Length > 2)
+					{
+						float.TryParse(split[2], out dimension3);
+						if (split.Length > 3)
+							float.TryParse(split[3], out dimension4);
+					}
+				}
+			}
+
+			CharacterPositions characterPositions = Talespire.Minis.GetAllInVolume(volumeCenter, volume, dimension1, dimension2, dimension3, dimension4);
+			if (characterPositions != null)
+				return ApiResponse.Good("Success", characterPositions);
+			return ApiResponse.Bad("Something went wrong.");
 		}
 
 		static string Speak(string[] args)

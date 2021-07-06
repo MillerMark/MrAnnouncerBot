@@ -8,9 +8,11 @@ namespace DndCore
 	{
 		public static void Start(TargetDetails targetDetails, WhatSide whatSide)
 		{
-			Side = whatSide;
-			Details = targetDetails;
+			ExpectedSide = whatSide;
+			ExpectedTargetDetails = targetDetails;
 			IsReady = false;
+			ActualKind = TargetKind.None;
+			TargetPoint = Vector.zero;
 		}
 
 		public static void Ready()
@@ -18,8 +20,20 @@ namespace DndCore
 			IsReady = true;
 		}
 
-		public static TargetDetails Details { get; set; }
-		public static WhatSide Side { get; set; }
+		public static void SetPoint(Vector vector)
+		{
+			TargetPoint = vector;
+			if (ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume))
+				ActualKind = TargetKind.Volume;
+			else
+				ActualKind = TargetKind.Location;
+		}
+
+		public static TargetDetails ExpectedTargetDetails { get; set; }
+		public static WhatSide ExpectedSide { get; set; }
+		public static TargetKind ActualKind { get; set; }
 		public static bool IsReady { get; private set; }
+		public static Vector TargetPoint { get; set; }
+
 	}
 }

@@ -13,8 +13,27 @@ namespace TaleSpireCore
 			static Timer mortalityCheckTimer;
 			static List<MortalGameObject> MortalGameObjects { get; set; } = new List<MortalGameObject>();
 			static Dictionary<string, GameObject> instances = new Dictionary<string, GameObject>();
+			static Dictionary<string, GameObject> spells = new Dictionary<string, GameObject>();
 
 			public static void Delete(string instanceId)
+			{
+				DeleteFrom(instanceId, instances);
+			}
+
+			public static void DeleteSpell(string spellId)
+			{
+				DeleteFrom(spellId, spells);
+			}
+
+			public static void DeleteSpellSoon(string spellId)
+			{
+				if (!spells.ContainsKey(spellId))
+					return;
+				AddTemporal(spells[spellId], 2, 2);
+				spells.Remove(spellId);
+			}
+
+			private static void DeleteFrom(string instanceId, Dictionary<string, GameObject> instances)
 			{
 				if (!instances.ContainsKey(instanceId))
 					return;
@@ -22,10 +41,16 @@ namespace TaleSpireCore
 				instances.Remove(instanceId);
 			}
 
-			public static void Add(string instanceId, GameObject prefab)
+			public static void Add(string instanceId, GameObject gameObject)
 			{
 				Delete(instanceId);  // Only allow one object with instanceId at a time.
-				instances.Add(instanceId, prefab);
+				instances.Add(instanceId, gameObject);
+			}
+
+			public static void AddSpell(string spellId, GameObject gameObject)
+			{
+				DeleteSpell(spellId);  // Only allow one object with instanceId at a time.
+				spells.Add(spellId, gameObject);
 			}
 
 			public static T Create<T>(string instanceId, GameObject originalAsset) where T : class

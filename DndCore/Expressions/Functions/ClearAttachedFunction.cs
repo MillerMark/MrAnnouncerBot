@@ -13,7 +13,7 @@ namespace DndCore
 
 		static void OnClearAttached(string spellId, string taleSpireId)
 		{
-			ClearAttached?.Invoke(null, new SpellEffectEventArgs(null, spellId, taleSpireId));
+			ClearAttached?.Invoke(null, new SpellEffectEventArgs(null, spellId, taleSpireId, EffectLocation.ActiveCreaturePosition));
 		}
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)

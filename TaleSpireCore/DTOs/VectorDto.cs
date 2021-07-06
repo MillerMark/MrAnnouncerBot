@@ -14,5 +14,10 @@ namespace TaleSpireCore
 			this.y = y;
 			this.z = z;
 		}
+
+		public string GetXyzStr()
+		{
+			return $"{x}, {y}, {z}";
+		}
 	}
 }

@@ -334,6 +334,7 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="DieRollManager.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
     <Compile Include="DmMoods\DmMood.cs" />
@@ -378,7 +379,7 @@
     <Compile Include="LeapMotion\HandVelocityHistory.cs" />
     <Compile Include="LeapMotion\Physics.cs" />
     <Compile Include="LeapMotion\ThrownObject.cs" />
-    <Compile Include="LeapMotion\VectorExtensions.cs" />
+    <Compile Include="ExtensionClasses\VectorExtensions.cs" />
     <Compile Include="LeapMotion\World3d.cs" />
     <Compile Include="LeapMotion\VectorCompassDirection.cs" />
     <Compile Include="LeapMotion\LeapCalibrationData.cs" />

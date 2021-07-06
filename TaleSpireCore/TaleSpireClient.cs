@@ -110,6 +110,11 @@ namespace TaleSpireCore
 					Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
 
 					// Encode the data string into a byte array.  
+
+					// Encode commas in the strings...
+					for (int i = 0; i < msgparams.Length; i++)
+						msgparams[i] = msgparams[i].Replace(',', '⁞');
+
 					byte[] msg = Encoding.UTF8.GetBytes(command + " " + string.Join(",", msgparams));
 
 					// Send the data through the socket.  
@@ -251,14 +256,24 @@ namespace TaleSpireCore
 			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId });
 		}
 
-		public static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime = 0)
+		public static void PlayEffectOverCreature(string effectName, string spellId, string taleSpireId, float lifeTime = 0)
 		{
-			Invoke("PlayEffect", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString() });
+			Invoke("PlayEffectOverCreature", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString() });
+		}
+
+		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0)
+		{
+			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString() });
 		}
 
 		public static void ClearAttached(string spellId, string taleSpireId)
 		{
 			Invoke("ClearAttached", new string[] { spellId, taleSpireId });
+		}
+
+		public static void ClearSpell(string spellId)
+		{
+			Invoke("ClearSpell", new string[] { spellId });
 		}
 
 		public static CharacterPosition GetPosition(string taleSpireId)
@@ -273,6 +288,15 @@ namespace TaleSpireCore
 		public static void StartTargeting(string shape, int dimensions, string casterTaleSpireId, float rangeInFeet)
 		{
 			Invoke("StartTargeting", new string[] { shape, dimensions.ToString(), casterTaleSpireId, rangeInFeet.ToString() });
+		}
+
+		public static CharacterPositions GetAllTargetsInVolume(VectorDto vectorDto, string shape, int dimensions)
+		{
+			ApiResponse response = Invoke("GetAllTargetsInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensions.ToString() });
+			if (response.Result == ResponseType.Failure)
+				return null;
+
+			return response.GetData<CharacterPositions>();
 		}
 	}
 }
