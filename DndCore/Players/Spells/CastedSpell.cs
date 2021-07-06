@@ -161,7 +161,15 @@ namespace DndCore
 
 		public ValidationResult GetValidation(Character spellCaster, Target target)
 		{
+			if (Spell.TargetDetails.MaxCreatures > 0)
+			{
+				// TODO: Add validation to make sure the number of targets do not exceed the max.
 
+			}
+			if (Spell.TargetDetails.Kind != TargetKind.None)
+			{
+				
+			}
 			int maxTargetsToCast = Spell.MaxTargetsToCast;
 			int minTargetsToCast = Spell.MinTargetsToCast;
 			// TODO: consider moving this logic directly into the properties MinTargetsToCast and MaxTargetsToCast

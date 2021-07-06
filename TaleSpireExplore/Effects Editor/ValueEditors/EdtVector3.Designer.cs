@@ -145,7 +145,7 @@
 			// 
 			// btnAllOnes
 			// 
-			this.btnAllOnes.Location = new System.Drawing.Point(7, 67);
+			this.btnAllOnes.Location = new System.Drawing.Point(68, 36);
 			this.btnAllOnes.Name = "btnAllOnes";
 			this.btnAllOnes.Size = new System.Drawing.Size(55, 23);
 			this.btnAllOnes.TabIndex = 3;

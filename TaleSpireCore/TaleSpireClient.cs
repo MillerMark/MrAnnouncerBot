@@ -260,5 +260,19 @@ namespace TaleSpireCore
 		{
 			Invoke("ClearAttached", new string[] { spellId, taleSpireId });
 		}
+
+		public static CharacterPosition GetPosition(string taleSpireId)
+		{
+			ApiResponse response = Invoke("GetCreature", taleSpireId);
+			if (response.Result == ResponseType.Failure)
+				return null;
+
+			return response.GetData<CharacterPosition>();
+		}
+
+		public static void StartTargeting(string shape, int dimensions, string casterTaleSpireId, float rangeInFeet)
+		{
+			Invoke("StartTargeting", new string[] { shape, dimensions.ToString(), casterTaleSpireId, rangeInFeet.ToString() });
+		}
 	}
 }

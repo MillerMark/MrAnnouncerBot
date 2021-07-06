@@ -405,6 +405,7 @@
     <Compile Include="Streamloots\CardHandManager.cs" />
     <Compile Include="Streamloots\StreamlootsHand.cs" />
     <Compile Include="Streamloots\Cards\ViewerRollDto.cs" />
+    <Compile Include="TargetManager.cs" />
     <Compile Include="ViewerManager.cs" />
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />

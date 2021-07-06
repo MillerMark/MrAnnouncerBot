@@ -305,6 +305,7 @@ namespace TaleSpireExplore
 			Talespire.Log.Debug($"Loading Known Effects...");
 			KnownEffects.Invalidate();
 			SetTargetingSphere();
+			SetTargetingSquare();
 			SetTargetingFire();
 		}
 
@@ -317,6 +318,17 @@ namespace TaleSpireExplore
 				return;
 			}
 			Talespire.Target.SetTargetingSphere(targetingSphereJson);
+		}
+
+		private static void SetTargetingSquare()
+		{
+			string targetingSquareJson = KnownEffects.Get("TargetSquare")?.Effect;
+			if (string.IsNullOrWhiteSpace(targetingSquareJson))
+			{
+				Talespire.Log.Error($"TargetingSquare effect not found!!!");
+				return;
+			}
+			Talespire.Target.SetTargetingSquare(targetingSquareJson);
 		}
 
 		private static void SetTargetingFire()
@@ -347,6 +359,7 @@ namespace TaleSpireExplore
 		{
 			//Talespire.Camera.ShowPosition();
 			ModdingUtils.OnUpdate();
+			Talespire.Update();
 		}
 	}
 }

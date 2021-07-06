@@ -4,7 +4,7 @@ using System.Linq;
 namespace TaleSpireCore
 {
 	[Flags]
-	public enum TargetKind
+	public enum WhatSide
 	{
 		Enemy = 1,
 		Friendly = 2,

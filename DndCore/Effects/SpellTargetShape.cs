@@ -6,12 +6,14 @@ namespace DndCore
 	public enum SpellTargetShape
 	{
 		None,
-		Creature,
 		Point,
 		Line,
 		Cone,
 		Sphere,
+		Cube,
 		Circle,
-		Cube
+		Square,
+		Cylinder,
+		Wall
 	}
 }

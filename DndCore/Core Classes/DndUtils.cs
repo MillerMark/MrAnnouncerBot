@@ -954,5 +954,33 @@ namespace DndCore
 		{
 			return new TargetDetails(targetData);
 		}
+
+		public static SpellTargetShape ToShape(string shapeName)
+		{
+			if (shapeName == null)
+				return SpellTargetShape.None;
+			string lowerShapeName = shapeName.Trim().ToLower();
+			switch (lowerShapeName)
+			{
+				case "cube":
+					return SpellTargetShape.Cube;
+				case "sphere":
+					return SpellTargetShape.Sphere;
+				case "cone":
+					return SpellTargetShape.Cone;
+				case "line":
+				case "ray":
+					return SpellTargetShape.Line;
+				case "wall":
+					return SpellTargetShape.Wall;
+				case "point":
+					return SpellTargetShape.Point;
+				case "square":
+					return SpellTargetShape.Square;
+				case "circle":
+					return SpellTargetShape.Circle;
+			}
+			return SpellTargetShape.None;
+		}
 	}
 }

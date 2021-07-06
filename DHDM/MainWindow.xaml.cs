@@ -619,7 +619,7 @@ namespace DHDM
 		private void GetNumTargets_RequestTargetCount(object sender, TargetCountEventArgs ea)
 		{
 			int playerCount = 0;
-			if (ea.WhatSide.HasFlag(WhatSide.Friendly))
+			if (ea.WhatSide.HasFlag(DndCore.WhatSide.Friendly))
 				playerCount = GetNumPlayersTargeted();
 			ea.Count = playerCount + AllInGameCreatures.GetTargetCount(ea.WhatSide);
 		}
@@ -702,11 +702,11 @@ namespace DHDM
 
 		}
 
-		List<AnswerEntry> GetTargetAnswers(WhatSide whatSide, int maxSelected)
+		List<AnswerEntry> GetTargetAnswers(DndCore.WhatSide whatSide, int maxSelected)
 		{
 			int numSelected = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
-			if (whatSide.HasFlag(WhatSide.Friendly))
+			if (whatSide.HasFlag(DndCore.WhatSide.Friendly))
 				foreach (CreatureStats playerStats in allPlayerStats.Players)
 				{
 					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.CreatureId, AllPlayers.GetFromId(playerStats.CreatureId).Name);
@@ -723,9 +723,9 @@ namespace DHDM
 				if (!inGameCreature.OnScreen)
 					continue;
 
-				if (whatSide.HasFlag(WhatSide.Friendly) && inGameCreature.IsAlly ||
-					whatSide.HasFlag(WhatSide.Enemy) && inGameCreature.IsEnemy ||
-					whatSide.HasFlag(WhatSide.All))
+				if (whatSide.HasFlag(DndCore.WhatSide.Friendly) && inGameCreature.IsAlly ||
+					whatSide.HasFlag(DndCore.WhatSide.Enemy) && inGameCreature.IsEnemy ||
+					whatSide.HasFlag(DndCore.WhatSide.All))
 				{
 					AnswerEntry answer = new AnswerEntry(result.Count, InGameCreature.GetUniversalIndex(inGameCreature.Index), inGameCreature.Name);
 					result.Add(answer);
@@ -10973,7 +10973,7 @@ namespace DHDM
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
 			int numTargetsSelected = 0;
-			if (ea.WhatSide == WhatSide.Friendly)
+			if (ea.WhatSide == DndCore.WhatSide.Friendly)
 			{
 				List<CreatureStats> targetedPlayers = allPlayerStats.GetTargeted();
 				foreach (CreatureStats creatureStats in targetedPlayers)
@@ -11214,13 +11214,13 @@ namespace DHDM
 			return result;
 		}
 
-		private static Creature GetCreatureFromTaleSpireId(string taleSpireId, WhatSide whatSide = WhatSide.All)
+		private static Creature GetCreatureFromTaleSpireId(string taleSpireId, DndCore.WhatSide whatSide = DndCore.WhatSide.All)
 		{
 			Creature creature = AllInGameCreatures.GetByTaleSpireId(taleSpireId, whatSide);
 			if (creature != null)
 				return creature;
 
-			if (whatSide.HasFlag(WhatSide.Friendly))
+			if (whatSide.HasFlag(DndCore.WhatSide.Friendly))
 				return AllPlayers.GetFromTaleSpireId(taleSpireId);
 
 			return null;
@@ -11264,9 +11264,24 @@ namespace DHDM
 
 		void PrepareTaleSpireTargeting(PlayerActionShortcut actionShortcut)
 		{
-			if (actionShortcut.Spell != null)
+			if (actionShortcut.Spell == null)
+				return;
+
+			TargetDetails targetDetails = actionShortcut.Spell.TargetDetails;
+			Targeting.Start(targetDetails, actionShortcut.Spell.WhatSide);
+			if (targetDetails.Shape != SpellTargetShape.None)
 			{
-				//				actionShortcut.Spell.
+				Character player = GetPlayer(actionShortcut.PlayerId);
+				if (player != null)
+				{
+					float rangeInFeet = actionShortcut.Spell.GetRangeInFeet();
+					if (rangeInFeet == 0)
+					{
+						// TODO: Target everyone in the volume around the caster?
+						return;
+					}
+					TaleSpireClient.StartTargeting(targetDetails.Shape.ToString(), targetDetails.Dimensions, player.taleSpireId, rangeInFeet);
+				}
 			}
 		}
 
@@ -11329,19 +11344,19 @@ namespace DHDM
 				else if (targetingCommand == "BindSelectedCreature")
 					BindCreature(response);
 				else if (targetingCommand == "AllInVolume")
-					TargetAllInVolume(response, WhatSide.All);
+					TargetAllInVolume(response, DndCore.WhatSide.All);
 				else if (targetingCommand == "AllEnemiesInVolume")
-					TargetAllInVolume(response, WhatSide.Enemy);
+					TargetAllInVolume(response, DndCore.WhatSide.Enemy);
 				else if (targetingCommand == "AllFriendliesInVolume")
-					TargetAllInVolume(response, WhatSide.Friendly);
+					TargetAllInVolume(response, DndCore.WhatSide.Friendly);
 				else if (targetingCommand == "AllNeutralsInVolume")
-					TargetAllInVolume(response, WhatSide.Neutral);
+					TargetAllInVolume(response, DndCore.WhatSide.Neutral);
 				else if (targetingCommand == "AllFriendliesNeutralsInVolume")
-					TargetAllInVolume(response, WhatSide.Friendly | WhatSide.Neutral);
+					TargetAllInVolume(response, DndCore.WhatSide.Friendly | DndCore.WhatSide.Neutral);
 				else if (targetingCommand == "AllEnemiesFriendliesInVolume")
-					TargetAllInVolume(response, WhatSide.Friendly | WhatSide.Enemy);
+					TargetAllInVolume(response, DndCore.WhatSide.Friendly | DndCore.WhatSide.Enemy);
 				else if (targetingCommand == "AllEnemiesNeutralsInVolume")
-					TargetAllInVolume(response, WhatSide.Neutral | WhatSide.Enemy);
+					TargetAllInVolume(response, DndCore.WhatSide.Neutral | DndCore.WhatSide.Enemy);
 		}
 
 		string lastIdOverwriteId;
@@ -11384,7 +11399,7 @@ namespace DHDM
 			}
 		}
 
-		void TargetAllInVolume(ApiResponse response, WhatSide whatSide)
+		void TargetAllInVolume(ApiResponse response, DndCore.WhatSide whatSide)
 		{
 			TargetNone();
 			List<CharacterPosition> characterPosition = response.GetList<CharacterPosition>();

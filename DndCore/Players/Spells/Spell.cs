@@ -738,5 +738,23 @@ namespace DndCore
 		{
 			return $"dndbeyond.com/search?q={Name.ToLower().Replace(' ', '+').Trim()}";
 		}
+
+		public float GetRangeInFeet()
+		{
+			const float feetPerMile = 5280f;
+			switch (RangeType)
+			{
+				case SpellRangeType.DistanceFeet:
+				case SpellRangeType.SelfPlusFeetLine:
+				case SpellRangeType.SelfPlusFlatRadius:
+				case SpellRangeType.SelfPlusSphereRadius:
+				case SpellRangeType.SelfPlusCone:
+				case SpellRangeType.SelfPlusCube:
+					return Range;
+				case SpellRangeType.DistanceMiles:
+					return Range * feetPerMile;
+			}
+			return 0;
+		}
 	}
 }

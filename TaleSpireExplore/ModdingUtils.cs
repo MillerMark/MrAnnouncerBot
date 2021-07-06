@@ -74,7 +74,9 @@ namespace TaleSpireExplore
 			Commands.Add("GetCurrentBoard", GetCurrentBoard);
 			Commands.Add("LoadBoard", LoadBoard);
 			Commands.Add("GetCreatures", GetCreatures);
+			Commands.Add("GetCreature", GetCreature);
 			Commands.Add("Target", Target);
+			Commands.Add("StartTargeting", StartTargeting);
 			Commands.Add("TargetCreatures", TargetCreatures);
 			Commands.Add("WiggleCreature", WiggleCreature);
 			Commands.Add("SetActiveTurn", SetActiveTurn);
@@ -1563,6 +1565,24 @@ namespace TaleSpireExplore
 			return ApiResponse.Good("LookAt", creature.GetCharacterPosition());
 		}
 
+		static string StartTargeting(string[] args)
+		{
+			if (args.Length != 4)
+				return ApiResponse.Bad($"StartTargeting - Expecting 4 args.");
+			string shapeName = args[0];
+			string dimensionsStr = args[1];
+			string id = args[2];
+			string rangeInFeetStr = args[3];
+			if (!int.TryParse(rangeInFeetStr, out int rangeInFeet))
+				return ApiResponse.Bad($"rangeInFeet \"{rangeInFeetStr}\" should be a number.");
+			if (!int.TryParse(dimensionsStr, out int dimensions))
+				return ApiResponse.Bad($"dimensions \"{dimensionsStr}\" should be a number.");
+
+			Talespire.Target.StartTargeting(shapeName, dimensions, id, rangeInFeet);
+			return ApiResponse.Good();
+		}
+
+
 		static string SpinAround(string[] args)
 		{
 			if (args.Length != 1)
@@ -1686,6 +1706,19 @@ namespace TaleSpireExplore
 			CharacterPositions characterPositions = Talespire.Minis.GetPositions();
 
 			return ApiResponse.Good("Success", characterPositions);
+		}
+
+		static string GetCreature(string[] arg)
+		{
+			const int expectedArgs = 1;
+			if (arg.Length != expectedArgs)
+				return ApiResponse.Bad($"GetCreature - Expecting {expectedArgs}.");
+
+			string id = arg[0];
+
+			CharacterPosition characterPosition = Talespire.Minis.GetPosition(id);
+
+			return ApiResponse.Good("Success", characterPosition);
 		}
 	}
 }

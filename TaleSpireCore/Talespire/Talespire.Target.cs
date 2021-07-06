@@ -13,11 +13,13 @@ namespace TaleSpireCore
 		{
 			public static InteractiveTargetingMode InteractiveTargetingMode { get; set; }
 			public static int TargetSphereDiameter { get; set; }
+			public static int TargetSquareEdgeLength { get; set; }
 
 			static CompositeEffect targetingSphereCompositeEffect;
+			static CompositeEffect targetingSquareCompositeEffect;
 			static CompositeEffect targetingFireCompositeEffect;
 			static List<GameObject> targetDisks = new List<GameObject>();
-			static GameObject targetingSphere;
+			static GameObject targetingPrefab;
 			static GameObject targetingFire;
 
 			static List<string> allies = new List<string>();
@@ -50,18 +52,18 @@ namespace TaleSpireCore
 				return !IsAlly(worldId) && !IsNeutral(worldId);
 			}
 
-			public static TargetKind WhatSide(string worldId)
+			public static WhatSide WhatSide(string worldId)
 			{
 				if (IsAlly(worldId))
-					return TargetKind.Friendly;
+					return TaleSpireCore.WhatSide.Friendly;
 
 				if (IsNeutral(worldId))
-					return TargetKind.Neutral;
+					return TaleSpireCore.WhatSide.Neutral;
 
-				return TargetKind.Enemy;
+				return TaleSpireCore.WhatSide.Enemy;
 			}
 
-			static TargetKind WhatSide(NGuid worldId)
+			static WhatSide WhatSide(NGuid worldId)
 			{
 				return WhatSide(worldId.ToString());
 			}
@@ -77,6 +79,11 @@ namespace TaleSpireCore
 				return targetingSphereCompositeEffect != null;
 			}
 
+			public static bool IsTargetingSquareSet()
+			{
+				return targetingSquareCompositeEffect != null;
+			}
+
 			public static bool IsTargetingFireSet()
 			{
 				return targetingFireCompositeEffect != null;
@@ -89,6 +96,15 @@ namespace TaleSpireCore
 					Log.Debug($"Targeting Sphere found!");
 				else
 					Log.Error($"Targeting Sphere NOT found!");
+			}
+
+			public static void SetTargetingSquare(string squareCompositeEffectJson)
+			{
+				targetingSquareCompositeEffect = CompositeEffect.CreateFrom(squareCompositeEffectJson);
+				if (targetingSquareCompositeEffect != null)
+					Log.Debug($"Targeting Square found!");
+				else
+					Log.Error($"Targeting Square NOT found!");
 			}
 
 			public static void SetTargetingFire(string fireCompositeEffectJson)
@@ -138,30 +154,61 @@ namespace TaleSpireCore
 				TargetSphereDiameter = diameterFeet;
 				try
 				{
-					targetingSphere = targetingSphereCompositeEffect?.CreateOrFindUnsafe();
-					if (targetingSphere == null)
+					targetingPrefab = targetingSphereCompositeEffect?.CreateOrFindUnsafe();
+					if (targetingPrefab == null)
 					{
 						Log.Error($"targetingSphere is NULL!!!");
 						return;
 					}
 
 					SetSphereScale(diameterFeet);
-					targetingSphere.transform.SetParent(flashlight.gameObject.transform);
-					targetingSphere.transform.localPosition = new Vector3(0, 0, 0);
+					targetingPrefab.transform.SetParent(flashlight.gameObject.transform);
+					targetingPrefab.transform.localPosition = new Vector3(0, 0, 0);
 				}
 				catch (Exception ex)
 				{
-					Talespire.Log.Exception(ex);
+					Log.Exception(ex);
 					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
 				}
+			}
+			static void AddTargetingSquare(FlashLight flashlight, int edgeLengthFeet)
+			{
+				TargetSquareEdgeLength = edgeLengthFeet;
+				try
+				{
+					targetingPrefab = targetingSquareCompositeEffect?.CreateOrFindUnsafe();
+					if (targetingPrefab == null)
+					{
+						Log.Error($"targetingPrefab is NULL!!!");
+						return;
+					}
+
+					SetSquareScale(edgeLengthFeet);
+					targetingPrefab.transform.SetParent(flashlight.gameObject.transform);
+					targetingPrefab.transform.localPosition = new Vector3(0, 0.1f, 0);
+				}
+				catch (Exception ex)
+				{
+					Log.Exception(ex);
+					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSquare!");
+				}
+			}
+
+			static void SetSquareScale(int edgeLengthFeet)
+			{
+				if (targetingPrefab == null)
+					return;
+				float edgeLengthTiles = Convert.FeetToTiles(edgeLengthFeet);
+				targetingPrefab.transform.localScale = new Vector3(edgeLengthTiles, 0.4f, edgeLengthTiles);
 			}
 
 			public static void SetSphereScale(int diameterFeet)
 			{
-				if (targetingSphere == null)
+				if (targetingPrefab == null)
 					return;
 				float diameterTiles = Convert.FeetToTiles(diameterFeet);
-				targetingSphere.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+				targetingPrefab.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+				
 			}
 
 			static void AddSelectionIndicator(FlashLight flashlight)
@@ -201,11 +248,16 @@ namespace TaleSpireCore
 				TargetSphereDiameter = 0;
 				// This works because everything we add is parented by the flashlight.
 				Flashlight.Off();
-				targetingSphere = null;
+				targetingPrefab = null;
+				activeTargetDisk = null;
 			}
 
 			private const int maxDistanceToNearestCreatureFt = 10;
 			const string STR_TargetDisk = "TargetDisk";
+			static GameObject activeTargetDisk;
+			static string targetAnchorId;
+			static int targetAnchorRange;
+			static float lastTargetTetherUpdateTime;
 
 			static CreatureBoardAsset AddTargetToNearestCreature()
 			{
@@ -323,14 +375,14 @@ namespace TaleSpireCore
 				AddTarget(targetPosition, Flashlight.Get().transform, 1);
 			}
 
-			private static void AddTarget(Vector3 targetPosition, Transform parent, float scale = 1, TargetKind targetKind = TargetKind.Enemy)
+			private static GameObject AddTarget(Vector3 targetPosition, Transform parent, float scale = 1, WhatSide whatSide = TaleSpireCore.WhatSide.Enemy)
 			{
 				GameObject targetDisk = new GameObject(STR_TargetDisk);
 
 				GameObject targetDiskPrefab;
-				if (targetKind == TargetKind.Friendly)
+				if (whatSide == TaleSpireCore.WhatSide.Friendly)
 					targetDiskPrefab = Prefabs.Clone("TargetFriend");
-				else if (targetKind == TargetKind.Neutral)
+				else if (whatSide == TaleSpireCore.WhatSide.Neutral)
 					targetDiskPrefab = Prefabs.Clone("TargetNeutral");
 				else
 					targetDiskPrefab = Prefabs.Clone("TargetEnemy");
@@ -351,19 +403,20 @@ namespace TaleSpireCore
 				else if (scale == 1)
 					yOffset = -0.86f;
 				else if (scale == 2)
-					yOffset = -0.765f;  
+					yOffset = -0.765f;
 				else if (scale == 3)
-					yOffset = -0.674f;  
+					yOffset = -0.674f;
 				else if (scale == 4)
-					yOffset = -0.5725f; 
+					yOffset = -0.5725f;
 				targetDiskPrefab.transform.localPosition = new Vector3(0, 0.9f + yOffset, 0);
 
 				targetDisks.Add(targetDisk);
+				return targetDisk;
 			}
 
-			private static void AddTargetDisk(Transform parent)
+			private static GameObject AddTargetDisk(Transform parent)
 			{
-				AddTarget(parent.position, parent, 1);
+				return AddTarget(parent.position, parent, 1);
 			}
 
 			public static void CleanUp()
@@ -429,6 +482,63 @@ namespace TaleSpireCore
 						RemoveTargetFrom(creatureBoardAsset);
 				}
 				return creatureBoardAsset;
+			}
+
+			public static void StartTargeting(string shapeName, int dimensions, string id, int rangeInFeet)
+			{
+				targetAnchorId = null;
+
+				PrepareForSelection();
+				FlashLight flashlight = Flashlight.Get();
+				if (flashlight == null)
+				{
+					Log.Error($"flashlight is null!");
+					return;
+				}
+				activeTargetDisk = AddTargetDisk(flashlight.gameObject.transform);
+
+				if (shapeName == "Sphere" && dimensions > 0)
+					AddTargetingSphere(flashlight, dimensions);
+				else if (shapeName == "Square" && dimensions > 0)
+					AddTargetingSquare(flashlight, dimensions);
+				else
+					Log.Error($"Unsupported targeting shape: {shapeName} at {dimensions} feet.");
+
+				if (rangeInFeet > 0)
+				{
+					targetAnchorId = id;
+					targetAnchorRange = rangeInFeet;
+					// TODO: Tether the target to the mini's location. Use Update method in plugin to communicate with fields in this class.
+				}
+			}
+
+			public static void Update()
+			{
+				if (activeTargetDisk != null && !string.IsNullOrWhiteSpace(targetAnchorId))
+				{
+					if (Time.time - lastTargetTetherUpdateTime > 0.25)  // Limit updates to four times a second.
+					{
+						lastTargetTetherUpdateTime = Time.time;
+						CharacterPosition position = Minis.GetPosition(targetAnchorId);
+						if (position != null)
+						{
+							float distanceTiles = (activeTargetDisk.transform.position - new Vector3(position.Position.x, position.Position.y, position.Position.z)).magnitude;
+							float distanceFeet = Convert.TilesToFeet(distanceTiles);
+							bool shouldBeActive = distanceFeet < targetAnchorRange;
+							if (activeTargetDisk.activeSelf != shouldBeActive)
+							{
+								if (!shouldBeActive)
+									Log.Warning($"Target is too far. Limited to {targetAnchorRange} feet.");
+								else
+									Log.Warning($"Target is back in range (within {targetAnchorRange} feet of {position.Name}).");
+
+								activeTargetDisk.SetActive(shouldBeActive);
+								if (targetingPrefab != null)
+									targetingPrefab.SetActive(shouldBeActive);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
