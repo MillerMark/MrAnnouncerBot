@@ -298,5 +298,10 @@ namespace TaleSpireCore
 
 			return response.GetData<CharacterPositions>();
 		}
+
+		public static void ClearTargetingUI()
+		{
+			Invoke("Target", "Ready");
+		}
 	}
 }

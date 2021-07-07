@@ -201,6 +201,11 @@ namespace DndCore
 			}
 		}
 
+		public static float GetFloat(string expression, Creature player = null, Target target = null, CastedSpell spell = null, RollResults dice = null, object customData = null)
+		{
+			return (float)GetDouble(expression, player, target, spell, dice, customData);
+		}
+
 		public static double GetDouble(string expression, Creature player = null, Target target = null, CastedSpell spell = null, RollResults dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))

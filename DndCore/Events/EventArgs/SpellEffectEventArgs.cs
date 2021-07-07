@@ -5,8 +5,9 @@ namespace DndCore
 {
 	public class SpellEffectEventArgs : EventArgs
 	{
-		public SpellEffectEventArgs(string effectName, string iD, string taleSpireId, EffectLocation effectLocation = EffectLocation.ActiveCreaturePosition, float lifeTime = 0)
+		public SpellEffectEventArgs(string effectName, string iD, string taleSpireId, EffectLocation effectLocation = EffectLocation.ActiveCreaturePosition, float lifeTime = 0, float secondsDelayStart = 0)
 		{
+			SecondsDelayStart = secondsDelayStart;
 			EffectLocation = effectLocation;
 			LifeTime = lifeTime;
 			EffectName = effectName;
@@ -18,5 +19,6 @@ namespace DndCore
 		public string EffectName { get; set; }
 		public float LifeTime { get; set; }
 		public EffectLocation EffectLocation { get; set; }
+		public float SecondsDelayStart { get; set; }
 	}
 }

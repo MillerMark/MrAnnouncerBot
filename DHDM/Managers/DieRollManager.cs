@@ -114,6 +114,7 @@ namespace DHDM
 			SpellManager.activeSpellName = null;
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
+			TargetManager.ClearTargetingAfterRoll();
 		}
 
 		public static void RollingDiceNow(DiceRoll diceRoll)
@@ -161,7 +162,7 @@ namespace DHDM
 					}
 
 					diceRoll.DiceDtos.Add(diceDto);
-					diceRoll.SpellID = ea.SpellGuid;    // Add ea.SpellGuid so we can undo the effect after the spell dispells.
+					diceRoll.SpellID = ea.SpellGuid;    // Add ea.SpellGuid so we can undo the effect after the spell dispels.
 				}
 				SeriouslyRollTheDice(diceRoll);
 			}

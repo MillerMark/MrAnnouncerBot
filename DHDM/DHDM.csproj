@@ -334,8 +334,8 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
-    <Compile Include="CreatureManager.cs" />
-    <Compile Include="DieRollManager.cs" />
+    <Compile Include="Managers\CreatureManager.cs" />
+    <Compile Include="Managers\DieRollManager.cs" />
     <Compile Include="DmDataDto.cs" />
     <Compile Include="DmEvent.cs" />
     <Compile Include="DmMoods\DmMood.cs" />
@@ -346,13 +346,16 @@
     <Compile Include="LIFX\LifxSetting.cs" />
     <Compile Include="LIFX\LightSettingDto.cs" />
     <Compile Include="LiveFeedAnimation.cs" />
-    <Compile Include="ObsManager.cs">
+    <Compile Include="Managers\ObsManager.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PlayerStats\PlayerStatManagerDto.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
-    <Compile Include="SpellManager.cs" />
+    <Compile Include="Managers\Core\SpellEffectTimer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Managers\SpellManager.cs" />
     <Compile Include="StreamDeck Commands\BufferedNumber.cs" />
     <Compile Include="StreamDeck Commands\CameraCommand.cs" />
     <Compile Include="StreamDeck Commands\CodeRushDemo.cs" />
@@ -389,7 +392,7 @@
     <Compile Include="LeapMotion\LeapDevice.cs" />
     <Compile Include="LeapMotion\LeapMotionCalibrationStep.cs" />
     <Compile Include="LeapMotion\Point2D.cs" />
-    <Compile Include="PlateManager.cs" />
+    <Compile Include="Managers\PlateManager.cs" />
     <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />
@@ -408,9 +411,9 @@
     <Compile Include="Streamloots\CardHandManager.cs" />
     <Compile Include="Streamloots\StreamlootsHand.cs" />
     <Compile Include="Streamloots\Cards\ViewerRollDto.cs" />
-    <Compile Include="TargetManager.cs" />
-    <Compile Include="ViewerManager.cs" />
-    <Compile Include="WeatherManager.cs" />
+    <Compile Include="Managers\TargetManager.cs" />
+    <Compile Include="Managers\ViewerManager.cs" />
+    <Compile Include="Managers\WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
     <Compile Include="ActionQueue\DieRollQueueEntry.cs" />
     <Compile Include="FrmCropPreview.xaml.cs">
@@ -449,7 +452,7 @@
     <Compile Include="Events\DiceEventArgs.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="StreamDeck Commands\DungeonMasterCommand.cs" />
-    <Compile Include="EventManager.cs" />
+    <Compile Include="Managers\EventManager.cs" />
     <Compile Include="FrmAsk.xaml.cs">
       <DependentUpon>FrmAsk.xaml</DependentUpon>
     </Compile>

@@ -357,7 +357,7 @@ namespace TaleSpireCore
 				}
 				return null;
 			}
-
+			
 			public static CreatureBoardAsset GetTargetedCreature()
 			{
 				Log.Debug($"StartTargeting - InteractiveTargetingMode = {InteractiveTargetingMode}");

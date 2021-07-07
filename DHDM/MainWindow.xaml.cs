@@ -9377,16 +9377,16 @@ namespace DHDM
 			switch (command)
 			{
 				case "TargetShown":
-					TargetOnScreenNpcsInTaleSpire();
+					TargetManager.TargetOnScreenNpcsInTaleSpire();
 					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "TargetNoPlayers":
-					ClearPlayerTargetingInTaleSpire();
+					TargetManager.ClearPlayerTargetingInTaleSpire();
 					TargetNoPlayers();
 					return;
 				case "TargetAllPlayers":
 					TargetAllPlayers();
-					TargetAllPlayersInTaleSpire();
+					TargetManager.TargetAllPlayersInTaleSpire();
 					return;
 				case "ClearDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -9435,7 +9435,7 @@ namespace DHDM
 						inGameCreature.OnScreen = true;
 					break;
 				case "TargetNone":
-					ClearTargetedInGameCreaturesInTaleSpire();
+					TargetManager.ClearTargetedInGameCreaturesInTaleSpire();
 					TargetNoInGameCreatures();
 					return;
 				case "TargetAll":
@@ -11321,49 +11321,6 @@ namespace DHDM
 
 			TaleSpireClient.RegisterAllies(allies);
 			TaleSpireClient.RegisterNeutrals(neutrals);
-		}
-
-		void ClearTargetedInGameCreaturesInTaleSpire()
-		{
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreature.IsTargeted)
-					TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, false);
-		}
-
-		private static void TargetOnScreenNpcsInTaleSpire()
-		{
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreature.OnScreen && !inGameCreature.IsTargeted)
-				{
-					inGameCreature.IsTargeted = inGameCreature.OnScreen;
-					TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, true);
-				}
-		}
-
-		void ClearPlayerTargetingInTaleSpire()
-		{
-			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
-			{
-				if (creatureStats.IsTargeted)
-				{
-					Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
-					if (player != null)
-						TaleSpireClient.SetTargeted(player.taleSpireId, false);
-				}
-			}
-		}
-
-		void TargetAllPlayersInTaleSpire()
-		{
-			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
-			{
-				if (creatureStats.IsTargeted)
-				{
-					Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
-					if (player != null)
-						TaleSpireClient.SetTargeted(player.taleSpireId, true);
-				}
-			}
 		}
 
 		private static void SaySomething(string message, string textColor, int creatureId, string speechCommand)
