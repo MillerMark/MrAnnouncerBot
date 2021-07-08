@@ -11,6 +11,7 @@ namespace TaleSpireCore
 	{
 		public static class Target
 		{
+			static string STR_PrefabParent = "PrefabTargetParent";
 			public static InteractiveTargetingMode InteractiveTargetingMode { get; set; }
 			public static int TargetSphereDiameter { get; set; }
 			public static int TargetSquareEdgeLength { get; set; }
@@ -18,6 +19,7 @@ namespace TaleSpireCore
 			static CompositeEffect targetingSphereCompositeEffect;
 			static CompositeEffect targetingSquareCompositeEffect;
 			static CompositeEffect targetingFireCompositeEffect;
+			static GameObject savedTargetingUI;
 			static List<GameObject> targetDisks = new List<GameObject>();
 			static GameObject targetingPrefab;
 			static GameObject targetingFire;
@@ -200,7 +202,7 @@ namespace TaleSpireCore
 				if (targetingPrefab == null)
 					return;
 				float edgeLengthTiles = Convert.FeetToTiles(edgeLengthFeet);
-				targetingPrefab.transform.localScale = new Vector3(edgeLengthTiles, 0.4f, edgeLengthTiles);
+				targetingPrefab.transform.localScale = new Vector3(edgeLengthTiles, edgeLengthTiles, edgeLengthTiles);
 			}
 
 			public static void SetSphereScale(int diameterFeet)
@@ -349,6 +351,8 @@ namespace TaleSpireCore
 				FlashLight flashLight = Flashlight.Get();
 				if (flashLight != null)
 				{
+					if (targetingPrefab != null)
+						MoveTargetingPrefabToWorld(flashLight);
 					Vector3 position = flashLight.transform.position;
 					VectorDto result = new VectorDto(position.x, position.y, position.z);
 					Off();
@@ -357,7 +361,18 @@ namespace TaleSpireCore
 				}
 				return null;
 			}
-			
+
+			private static void MoveTargetingPrefabToWorld(FlashLight flashLight)
+			{
+				float saveY = targetingPrefab.transform.localPosition.y;
+				targetingPrefab.transform.SetParent(null);
+				targetingPrefab.transform.position = flashLight.transform.position;
+				Vector3 localPosition = flashLight.transform.localPosition;
+				targetingPrefab.transform.localPosition = new Vector3(localPosition.x, localPosition.y + saveY, localPosition.z);
+				savedTargetingUI = targetingPrefab;
+				AddTargetDisk(targetingPrefab.transform);
+			}
+
 			public static CreatureBoardAsset GetTargetedCreature()
 			{
 				Log.Debug($"StartTargeting - InteractiveTargetingMode = {InteractiveTargetingMode}");
@@ -440,8 +455,18 @@ namespace TaleSpireCore
 
 				foreach (GameObject gameObject in targetDisks)
 					UnityEngine.Object.Destroy(gameObject);
+				RemoveTargetingUI();
 
 				targetDisks.Clear();
+			}
+
+			public static void RemoveTargetingUI()
+			{
+				if (savedTargetingUI != null)
+				{
+					UnityEngine.Object.Destroy(savedTargetingUI);
+					savedTargetingUI = null;
+				}
 			}
 
 			public static void Ready()
@@ -502,6 +527,8 @@ namespace TaleSpireCore
 			public static void StartTargeting(string shapeName, int dimensions, string id, int rangeInFeet)
 			{
 				targetAnchorId = null;
+				
+				RemoveTargetingUI();
 
 				PrepareForSelection();
 				FlashLight flashlight = Flashlight.Get();

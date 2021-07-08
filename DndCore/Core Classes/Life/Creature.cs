@@ -21,7 +21,8 @@ namespace DndCore
 		string _bloodColor;
 
 		[JsonIgnore]
-		public string bloodColor {
+		public string bloodColor
+		{
 			get
 			{
 				if (string.IsNullOrWhiteSpace(_bloodColor))
@@ -48,13 +49,13 @@ namespace DndCore
 		{
 			get
 			{
-				
+
 				if (this is Character)
 					return Math.Abs(IntId);
 				return -Math.Abs(IntId);  // In game creatures all have negative creature indices.
 			}
 		}
-		
+
 
 		public event MessageEventHandler RequestMessageToDungeonMaster;
 
@@ -299,22 +300,6 @@ namespace DndCore
 		string GetModExplanation(string propertyName)
 		{
 			return string.Empty;
-		}
-
-		public Conditions ActiveConditions
-		{
-			get => activeConditions;
-			set
-			{
-				if (activeConditions == value)
-					return;
-
-				Conditions oldConditions = activeConditions;
-
-				activeConditions = value;
-
-				OnConditionsChanged(this, new ConditionsChangedEventArgs(oldConditions, activeConditions));
-			}
 		}
 
 		[JsonIgnore]
@@ -593,12 +578,12 @@ namespace DndCore
 
 		public bool HasAnyCondition(Conditions conditions)
 		{
-			return (ActiveConditions & conditions) != 0;
+			return (AllConditions & conditions) != 0;
 		}
 
 		public bool HasCondition(Conditions condition)
 		{
-			return (ActiveConditions & condition) == condition;
+			return (AllConditions & condition) == condition;
 		}
 
 		public bool HasSense(Senses sense)
@@ -1229,7 +1214,7 @@ namespace DndCore
 			spellActivelyCasting = null;
 			castedSpellPrepared = castedSpell;
 			spellPrepared = ActiveSpellData.FromCastedSpell(castedSpell);
-			
+
 			OnStateChanged(this, new StateChangedEventArgs("spellPrepared", null, null));
 		}
 
@@ -1954,6 +1939,59 @@ namespace DndCore
 		public void SetMapPosition(float x, float y, float z)
 		{
 			MapPosition = new Vector(x, y, z);
+		}
+
+		public Conditions ManuallyAddedConditions
+		{
+			get => activeConditions;
+			set
+			{
+				if (activeConditions == value)
+					return;
+
+				Conditions oldConditions = activeConditions;
+
+				activeConditions = value;
+
+				OnConditionsChanged(this, new ConditionsChangedEventArgs(oldConditions, activeConditions));
+			}
+		}
+
+		public Conditions SpellConditions
+		{
+			get
+			{
+				Conditions result = Conditions.None;
+				foreach (string key in spellConditions.Keys)
+					result |= spellConditions[key];
+
+				return result;
+			}
+		}
+
+		public Conditions AllConditions
+		{
+			get
+			{
+				return SpellConditions | ManuallyAddedConditions;
+			}
+		}
+
+		Dictionary<string, Conditions> spellConditions = new Dictionary<string, Conditions>();
+		
+		public void AddSpellCondition(string spellId, Conditions conditions)
+		{
+			spellConditions.Add(spellId, conditions);
+		}
+
+		public bool RemoveSpellCondition(string spellId)
+		{
+			if (spellConditions.ContainsKey(spellId))
+			{
+				spellConditions.Remove(spellId);
+				return true;
+			}
+			return false;
 		}
 	}
 }

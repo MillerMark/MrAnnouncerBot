@@ -29,7 +29,7 @@ namespace DndCore
 			if (args.Count > 2)
 				damageDie = args[2];
 
-			OnSavingThrowForTargetsRequested(null, new SavingThrowRollEventArgs(damageDie, condition, ability, spell?.ID));
+			OnSavingThrowForTargetsRequested(null, new SavingThrowRollEventArgs(damageDie, condition, ability, spell));
 
 			return null;
 		}

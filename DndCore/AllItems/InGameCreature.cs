@@ -34,7 +34,7 @@ namespace DndCore
 
 		public bool IsSelected { get; set; }
 
-		public Conditions Conditions { get; set; }
+		public Conditions Conditions { get => Creature.AllConditions; set => Creature.ManuallyAddedConditions = value; }
 
 		public bool TurnIsActive { get; set; }
 
@@ -333,6 +333,7 @@ namespace DndCore
 			return true;
 		}
 
+		// TODO: Consider moving down to Creature
 		public void ToggleCondition(Conditions conditions)
 		{
 			if (Conditions.HasFlag(conditions))  // Bit is set.

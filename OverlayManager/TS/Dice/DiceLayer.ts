@@ -2688,6 +2688,7 @@ class DiceLayer {
 		diceRoll.skillCheck = dto.SkillCheck;
 		diceRoll.damageType = dto.DamageType;
 		diceRoll.savingThrow = dto.SavingThrow;
+		diceRoll.conditions = dto.Conditions;
 		diceRoll.minDamage = dto.MinDamage;
 		diceRoll.effectBrightness = dto.EffectBrightness;
 		diceRoll.effectScale = dto.EffectScale;
@@ -3070,6 +3071,7 @@ class DiceRollData {
 	skillCheck: Skills;
 	damageType: DamageType;
 	savingThrow: Ability;
+	conditions: Conditions;
 	rollScope: RollScope;
 	wildMagic: WildMagic = WildMagic.none;
 	groupInspiration: string;

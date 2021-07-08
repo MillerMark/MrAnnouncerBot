@@ -17,6 +17,15 @@ namespace DHDM
 			Targeting.SetPoint(new Vector(vector.x, vector.y, vector.z));
 		}
 
+		public static void TargetActivePoint()
+		{
+			ApiResponse response = TaleSpireClient.Invoke("Target", new string[] { "Point" });
+			if (response == null)
+				return;
+			TargetPoint(response);
+			Targeting.Ready();
+		}
+
 		public static CharacterPositions GetAllCreaturesInVolume()
 		{
 			VectorDto volumeCenter = Targeting.TargetPoint.ToVectorDto();
@@ -27,7 +36,7 @@ namespace DHDM
 
 		public static void ClearTargetingAfterRoll()
 		{
-			TaleSpireClient.ClearTargetingUI();
+			TaleSpireClient.TargetsAreReady();
 		}
 
 		public static void ClearTargetedInGameCreaturesInTaleSpire()
@@ -71,6 +80,17 @@ namespace DHDM
 						TaleSpireClient.SetTargeted(player.taleSpireId, true);
 				}
 			}
+		}
+		public static void AboutToRoll()
+		{
+			if (!Targeting.IsReady)
+			{
+				// Which modes were waiting on a flashlight?
+				if (Targeting.ExpectedTargetDetails.Kind.HasFlag(TargetKind.Location) ||
+					Targeting.ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume))
+					TargetActivePoint();
+			}
+			TaleSpireClient.RemoveTargetingUI();
 		}
 
 

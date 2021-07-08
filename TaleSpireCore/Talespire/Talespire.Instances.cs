@@ -12,8 +12,8 @@ namespace TaleSpireCore
 		{
 			static Timer mortalityCheckTimer;
 			static List<MortalGameObject> MortalGameObjects { get; set; } = new List<MortalGameObject>();
-			static Dictionary<string, GameObject> instances = new Dictionary<string, GameObject>();
-			static Dictionary<string, GameObject> spells = new Dictionary<string, GameObject>();
+			static Dictionary<string, List<GameObject>> instances = new Dictionary<string, List<GameObject>>();
+			static Dictionary<string, List<GameObject>> spells = new Dictionary<string, List<GameObject>>();
 
 			public static void Delete(string instanceId)
 			{
@@ -29,28 +29,40 @@ namespace TaleSpireCore
 			{
 				if (!spells.ContainsKey(spellId))
 					return;
-				AddTemporal(spells[spellId], 2, 2);
+				
+				foreach (GameObject spellEffect in spells[spellId])
+					AddTemporal(spellEffect, 2, 2);
+
 				spells.Remove(spellId);
 			}
 
-			private static void DeleteFrom(string instanceId, Dictionary<string, GameObject> instances)
+			private static void DeleteFrom(string instanceId, Dictionary<string, List<GameObject>> instances)
 			{
 				if (!instances.ContainsKey(instanceId))
 					return;
-				UnityEngine.Object.Destroy(instances[instanceId]);
+				
+				foreach (GameObject effect in instances[instanceId])
+					UnityEngine.Object.Destroy(effect);
+
 				instances.Remove(instanceId);
 			}
 
 			public static void Add(string instanceId, GameObject gameObject)
 			{
-				Delete(instanceId);  // Only allow one object with instanceId at a time.
-				instances.Add(instanceId, gameObject);
+				AddTo(instances, instanceId, gameObject);
+			}
+
+			private static void AddTo(Dictionary<string, List<GameObject>> instances, string instanceId, GameObject gameObject)
+			{
+				if (!instances.ContainsKey(instanceId))
+					instances.Add(instanceId, new List<GameObject>());
+
+				instances[instanceId].Add(gameObject);
 			}
 
 			public static void AddSpell(string spellId, GameObject gameObject)
 			{
-				DeleteSpell(spellId);  // Only allow one object with instanceId at a time.
-				spells.Add(spellId, gameObject);
+				AddTo(spells, spellId, gameObject);
 			}
 
 			public static T Create<T>(string instanceId, GameObject originalAsset) where T : class

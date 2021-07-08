@@ -130,7 +130,7 @@ namespace DndTests
 			Expressions.Do("Set(proficiencyBonus, 8)", ava);
 			Assert.AreEqual(8, ava.proficiencyBonus);
 			Expressions.Do("Set(ActiveConditions, Petrified | Prone)", ava);
-			Assert.AreEqual(Conditions.Petrified | Conditions.Prone, ava.ActiveConditions);
+			Assert.AreEqual(Conditions.Petrified | Conditions.Prone, ava.AllConditions);
 		}
 
 

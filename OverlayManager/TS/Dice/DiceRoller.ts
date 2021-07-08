@@ -2818,6 +2818,7 @@ class DieRoller {
 			'type': this.diceRollData.type,
 			'skillCheck': this.diceRollData.skillCheck,
 			'savingThrow': this.diceRollData.savingThrow,
+			'conditions': this.diceRollData.conditions,
 			'bonus': this.totalBonus,
 			'additionalDieRollMessage': this.additionalDieRollMessage,
 			'diceGroup': this.diceRollData.diceGroup,

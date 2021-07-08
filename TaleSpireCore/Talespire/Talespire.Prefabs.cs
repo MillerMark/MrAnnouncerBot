@@ -53,8 +53,8 @@ namespace TaleSpireCore
 					if (instanceId != null)
 						Instances.Add(instanceId, prefab);
 
-					Log.Debug($"UnityEngine.Object.DontDestroyOnLoad(prefab);");
-					UnityEngine.Object.DontDestroyOnLoad(prefab);
+					//Log.Debug($"UnityEngine.Object.DontDestroyOnLoad(prefab);");
+					//UnityEngine.Object.DontDestroyOnLoad(prefab);
 					return prefab;
 				}
 				catch (Exception ex)

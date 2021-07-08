@@ -109,6 +109,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
+    <Compile Include="DndControllerAppClient.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
     <Compile Include="DTOs\CharacterPositions.cs" />

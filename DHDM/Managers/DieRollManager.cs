@@ -142,6 +142,11 @@ namespace DHDM
 				DiceRoll diceRoll = new DiceRoll(DiceRollType.SavingThrow, VantageKind.Normal, ea.DamageDieStr);
 				diceRoll.SavingThrow = ea.Ability;
 
+				diceRoll.SuppressLegacyRoll = true;
+				diceRoll.Conditions = ea.Condition;
+				if (ea.CastedSpell?.SpellCaster is Character spellCaster)
+					diceRoll.HiddenThreshold = spellCaster.SpellSaveDC;
+
 				foreach (CharacterPosition characterPosition in allTargetsInVolume.Characters)
 				{
 					Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
@@ -162,7 +167,7 @@ namespace DHDM
 					}
 
 					diceRoll.DiceDtos.Add(diceDto);
-					diceRoll.SpellID = ea.SpellGuid;    // Add ea.SpellGuid so we can undo the effect after the spell dispels.
+					diceRoll.SpellID = ea.CastedSpell.ID;    // Add ea.SpellGuid so we can undo the effect after the spell dispels.
 				}
 				SeriouslyRollTheDice(diceRoll);
 			}

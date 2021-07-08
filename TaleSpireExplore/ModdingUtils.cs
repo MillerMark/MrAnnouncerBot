@@ -99,7 +99,11 @@ namespace TaleSpireExplore
 			Commands.Add("ClearAttached", ClearAttached);
 			Commands.Add("ClearSpell", ClearSpell);
 			Commands.Add("GetAllTargetsInVolume", GetAllTargetsInVolume);
-
+			Commands.Add("GetSelectedMini", GetSelectedMini);
+			Commands.Add("GetFlashlightPosition", GetFlashlightPosition);
+			Commands.Add("Flashlight", Flashlight);
+			Commands.Add("LookAtPoint", LookAtPoint);
+			Commands.Add("SpinAroundPoint", SpinAroundPoint);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1365,6 +1369,8 @@ namespace TaleSpireExplore
 				Talespire.Target.Off();
 			else if (command == "CleanUp")
 				Talespire.Target.CleanUp();
+			else if (command == "RemoveUI")
+				Talespire.Target.RemoveTargetingUI();
 			else if (command == "AllInVolume")
 			{
 				List<CreatureBoardAsset> creatureBoardAssets = Talespire.Minis.GetCreaturesInsideSphere(Talespire.Flashlight.GetPosition(), Talespire.Target.TargetSphereDiameter);
@@ -1679,6 +1685,16 @@ namespace TaleSpireExplore
 			Talespire.Spells.Clear(args[0]);
 			return ApiResponse.Good();
 		}
+
+		static string GetSelectedMini(string[] args)
+		{
+			CharacterPosition characterPosition = Talespire.Minis.GetSelected()?.GetCharacterPosition();
+			if (characterPosition != null)
+				return ApiResponse.Good("Success", characterPosition);
+			else
+				return ApiResponse.Bad("No mini selected.");
+		}
+
 		static string GetAllTargetsInVolume(string[] args)
 		{
 			if (args.Length < 3)
@@ -1798,13 +1814,64 @@ namespace TaleSpireExplore
 		{
 			const int expectedArgs = 1;
 			if (arg.Length != expectedArgs)
-				return ApiResponse.Bad($"GetCreature - Expecting {expectedArgs}.");
+				return ApiResponse.Bad($"GetCreature - Expecting {expectedArgs} args.");
 
 			string id = arg[0];
 
 			CharacterPosition characterPosition = Talespire.Minis.GetPosition(id);
 
 			return ApiResponse.Good("Success", characterPosition);
+		}
+		
+		static string GetFlashlightPosition(string[] arg)
+		{
+			Vector3 position = Talespire.Flashlight.GetPosition();
+			if (position == Vector3.negativeInfinity)
+				return ApiResponse.Bad("Flashlight not on.");
+			return ApiResponse.Good("Success!", position.GetVectorDto());
+		}
+
+		static string LookAtPoint(string[] args)
+		{
+			const int expectedArgs = 1;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(LookAtPoint)} - Expecting {expectedArgs} arg.");
+
+			VectorDto vector = Talespire.Convert.ToVectorDto(args[0]);
+			if (vector != null)
+			{
+				Talespire.Camera.LookAt(vector.GetVector3());
+				return ApiResponse.Good();
+			}
+			return ApiResponse.Bad("Vector argument error.");
+		}
+
+		static string Flashlight(string[] args)
+		{
+			const int expectedArgs = 1;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(Flashlight)} - Expecting {expectedArgs} arg.");
+
+			if (args[0] == "On")
+				Talespire.Flashlight.On();
+			else
+				Talespire.Flashlight.Off();
+			return ApiResponse.Good();
+		}
+
+		static string SpinAroundPoint(string[] args)
+		{
+			const int expectedArgs = 1;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(SpinAroundPoint)} - Expecting {expectedArgs} arg.");
+
+			VectorDto vector = Talespire.Convert.ToVectorDto(args[0]);
+			if (vector != null)
+			{
+				Talespire.Camera.SpinAround(vector.GetVector3());
+				return ApiResponse.Good();
+			}
+			return ApiResponse.Bad("Vector argument error.");
 		}
 	}
 }

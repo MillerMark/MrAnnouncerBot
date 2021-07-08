@@ -565,12 +565,13 @@ namespace DndCore
 		{
 			return skillCheckOverrides[skill];
 		}
+
 		public static Monster Clone(Monster source)
 		{
 			Monster monster = new Monster();
 			if (source == null)
 				return null;
-			monster.ActiveConditions = source.ActiveConditions;
+			monster.ManuallyAddedConditions = source.ManuallyAddedConditions;
 			monster.advantages = source.advantages;
 			monster.Alignment = source.Alignment;
 			monster.alignmentStr = source.alignmentStr;

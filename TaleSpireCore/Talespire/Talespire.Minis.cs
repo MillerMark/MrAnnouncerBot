@@ -105,8 +105,12 @@ namespace TaleSpireCore
 				CreatureBoardAsset[] assets = GetAll();
 				foreach (CreatureBoardAsset asset in assets)
 					if (LocalClient.SelectedCreatureId.Value == asset.Creature.CreatureId.Value)
+					{
+						Log.Warning($"Selected asset found!");
 						return asset;
+					}
 
+				Log.Error($"Selected asset NOT found!");
 				return null;
 			}
 

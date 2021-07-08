@@ -34,6 +34,7 @@ namespace DndCore
 		public DiceGroup DiceGroup { get; set; } = DiceGroup.Players;
 		public string AdditionalDiceOnHitMessage { get; set; }
 		public string FailMessage { get; set; }
+		public Conditions Conditions { get; set; }
 		public string OnThrowSound { get; set; }
 		public double HiddenThreshold { get; set; }
 		public bool IsMagic { get; set; }

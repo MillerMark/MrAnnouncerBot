@@ -8,64 +8,6 @@ using Newtonsoft.Json;
 
 namespace TaleSpireCore
 {
-	public static class DndControllerAppClient
-	{
-		private const string DndMachine = "192.168.22.252";
-
-		public static void SendEventToServer(string command, string[] msgparams)
-		{
-			// Connect to a remote device.  
-			try
-			{
-				int port = 998;
-				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(DndMachine), port);
-
-				// Create a TCP/IP  socket.  
-				Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-				// Connect the socket to the remote endpoint. Catch any errors.  
-				try
-				{
-					sender.Connect(localEndPoint);
-
-					Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
-
-					// Encode the data string into a byte array.  
-					byte[] msg = Encoding.UTF8.GetBytes(command + " " + string.Join(",", msgparams));
-
-					// Send the data through the socket.  
-					int bytesSent = sender.Send(msg);
-					Console.WriteLine("Bytes sent:" + bytesSent.ToString());
-					Console.WriteLine("Command Sent: " + Encoding.UTF8.GetString(msg, 0, bytesSent));
-					
-					// Release the socket.  
-					sender.Shutdown(SocketShutdown.Both);
-					sender.Close();
-				}
-				catch (ArgumentNullException ane)
-				{
-					Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
-				}
-				catch (SocketException se)
-				{
-					Console.WriteLine("SocketException : {0}", se.ToString());
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine("Unexpected exception : {0}", e.ToString());
-				}
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-		}
-
-		public static void SendEventToServer(string eventName)
-		{
-			SendEventToServer(eventName, new string[] { });
-		}
-	}
 	public static class TaleSpireClient
 	{
 		private const string TaleSpireMachine = "192.168.22.42";
@@ -285,6 +227,24 @@ namespace TaleSpireCore
 			return response.GetData<CharacterPosition>();
 		}
 
+		public static CharacterPosition GetSelectedMini()
+		{
+			ApiResponse response = Invoke("GetSelectedMini");
+			if (response.Result == ResponseType.Failure)
+				return null;
+
+			return response.GetData<CharacterPosition>();
+		}
+
+		public static VectorDto GetFlashlightPosition()
+		{
+			ApiResponse response = Invoke("GetFlashlightPosition");
+			if (response.Result == ResponseType.Failure)
+				return null;
+
+			return response.GetData<VectorDto>();
+		}
+
 		public static void StartTargeting(string shape, int dimensions, string casterTaleSpireId, float rangeInFeet)
 		{
 			Invoke("StartTargeting", new string[] { shape, dimensions.ToString(), casterTaleSpireId, rangeInFeet.ToString() });
@@ -299,9 +259,34 @@ namespace TaleSpireCore
 			return response.GetData<CharacterPositions>();
 		}
 
-		public static void ClearTargetingUI()
+		public static void TargetsAreReady()
 		{
 			Invoke("Target", "Ready");
+		}
+
+		public static void RemoveTargetingUI()
+		{
+			Invoke("Target", "RemoveUI");
+		}
+
+		public static void LookAtPoint(VectorDto point)
+		{
+			Invoke("LookAtPoint", point.GetXyzStr());
+		}
+
+		public static void SpinAroundPoint(VectorDto point)
+		{
+			Invoke("SpinAroundPoint", point.GetXyzStr());
+		}
+
+		public static void FlashlightOn()
+		{
+			Invoke("Flashlight", "On");
+		}
+
+		public static void FlashlightOff()
+		{
+			Invoke("Flashlight", "Off");
 		}
 	}
 }

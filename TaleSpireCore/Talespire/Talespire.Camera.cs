@@ -25,7 +25,12 @@ namespace TaleSpireCore
 				return creatureBoardAsset;
 			}
 
-			public static void RestoreCamera()
+			public static void LookAt(Vector3 vector)
+			{
+				CameraController.LookAtTarget(vector);
+			}
+
+			public static void RestoreCamera(bool doLook = false)
 			{
 				if (saveParent != null)
 				{
@@ -33,17 +38,20 @@ namespace TaleSpireCore
 					
 					saveCameraTransform.SetParent(saveParent);
 
-					if (saveCameraTransform.localEulerAngles == saveEulerAngles)
-						Log.Warning($"saveCamera.gameObject.transform.eulerAngles == saveEulerAngles");
+					//if (saveCameraTransform.localEulerAngles == saveEulerAngles)
+					//	Log.Warning($"saveCamera.gameObject.transform.eulerAngles == saveEulerAngles");
 
 					saveCameraTransform.position = position;
 
-					CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(targetWorldId);
-					if (creatureBoardAsset != null)
+					if (targetWorldIdForRestoreCamera != null)
 					{
-						GameObject baseGO = creatureBoardAsset.GetBase();
-						if (baseGO != null)
-							CameraController.CameraTransform.LookAt(baseGO.transform);
+						CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(targetWorldIdForRestoreCamera);
+						if (creatureBoardAsset != null)
+						{
+							GameObject baseGO = creatureBoardAsset.GetBase();
+							if (baseGO != null && doLook)
+								CameraController.CameraTransform.LookAt(baseGO.transform);
+						}
 					}
 
 					saveCameraTransform.localEulerAngles = saveEulerAngles;
@@ -55,6 +63,14 @@ namespace TaleSpireCore
 				}
 			}
 
+			public static void SpinAround(Vector3 vector)
+			{
+				targetWorldIdForRestoreCamera = null;
+
+				LookAt(vector);
+				StartSpinningCamera(vector);
+			}
+
 			public static CreatureBoardAsset SpinAround(string id)
 			{
 				if (saveCameraTransform != null)
@@ -64,30 +80,37 @@ namespace TaleSpireCore
 				if (targetCreatureBoardAsset == null)
 					return null;
 
-				targetCreatureGuid = new CreatureGuid(targetCreatureBoardAsset.WorldId);
-				targetWorldId = targetCreatureBoardAsset.WorldId.ToString();
+				CreatureGuid targetCreatureGuid = new CreatureGuid(targetCreatureBoardAsset.WorldId);
+				targetWorldIdForRestoreCamera = targetCreatureBoardAsset.WorldId.ToString();
 				CameraController.LookAtCreature(targetCreatureGuid);
+				Vector3 targetPosition = targetCreatureBoardAsset.transform.position;
+				StartSpinningCamera(targetPosition);
 
+				return targetCreatureBoardAsset;
+			}
+
+			private static void StartSpinningCamera(Vector3 targetPosition)
+			{
+				if (saveParent != null)
+					RestoreCamera(false);
 				saveCameraTransform = GetRoot()?.transform;
 				saveEulerAngles = saveCameraTransform.localEulerAngles;
 				//saveLocalPosition = saveCameraTransform.localPosition;
 
-				Vector3 delta = saveCameraTransform.position - targetCreatureBoardAsset.transform.position;
+				Vector3 delta = saveCameraTransform.position - targetPosition;
 
 				spinner = new GameObject();
 				spinner.AddComponent<Scripts.CameraSpinner>();
 
 				saveParent = saveCameraTransform.parent;
 
-				spinner.transform.position = targetCreatureBoardAsset.transform.position;
+				spinner.transform.position = targetPosition;
 				Scripts.CameraSpinner tSC_Spinner = spinner.GetComponent<Scripts.CameraSpinner>();
 				if (tSC_Spinner != null)
-					tSC_Spinner.TargetSpinRate = 11;
+					tSC_Spinner.TargetSpinRate = 6;
 
 				saveCameraTransform.SetParent(spinner.transform);
 				saveCameraTransform.localPosition = delta;
-
-				return targetCreatureBoardAsset;
 			}
 
 			public static GameObject GetRoot()
@@ -142,8 +165,7 @@ namespace TaleSpireCore
 			//static Quaternion saveCameraRotation;
 			static float lastZoomLerpValue;
 			static float lastZoomTransition;
-			static CreatureGuid targetCreatureGuid;
-			static string targetWorldId;
+			static string targetWorldIdForRestoreCamera;
 			
 
 			//public static void SavePosition()

@@ -334,6 +334,7 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="Managers\ConditionManager.cs" />
     <Compile Include="Managers\CreatureManager.cs" />
     <Compile Include="Managers\DieRollManager.cs" />
     <Compile Include="DmDataDto.cs" />
@@ -362,6 +363,7 @@
     <Compile Include="StreamDeck Commands\ContestCommand.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
+    <Compile Include="StreamDeck Commands\FlashlightCommand.cs" />
     <Compile Include="StreamDeck Commands\HandEffectDto.cs" />
     <Compile Include="StreamDeck Commands\ScrollPageCommand.cs" />
     <Compile Include="StreamDeck Commands\SetDmMood.cs" />

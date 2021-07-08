@@ -11,6 +11,11 @@ namespace TaleSpireCore
 			return new Vector3(vectorDto.x, vectorDto.y, vectorDto.z);
 		}
 
+		public static VectorDto GetVectorDto(this Vector3 vector)
+		{
+			return new VectorDto(vector.x, vector.y, vector.z);
+		}
+
 
 		/// <summary>
 		/// Returns the height of the ground at the creature's position.

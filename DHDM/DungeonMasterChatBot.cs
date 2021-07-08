@@ -70,6 +70,7 @@ namespace DHDM
 			Commands.Add(new HandFxCommand());
 			Commands.Add(new LaunchCommand());
 			Commands.Add(new CameraCommand());
+			Commands.Add(new FlashlightCommand());
 			Commands.Add(new InGameUICommand());
 			Commands.Add(new NextTurnCommand());
 			Commands.Add(new SetPropertyCommand());

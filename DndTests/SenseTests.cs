@@ -32,7 +32,7 @@ namespace DndTests
 			Assert.IsFalse(creature.HasSense(Senses.Blindsight));
 			creature.blindsightRadius = 10;
 			Assert.IsTrue(creature.HasSense(Senses.Blindsight));
-			creature.ActiveConditions |= Conditions.Petrified;
+			creature.ManuallyAddedConditions |= Conditions.Petrified;
 			Assert.IsFalse(creature.HasSense(Senses.Blindsight));
 		}
 	}

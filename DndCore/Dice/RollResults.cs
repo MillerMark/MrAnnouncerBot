@@ -5,6 +5,7 @@ using DndCore;
 
 namespace DndCore
 {
+	//! anything added here must go in reportDieRollBackToMainApp in DieRoller.ts!!!!
 	public class RollResults
 	{
 		public string rollId { get; set; }
@@ -29,6 +30,7 @@ namespace DndCore
 		public DiceRollType type { get; set; }
 		public Skills skillCheck { get; set; }
 		public Ability savingThrow { get; set; }
+		public Conditions conditions { get; set; }
 		public int bonus { get; set; }
 		public string additionalDieRollMessage { get; set; }
 

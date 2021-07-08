@@ -533,7 +533,7 @@ namespace TaleSpireExplore
 					return;
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
 				{
-					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition}, ID: {creatureAsset.BoardAssetId}, WorldId: {creatureAsset.WorldId}, InstanceId: {creatureAsset.GetInstanceID()}\n"; // , Scale: {creatureAsset.CreatureScale}
+					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition}, UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: {creatureAsset.WorldId}, InstanceId: {creatureAsset.GetInstanceID()}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
 			catch (Exception ex)
@@ -1006,6 +1006,7 @@ namespace TaleSpireExplore
 		{
 			try
 			{
+				Talespire.Instances.Delete(instanceId);
 				GameObject effect = Talespire.Prefabs.Clone(spellEffectName, instanceId);
 
 				Talespire.Property.Modify(effect, "<FX_LifeTime>.LifeTime", 0, false);

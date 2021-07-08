@@ -43,16 +43,16 @@ namespace DndTests
 
 			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			ava.ConditionsChanged += Ava_ConditionsChanged;
-			ava.ActiveConditions = Conditions.None;
+			ava.ManuallyAddedConditions = Conditions.None;
 			Assert.AreEqual(Conditions.None, oldConditions);
 			Assert.AreEqual(Conditions.None, newConditions);
 
-			ava.ActiveConditions = Conditions.Paralyzed | Conditions.Petrified;
+			ava.ManuallyAddedConditions = Conditions.Paralyzed | Conditions.Petrified;
 
 			Assert.AreEqual(Conditions.None, oldConditions);
 			Assert.AreEqual(Conditions.Paralyzed | Conditions.Petrified, newConditions);
 
-			ava.ActiveConditions = Conditions.Prone;
+			ava.ManuallyAddedConditions = Conditions.Prone;
 
 			Assert.AreEqual(Conditions.Paralyzed | Conditions.Petrified, oldConditions);
 			Assert.AreEqual(Conditions.Prone, newConditions);

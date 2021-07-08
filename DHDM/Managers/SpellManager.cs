@@ -58,6 +58,42 @@ namespace DHDM
 			TaleSpireClient.ClearSpell(spellId);
 		}
 
+		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart)
+		{
+			if (secondsDelayStart > 0)
+			{
+				CreatePlayEffectAtPositionTimer(effectName, spellId, taleSpireId, lifeTime, effectLocation, secondsDelayStart);
+				return;
+			}
+			PlayEffectAtPosition(effectName, spellId, taleSpireId, lifeTime, effectLocation);
+		}
+
+		private static void PlayEffectAtPosition(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation)
+		{
+			if (effectLocation == EffectLocation.ActiveCreaturePosition)
+				TaleSpireClient.PlayEffectOverCreature(effectName, spellId, taleSpireId, lifeTime);
+			else if (effectLocation == EffectLocation.LastTargetPosition)
+			{
+				Vector targetPoint = Targeting.TargetPoint;
+				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
+				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime);
+			}
+		}
+
+		static void CreatePlayEffectAtPositionTimer(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart)
+		{
+			SpellEffectTimer timer = new SpellEffectTimer();
+			timer.Elapsed += PlayEffectAtPositionTimer_Elapsed;
+			timer.SpellId = spellId;
+			timer.EffectName = effectName;
+			timer.TaleSpireId = taleSpireId;
+			timer.LifeTime = lifeTime;
+			timer.EffectLocation = effectLocation;
+			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
+			timer.Start();
+			timers.Add(timer);
+		}
+
 		static void CreateAttachEffectSpellTimer(string effectName, string spellId, string taleSpireId, float secondsDelayStart)
 		{
 			SpellEffectTimer timer = new SpellEffectTimer();
@@ -66,6 +102,7 @@ namespace DHDM
 			timer.EffectName = effectName;
 			timer.TaleSpireId = taleSpireId;
 			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
+			timer.Start();
 			timers.Add(timer);
 		}
 
@@ -75,6 +112,7 @@ namespace DHDM
 			timer.Elapsed += ClearSpellTimer_Elapsed;
 			timer.SpellId = spellId;
 			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
+			timer.Start();
 			timers.Add(timer);
 		}
 
@@ -85,6 +123,7 @@ namespace DHDM
 			timer.SpellId = spellId;
 			timer.TaleSpireId = taleSpireId;
 			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
+			timer.Start();
 			timers.Add(timer);
 		}
 
@@ -118,21 +157,12 @@ namespace DHDM
 			timers.Remove(spellTimer);
 		}
 
-		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation)
+		private static void PlayEffectAtPositionTimer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			if (effectLocation == EffectLocation.ActiveCreaturePosition)
-				TaleSpireClient.PlayEffectOverCreature(effectName, spellId, taleSpireId, lifeTime);
-			else if (effectLocation == EffectLocation.LastTargetPosition)
-			{
-				Vector targetPoint = Targeting.TargetPoint;
-				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
-				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime);
-			}
-		}
-
-		static SpellManager()
-		{
-			
+			if (!(sender is SpellEffectTimer spellTimer))
+				return;
+			spellTimer.Stop();
+			PlayEffectAtPosition(spellTimer.EffectName, spellTimer.SpellId, spellTimer.TaleSpireId, spellTimer.LifeTime, spellTimer.EffectLocation);
 		}
 
 		private static void AttachEffectFunction_AttachEffect(object sender, SpellEffectEventArgs ea)
@@ -142,7 +172,7 @@ namespace DHDM
 
 		private static void PlayEffectFunction_PlayEffect(object sender, SpellEffectEventArgs ea)
 		{
-			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation);
+			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation, ea.SecondsDelayStart);
 		}
 
 		private static void ClearAttachedFunction_ClearAttached(object sender, SpellEffectEventArgs ea)

@@ -2099,6 +2099,29 @@ namespace DHDM
 				CreatureManager.UpdatePlayerStatsInGame();
 			}
 
+			bool conditionsChanged = false;
+			foreach (Creature creature in Game.AllCreatures)
+				if (creature.RemoveSpellCondition(ea.CastedSpell.ID))
+				{
+					if (creature is Character player)
+					{
+						CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
+						if (playerStats != null)
+						{
+							playerStats.Conditions = player.AllConditions;
+						}
+					}
+					conditionsChanged = true;
+				}
+
+			if (conditionsChanged)
+			{
+				// TODO: Update UI for that creature.
+				// TODO: We have to update the InGame UI. Get this right.
+				CreatureManager.UpdateInGameCreatures();
+				CreatureManager.UpdatePlayerStatsInGame();
+			}
+
 			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
 
@@ -7184,6 +7207,7 @@ namespace DHDM
 
 		public void RollDice()
 		{
+			TargetManager.AboutToRoll();
 			SafeInvoke(() =>
 			{
 				if (NextRollScope == RollScope.ActiveInGameCreature)
@@ -10611,6 +10635,25 @@ namespace DHDM
 			if (damage.Keys.Count <= 0)
 				return;
 
+			if (stopRollingData.conditions != Conditions.None)
+			{
+				foreach (int targetId in targetCharacterIds)
+				{
+					Creature targetCreature = DndUtils.GetCreatureById(targetId);
+					ConditionManager.ApplyToCreature(targetCreature, stopRollingData.spellId, stopRollingData.conditions);
+				}
+				CreatureManager.UpdateInGameCreatures();
+				CreatureManager.UpdatePlayerStatsInGame();
+			}
+
+			int totalDamage = 0;
+			foreach (var key in damage.Keys)
+			{
+				totalDamage += damage[key];
+			}
+			if (totalDamage == 0)
+				return;
+
 			ReportDamage(damage);
 
 			WhatTargetChanged whatTargetChanged = WhatTargetChanged.None;
@@ -11359,6 +11402,18 @@ namespace DHDM
 				case "SpinAroundActive":
 					SpinAroundActiveCreature();
 					break;
+				case "LookAtSelectedMini":
+					LookAtSelectedMini();
+					break;
+				case "SpinAroundSelectedMini":
+					SpinAroundSelectedMini();
+					break;
+				case "LookAtFlashlight":
+					LookAtFlashlight();
+					break;
+				case "SpinAroundFlashlight":
+					SpinAroundFlashlight();
+					break;
 				case "RestoreCamera":
 					TaleSpireClient.RestoreCamera();
 					break;
@@ -11379,11 +11434,52 @@ namespace DHDM
 				TaleSpireClient.LookAt(activeTurnTaleSpireId);
 		}
 
+		private void LookAtSelectedMini()
+		{
+			CharacterPosition selectedMini = TaleSpireClient.GetSelectedMini();
+			if (selectedMini == null)
+				return;
+			TaleSpireClient.LookAt(selectedMini.ID);
+		}
+
+		private void SpinAroundSelectedMini()
+		{
+			CharacterPosition selectedMini = TaleSpireClient.GetSelectedMini();
+			if (selectedMini == null)
+				return;
+			TaleSpireClient.SpinAround(selectedMini.ID);
+		}
+
 		private void SpinAroundActiveCreature()
 		{
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 				TaleSpireClient.SpinAround(activeTurnTaleSpireId);
+		}
+		void LookAtFlashlight()
+		{
+			VectorDto flashlightPosition = TaleSpireClient.GetFlashlightPosition();
+			if (flashlightPosition == null)
+				return;
+			TaleSpireClient.LookAtPoint(flashlightPosition);
+		}
+		void SpinAroundFlashlight()
+		{
+			VectorDto flashlightPosition = TaleSpireClient.GetFlashlightPosition();
+			if (flashlightPosition == null)
+				return;
+			TaleSpireClient.SpinAroundPoint(flashlightPosition);
+		}
+
+		public void TaleSpireFlashlight(string flashlightCommand)
+		{
+			if (flashlightCommand == null)
+				return;
+			flashlightCommand = flashlightCommand.ToLower();
+			if (flashlightCommand == "on")
+				TaleSpireClient.FlashlightOn();
+			else
+				TaleSpireClient.FlashlightOff();
 		}
 	}
 }
