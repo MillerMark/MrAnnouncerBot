@@ -8,6 +8,7 @@ namespace TaleSpireCore
 		public static void Update()
 		{
 			Target.Update();
+			Spells.Update();
 		}
 	}
 }

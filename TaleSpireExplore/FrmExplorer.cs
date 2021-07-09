@@ -736,9 +736,32 @@ namespace TaleSpireExplore
 				origin.transform.position = new Vector3(x, y, z);
 				target.transform.position = new Vector3(x + 4, y, z + 3);
 				VisualEffect visualEffect = Talespire.Effects.GetVisual(effectName);
-				
+
 				if (visualEffect != null)
 				{
+					try
+					{
+						AnimationCurve animationCurve = ReflectionHelper.GetNonPublicField<AnimationCurve>(typeof(VFXMissile), visualEffect, "animCurve");
+						if (animationCurve != null)
+						{
+							Talespire.Log.Debug($"animationCurve.length: {animationCurve.length}");
+							Talespire.Log.Debug($"animationCurve.postWrapMode: {animationCurve.postWrapMode}");
+							Talespire.Log.Debug($"animationCurve.preWrapMode: {animationCurve.preWrapMode}");
+							for (int i = 0; i < animationCurve.keys.Length; i++)
+							{
+								Keyframe keyframe = animationCurve.keys[i];
+								Talespire.Log.Debug($"{i}: time: {keyframe.time}, value: {keyframe.value}, inTangent: {keyframe.inTangent}, outTangent: {keyframe.outTangent}, inWeight: {keyframe.inWeight}, outWeight: {keyframe.outWeight}, tangentMode: {keyframe.tangentMode}");
+							}
+							Talespire.Log.Debug($"");
+						}
+						else
+							Talespire.Log.Error($"Animation Curve not found!");
+					}
+					catch (Exception ex)
+					{
+						Talespire.Log.Exception(ex);
+					}
+
 					if (visualEffect is VFXMissile missile)
 					{
 						//ParticleSystem drizzle = ReflectionHelper.GetNonPublicField<ParticleSystem>(typeof(VFXMissile), missile, "drizzle");

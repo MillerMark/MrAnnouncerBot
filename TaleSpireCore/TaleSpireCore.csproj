@@ -134,8 +134,12 @@
     <Compile Include="Color\HueSatLight.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
-    <Compile Include="Talespire\InteractiveTargetingMode.cs" />
-    <Compile Include="Talespire\MortalGameObject.cs" />
+    <Compile Include="Talespire\Core\FireCollisionEventOn.cs" />
+    <Compile Include="Talespire\Core\InteractiveTargetingMode.cs" />
+    <Compile Include="Talespire\Core\MortalGameObject.cs" />
+    <Compile Include="Talespire\Core\ProjectileKind.cs" />
+    <Compile Include="Talespire\Core\ProjectileOptions.cs" />
+    <Compile Include="Talespire\Core\TrackedProjectile.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
@@ -156,14 +160,15 @@
     <Compile Include="Talespire\Talespire.Effects.cs" />
     <Compile Include="TaleSpireClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Talespire\TalespireExtensions.cs" />
-    <Compile Include="Talespire\TargetVolume.cs" />
-    <Compile Include="Talespire\WhatSide.cs" />
+    <Compile Include="Talespire\Core\TalespireExtensions.cs" />
+    <Compile Include="Talespire\Core\TargetVolume.cs" />
+    <Compile Include="Talespire\Core\WhatSide.cs" />
     <Compile Include="Talespire\Scripts\Spinner.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
     <Compile Include="Talespire\Talespire.Flashlight.cs" />
     <Compile Include="TaleSpireUtils.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -104,6 +104,7 @@ namespace TaleSpireExplore
 			Commands.Add("Flashlight", Flashlight);
 			Commands.Add("LookAtPoint", LookAtPoint);
 			Commands.Add("SpinAroundPoint", SpinAroundPoint);
+			Commands.Add("LaunchProjectile", LaunchProjectile);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1406,7 +1407,7 @@ namespace TaleSpireExplore
 					Talespire.Log.Exception(ex);
 				}
 			else if (command == "Ready")
-						Talespire.Target.Ready();
+				Talespire.Target.Ready();
 			else if (command == "Clear")
 			{
 				try
@@ -1469,7 +1470,7 @@ namespace TaleSpireExplore
 		{
 			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
 			{
-				
+
 			});
 		}
 
@@ -1785,7 +1786,7 @@ namespace TaleSpireExplore
 
 			if (creature == null)
 				return ApiResponse.Bad($"Creature with {id} not found.");
-			
+
 			return ApiResponse.Good("Success", creature.GetCharacterPosition());
 		}
 		static string WiggleCreature(string[] arg)
@@ -1822,7 +1823,7 @@ namespace TaleSpireExplore
 
 			return ApiResponse.Good("Success", characterPosition);
 		}
-		
+
 		static string GetFlashlightPosition(string[] arg)
 		{
 			Vector3 position = Talespire.Flashlight.GetPosition();
@@ -1872,6 +1873,30 @@ namespace TaleSpireExplore
 				return ApiResponse.Good();
 			}
 			return ApiResponse.Bad("Vector argument error.");
+		}
+
+		static string LaunchProjectile(string[] args)
+		{
+			const int minArgs = 9;
+			if (args.Length < minArgs)
+				return ApiResponse.Bad($"{nameof(LaunchProjectile)} - Expecting at least {minArgs} arg.");
+
+			ProjectileOptions projectileOptions = new ProjectileOptions();
+			projectileOptions.effectName = args[0];
+			projectileOptions.taleSpireId = args[1];
+			projectileOptions.kind = Talespire.Convert.ToProjectileKind(args[2]);
+			projectileOptions.count = Talespire.Convert.ToInt(args[3]);
+			projectileOptions.speed = Talespire.Convert.ToFloat(args[4]);
+			projectileOptions.fireCollisionEventOn = Talespire.Convert.ToFireCollisionEventOn(args[5]);
+			projectileOptions.launchTimeVariance = Talespire.Convert.ToFloat(args[6]);
+			projectileOptions.targetVariance = Talespire.Convert.ToFloat(args[7]);
+			projectileOptions.spellId = args[8];
+
+			for (int i = minArgs; i < args.Length; i++)
+				projectileOptions.AddTarget(args[i]);
+
+			Talespire.Spells.LaunchProjectile(projectileOptions);
+			return ApiResponse.Good();
 		}
 	}
 }

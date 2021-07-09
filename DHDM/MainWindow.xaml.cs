@@ -103,8 +103,8 @@ namespace DHDM
 			ChangingInternally = true;
 			try
 			{
-				SpellManager.Initialize();
 				InitializeGame();
+				SpellManager.Initialize(Game);
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//`! !!!                                                                                      !!!
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!

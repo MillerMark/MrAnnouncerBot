@@ -201,6 +201,16 @@ namespace TaleSpireCore
 				else
 					Log.Error($"Unable to parse \"{heightStr}\" into float.");
 			}
+
+			public static void Shake(Vector3 direction, float duration)
+			{
+				TS_CameraShaker.CallPushInDirection(duration, direction);
+			}
+
+			public static void ShakeWithNoise(Vector3 location, float magnitude, float frequency, float duration)
+			{
+				TS_CameraShaker.CallShakeWithNoise(duration, magnitude, location, frequency);
+			}
 		}
 	}
 }

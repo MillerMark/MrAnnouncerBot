@@ -13,19 +13,45 @@ namespace DHDM
 		public static string nextSpellIdWeAreCasting = null;
 		public static string activeSpellName = null;
 
-		public static void Initialize()
+		public static void Initialize(DndGame game)
 		{
+			Game = game;
+			LaunchProjectileFunction.LaunchProjectile += LaunchProjectileFunction_LaunchProjectile;
 			AttachEffectFunction.AttachEffect += AttachEffectFunction_AttachEffect;
 			PlayEffectFunction.PlayEffect += PlayEffectFunction_PlayEffect;
 			ClearAttachedFunction.ClearAttached += ClearAttachedFunction_ClearAttached;
 			ClearSpellFunction.ClearSpell += ClearSpellFunction_ClearSpell;
 		}
 
+		private static void LaunchProjectileFunction_LaunchProjectile(object sender, ProjectileEffectEventArgs ea)
+		{
+			List<string> targets = new List<string>();
+			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
+				targets.Add(Targeting.TargetPoint.GetXyzStr());  // Adding a vector to the target list. Might add something like "(0, 0, 0) Square20"
+
+			if (ea.Target != null)
+			{
+				foreach (Creature creature in ea.Target.Creatures)
+					targets.Add(creature.taleSpireId);
+
+				foreach (int playerID in ea.Target.PlayerIds)
+				{
+					Character player = Game.GetPlayerFromId(playerID);
+					if (player != null)
+						targets.Add(player.taleSpireId);
+				}
+			}
+
+			TaleSpireClient.LaunchProjectile(ea.EffectName, ea.TaleSpireId, ea.Kind.ToString(), ea.Count,  
+				ea.Speed, ea.FireCollisionEventOn.ToString(), ea.LaunchTimeVariance,
+				ea.TargetVariance, ea.SpellId, targets);
+		}
+
 		/* 
 				* Prepare to cast (when a spell button is pressed on the Stream Deck)
 				* Dice rolled
 				* Roll result received
-				* Magic Given
+				* Magic Given  <<<
 				* Spell Expired
 	  */
 		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float secondsDelayStart)
@@ -184,6 +210,7 @@ namespace DHDM
 		{
 			ClearSpell(ea.SpellId, ea.SecondsDelayStart);
 		}
+		public static DndGame Game { get; set; }
 	}
 }
 

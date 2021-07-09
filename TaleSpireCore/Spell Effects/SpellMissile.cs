@@ -62,90 +62,90 @@ namespace TaleSpireCore
 		}
 
     private void LateUpdate()
-    {
-      if (_path != null)
-      {
-        if (stage == 0)
-        {
-          stage++;
-        }
-        else if (stage == 1)
-        {
-          EnableRenderers(true);
-          int index = 0;
-          while (true)
-          {
-            if (index >= bones.Length)
-            {
-              stage++;
-              break;
-            }
-            if (index == 0)
-            {
-              transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time));
-              transform.LookAt(_path.CalculateBezierPoint(0, animCurve.Evaluate(time + 0.01f)));
-            }
-            bones[index].transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time - (index * boneDistance)));
-            index++;
-          }
-        }
-        else if (stage == 2)
-        {
-          stage++;
-        }
-        else if (stage != 3)
-        {
-          if (stage == 4)
-          {
-            Creature creature;
-            EnableRenderers(false);
-            impact.transform.position = _targetPosition;
-            impact.transform.LookAt(impact.transform.position + transform.forward);
-            impact.Play(true);
-            if (_castingCreature.TryGetCreatureFromTarget(EndTarget, out creature))
-            {
-              creature.AttackTargetCreature(impact.transform.forward);
-            }
-            if (SimpleSingletonBehaviour<CameraController>.HasInstance)
-            {
-              TS_CameraShaker.CallPushInDirection(0.1f, impact.transform.forward);
-            }
-            stage++;
-          }
-        }
-        else
-        {
-          int index = 0;
-          while (true)
-          {
-            if (index >= bones.Length)
-            {
-              time += Time.deltaTime;
-              if (time > 1f)
-              {
-                stage++;
-              }
-              if (!drizzle.isEmitting)
-              {
-                drizzle.Clear(true);
-                drizzle.Play(true);
-              }
-              break;
-            }
-            if (index == 0)
-            {
-              transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time));
-              transform.LookAt(_path.CalculateBezierPoint(0, animCurve.Evaluate(time + 0.01f)));
-            }
-            bones[index].transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time - (index * boneDistance)));
-            index++;
-          }
-        }
-        TryPlayImpactAudio(time);
-      }
-    }
+		{
+			if (_path == null)
+				return;
 
-    protected override void OnPlayFromOriginToTarget(Transform origin, Transform target)
+			if (stage == 0)
+			{
+				stage++;
+			}
+			else if (stage == 1)
+			{
+				EnableRenderers(true);
+				int index = 0;
+				while (true)
+				{
+					if (index >= bones.Length)
+					{
+						stage++;
+						break;
+					}
+					if (index == 0)
+					{
+						transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time));
+						transform.LookAt(_path.CalculateBezierPoint(0, animCurve.Evaluate(time + 0.01f)));
+					}
+					bones[index].transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time - (index * boneDistance)));
+					index++;
+				}
+			}
+			else if (stage == 2)
+			{
+				stage++;
+			}
+			else if (stage != 3)
+			{
+				if (stage == 4)
+				{
+					Creature creature;
+					EnableRenderers(false);
+					impact.transform.position = _targetPosition;
+					impact.transform.LookAt(impact.transform.position + transform.forward);
+					impact.Play(true);
+					if (_castingCreature.TryGetCreatureFromTarget(EndTarget, out creature))
+					{
+						creature.AttackTargetCreature(impact.transform.forward);
+					}
+					if (SimpleSingletonBehaviour<CameraController>.HasInstance)
+					{
+						TS_CameraShaker.CallPushInDirection(0.1f, impact.transform.forward);
+					}
+					stage++;
+				}
+			}
+			else
+			{
+				int index = 0;
+				while (true)
+				{
+					if (index >= bones.Length)
+					{
+						time += Time.deltaTime;
+						if (time > 1f)
+						{
+							stage++;
+						}
+						if (!drizzle.isEmitting)
+						{
+							drizzle.Clear(true);
+							drizzle.Play(true);
+						}
+						break;
+					}
+					if (index == 0)
+					{
+						transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time));
+						transform.LookAt(_path.CalculateBezierPoint(0, animCurve.Evaluate(time + 0.01f)));
+					}
+					bones[index].transform.position = _path.CalculateBezierPoint(0, animCurve.Evaluate(time - (index * boneDistance)));
+					index++;
+				}
+			}
+			TryPlayImpactAudio(time);
+		}
+
+		protected override void OnPlayFromOriginToTarget(Transform origin, Transform target)
     {
       _originPosition = origin.position;
       _targetPosition = target.position;

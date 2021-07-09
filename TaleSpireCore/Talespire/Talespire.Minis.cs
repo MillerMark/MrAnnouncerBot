@@ -637,6 +637,18 @@ namespace TaleSpireCore
 				}
 				return null;
 			}
+			
+			public static Vector3 GetHitTargetVector(string id)
+			{
+				Vector3 vector = Vector3.zero;
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset != null)
+					if (creatureBoardAsset.HookHitTarget != null)
+						vector = creatureBoardAsset.HookHitTarget.position;
+					else
+						vector = creatureBoardAsset.GetCharacterPosition().Position.GetVector3();
+				return vector;
+			}
 		}
 	}
 }
