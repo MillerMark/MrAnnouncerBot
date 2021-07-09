@@ -1272,9 +1272,40 @@ namespace TaleSpireExplore
 				Talespire.Minis.SetCreatureScale(MerkinId, result);
 		}
 
+		void GenerateAnimationCurveCode(string name, AnimationCurve curve)
+		{
+			if (curve == null)
+			{
+				Talespire.Log.Error($"{name} curve is null!");
+				return;
+			}
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.AppendLine($"{name} = new AnimationCurve();");
+			stringBuilder.AppendLine($"{name}.preWrapMode = WrapMode.{curve.preWrapMode}");
+			stringBuilder.AppendLine($"{name}.postWrapMode = WrapMode.{curve.postWrapMode}");
+			foreach (Keyframe key in curve.keys)
+				stringBuilder.AppendLine($"{name}.AddKey(new Keyframe({key.time}, {key.value}, {key.inTangent}, {key.outTangent}, {key.inWeight}, {key.outWeight}));");
+
+			stringBuilder.AppendLine();
+			tbxScratch.Text += stringBuilder.ToString();
+		}
+
 		private void btnTest1_Click(object sender, EventArgs e)
 		{
-			Talespire.Minis.Delete(JanusId);
+			//Talespire.Minis.Delete(JanusId);
+			GameObject animationCurveExplorerPrefab = Talespire.Prefabs.Clone("AnimationCurveExplorerPrefab");
+			if (animationCurveExplorerPrefab != null)
+			{
+				Talespire.Log.Debug($"AnimationCurveExplorerPrefab found!");
+				UnityEngine.Component component = animationCurveExplorerPrefab.GetScript("AnimationCurveExplorer");
+				AnimationCurve growProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "GrowProjectileCurve");
+				GenerateAnimationCurveCode("growProjectileCurve", growProjectileCurve);
+				AnimationCurve shrinkProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "ShrinkProjectileCurve");
+				GenerateAnimationCurveCode("shrinkProjectileCurve", shrinkProjectileCurve);
+				AnimationCurve humpProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "HumpProjectileCurve");
+				GenerateAnimationCurveCode("humpProjectileCurve", humpProjectileCurve);
+
+			}
 		}
 
 		private void btnTest2_Click(object sender, EventArgs e)

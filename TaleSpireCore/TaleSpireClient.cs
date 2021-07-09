@@ -289,11 +289,12 @@ namespace TaleSpireCore
 			Invoke("Flashlight", "Off");
 		}
 
-		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance, string spellId, List<string> targets)
+		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance, 
+																			  string spellId, string projectileSize, float projectileSizeMultiplier, List<string> targets)
 		{
 			List<string> msgparams = new List<string>() { effectName, taleSpireId, kind, 
 				count.ToString(), speed.ToString(), fireCollisionEventOn, launchTimeVariance.ToString(), targetVariance.ToString(),
-			spellId };
+			spellId, projectileSize, projectileSizeMultiplier.ToString() };
 
 			msgparams.AddRange(targets);
 			Invoke("LaunchProjectile", msgparams.ToArray());

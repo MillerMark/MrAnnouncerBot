@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore
+namespace TaleSpireCore
 {
 	//! Cloned Enum - maintain sync with FireCollisionEventOn enum in D&D and TaleSpireExplore solutions.
-	public enum FireCollisionEventOn
+	public enum ProjectileSizeOption
 	{
-		FirstImpact,
-		EachImpact,
-		LastImpact
+		ConstantSize,
+		GrowProjectile,
+		ShrinkProjectile,
+		HumpProjectile
 	}
 }

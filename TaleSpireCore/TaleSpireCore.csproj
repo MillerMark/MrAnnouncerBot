@@ -134,10 +134,11 @@
     <Compile Include="Color\HueSatLight.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
-    <Compile Include="Talespire\Core\FireCollisionEventOn.cs" />
+    <Compile Include="Talespire\Core\Cloned Enums\FireCollisionEventOn.cs" />
+    <Compile Include="Talespire\Core\Cloned Enums\ProjectileSizeOption.cs" />
     <Compile Include="Talespire\Core\InteractiveTargetingMode.cs" />
     <Compile Include="Talespire\Core\MortalGameObject.cs" />
-    <Compile Include="Talespire\Core\ProjectileKind.cs" />
+    <Compile Include="Talespire\Core\Cloned Enums\ProjectileKind.cs" />
     <Compile Include="Talespire\Core\ProjectileOptions.cs" />
     <Compile Include="Talespire\Core\TrackedProjectile.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />

@@ -1877,9 +1877,9 @@ namespace TaleSpireExplore
 
 		static string LaunchProjectile(string[] args)
 		{
-			const int minArgs = 9;
+			const int minArgs = 11;
 			if (args.Length < minArgs)
-				return ApiResponse.Bad($"{nameof(LaunchProjectile)} - Expecting at least {minArgs} arg.");
+				return ApiResponse.Bad($"{nameof(LaunchProjectile)} - Expecting at least {minArgs} args.");
 
 			ProjectileOptions projectileOptions = new ProjectileOptions();
 			projectileOptions.effectName = args[0];
@@ -1891,6 +1891,8 @@ namespace TaleSpireExplore
 			projectileOptions.launchTimeVariance = Talespire.Convert.ToFloat(args[6]);
 			projectileOptions.targetVariance = Talespire.Convert.ToFloat(args[7]);
 			projectileOptions.spellId = args[8];
+			projectileOptions.projectileSize = Talespire.Convert.ToProjectileSizeOption(args[9]);
+			projectileOptions.projectileSizeMultiplier = Talespire.Convert.ToFloat(args[10]);
 
 			for (int i = minArgs; i < args.Length; i++)
 				projectileOptions.AddTarget(args[i]);

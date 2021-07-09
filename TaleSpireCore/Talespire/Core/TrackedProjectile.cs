@@ -7,6 +7,7 @@ namespace TaleSpireCore
 {
 	public class TrackedProjectile
 	{
+		// AnimationCurveExplorerPrefab has the <AnimationCurveExplorer> component
 		public bool ReadyToDelete { get; set; }
 		public GameObject Projectile { get; set; }
 		public Vector3 TargetPosition { get; set; }
@@ -15,13 +16,18 @@ namespace TaleSpireCore
 		public float StartTime { get; set; }
 		public string EffectName { get; set; }
 		public string SpellId { get; set; }
+		public ProjectileSizeOption ProjectileSize { get; set; }
+		public float ProjectileSizeMultiplier { get; set; }
 		public event EventHandler TargetReached;
+
 		bool alreadyCreated;
 		Vector3 direction;
 		float totalTravelDistanceInFeet;
 		BezierPath bezierPath;
-		AnimationCurve animationCurve;
-		float time;
+		AnimationCurve pathTimeCurve;
+		AnimationCurve growProjectileCurve;
+		AnimationCurve shrinkProjectileCurve;
+		AnimationCurve humpProjectileCurve;
 
 		void TriggerCollision()
 		{
@@ -56,9 +62,12 @@ namespace TaleSpireCore
 			// Linear:
 			// Projectile.transform.position = SourcePosition + direction * Talespire.Convert.FeetToTiles(feetTraveled);
 
-			Projectile.transform.position = bezierPath.CalculateBezierPoint(0, animationCurve.Evaluate(percentTraveled));
-			Projectile.transform.LookAt(bezierPath.CalculateBezierPoint(0, animationCurve.Evaluate(percentTraveled + 0.01f)));
-			time += Time.deltaTime;
+			// Bezier path:
+			Projectile.transform.position = bezierPath.CalculateBezierPoint(0, pathTimeCurve.Evaluate(percentTraveled));
+			Projectile.transform.LookAt(bezierPath.CalculateBezierPoint(0, pathTimeCurve.Evaluate(percentTraveled + 0.01f)));
+
+			// TODO: Modify scale as it moves based on ProjectileSize and ProjectileSizeMultiplier.
+			//Projectile.transform.localScale = new Vector3(ProjectileSizeMultiplier);
 		}
 
 		private void CreateProjectile()
@@ -82,7 +91,6 @@ namespace TaleSpireCore
 			newControlPoints.Add((TargetPosition + (transform.right * UnityEngine.Random.Range(-maxInclusive, maxInclusive))) + (transform.up * UnityEngine.Random.Range(0f, maxInclusive)));
 			newControlPoints.Add(TargetPosition);
 			bezierPath.SetControlPoints(newControlPoints);
-			time = 0;
 		}
 
 		public void Initialize()
@@ -92,13 +100,22 @@ namespace TaleSpireCore
 
 		public TrackedProjectile()
 		{
-			animationCurve = new AnimationCurve();
-			animationCurve.preWrapMode = WrapMode.ClampForever;
-			animationCurve.postWrapMode = WrapMode.ClampForever;
-			animationCurve.AddKey(new Keyframe(0, 0, 3.69767f, 3.69767f, 0, 0.2363204f));
-			animationCurve.AddKey(new Keyframe(0.08789588f, 0.1448911f, 0.4504516f, 0.4504516f, 0.3333333f, 0.130629f));
-			animationCurve.AddKey(new Keyframe(0.5344772f, 0.2922845f, 0.3926852f, 0.3926852f, 0.3333333f, 0.1190708f));
-			animationCurve.AddKey(new Keyframe(1, 1, 3.894356f, 3.894356f, 0.03830125f, 0));
+			// ![](FAA41F806C5DA538A88BAD89DD38C8D8.png;;0,77,584,433)
+			pathTimeCurve = new AnimationCurve();
+			pathTimeCurve.preWrapMode = WrapMode.ClampForever;
+			pathTimeCurve.postWrapMode = WrapMode.ClampForever;
+			pathTimeCurve.AddKey(new Keyframe(0, 0, 3.69767f, 3.69767f, 0, 0.2363204f));
+			pathTimeCurve.AddKey(new Keyframe(0.08789588f, 0.1448911f, 0.4504516f, 0.4504516f, 0.3333333f, 0.130629f));
+			pathTimeCurve.AddKey(new Keyframe(0.5344772f, 0.2922845f, 0.3926852f, 0.3926852f, 0.3333333f, 0.1190708f));
+			pathTimeCurve.AddKey(new Keyframe(1, 1, 3.894356f, 3.894356f, 0.03830125f, 0));
+
+			growProjectileCurve = new AnimationCurve();
+			growProjectileCurve.preWrapMode = WrapMode.ClampForever;
+			growProjectileCurve.postWrapMode = WrapMode.ClampForever;
+			growProjectileCurve.AddKey(new Keyframe(0, 0, 3.69767f, 3.69767f, 0, 0.2363204f));
+			growProjectileCurve.AddKey(new Keyframe(0.08789588f, 0.1448911f, 0.4504516f, 0.4504516f, 0.3333333f, 0.130629f));
+			growProjectileCurve.AddKey(new Keyframe(0.5344772f, 0.2922845f, 0.3926852f, 0.3926852f, 0.3333333f, 0.1190708f));
+			growProjectileCurve.AddKey(new Keyframe(1, 1, 3.894356f, 3.894356f, 0.03830125f, 0));
 		}
 	}
 }

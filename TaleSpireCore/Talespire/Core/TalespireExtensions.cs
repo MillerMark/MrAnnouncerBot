@@ -16,6 +16,14 @@ namespace TaleSpireCore
 			return new VectorDto(vector.x, vector.y, vector.z);
 		}
 
+		public static Component GetScript(this GameObject gameObject, string scriptName)
+		{
+			Component[] components = gameObject.GetComponents(typeof(Component));
+			foreach (Component component in components)
+				if (component.GetType().Name == scriptName)
+					return component;
+			return null;
+		}
 
 		/// <summary>
 		/// Returns the height of the ground at the creature's position.

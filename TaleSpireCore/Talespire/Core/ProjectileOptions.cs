@@ -17,6 +17,8 @@ namespace TaleSpireCore
 		public FireCollisionEventOn fireCollisionEventOn;
 		public float launchTimeVariance;
 		public float targetVariance;
+		public float projectileSizeMultiplier;
+		public ProjectileSizeOption projectileSize;
 		public List<Vector3> targetLocations = new List<Vector3>();
 
 		public void AddTarget(string str)
@@ -27,5 +29,6 @@ namespace TaleSpireCore
 			else
 				targetLocations.Add(Talespire.Minis.GetHitTargetVector(str));
 		}
+		
 	}
 }

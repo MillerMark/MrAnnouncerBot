@@ -154,6 +154,22 @@ namespace TaleSpireCore
 			return field.GetValue(instance) as T;
 		}
 
+		public static T GetPublicField<T>(Type type, object instance, string fieldName) where T : class
+		{
+			FieldInfo field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+			if (field == null)
+				return default(T);
+			return field.GetValue(instance) as T;
+		}
+
+		public static T GetPublicProperty<T>(Type type, object instance, string propertyName) where T : class
+		{
+			PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+			if (property == null)
+				return default(T);
+			return property.GetValue(instance) as T;
+		}
+
 		public static void SetNonPublicFieldValue(Type type, object instance, string fieldName, object value)
 		{
 			try

@@ -44,7 +44,7 @@ namespace DHDM
 
 			TaleSpireClient.LaunchProjectile(ea.EffectName, ea.TaleSpireId, ea.Kind.ToString(), ea.Count,  
 				ea.Speed, ea.FireCollisionEventOn.ToString(), ea.LaunchTimeVariance,
-				ea.TargetVariance, ea.SpellId, targets);
+				ea.TargetVariance, ea.SpellId, ea.ProjectileSize.ToString(), ea.ProjectileSizeMultiplier, targets);
 		}
 
 		/* 

@@ -13,6 +13,8 @@ namespace DndCore
 	[Param(5, typeof(FireCollisionEventOn), "fireCollisionEventOn", "When to fire the collision events (one of FirstImpact, EachImpact, LastImpact).", ParameterIs.Optional)]
 	[Param(6, typeof(float), "launchTimeVariance", "The average time between launches.", ParameterIs.Optional)]
 	[Param(7, typeof(float), "targetVariance", "The average distance to the target for the projectile.", ParameterIs.Optional)]
+	[Param(8, typeof(ProjectileSizeOption), "projectileSize", "Determines how the projectile changes size in flight.", ParameterIs.Optional)]
+	[Param(9, typeof(float), "projectileSizeMultiplier", "Determines how much (scaling) of the projectile size option to apply.", ParameterIs.Optional)]
 	public class LaunchProjectileFunction : DndFunction
 	{
 		public static event ProjectileEffectEventHandler LaunchProjectile;
@@ -30,6 +32,8 @@ namespace DndCore
 			FireCollisionEventOn fireCollisionEventOn = FireCollisionEventOn.EachImpact;
 			float launchTimeVariance = 0;
 			float targetVariance = 0;
+			ProjectileSizeOption projectileSize = ProjectileSizeOption.ConstantSize;
+			float projectileSizeMultiplier = 1;
 
 			if (args.Count > 1)
 			{
@@ -48,14 +52,22 @@ namespace DndCore
 							{
 								float.TryParse(args[5], out launchTimeVariance);
 								if (args.Count > 6)
+								{
 									float.TryParse(args[6], out targetVariance);
+									if (args.Count > 7)
+									{
+										projectileSize = Expressions.Get<ProjectileSizeOption>(args[7]);
+										if (args.Count > 8)
+											float.TryParse(args[8], out projectileSizeMultiplier);
+									}
+								}
 							}
 						}
 					}
 				}
 			}
 
-			ProjectileEffectEventArgs ea = new ProjectileEffectEventArgs(effectName, spell.ID, player.taleSpireId, speed, projectileCount, projectileKind, fireCollisionEventOn, launchTimeVariance, targetVariance, target);
+			ProjectileEffectEventArgs ea = new ProjectileEffectEventArgs(effectName, spell.ID, player.taleSpireId, speed, projectileCount, projectileKind, fireCollisionEventOn, launchTimeVariance, targetVariance, target, projectileSize, projectileSizeMultiplier);
 			LaunchProjectile?.Invoke(null, ea);
 
 			return null;

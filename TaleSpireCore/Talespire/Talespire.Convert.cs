@@ -66,6 +66,11 @@ namespace TaleSpireCore
 				return GetElement<ProjectileKind>(str);
 			}
 
+			public static ProjectileSizeOption ToProjectileSizeOption(string str)
+			{
+				return GetElement<ProjectileSizeOption>(str);
+			}
+
 			public static float ToFloat(string str, float defaultValue = 0)
 			{
 				if (float.TryParse(str, out float result))

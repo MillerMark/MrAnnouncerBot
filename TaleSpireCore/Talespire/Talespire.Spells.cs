@@ -195,6 +195,8 @@ namespace TaleSpireCore
 				trackedProjectile.SourcePosition = sourcePosition;
 				trackedProjectile.SpeedFeetPerSecond = projectileOptions.speed;
 				trackedProjectile.TargetPosition = new Vector3(location.x + targetVariance * DistanceVariance, location.y + targetVariance * DistanceVariance, location.z + targetVariance * DistanceVariance);
+				trackedProjectile.ProjectileSize = projectileOptions.projectileSize;
+				trackedProjectile.ProjectileSizeMultiplier = projectileOptions.projectileSizeMultiplier;
 
 				if (!allProjectiles.ContainsKey(projectileOptions.spellId))
 					allProjectiles.Add(projectileOptions.spellId, new List<TrackedProjectile>());
