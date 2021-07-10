@@ -61,6 +61,16 @@ namespace TaleSpireCore
 					UnityEngine.Object.Destroy(spinner);
 					spinner = null;
 				}
+				else
+				{
+					GameObject cameraRoot = GetRoot();
+					if (cameraRoot != null)
+					{
+						GameObject mainCamera = cameraRoot.FindChild("MainCamera");
+						if (mainCamera != null)
+							mainCamera.transform.localEulerAngles = Vector3.zero;
+					}
+				}
 			}
 
 			public static void SpinAround(Vector3 vector)
