@@ -1637,45 +1637,53 @@ namespace TaleSpireExplore
 
 		static string AttachEffect(string[] args)
 		{
-			const int expectedArgs = 4;
+			const int expectedArgs = 5;
 			if (args.Length != expectedArgs)
 				return ApiResponse.Bad($"{nameof(AttachEffect)} - Expecting {expectedArgs} args.");
-			Talespire.Spells.AttachEffect(args[0], args[1], args[2], Talespire.Convert.ToFloat(args[3]));
+			Talespire.Spells.AttachEffect(args[0], args[1], args[2], Talespire.Convert.ToFloat(args[3]), Talespire.Convert.ToFloat(args[4]));
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectOverCreature(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 5)
-				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-5 args.");
+			if (args.Length < 3 || args.Length > 6)
+				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-6 args.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
+			float secondsDelayStart = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
 				if (args.Length > 4)
+				{
 					float.TryParse(args[4], out enlargeTime);
+					if (args.Length > 5)
+						float.TryParse(args[5], out secondsDelayStart);
+				}
 			}
-			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime, enlargeTime);
+			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart);
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectAtPosition(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 5)
-				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-5 args. Got {args.Length}.");
+			if (args.Length < 3 || args.Length > 6)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-6 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
+			float secondsDelayStart = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
 				if (args.Length > 4)
 					float.TryParse(args[4], out enlargeTime);
+				if (args.Length > 5)
+					float.TryParse(args[5], out secondsDelayStart);
 			}
 
 			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
 
-			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime);
+			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart);
 			return ApiResponse.Good();
 		}
 

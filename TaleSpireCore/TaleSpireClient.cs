@@ -193,19 +193,19 @@ namespace TaleSpireCore
 			Invoke("RestoreCamera");
 		}
 
-		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float enlargeTime)
+		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float enlargeTime, float secondsDelayStart)
 		{
-			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId, enlargeTime.ToString() });
+			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId, enlargeTime.ToString(), secondsDelayStart.ToString() });
 		}
 
-		public static void PlayEffectOverCreature(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0)
+		public static void PlayEffectOverCreature(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0)
 		{
-			Invoke("PlayEffectOverCreature", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString() });
+			Invoke("PlayEffectOverCreature", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString() });
 		}
 
-		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0)
+		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0)
 		{
-			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString() });
+			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString() });
 		}
 
 		public static void ClearAttached(string spellId, string taleSpireId)

@@ -56,12 +56,7 @@ namespace DHDM
 	  */
 		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float secondsDelayStart, float enlargeTime)
 		{
-			if (secondsDelayStart > 0)
-			{
-				CreateAttachEffectSpellTimer(effectName, spellId, taleSpireId, secondsDelayStart, enlargeTime);
-				return;
-			}
-			TaleSpireClient.AttachEffect(effectName, spellId, taleSpireId, enlargeTime);
+			TaleSpireClient.AttachEffect(effectName, spellId, taleSpireId, enlargeTime, secondsDelayStart);
 		}
 
 		static void ClearAttached(string spellId, string taleSpireId, float secondsDelayStart)
@@ -86,52 +81,14 @@ namespace DHDM
 
 		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime)
 		{
-			if (secondsDelayStart > 0)
-			{
-				CreatePlayEffectAtPositionTimer(effectName, spellId, taleSpireId, lifeTime, effectLocation, secondsDelayStart, enlargeTime);
-				return;
-			}
-			PlayEffectAtPosition(effectName, spellId, taleSpireId, lifeTime, effectLocation, enlargeTime);
-		}
-
-		private static void PlayEffectAtPosition(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float enlargeTime)
-		{
 			if (effectLocation == EffectLocation.ActiveCreaturePosition)
-				TaleSpireClient.PlayEffectOverCreature(effectName, spellId, taleSpireId, lifeTime, enlargeTime);
+				TaleSpireClient.PlayEffectOverCreature(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart);
 			else if (effectLocation == EffectLocation.LastTargetPosition)
 			{
 				Vector targetPoint = Targeting.TargetPoint;
 				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
-				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime);
+				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart);
 			}
-		}
-
-		static void CreatePlayEffectAtPositionTimer(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime)
-		{
-			SpellEffectTimer timer = new SpellEffectTimer();
-			timer.Elapsed += PlayEffectAtPositionTimer_Elapsed;
-			timer.SpellId = spellId;
-			timer.EffectName = effectName;
-			timer.TaleSpireId = taleSpireId;
-			timer.LifeTime = lifeTime;
-			timer.EnlargeTime = enlargeTime;
-			timer.EffectLocation = effectLocation;
-			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
-			timer.Start();
-			timers.Add(timer);
-		}
-
-		static void CreateAttachEffectSpellTimer(string effectName, string spellId, string taleSpireId, float secondsDelayStart, float enlargeTime)
-		{
-			SpellEffectTimer timer = new SpellEffectTimer();
-			timer.Elapsed += AttachEffectTimer_Elapsed;
-			timer.SpellId = spellId;
-			timer.EffectName = effectName;
-			timer.TaleSpireId = taleSpireId;
-			timer.EnlargeTime = enlargeTime;
-			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
-			timer.Start();
-			timers.Add(timer);
 		}
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart)
@@ -173,24 +130,6 @@ namespace DHDM
 			spellTimer.Stop();
 			TaleSpireClient.ClearAttached(spellTimer.SpellId, spellTimer.TaleSpireId);
 			timers.Remove(spellTimer);
-		}
-
-		private static void AttachEffectTimer_Elapsed(object sender, ElapsedEventArgs e)
-		{
-			if (!(sender is SpellEffectTimer spellTimer))
-				return;
-
-			spellTimer.Stop();
-			TaleSpireClient.AttachEffect(spellTimer.EffectName, spellTimer.SpellId, spellTimer.TaleSpireId, spellTimer.EnlargeTime);
-			timers.Remove(spellTimer);
-		}
-
-		private static void PlayEffectAtPositionTimer_Elapsed(object sender, ElapsedEventArgs e)
-		{
-			if (!(sender is SpellEffectTimer spellTimer))
-				return;
-			spellTimer.Stop();
-			PlayEffectAtPosition(spellTimer.EffectName, spellTimer.SpellId, spellTimer.TaleSpireId, spellTimer.LifeTime, spellTimer.EffectLocation, spellTimer.EnlargeTime);
 		}
 
 		private static void AttachEffectFunction_AttachEffect(object sender, SpellEffectEventArgs ea)

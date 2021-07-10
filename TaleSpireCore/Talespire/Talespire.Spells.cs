@@ -9,8 +9,23 @@ namespace TaleSpireCore
 	{
 		public static class Spells
 		{
-			public static void AttachEffect(string effectName, string spellId, string creatureId, float enlargeTime)
+			static object queuedEffectsLock = new object();
+			static List<WaitingToCast> queuedEffects = new List<WaitingToCast>();
+			
+			static void QueueEffect(WaitingToCast waitingToCast)
 			{
+				lock (queuedEffectsLock)
+					queuedEffects.Add(waitingToCast);
+			}
+
+			public static void AttachEffect(string effectName, string spellId, string creatureId, float enlargeTime, float secondsDelayStart)
+			{
+				if (secondsDelayStart > 0)
+				{
+					QueueEffect(new WaitingToCast(SpellLocation.Attached, secondsDelayStart, effectName, spellId, creatureId, enlargeTime));
+					return;
+				}
+
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
 				if (creatureBoardAsset == null)
 				{
@@ -33,6 +48,46 @@ namespace TaleSpireCore
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				spell.transform.SetParent(creatureBase.transform);
 				spell.transform.position = creatureBase.transform.position;
+			}
+
+			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0)
+			{
+				if (secondsDelayStart > 0)
+				{
+					QueueEffect(new WaitingToCast(SpellLocation.OverCreature, secondsDelayStart, effectName, spellId, creatureId, enlargeTimeSeconds, lifeTime));
+					return;
+				}
+
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset == null)
+				{
+					Log.Error($"CreatureBoardAsset matching id {creatureId} not found!");
+					return;
+				}
+
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
+
+				if (spell == null)
+					return;
+
+				GameObject creatureBase = creatureBoardAsset.GetBase();
+				spell.transform.position = creatureBase.transform.position;
+			}
+
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0)
+			{
+				if (secondsDelayStart > 0)
+				{
+					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position));
+					return null;
+				}
+
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
+
+				if (spell != null)
+					spell.transform.position = position.GetVector3();
+
+				return spell;
 			}
 
 			private static string GetAttachedEffectName(string spellId)
@@ -62,34 +117,6 @@ namespace TaleSpireCore
 			private static string GetSpellName(string spellId)
 			{
 				return "Spell." + spellId;
-			}
-
-			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0)
-			{
-				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
-				if (creatureBoardAsset == null)
-				{
-					Log.Error($"CreatureBoardAsset matching id {creatureId} not found!");
-					return;
-				}
-
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
-
-				if (spell == null)
-					return;
-				
-				GameObject creatureBase = creatureBoardAsset.GetBase();
-				spell.transform.position = creatureBase.transform.position;
-			}
-
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTimeSeconds = 0)
-			{
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
-
-				if (spell != null)
-					spell.transform.position = vector.GetVector3();
-
-				return spell;
 			}
 
 			private static GameObject GetEffect(string effectName)
@@ -233,6 +260,35 @@ namespace TaleSpireCore
 			}
 
 			public static void Update()
+			{
+				UpdateProjectiles();
+				UpdateQueuedEffects();
+			}
+
+			private static void UpdateQueuedEffects()
+			{
+				List<WaitingToCast> deleteTheseNow = null;
+				lock (queuedEffectsLock)
+				{
+					foreach (WaitingToCast waitingToCast in queuedEffects)
+					{
+						if (waitingToCast.ShouldCreateNow)
+						{
+							waitingToCast.CreateNow();
+
+							if (deleteTheseNow == null)
+								deleteTheseNow = new List<WaitingToCast>();
+							deleteTheseNow.Add(waitingToCast);
+						}
+					}
+
+					if (deleteTheseNow != null)
+						foreach (WaitingToCast waitingToCast in deleteTheseNow)
+							queuedEffects.Remove(waitingToCast);
+				}
+			}
+
+			private static void UpdateProjectiles()
 			{
 				lock (lockTrackedProjectiles)
 				{

@@ -142,6 +142,7 @@
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileKind.cs" />
     <Compile Include="Talespire\Core\ParticleSystemDetails.cs" />
     <Compile Include="Talespire\Core\ProjectileOptions.cs" />
+    <Compile Include="Talespire\Core\SpellLocation.cs" />
     <Compile Include="Talespire\Core\TrackedProjectile.cs" />
     <Compile Include="Talespire\EnlargeData.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Talespire\Core\TargetVolume.cs" />
     <Compile Include="Talespire\Core\WhatSide.cs" />
     <Compile Include="Talespire\Scripts\Spinner.cs" />
+    <Compile Include="Talespire\WaitingToCast.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
     <Compile Include="Talespire\Talespire.Flashlight.cs" />
