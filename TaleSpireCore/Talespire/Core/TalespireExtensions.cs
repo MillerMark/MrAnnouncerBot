@@ -13,6 +13,8 @@ namespace TaleSpireCore
 
 		public static VectorDto GetVectorDto(this Vector3 vector)
 		{
+			if (vector == null)
+				return null;
 			return new VectorDto(vector.x, vector.y, vector.z);
 		}
 

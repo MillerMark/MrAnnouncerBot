@@ -9,7 +9,7 @@ namespace TaleSpireCore
 	{
 		public static class Spells
 		{
-			public static void AttachEffect(string effectName, string spellId, string creatureId)
+			public static void AttachEffect(string effectName, string spellId, string creatureId, float enlargeTime)
 			{
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
 				if (creatureBoardAsset == null)
@@ -26,6 +26,9 @@ namespace TaleSpireCore
 					return;
 				}
 
+				if (enlargeTime > 0)
+					Instances.EnlargeSoon(spell, enlargeTime);
+
 				spell.name = GetAttachedEffectName(spellId);
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				spell.transform.SetParent(creatureBase.transform);
@@ -37,7 +40,7 @@ namespace TaleSpireCore
 				return "Attached." + spellId;
 			}
 
-			static GameObject GetSpell(string effectName, string spellId, float lifeTime)
+			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds)
 			{
 				GameObject spell = GetEffect(effectName);
 
@@ -49,9 +52,9 @@ namespace TaleSpireCore
 
 				spell.name = GetSpellName(spellId);
 				if (lifeTime > 0)
-					Instances.AddTemporal(spell, lifeTime, Math.Min(2, lifeTime / 5));
+					Instances.AddTemporal(spell, lifeTime, Math.Min(2, lifeTime / 5), 0, enlargeTimeSeconds);
 				else
-					Instances.AddSpell(spellId, spell);
+					Instances.AddSpell(spellId, spell, enlargeTimeSeconds);
 
 				return spell;
 			}
@@ -61,7 +64,7 @@ namespace TaleSpireCore
 				return "Spell." + spellId;
 			}
 
-			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0)
+			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0)
 			{
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
 				if (creatureBoardAsset == null)
@@ -70,7 +73,7 @@ namespace TaleSpireCore
 					return;
 				}
 
-				GameObject spell = GetSpell(effectName, spellId, lifeTime);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
 
 				if (spell == null)
 					return;
@@ -79,9 +82,9 @@ namespace TaleSpireCore
 				spell.transform.position = creatureBase.transform.position;
 			}
 
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0)
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTimeSeconds = 0)
 			{
-				GameObject spell = GetSpell(effectName, spellId, lifeTime);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
 
 				if (spell != null)
 					spell.transform.position = vector.GetVector3();
@@ -182,15 +185,12 @@ namespace TaleSpireCore
 
 			private static void AddProjectile(ProjectileOptions projectileOptions, float startTime, Vector3 sourcePosition, Vector3 location)
 			{
-				// TODO: Work with these:
-				//  projectileOptions.count
-
-				// TODO: Figure out easing.
 				Log.Debug($"Creating projectile ({projectileOptions.effectName})...");
 				float targetVariance = projectileOptions.targetVariance;
 				TrackedProjectile trackedProjectile = new TrackedProjectile();
 				trackedProjectile.StartTime = startTime;
 				trackedProjectile.EffectName = projectileOptions.effectName;
+				trackedProjectile.Parameters = projectileOptions.parameters;
 				trackedProjectile.SpellId = projectileOptions.spellId;
 				trackedProjectile.SourcePosition = sourcePosition;
 				trackedProjectile.SpeedFeetPerSecond = projectileOptions.speed;
@@ -200,7 +200,6 @@ namespace TaleSpireCore
 
 				if (!allProjectiles.ContainsKey(projectileOptions.spellId))
 					allProjectiles.Add(projectileOptions.spellId, new List<TrackedProjectile>());
-
 
 				trackedProjectile.Initialize();
 				allProjectiles[projectileOptions.spellId].Add(trackedProjectile);
@@ -243,7 +242,7 @@ namespace TaleSpireCore
 						foreach (TrackedProjectile trackedProjectile in allProjectiles[spellId])
 						{
 							trackedProjectile.UpdatePosition();
-							if (trackedProjectile.ReadyToDelete)
+							if (trackedProjectile.readyToDelete)
 								deleteThese.Add(trackedProjectile);
 						}
 

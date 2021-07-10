@@ -741,7 +741,7 @@ namespace TaleSpireExplore
 				{
 					try
 					{
-						AnimationCurve animationCurve = ReflectionHelper.GetNonPublicField<AnimationCurve>(typeof(VFXMissile), visualEffect, "animCurve");
+						AnimationCurve animationCurve = ReflectionHelper.GetNonPublicField<AnimationCurve>(visualEffect, "animCurve");
 						if (animationCurve != null)
 						{
 							Talespire.Log.Debug($"animationCurve.length: {animationCurve.length}");
@@ -907,7 +907,7 @@ namespace TaleSpireExplore
 				LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
 				if (lineRulerIndicator != null)
 				{
-					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(typeof(LineRulerIndicator), lineRulerIndicator, "_handles");
+					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
 					if (_handles != null)
 					{
 						tbxScratch.Text += $"{_handles.Count} _handles found!\n";
@@ -963,9 +963,9 @@ namespace TaleSpireExplore
 				if (particleSystem != null)
 				{
 					Talespire.Log.Debug("setting drizzle...");
-					ReflectionHelper.SetNonPublicFieldValue(typeof(VFXMissile), spellMissile, "drizzle", particleSystem);
+					ReflectionHelper.SetNonPublicFieldValue(spellMissile, "drizzle", particleSystem);
 					Talespire.Log.Debug("setting impact...");
-					ReflectionHelper.SetNonPublicFieldValue(typeof(VFXMissile), spellMissile, "impact", particleSystem);
+					ReflectionHelper.SetNonPublicFieldValue(spellMissile, "impact", particleSystem);
 				}
 			}
 				
@@ -1281,10 +1281,10 @@ namespace TaleSpireExplore
 			}
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.AppendLine($"{name} = new AnimationCurve();");
-			stringBuilder.AppendLine($"{name}.preWrapMode = WrapMode.{curve.preWrapMode}");
-			stringBuilder.AppendLine($"{name}.postWrapMode = WrapMode.{curve.postWrapMode}");
+			stringBuilder.AppendLine($"{name}.preWrapMode = WrapMode.{curve.preWrapMode};");
+			stringBuilder.AppendLine($"{name}.postWrapMode = WrapMode.{curve.postWrapMode};");
 			foreach (Keyframe key in curve.keys)
-				stringBuilder.AppendLine($"{name}.AddKey(new Keyframe({key.time}, {key.value}, {key.inTangent}, {key.outTangent}, {key.inWeight}, {key.outWeight}));");
+				stringBuilder.AppendLine($"{name}.AddKey(new Keyframe({key.time}f, {key.value}f, {key.inTangent}f, {key.outTangent}f, {key.inWeight}f, {key.outWeight}f));");
 
 			stringBuilder.AppendLine();
 			tbxScratch.Text += stringBuilder.ToString();
@@ -1298,11 +1298,11 @@ namespace TaleSpireExplore
 			{
 				Talespire.Log.Debug($"AnimationCurveExplorerPrefab found!");
 				UnityEngine.Component component = animationCurveExplorerPrefab.GetScript("AnimationCurveExplorer");
-				AnimationCurve growProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "GrowProjectileCurve");
+				AnimationCurve growProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "GrowProjectileCurve");
 				GenerateAnimationCurveCode("growProjectileCurve", growProjectileCurve);
-				AnimationCurve shrinkProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "ShrinkProjectileCurve");
+				AnimationCurve shrinkProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "ShrinkProjectileCurve");
 				GenerateAnimationCurveCode("shrinkProjectileCurve", shrinkProjectileCurve);
-				AnimationCurve humpProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component.GetType(), component, "HumpProjectileCurve");
+				AnimationCurve humpProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "HumpProjectileCurve");
 				GenerateAnimationCurveCode("humpProjectileCurve", humpProjectileCurve);
 
 			}

@@ -146,35 +146,35 @@ namespace TaleSpireCore
 				return;
 		}
 
-		public static T GetNonPublicField<T>(Type type, object instance, string fieldName) where T : class
+		public static T GetNonPublicField<T>(object instance, string fieldName) where T : class
 		{
-			FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+			FieldInfo field = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 			if (field == null)
 				return default(T);
 			return field.GetValue(instance) as T;
 		}
 
-		public static T GetPublicField<T>(Type type, object instance, string fieldName) where T : class
+		public static T GetPublicField<T>(object instance, string fieldName) where T : class
 		{
-			FieldInfo field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo field = instance.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
 			if (field == null)
 				return default(T);
 			return field.GetValue(instance) as T;
 		}
 
-		public static T GetPublicProperty<T>(Type type, object instance, string propertyName) where T : class
+		public static T GetPublicProperty<T>(object instance, string propertyName) where T : class
 		{
-			PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+			PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
 			if (property == null)
 				return default(T);
 			return property.GetValue(instance) as T;
 		}
 
-		public static void SetNonPublicFieldValue(Type type, object instance, string fieldName, object value)
+		public static void SetNonPublicFieldValue(object instance, string fieldName, object value)
 		{
 			try
 			{
-				FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+				FieldInfo field = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 				if (field == null)
 					return;
 				field.SetValue(instance, value);
@@ -182,7 +182,23 @@ namespace TaleSpireCore
 			catch (Exception ex)
 			{
 				Talespire.Log.Exception(ex);
-				MessageBox.Show(ex.Message, "Exception!");
+				//MessageBox.Show(ex.Message, "Exception!");
+			}
+		}
+
+		public static void SetPublicFieldValue(object instance, string fieldName, object value)
+		{
+			try
+			{
+				FieldInfo field = instance.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+				if (field == null)
+					return;
+				field.SetValue(instance, value);
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex);
+				//MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
 	}

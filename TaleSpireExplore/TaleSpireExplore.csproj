@@ -208,7 +208,6 @@
     <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
-    <Compile Include="Effects Editor\ValueEditors\Core\ColorUtils.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
       <SubType>UserControl</SubType>

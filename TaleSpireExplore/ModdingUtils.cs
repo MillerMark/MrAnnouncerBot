@@ -1516,7 +1516,7 @@ namespace TaleSpireExplore
 
 		private static void ListCreatureAnimationNames()
 		{
-			Dictionary<string, ActionTimeline> dictionary = ReflectionHelper.GetNonPublicField<Dictionary<string, ActionTimeline>>(typeof(ActionTimelineDatabase), ActionTimelineDatabase.Resource, "_data");
+			Dictionary<string, ActionTimeline> dictionary = ReflectionHelper.GetNonPublicField<Dictionary<string, ActionTimeline>>(ActionTimelineDatabase.Resource, "_data");
 			if (dictionary != null)
 			{
 				foreach (string key in dictionary.Keys)
@@ -1637,38 +1637,45 @@ namespace TaleSpireExplore
 
 		static string AttachEffect(string[] args)
 		{
-			if (args.Length != 3)
-				return ApiResponse.Bad($"AttachEffect - Expecting 3 args.");
-			Talespire.Spells.AttachEffect(args[0], args[1], args[2]);
+			const int expectedArgs = 4;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(AttachEffect)} - Expecting {expectedArgs} args.");
+			Talespire.Spells.AttachEffect(args[0], args[1], args[2], Talespire.Convert.ToFloat(args[3]));
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectOverCreature(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 4)
-				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-4 args.");
+			if (args.Length < 3 || args.Length > 5)
+				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-5 args.");
 			float lifeTime = 0;
+			float enlargeTime = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
+				if (args.Length > 4)
+					float.TryParse(args[4], out enlargeTime);
 			}
-			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime);
+			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime, enlargeTime);
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectAtPosition(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 4)
-				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-4 args. Got {args.Length}.");
+			if (args.Length < 3 || args.Length > 5)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-5 args. Got {args.Length}.");
 			float lifeTime = 0;
+			float enlargeTime = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
+				if (args.Length > 4)
+					float.TryParse(args[4], out enlargeTime);
 			}
 
 			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
 
-			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime);
+			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime);
 			return ApiResponse.Good();
 		}
 
@@ -1877,12 +1884,22 @@ namespace TaleSpireExplore
 
 		static string LaunchProjectile(string[] args)
 		{
+			Talespire.Log.Debug($"LaunchProjectile...");
 			const int minArgs = 11;
 			if (args.Length < minArgs)
 				return ApiResponse.Bad($"{nameof(LaunchProjectile)} - Expecting at least {minArgs} args.");
 
 			ProjectileOptions projectileOptions = new ProjectileOptions();
-			projectileOptions.effectName = args[0];
+			string effectName = args[0];
+			string parameterStr = "";
+			int colonIndex = effectName.IndexOf(":");
+			if (colonIndex > 0)
+			{
+				parameterStr = effectName.Substring(colonIndex + 1).Trim();
+				effectName = effectName.Substring(0, colonIndex).Trim();
+			}
+			projectileOptions.effectName = effectName;
+			projectileOptions.parameters = parameterStr;
 			projectileOptions.taleSpireId = args[1];
 			projectileOptions.kind = Talespire.Convert.ToProjectileKind(args[2]);
 			projectileOptions.count = Talespire.Convert.ToInt(args[3]);

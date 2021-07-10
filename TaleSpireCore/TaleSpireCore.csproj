@@ -136,11 +136,14 @@
     <Compile Include="Spell Effects\SpellMissile.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\FireCollisionEventOn.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileSizeOption.cs" />
+    <Compile Include="Talespire\Core\ColorUtils.cs" />
     <Compile Include="Talespire\Core\InteractiveTargetingMode.cs" />
     <Compile Include="Talespire\Core\MortalGameObject.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileKind.cs" />
+    <Compile Include="Talespire\Core\ParticleSystemDetails.cs" />
     <Compile Include="Talespire\Core\ProjectileOptions.cs" />
     <Compile Include="Talespire\Core\TrackedProjectile.cs" />
+    <Compile Include="Talespire\EnlargeData.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />

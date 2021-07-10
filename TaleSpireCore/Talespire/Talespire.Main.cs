@@ -9,6 +9,7 @@ namespace TaleSpireCore
 		{
 			Target.Update();
 			Spells.Update();
+			Instances.Update();
 		}
 	}
 }

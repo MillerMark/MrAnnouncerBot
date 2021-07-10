@@ -488,12 +488,11 @@ namespace TaleSpireCore
 
 				scale *= scaleMultiplier;
 
-				GameObject bloodEffect = null;
 				float groundHeight = creatureAsset.GetGroundHeight();
 
 				//Log.Debug($"groundHeight = {groundHeight}");
 
-				bloodEffect = UnityEngine.Object.Instantiate(bloodPrefab, creatureAsset.HookHitTarget.position, creatureAsset.HookHitTarget.rotation);
+				GameObject bloodEffect = UnityEngine.Object.Instantiate(bloodPrefab, creatureAsset.HookHitTarget.position, creatureAsset.HookHitTarget.rotation);
 				Property.ModifyFloat(bloodEffect, null, "<BFX_BloodSettings>.GroundHeight", groundHeight);
 				ChangeBloodEffectColor(bloodEffect, bloodColor);
 				bloodEffect.transform.Rotate(Vector3.up, 180 + rotationOffset);
