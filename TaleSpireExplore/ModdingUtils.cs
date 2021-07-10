@@ -96,6 +96,7 @@ namespace TaleSpireExplore
 			Commands.Add("AttachEffect", AttachEffect);
 			Commands.Add("PlayEffectOverCreature", PlayEffectOverCreature);
 			Commands.Add("PlayEffectAtPosition", PlayEffectAtPosition);
+			Commands.Add("PlayEffectOnCollision", PlayEffectOnCollision);
 			Commands.Add("ClearAttached", ClearAttached);
 			Commands.Add("ClearSpell", ClearSpell);
 			Commands.Add("GetAllTargetsInVolume", GetAllTargetsInVolume);
@@ -1686,6 +1687,24 @@ namespace TaleSpireExplore
 			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart);
 			return ApiResponse.Good();
 		}
+		static string PlayEffectOnCollision(string[] args)
+		{
+			if (args.Length != 6)
+				return ApiResponse.Bad($"{nameof(PlayEffectOnCollision)} - Expecting 6 args. Got {args.Length}.");
+			float lifeTime = 0;
+			float enlargeTime = 0;
+			float secondsDelayStart = 0;
+			string effectName = args[0];
+			string spellId = args[1];
+			bool useIntendedTarget = false;
+			float.TryParse(args[2], out lifeTime);
+			float.TryParse(args[3], out enlargeTime);
+			float.TryParse(args[4], out secondsDelayStart);
+			bool.TryParse(args[5], out useIntendedTarget);
+
+			Talespire.Spells.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget);
+			return ApiResponse.Good();
+		}
 
 		static string ClearAttached(string[] args)
 		{
@@ -1694,11 +1713,16 @@ namespace TaleSpireExplore
 			Talespire.Spells.ClearAttached(args[0], args[1]);
 			return ApiResponse.Good();
 		}
+
 		static string ClearSpell(string[] args)
 		{
-			if (args.Length != 1)
-				return ApiResponse.Bad($"ClearSpell - Expecting 1 args.");
-			Talespire.Spells.Clear(args[0]);
+			if (args.Length < 1 || args.Length > 2)
+				return ApiResponse.Bad($"ClearSpell - Expecting 1-2 args.");
+			float shrinkOnDeleteTime = 1;
+			if (args.Length > 1)
+				float.TryParse(args[1], out shrinkOnDeleteTime);
+			Talespire.Log.Debug($"shrinkOnDeleteTime: {shrinkOnDeleteTime}");
+			Talespire.Spells.Clear(args[0], shrinkOnDeleteTime);
 			return ApiResponse.Good();
 		}
 

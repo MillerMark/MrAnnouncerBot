@@ -8,7 +8,7 @@ namespace TaleSpireCore
 	public class TrackedProjectile
 	{
 		// AnimationCurveExplorerPrefab has the <AnimationCurveExplorer> component
-		public Vector3 TargetPosition { get; set; }
+		public Vector3 ActualTargetPosition { get; set; }
 		public Vector3 SourcePosition { get; set; }
 		public float SpeedFeetPerSecond { get; set; }
 		public float StartTime { get; set; }
@@ -19,8 +19,9 @@ namespace TaleSpireCore
 		GameObject projectileGameObject { get; set; }
 		public bool readyToDelete { get; set; }
 		public string Parameters { get; set; }
+		public Vector3 IntendedTargetPosition { get; set; }
 
-		public event EventHandler TargetReached;
+		public static event EventHandler TargetReached;
 
 		bool alreadyCreated;
 		Vector3 direction;
@@ -34,7 +35,7 @@ namespace TaleSpireCore
 
 		void TriggerCollision()
 		{
-			// TODO: Trigger collision and corresponding effects that are waiting to fire.
+			TargetReached?.Invoke(this, EventArgs.Empty);
 		}
 
 		AnimationCurve GetAnimationCurve()
@@ -154,7 +155,7 @@ namespace TaleSpireCore
 			alreadyCreated = true;
 
 			projectileGameObject = Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, SourcePosition.GetVectorDto());
-			direction = TargetPosition - SourcePosition;
+			direction = ActualTargetPosition - SourcePosition;
 			float distanceInTiles = direction.magnitude;
 			totalTravelDistanceInFeet = Talespire.Convert.TilesToFeet(distanceInTiles);
 			Talespire.Log.Debug($"CreateProjectile - totalTravelDistanceInFeet: {totalTravelDistanceInFeet}");
@@ -163,13 +164,13 @@ namespace TaleSpireCore
 			Transform transform = projectileGameObject.transform;
 			transform.position = SourcePosition;
 			transform.forward = direction.normalized;
-			float maxInclusive = Mathf.Min(7f, Vector3.Distance(SourcePosition, TargetPosition));
+			float maxInclusive = Mathf.Min(7f, Vector3.Distance(SourcePosition, ActualTargetPosition));
 			bezierPath = new BezierPath();
 			List<Vector3> newControlPoints = new List<Vector3>();
 			newControlPoints.Add(SourcePosition);
 			newControlPoints.Add((SourcePosition + (transform.right * UnityEngine.Random.Range(-maxInclusive, maxInclusive))) + (transform.up * UnityEngine.Random.Range(0f, maxInclusive)));
-			newControlPoints.Add((TargetPosition + (transform.right * UnityEngine.Random.Range(-maxInclusive, maxInclusive))) + (transform.up * UnityEngine.Random.Range(0f, maxInclusive)));
-			newControlPoints.Add(TargetPosition);
+			newControlPoints.Add((ActualTargetPosition + (transform.right * UnityEngine.Random.Range(-maxInclusive, maxInclusive))) + (transform.up * UnityEngine.Random.Range(0f, maxInclusive)));
+			newControlPoints.Add(ActualTargetPosition);
 			bezierPath.SetControlPoints(newControlPoints);
 
 			ParticleSystem[] particleSystems = projectileGameObject.GetComponentsInChildren<ParticleSystem>();

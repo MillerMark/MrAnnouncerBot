@@ -9,9 +9,46 @@ namespace TaleSpireCore
 	{
 		public static class Spells
 		{
+			static Spells()
+			{
+				TrackedProjectile.TargetReached += TrackedProjectile_TargetReached;
+			}
+
+			private static void TrackedProjectile_TargetReached(object sender, EventArgs e)
+			{
+				if (!(sender is TrackedProjectile trackedProjectile))
+					return;
+
+				List<CollisionEffect> collisionsEffectsToCreate = collisionEffects.Where(x => x.SpellId == trackedProjectile.SpellId).ToList();
+				if (!collisionsEffectsToCreate.Any())
+					return;
+
+
+				List<CollisionEffect> collisionsEffectsToRemove = null;
+				foreach (CollisionEffect collisionEffect in collisionsEffectsToCreate)
+				{
+					VectorDto position;
+					if (collisionEffect.UseIntendedTarget)
+					{
+						position = trackedProjectile.IntendedTargetPosition.GetVectorDto();
+						if (collisionsEffectsToRemove == null)
+							collisionsEffectsToRemove = new List<CollisionEffect>();
+						collisionsEffectsToRemove.Add(collisionEffect);  // Only allow one of these per spell effect.
+					}
+					else  // Use actual target...
+						position = trackedProjectile.ActualTargetPosition.GetVectorDto();
+
+					PlayEffectAtPosition(collisionEffect.EffectName, collisionEffect.SpellId, position, collisionEffect.LifeTime, collisionEffect.EnlargeTime, collisionEffect.SecondsDelayStart);
+				}
+
+				if (collisionsEffectsToRemove != null && collisionsEffectsToRemove.Any())
+					collisionEffects = collisionEffects.Except(collisionsEffectsToRemove).ToList();
+			}
+
 			static object queuedEffectsLock = new object();
 			static List<WaitingToCast> queuedEffects = new List<WaitingToCast>();
-			
+			static List<CollisionEffect> collisionEffects = new List<CollisionEffect>();
+
 			static void QueueEffect(WaitingToCast waitingToCast)
 			{
 				lock (queuedEffectsLock)
@@ -90,6 +127,11 @@ namespace TaleSpireCore
 				return spell;
 			}
 
+			public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget)
+			{
+				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget));
+			}
+
 			private static string GetAttachedEffectName(string spellId)
 			{
 				return "Attached." + spellId;
@@ -149,9 +191,17 @@ namespace TaleSpireCore
 				Instances.AddTemporal(childEffect, 2, 2);
 			}
 
-			public static void Clear(string spellId)
+			public static void Clear(string spellId, float shrinkOnDeleteTime = 1)
 			{
-				Instances.DeleteSpellSoon(spellId);
+				Instances.DeleteSpellSoon(spellId, shrinkOnDeleteTime);
+				RemoveCollisionEffects(spellId);
+			}
+
+			public static void RemoveCollisionEffects(string spellId)
+			{
+				List<CollisionEffect> collisionsEffectsToRemove = collisionEffects.Where(x => x.SpellId == spellId).ToList();
+				if (collisionsEffectsToRemove.Any())
+					collisionEffects = collisionEffects.Except(collisionsEffectsToRemove).ToList();
 			}
 
 			static Dictionary<string, List<TrackedProjectile>> allProjectiles = new Dictionary<string, List<TrackedProjectile>>();
@@ -221,7 +271,8 @@ namespace TaleSpireCore
 				trackedProjectile.SpellId = projectileOptions.spellId;
 				trackedProjectile.SourcePosition = sourcePosition;
 				trackedProjectile.SpeedFeetPerSecond = projectileOptions.speed;
-				trackedProjectile.TargetPosition = new Vector3(location.x + targetVariance * DistanceVariance, location.y + targetVariance * DistanceVariance, location.z + targetVariance * DistanceVariance);
+				trackedProjectile.IntendedTargetPosition = location;
+				trackedProjectile.ActualTargetPosition = new Vector3(location.x + targetVariance * DistanceVariance, location.y + targetVariance * DistanceVariance, location.z + targetVariance * DistanceVariance);
 				trackedProjectile.ProjectileSize = projectileOptions.projectileSize;
 				trackedProjectile.ProjectileSizeMultiplier = projectileOptions.projectileSizeMultiplier;
 

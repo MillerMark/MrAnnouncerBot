@@ -5,16 +5,18 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	[Tooltip("Clears the specified effect for the active spell on the active player's TaleSpire mini.")]
-	[Param(1, typeof(int), "secondsDelay", "Seconds to wait before clearing the effect.", ParameterIs.Optional)]
+	[Tooltip("Clears the specified effect for the active spell cast by the active player's TaleSpire mini.")]
+	[Param(1, typeof(int), "shrinkOnDeleteTime", "The amount of time to shrink the effect.", ParameterIs.Optional)]
+
 	public class ClearSpellFunction : DndFunction
 	{
 		public static event SpellEffectEventHandler ClearSpell;
 		public override string Name { get; set; } = "ClearSpell";
 
-		static void OnClearSpell(string spellId, float secondsDelayStart)
+		static void OnClearSpell(string spellId, float shrinkOnDeleteTime)
 		{
-			ClearSpell?.Invoke(null, new SpellEffectEventArgs(null, spellId, null, EffectLocation.None, 0, secondsDelayStart));
+			SpellEffectEventArgs spellEffectEventArgs = new SpellEffectEventArgs(null, spellId, null, EffectLocation.None, 0, 0, 0, shrinkOnDeleteTime);
+			ClearSpell?.Invoke(null, spellEffectEventArgs);
 		}
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
@@ -23,10 +25,10 @@ namespace DndCore
 			if (player == null || spell == null)
 				return null;
 
-			float secondsDelayStart = 0;
+			float shrinkOnDeleteTime = 0;
 			if (args.Count > 0)
-				float.TryParse(args[0], out secondsDelayStart);
-			OnClearSpell(spell.ID, secondsDelayStart);
+				float.TryParse(args[0], out shrinkOnDeleteTime);
+			OnClearSpell(spell.ID, shrinkOnDeleteTime);
 
 			return null;
 		}

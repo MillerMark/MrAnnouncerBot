@@ -9,6 +9,7 @@ namespace DndCore
 		None = 0,
 		ActiveCreaturePosition = 1,
 		LastTargetPosition = 2,
-		AtCollision = 3
+		AtCollision = 3,
+		AtCollisionTarget = 4
 	}
 }

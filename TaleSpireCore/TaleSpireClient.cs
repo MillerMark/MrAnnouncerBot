@@ -208,14 +208,19 @@ namespace TaleSpireCore
 			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString() });
 		}
 
+		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget)
+		{
+			Invoke("PlayEffectOnCollision", new string[] { effectName, spellId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), useIntendedTarget.ToString() });
+		}
+
 		public static void ClearAttached(string spellId, string taleSpireId)
 		{
 			Invoke("ClearAttached", new string[] { spellId, taleSpireId });
 		}
 
-		public static void ClearSpell(string spellId)
+		public static void ClearSpell(string spellId, float shrinkTime)
 		{
-			Invoke("ClearSpell", new string[] { spellId });
+			Invoke("ClearSpell", new string[] { spellId, shrinkTime.ToString() });
 		}
 
 		public static CharacterPosition GetPosition(string taleSpireId)

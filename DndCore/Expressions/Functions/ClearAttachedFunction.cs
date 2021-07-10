@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Clears the attached effect for the active spell on the active player's TaleSpire mini.")]
-	[Param(1, typeof(float), "secondsDelay", "The seconds to wait before attaching the effect.", ParameterIs.Optional)]
+	[Param(1, typeof(float), "secondsDelay", "The seconds to wait before clearing the attached effect.", ParameterIs.Optional)]
 	public class ClearAttachedFunction : DndFunction
 	{
 		public static event SpellEffectEventHandler ClearAttached;

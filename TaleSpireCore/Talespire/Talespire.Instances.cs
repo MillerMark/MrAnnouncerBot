@@ -25,13 +25,13 @@ namespace TaleSpireCore
 				DeleteFrom(spellId, spells);
 			}
 
-			public static void DeleteSpellSoon(string spellId)
+			public static void DeleteSpellSoon(string spellId, float shrinkOnDeleteTime = 1)
 			{
 				if (!spells.ContainsKey(spellId))
 					return;
 
 				foreach (GameObject spellEffect in spells[spellId])
-					AddTemporal(spellEffect, 2, 2, 1);
+					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, shrinkOnDeleteTime);
 
 				spells.Remove(spellId);
 			}

@@ -5,8 +5,10 @@ namespace DndCore
 {
 	public class SpellEffectEventArgs : BaseEffectArgs
 	{
-		public SpellEffectEventArgs(string effectName, string iD, string taleSpireId, EffectLocation effectLocation = EffectLocation.ActiveCreaturePosition, float lifeTime = 0, float secondsDelayStart = 0, float enlargeTime = 0) : base(effectName, iD, taleSpireId)
+		public SpellEffectEventArgs(string effectName, string iD, string taleSpireId, EffectLocation effectLocation = EffectLocation.ActiveCreaturePosition, 
+																float lifeTime = 0, float secondsDelayStart = 0, float enlargeTime = 0, float shrinkTime = 0) : base(effectName, iD, taleSpireId)
 		{
+			ShrinkTime = shrinkTime;
 			EnlargeTime = enlargeTime;
 			SecondsDelayStart = secondsDelayStart;
 			EffectLocation = effectLocation;
@@ -16,5 +18,6 @@ namespace DndCore
 		public EffectLocation EffectLocation { get; set; }
 		public float SecondsDelayStart { get; set; }
 		public float EnlargeTime { get; set; }
+		public float ShrinkTime { get; set; }
 	}
 }

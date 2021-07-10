@@ -69,14 +69,14 @@ namespace DHDM
 			TaleSpireClient.ClearAttached(spellId, taleSpireId);
 		}
 
-		static void ClearSpell(string spellId, float secondsDelayStart)
+		static void ClearSpell(string spellId, float secondsDelayStart, float shrinkTime)
 		{
 			if (secondsDelayStart > 0)
 			{
-				CreateClearSpellTimer(spellId, secondsDelayStart);
+				CreateClearSpellTimer(spellId, secondsDelayStart, shrinkTime);
 				return;
 			}
-			TaleSpireClient.ClearSpell(spellId);
+			TaleSpireClient.ClearSpell(spellId, shrinkTime);
 		}
 
 		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime)
@@ -89,13 +89,18 @@ namespace DHDM
 				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
 				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart);
 			}
+			else if (effectLocation == EffectLocation.AtCollisionTarget)
+				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true);
+			else if (effectLocation == EffectLocation.AtCollision)
+				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, false);
 		}
 
-		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart)
+		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)
 		{
 			SpellEffectTimer timer = new SpellEffectTimer();
 			timer.Elapsed += ClearSpellTimer_Elapsed;
 			timer.SpellId = spellId;
+			timer.ShrinkTime = shrinkTime;
 			timer.Interval = TimeSpan.FromSeconds(secondsDelayStart).TotalMilliseconds;
 			timer.Start();
 			timers.Add(timer);
@@ -118,7 +123,7 @@ namespace DHDM
 				return;
 
 			spellTimer.Stop();
-			TaleSpireClient.ClearSpell(spellTimer.SpellId);
+			TaleSpireClient.ClearSpell(spellTimer.SpellId, spellTimer.ShrinkTime);
 			timers.Remove(spellTimer);
 		}
 
@@ -149,7 +154,7 @@ namespace DHDM
 
 		private static void ClearSpellFunction_ClearSpell(object sender, SpellEffectEventArgs ea)
 		{
-			ClearSpell(ea.SpellId, ea.SecondsDelayStart);
+			ClearSpell(ea.SpellId, ea.SecondsDelayStart, ea.ShrinkTime);
 		}
 		public static DndGame Game { get; set; }
 	}

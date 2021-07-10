@@ -13,6 +13,7 @@ namespace DHDM
 		public EffectLocation EffectLocation { get; set; }
 		public float LifeTime { get; set; }
 		public float EnlargeTime { get; set; }
+		public float ShrinkTime { get; set; }
 		public SpellEffectTimer()
 		{
 
