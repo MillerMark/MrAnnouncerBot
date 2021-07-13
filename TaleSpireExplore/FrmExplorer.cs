@@ -533,7 +533,11 @@ namespace TaleSpireExplore
 					return;
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
 				{
-					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition}, UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: {creatureAsset.WorldId}, InstanceId: {creatureAsset.GetInstanceID()}\n"; // , Scale: {creatureAsset.CreatureScale}
+					string uniqueIdStr = "";
+					if (creatureAsset.Creature.IsUnique)
+						uniqueIdStr = " UniqueId: {creatureAsset.Creature.UniqueId},";
+					
+					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition},{uniqueIdStr} WorldId: {creatureAsset.WorldId}, BoardAssetId: {creatureAsset.BoardAssetId}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
 			catch (Exception ex)
@@ -1310,7 +1314,8 @@ namespace TaleSpireExplore
 
 		private void btnTest2_Click(object sender, EventArgs e)
 		{
-			
+			//Talespire.Minis.TryCreateCrocodile(new Vector3(15f, 22.5f, 95.4f));
+			Talespire.Board.InstantiateCreature(tbxAssetId.Text, new Vector3(15f, 22.5f, 95.4f));
 		}
 
 		private void btnSetCameraPosition_Click(object sender, EventArgs e)

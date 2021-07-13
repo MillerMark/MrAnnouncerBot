@@ -7,9 +7,10 @@ namespace DndCore
 	public enum EffectLocation
 	{
 		None = 0,
-		ActiveCreaturePosition = 1,
-		LastTargetPosition = 2,
-		AtCollision = 3,
-		AtCollisionTarget = 4
+		CreatureBase = 1,
+		SpellCast = 2,
+		LastTargetPosition = 3,
+		AtCollision = 4,
+		AtCollisionTarget = 5
 	}
 }

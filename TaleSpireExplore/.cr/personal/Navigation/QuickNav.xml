@@ -19,19 +19,15 @@
       </Item>
       <Item Id="{c6f4443c-7803-438c-b65a-e3e6130dc8c9}">
         <FilterName>S - Struct</FilterName>
-        <IsActive>False</IsActive>
       </Item>
       <Item Id="{64814479-6f87-4f06-96ae-723791384fda}">
         <FilterName>I - Interface</FilterName>
-        <IsActive>False</IsActive>
       </Item>
       <Item Id="{d7fbcd22-e788-4381-b2bc-92e2017f481a}">
         <FilterName>E - Enum</FilterName>
-        <IsActive>False</IsActive>
       </Item>
       <Item Id="{603324c9-2416-451a-b3f8-7f95c3a7bad8}">
         <FilterName>D - Delegate</FilterName>
-        <IsActive>False</IsActive>
       </Item>
       <Item Id="{56202cc7-abac-49e5-9ef9-43927391be48}">
         <FilterName>M - Methods</FilterName>

@@ -5,16 +5,17 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	[Tooltip("Attaches the specified spell effect to the active player's TaleSpire mini.")]
+	[Tooltip("Launches a TaleSpire projectile effect from the active player to the active target(s).")]
 	[Param(1, typeof(string), "effectName", "The name of the known effect or Prefab to attach.", ParameterIs.Required)]
 	[Param(2, typeof(ProjectileKind), "projectileKind", "The kind of projectiles to launch (one of ToVolume, DistributeAmongAllTargets, or EachTarget).", ParameterIs.Optional)]
 	[Param(3, typeof(int), "projectileCount", "The number of projectiles to launch.", ParameterIs.Optional)]
 	[Param(4, typeof(float), "speed", "The average speed (ft/sec) of the projectile. Easing will be added.", ParameterIs.Optional)]
-	[Param(5, typeof(FireCollisionEventOn), "fireCollisionEventOn", "When to fire the collision events (one of FirstImpact, EachImpact, LastImpact).", ParameterIs.Optional)]
+	[Param(5, typeof(FireCollisionEventOn), "fireCollisionEventOn", "When to fire the collision events (one of Never, FirstImpact, EachImpact, LastImpact).", ParameterIs.Optional)]
 	[Param(6, typeof(float), "launchTimeVariance", "The average time between launches.", ParameterIs.Optional)]
 	[Param(7, typeof(float), "targetVariance", "The average distance variance to the target for the projectile (0 means a precise hit).", ParameterIs.Optional)]
-	[Param(8, typeof(ProjectileSizeOption), "projectileSize", "Determines how the projectile changes size in flight.", ParameterIs.Optional)]
+	[Param(8, typeof(ProjectileSizeOption), "projectileSize", "Determines how the projectile changes size in flight. One of ConstantSize, GrowProjectile, ShrinkProjectile, or HumpProjectile", ParameterIs.Optional)]
 	[Param(9, typeof(float), "projectileSizeMultiplier", "Determines how much (scaling) of the projectile size option to apply.", ParameterIs.Optional)]
+	[Param(10, typeof(float), "bezierPathMultiplier", "How much curve to the path. 0 is a straight line. 1 is curvy.", ParameterIs.Optional)]
 	public class LaunchProjectileFunction : DndFunction
 	{
 		public static event ProjectileEffectEventHandler LaunchProjectile;
@@ -22,7 +23,7 @@ namespace DndCore
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
-			ExpectingArguments(args, 3, 10);
+			ExpectingArguments(args, 3, 11);
 			if (player == null || spell == null)
 				return null;
 			string effectName = Expressions.GetStr(args[0]);
@@ -34,6 +35,7 @@ namespace DndCore
 			float targetVariance = 0;
 			ProjectileSizeOption projectileSize = ProjectileSizeOption.ConstantSize;
 			float projectileSizeMultiplier = 1;
+			float bezierPathMultiplier = 1;
 
 			if (args.Count > 1)
 			{
@@ -58,7 +60,11 @@ namespace DndCore
 									{
 										projectileSize = Expressions.Get<ProjectileSizeOption>(args[7]);
 										if (args.Count > 8)
+										{
 											float.TryParse(args[8], out projectileSizeMultiplier);
+											if (args.Count > 9)
+												float.TryParse(args[9], out bezierPathMultiplier);
+										}
 									}
 								}
 							}
@@ -67,7 +73,7 @@ namespace DndCore
 				}
 			}
 
-			ProjectileEffectEventArgs ea = new ProjectileEffectEventArgs(effectName, spell.ID, player.taleSpireId, speed, projectileCount, projectileKind, fireCollisionEventOn, launchTimeVariance, targetVariance, target, projectileSize, projectileSizeMultiplier);
+			ProjectileEffectEventArgs ea = new ProjectileEffectEventArgs(effectName, spell.ID, player.taleSpireId, speed, projectileCount, projectileKind, fireCollisionEventOn, launchTimeVariance, targetVariance, target, projectileSize, projectileSizeMultiplier, bezierPathMultiplier);
 			LaunchProjectile?.Invoke(null, ea);
 
 			return null;

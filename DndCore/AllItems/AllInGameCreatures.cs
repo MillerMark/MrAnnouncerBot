@@ -249,6 +249,17 @@ namespace DndCore
 		{
 			return inGameCreatures.FirstOrDefault(x => x.IsSelected);
 		}
+
+		public static List<Creature> GetTargeted()
+		{
+			List<Creature> results = new List<Creature>();
+			foreach (InGameCreature inGameCreature in Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+					results.Add(inGameCreature.Creature);
+			}
+			return results;
+		}
 	}
 }
 

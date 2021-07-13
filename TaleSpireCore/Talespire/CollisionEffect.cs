@@ -11,9 +11,13 @@ namespace TaleSpireCore
 		public float EnlargeTime { get; set; }
 		public float SecondsDelayStart { get; set; }
 		public bool UseIntendedTarget { get; set; }
+		public float ShrinkTime { get; set; }
+		public float Rotation { get; set; }
 
-		public CollisionEffect(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget)
+		public CollisionEffect(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
 		{
+			Rotation = rotation;
+			ShrinkTime = shrinkTime;
 			UseIntendedTarget = useIntendedTarget;
 			EffectName = effectName;
 			SpellId = spellId;

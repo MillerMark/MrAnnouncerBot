@@ -1,6 +1,7 @@
 ﻿//#define profiling
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using DndCore;
 using TaleSpireCore;
 
@@ -91,6 +92,18 @@ namespace DHDM
 					TargetActivePoint();
 			}
 			TaleSpireClient.RemoveTargetingUI();
+		}
+
+		public static List<Creature> GetTargets()
+		{
+			List<Creature> creatures = new List<Creature>();
+			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
+				if (creatureStats.IsTargeted)
+					creatures.Add(AllPlayers.GetFromId(creatureStats.CreatureId));
+
+			creatures.AddRange(AllInGameCreatures.GetTargeted());
+
+			return creatures;
 		}
 
 

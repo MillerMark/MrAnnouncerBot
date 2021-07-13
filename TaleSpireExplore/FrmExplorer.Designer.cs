@@ -72,6 +72,7 @@
 			this.tbxCameraPosition = new System.Windows.Forms.TextBox();
 			this.btnSetCameraHeight = new System.Windows.Forms.Button();
 			this.tbxCameraHeight = new System.Windows.Forms.TextBox();
+			this.tbxAssetId = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -490,6 +491,13 @@
 			this.tbxCameraHeight.TabIndex = 25;
 			this.tbxCameraHeight.Text = "10";
 			// 
+			// tbxAssetId
+			// 
+			this.tbxAssetId.Location = new System.Drawing.Point(930, 555);
+			this.tbxAssetId.Name = "tbxAssetId";
+			this.tbxAssetId.Size = new System.Drawing.Size(389, 20);
+			this.tbxAssetId.TabIndex = 25;
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -499,6 +507,7 @@
 			this.Controls.Add(this.btnTest1);
 			this.Controls.Add(this.tbxCameraHeight);
 			this.Controls.Add(this.tbxCameraPosition);
+			this.Controls.Add(this.tbxAssetId);
 			this.Controls.Add(this.txtScale);
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
@@ -590,5 +599,6 @@
 		private System.Windows.Forms.TextBox tbxCameraPosition;
 		private System.Windows.Forms.Button btnSetCameraHeight;
 		private System.Windows.Forms.TextBox tbxCameraHeight;
+		private System.Windows.Forms.TextBox tbxAssetId;
 	}
 }

@@ -38,6 +38,12 @@
       <HintPath>..\DLLs\Bouncyrock.BouncePackage.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Bouncyrock.BouncePackage.TaleSpire.Runtime">
+      <HintPath>..\DLLs\Bouncyrock.BouncePackage.TaleSpire.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Bouncyrock.BouncePhysics.Runtime">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Bouncyrock.BouncePhysics.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Bouncyrock.TaleSpire.3rdParty.Runtime">
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.3rdParty.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -76,8 +82,20 @@
       <HintPath>..\DLLs\Unity.Animation.Rigging.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Burst">
+      <HintPath>..\DLLs\Unity.Burst.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Collections">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Unity.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Entities">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Unity.Entities.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>..\DLLs\Unity.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Physics">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Unity.Physics.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\DLLs\UnityEngine.dll</HintPath>
@@ -89,12 +107,18 @@
       <HintPath>..\DLLs\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>..\DLLs\UnityEngine.ParticleSystemModule.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +133,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
+    <Compile Include="Decompiles\AssetDb2.cs" />
     <Compile Include="DndControllerAppClient.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />

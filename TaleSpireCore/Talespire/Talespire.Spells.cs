@@ -24,7 +24,7 @@ namespace TaleSpireCore
 					return;
 
 
-				List<CollisionEffect> collisionsEffectsToRemove = null;
+				List<CollisionEffect> collisionsEffectsToRemove		= null;
 				foreach (CollisionEffect collisionEffect in collisionsEffectsToCreate)
 				{
 					VectorDto position;
@@ -38,7 +38,7 @@ namespace TaleSpireCore
 					else  // Use actual target...
 						position = trackedProjectile.ActualTargetPosition.GetVectorDto();
 
-					PlayEffectAtPosition(collisionEffect.EffectName, collisionEffect.SpellId, position, collisionEffect.LifeTime, collisionEffect.EnlargeTime, collisionEffect.SecondsDelayStart);
+					PlayEffectAtPosition(collisionEffect.EffectName, collisionEffect.SpellId, position, collisionEffect.LifeTime, collisionEffect.EnlargeTime, collisionEffect.SecondsDelayStart, collisionEffect.ShrinkTime, collisionEffect.Rotation);
 				}
 
 				if (collisionsEffectsToRemove != null && collisionsEffectsToRemove.Any())
@@ -55,11 +55,11 @@ namespace TaleSpireCore
 					queuedEffects.Add(waitingToCast);
 			}
 
-			public static void AttachEffect(string effectName, string spellId, string creatureId, float enlargeTime, float secondsDelayStart)
+			public static void AttachEffect(string effectName, string spellId, string creatureId, float secondsDelayStart, float enlargeTime, float lifeTime, float shrinkTime, float rotation)
 			{
 				if (secondsDelayStart > 0)
 				{
-					QueueEffect(new WaitingToCast(SpellLocation.Attached, secondsDelayStart, effectName, spellId, creatureId, enlargeTime));
+					QueueEffect(new WaitingToCast(SpellLocation.Attached, secondsDelayStart, effectName, spellId, creatureId, enlargeTime, lifeTime, null, shrinkTime, rotation));
 					return;
 				}
 
@@ -87,11 +87,23 @@ namespace TaleSpireCore
 				spell.transform.position = creatureBase.transform.position;
 			}
 
-			public static void PlayEffectOverCreature(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0)
+
+			public static void PlayEffectAtCreatureBase(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
+			{
+				PlayEffect(effectName, spellId, creatureId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.AtCreatureBase, rotationDegrees);
+			}
+
+			public static void CreatureCastSpell(string effectName, string spellId, string creatureCastSpellId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
+			{
+				PlayEffect(effectName, spellId, creatureCastSpellId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.CreatureCastSpell, rotationDegrees);
+			}
+
+			private static void PlayEffect(string effectName, string spellId, string creatureId, float lifeTime, float enlargeTimeSeconds, float secondsDelayStart, float shrinkTime, SpellLocation location, float rotationDegrees)
 			{
 				if (secondsDelayStart > 0)
 				{
-					QueueEffect(new WaitingToCast(SpellLocation.OverCreature, secondsDelayStart, effectName, spellId, creatureId, enlargeTimeSeconds, lifeTime));
+					Log.Debug($"QueueEffect \"{effectName}\" for {secondsDelayStart} seconds...");
+					QueueEffect(new WaitingToCast(location, secondsDelayStart, effectName, spellId, creatureId, enlargeTimeSeconds, lifeTime, null, shrinkTime, rotationDegrees));
 					return;
 				}
 
@@ -102,24 +114,40 @@ namespace TaleSpireCore
 					return;
 				}
 
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees);
 
 				if (spell == null)
+				{
+					Log.Error($"Spell name \"{effectName}\" not found!");
 					return;
+				}
 
 				GameObject creatureBase = creatureBoardAsset.GetBase();
-				spell.transform.position = creatureBase.transform.position;
+				if (location == SpellLocation.CreatureCastSpell)
+				{
+					Log.Vector("creatureBoardAsset.HookSpellCast.position", creatureBoardAsset.HookSpellCast.position);
+					spell.transform.position = creatureBoardAsset.HookSpellCast.position;
+				}
+				else  // Default to base position...
+					spell.transform.position = creatureBase.transform.position;
+
+				float creatureRotationDegrees = creatureBoardAsset.GetRotationDegrees();
+				spell.transform.Rotate(Vector3.up, creatureRotationDegrees);
+				//spell.transform.localEulerAngles = new Vector3(spell.transform.localEulerAngles.x, rotationDegrees, spell.transform.localEulerAngles.z);
+				Log.Vector("spell.transform.localEulerAngles", spell.transform.localEulerAngles);
+				//spell.transform.Rotate(creatureBoardAsset.GetRotation());
+				//Log.Vector("spell.transform.localEulerAngles2", spell.transform.localEulerAngles);
 			}
 
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0)
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
 			{
 				if (secondsDelayStart > 0)
 				{
-					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position));
+					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position, shrinkTime, rotationDegrees));
 					return null;
 				}
 
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees);
 
 				if (spell != null)
 					spell.transform.position = position.GetVector3();
@@ -127,9 +155,9 @@ namespace TaleSpireCore
 				return spell;
 			}
 
-			public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget)
+			public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
 			{
-				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget));
+				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation));
 			}
 
 			private static string GetAttachedEffectName(string spellId)
@@ -137,7 +165,7 @@ namespace TaleSpireCore
 				return "Attached." + spellId;
 			}
 
-			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds)
+			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds, float shrinkOnDeleteTime, float rotationDegrees)
 			{
 				GameObject spell = GetEffect(effectName);
 
@@ -147,11 +175,18 @@ namespace TaleSpireCore
 					return null;
 				}
 
+				spell.transform.Rotate(Vector3.up, rotationDegrees);
+
 				spell.name = GetSpellName(spellId);
 				if (lifeTime > 0)
-					Instances.AddTemporal(spell, lifeTime, Math.Min(2, lifeTime / 5), 0, enlargeTimeSeconds);
+				{
+					float particleShutoffTimeSeconds = Math.Min(2, lifeTime / 5);
+					if (shrinkOnDeleteTime > particleShutoffTimeSeconds)
+						particleShutoffTimeSeconds = shrinkOnDeleteTime;
+					Instances.AddTemporal(spell, lifeTime, particleShutoffTimeSeconds, enlargeTimeSeconds, shrinkOnDeleteTime);
+				}
 				else
-					Instances.AddSpell(spellId, spell, enlargeTimeSeconds);
+					Instances.AddSpell(spellId, spell, enlargeTimeSeconds, shrinkOnDeleteTime);
 
 				return spell;
 			}
@@ -161,12 +196,32 @@ namespace TaleSpireCore
 				return "Spell." + spellId;
 			}
 
+			static void PrepareEffect(GameObject gameObject)
+			{
+				if (gameObject == null)
+					return;
+				List<MonoBehaviour> transformMotions = gameObject.GetScriptsInChildren("RFX1_TransformMotion");
+				if (transformMotions.Count > 0)
+					Log.Warning($"Disabling RFX1_TransformMotion Speed in {gameObject.name}...");
+				foreach (MonoBehaviour monoBehaviour in transformMotions)
+				{
+					monoBehaviour.enabled = false;
+					//ReflectionHelper.SetPublicFieldValue(monoBehaviour, "Speed", 0);
+					//ReflectionHelper.SetPublicFieldValue(monoBehaviour, "Distance", 0);
+				}
+			}
+
 			private static GameObject GetEffect(string effectName)
 			{
+				GameObject result;
+				
 				if (Prefabs.Has(effectName))
-					return Prefabs.Clone(effectName);
+					result = Prefabs.Clone(effectName);
 				else
-					return CompositeEffect.CreateKnownEffect(effectName);
+					result = CompositeEffect.CreateKnownEffect(effectName);
+
+				PrepareEffect(result);
+				return result;
 			}
 
 			public static void ClearAttached(string spellId, string creatureId)
@@ -228,6 +283,13 @@ namespace TaleSpireCore
 
 			private static void LaunchMissiles(ProjectileOptions projectileOptions, ref float startTime, Vector3 sourcePosition, ref int missilesRemaining)
 			{
+				if (projectileOptions.targetLocations == null || projectileOptions.targetLocations.Count == 0)
+				{
+					missilesRemaining = 0;
+					return;
+				}
+				TrackedProjectile lastProjectileAdded = null;
+				TrackedProjectile firstProjectileAdded = null;
 				foreach (Vector3 location in projectileOptions.targetLocations)
 				{
 					//  projectileOptions.kind (ToVolume, DistributeAmongAllTargets, or EachTarget)
@@ -238,7 +300,9 @@ namespace TaleSpireCore
 						float saveStartTime = startTime;
 						for (int i = 0; i < projectileOptions.count; i++)
 						{
-							AddProjectile(projectileOptions, startTime, sourcePosition, location);
+							lastProjectileAdded = AddProjectile(projectileOptions, startTime, sourcePosition, location);
+							if (firstProjectileAdded == null)
+								firstProjectileAdded = lastProjectileAdded;
 							startTime += projectileOptions.launchTimeVariance * TimeVariance;
 						}
 						startTime = (startTime + saveStartTime) / 2;
@@ -252,15 +316,20 @@ namespace TaleSpireCore
 					{
 						Log.Debug($"ProjectileKind.DistributeAmongAllTargets...");
 						missilesRemaining--;
-						AddProjectile(projectileOptions, startTime, sourcePosition, location);
+						lastProjectileAdded = AddProjectile(projectileOptions, startTime, sourcePosition, location);
+						if (firstProjectileAdded == null)
+							firstProjectileAdded = lastProjectileAdded;
 						startTime += projectileOptions.launchTimeVariance * TimeVariance;
 						if (missilesRemaining <= 0)
 							break;
 					}
 				}
+				firstProjectileAdded.IsFirst = true;
+				if (lastProjectileAdded != null)
+					lastProjectileAdded.IsLast = true;
 			}
 
-			private static void AddProjectile(ProjectileOptions projectileOptions, float startTime, Vector3 sourcePosition, Vector3 location)
+			private static TrackedProjectile AddProjectile(ProjectileOptions projectileOptions, float startTime, Vector3 sourcePosition, Vector3 location)
 			{
 				Log.Debug($"Creating projectile ({projectileOptions.effectName})...");
 				float targetVariance = projectileOptions.targetVariance;
@@ -269,18 +338,21 @@ namespace TaleSpireCore
 				trackedProjectile.EffectName = projectileOptions.effectName;
 				trackedProjectile.Parameters = projectileOptions.parameters;
 				trackedProjectile.SpellId = projectileOptions.spellId;
+				trackedProjectile.FireCollisionEventOn = projectileOptions.fireCollisionEventOn;
 				trackedProjectile.SourcePosition = sourcePosition;
 				trackedProjectile.SpeedFeetPerSecond = projectileOptions.speed;
 				trackedProjectile.IntendedTargetPosition = location;
 				trackedProjectile.ActualTargetPosition = new Vector3(location.x + targetVariance * DistanceVariance, location.y + targetVariance * DistanceVariance, location.z + targetVariance * DistanceVariance);
 				trackedProjectile.ProjectileSize = projectileOptions.projectileSize;
 				trackedProjectile.ProjectileSizeMultiplier = projectileOptions.projectileSizeMultiplier;
+				trackedProjectile.BezierPathMultiplier = projectileOptions.bezierPathMultiplier;
 
 				if (!allProjectiles.ContainsKey(projectileOptions.spellId))
 					allProjectiles.Add(projectileOptions.spellId, new List<TrackedProjectile>());
 
 				trackedProjectile.Initialize();
 				allProjectiles[projectileOptions.spellId].Add(trackedProjectile);
+				return trackedProjectile;
 			}
 
 			/// <summary>

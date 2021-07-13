@@ -94,7 +94,8 @@ namespace TaleSpireExplore
 			Commands.Add("SpinAround", SpinAround);
 			Commands.Add("RestoreCamera", RestoreCamera);
 			Commands.Add("AttachEffect", AttachEffect);
-			Commands.Add("PlayEffectOverCreature", PlayEffectOverCreature);
+			Commands.Add("PlayEffectAtCreatureBase", PlayEffectAtCreatureBase);
+			Commands.Add("CreatureCastSpell", CreatureCastSpell);
 			Commands.Add("PlayEffectAtPosition", PlayEffectAtPosition);
 			Commands.Add("PlayEffectOnCollision", PlayEffectOnCollision);
 			Commands.Add("ClearAttached", ClearAttached);
@@ -1638,20 +1639,25 @@ namespace TaleSpireExplore
 
 		static string AttachEffect(string[] args)
 		{
-			const int expectedArgs = 5;
+			const int expectedArgs = 8;
 			if (args.Length != expectedArgs)
 				return ApiResponse.Bad($"{nameof(AttachEffect)} - Expecting {expectedArgs} args.");
-			Talespire.Spells.AttachEffect(args[0], args[1], args[2], Talespire.Convert.ToFloat(args[3]), Talespire.Convert.ToFloat(args[4]));
+			float enlargeTime = Talespire.Convert.ToFloat(args[3]);
+			float lifeTime = Talespire.Convert.ToFloat(args[4]);
+			float shrinkTime = Talespire.Convert.ToFloat(args[5]);
+			float secondsDelayStart = Talespire.Convert.ToFloat(args[6]);
+			float rotation = Talespire.Convert.ToFloat(args[7]);
+			Talespire.Spells.AttachEffect(args[0], args[1], args[2], secondsDelayStart, enlargeTime, lifeTime, shrinkTime, rotation);
 			return ApiResponse.Good();
 		}
 
-		static string PlayEffectOverCreature(string[] args)
+		private static void GetSpellFloatArgs(string[] args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotation)
 		{
-			if (args.Length < 3 || args.Length > 6)
-				return ApiResponse.Bad($"{nameof(PlayEffectOverCreature)} - Expecting 3-6 args.");
-			float lifeTime = 0;
-			float enlargeTime = 0;
-			float secondsDelayStart = 0;
+			lifeTime = 0;
+			enlargeTime = 0;
+			secondsDelayStart = 0;
+			shrinkTime = 0;
+			rotation = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
@@ -1659,41 +1665,77 @@ namespace TaleSpireExplore
 				{
 					float.TryParse(args[4], out enlargeTime);
 					if (args.Length > 5)
+					{
 						float.TryParse(args[5], out secondsDelayStart);
+						if (args.Length > 6)
+						{
+							float.TryParse(args[6], out shrinkTime);
+							if (args.Length > 7)
+								float.TryParse(args[7], out rotation);
+						}
+					}
 				}
 			}
-			Talespire.Spells.PlayEffectOverCreature(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart);
+		}
+
+		static string PlayEffectAtCreatureBase(string[] args)
+		{
+			if (args.Length < 3 || args.Length > 8)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtCreatureBase)} - Expecting 3-8 args.");
+			GetSpellFloatArgs(args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotationDegrees);
+			Talespire.Spells.PlayEffectAtCreatureBase(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
+			return ApiResponse.Good();
+		}
+
+		static string CreatureCastSpell(string[] args)
+		{
+			if (args.Length < 3 || args.Length > 8)
+				return ApiResponse.Bad($"{nameof(CreatureCastSpell)} - Expecting 3-8 args.");
+			GetSpellFloatArgs(args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotationDegrees);
+			Talespire.Spells.CreatureCastSpell(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectAtPosition(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 6)
-				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-6 args. Got {args.Length}.");
+			if (args.Length < 3 || args.Length > 8)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-8 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
 			float secondsDelayStart = 0;
+			float shrinkTime = 0;
+			float rotation = 0;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
 				if (args.Length > 4)
 					float.TryParse(args[4], out enlargeTime);
 				if (args.Length > 5)
+				{
 					float.TryParse(args[5], out secondsDelayStart);
+					if (args.Length > 6)
+					{
+						float.TryParse(args[6], out shrinkTime);
+						if (args.Length > 7)
+							float.TryParse(args[7], out rotation);
+					}
+				}
 			}
 
 			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
 
-			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart);
+			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation);
 			return ApiResponse.Good();
 		}
 		static string PlayEffectOnCollision(string[] args)
 		{
-			if (args.Length != 6)
-				return ApiResponse.Bad($"{nameof(PlayEffectOnCollision)} - Expecting 6 args. Got {args.Length}.");
+			if (args.Length != 8)
+				return ApiResponse.Bad($"{nameof(PlayEffectOnCollision)} - Expecting 8 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
 			float secondsDelayStart = 0;
+			float shrinkTime = 0;
+			float rotation = 0;
 			string effectName = args[0];
 			string spellId = args[1];
 			bool useIntendedTarget = false;
@@ -1701,8 +1743,10 @@ namespace TaleSpireExplore
 			float.TryParse(args[3], out enlargeTime);
 			float.TryParse(args[4], out secondsDelayStart);
 			bool.TryParse(args[5], out useIntendedTarget);
+			float.TryParse(args[6], out shrinkTime);
+			float.TryParse(args[7], out rotation);
 
-			Talespire.Spells.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget);
+			Talespire.Spells.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation);
 			return ApiResponse.Good();
 		}
 
@@ -1916,8 +1960,7 @@ namespace TaleSpireExplore
 
 		static string LaunchProjectile(string[] args)
 		{
-			Talespire.Log.Debug($"LaunchProjectile...");
-			const int minArgs = 11;
+			const int minArgs = 12;
 			if (args.Length < minArgs)
 				return ApiResponse.Bad($"{nameof(LaunchProjectile)} - Expecting at least {minArgs} args.");
 
@@ -1942,6 +1985,7 @@ namespace TaleSpireExplore
 			projectileOptions.spellId = args[8];
 			projectileOptions.projectileSize = Talespire.Convert.ToProjectileSizeOption(args[9]);
 			projectileOptions.projectileSizeMultiplier = Talespire.Convert.ToFloat(args[10]);
+			projectileOptions.bezierPathMultiplier = Talespire.Convert.ToFloat(args[11]);
 
 			for (int i = minArgs; i < args.Length; i++)
 				projectileOptions.AddTarget(args[i]);

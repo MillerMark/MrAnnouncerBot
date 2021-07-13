@@ -20,10 +20,12 @@ namespace TaleSpireCore
 			GameObject = gameObject;
 			SetOriginalScale();
 		}
+
 		public MortalGameObject()
 		{
 
 		}
+
 		public void ScaleToExpire(float secondsToExpiration)
 		{
 			if (GameObject == null || !GameObject.activeInHierarchy)

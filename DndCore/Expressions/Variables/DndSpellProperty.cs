@@ -21,6 +21,8 @@ namespace DndCore
 		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
 		{
 			CastedSpell castedSpell = Expressions.GetCastedSpell(evaluator.Variables);
+			if (castedSpell == null)
+				return null;
 			return GetValue<Spell>(variableName, castedSpell.Spell);
 		}
 

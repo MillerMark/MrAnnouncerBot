@@ -193,24 +193,30 @@ namespace TaleSpireCore
 			Invoke("RestoreCamera");
 		}
 
-		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float enlargeTime, float secondsDelayStart)
+		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float enlargeTime, float lifeTime, float shrinkTime, float secondsDelayStart, float rotation)
 		{
-			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId, enlargeTime.ToString(), secondsDelayStart.ToString() });
+			Invoke("AttachEffect", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
+			//enlargeTime.ToString(), secondsDelayStart.ToString(), rotation.ToString() });
 		}
 
-		public static void PlayEffectOverCreature(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0)
+		public static void PlayEffectAtCreatureBase(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
 		{
-			Invoke("PlayEffectOverCreature", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString() });
+			Invoke("PlayEffectAtCreatureBase", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
 		}
 
-		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0)
+		public static void CreatureCastSpell(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
 		{
-			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString() });
+			Invoke("CreatureCastSpell", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
 		}
 
-		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget)
+		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
 		{
-			Invoke("PlayEffectOnCollision", new string[] { effectName, spellId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), useIntendedTarget.ToString() });
+			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
+		}
+
+		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
+		{
+			Invoke("PlayEffectOnCollision", new string[] { effectName, spellId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), useIntendedTarget.ToString(), shrinkTime.ToString(), rotation.ToString() });
 		}
 
 		public static void ClearAttached(string spellId, string taleSpireId)
@@ -294,12 +300,12 @@ namespace TaleSpireCore
 			Invoke("Flashlight", "Off");
 		}
 
-		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance, 
-																			  string spellId, string projectileSize, float projectileSizeMultiplier, List<string> targets)
+		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance,
+																				string spellId, string projectileSize, float projectileSizeMultiplier, float bezierPathMultiplier, List<string> targets)
 		{
 			List<string> msgparams = new List<string>() { effectName, taleSpireId, kind, 
 				count.ToString(), speed.ToString(), fireCollisionEventOn, launchTimeVariance.ToString(), targetVariance.ToString(),
-			spellId, projectileSize, projectileSizeMultiplier.ToString() };
+			spellId, projectileSize, projectileSizeMultiplier.ToString(), bezierPathMultiplier.ToString() };
 
 			msgparams.AddRange(targets);
 			Invoke("LaunchProjectile", msgparams.ToArray());

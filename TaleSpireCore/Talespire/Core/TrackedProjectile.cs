@@ -20,6 +20,10 @@ namespace TaleSpireCore
 		public bool readyToDelete { get; set; }
 		public string Parameters { get; set; }
 		public Vector3 IntendedTargetPosition { get; set; }
+		public float BezierPathMultiplier { get; set; }
+		public FireCollisionEventOn FireCollisionEventOn { get; set; }
+		public bool IsFirst { get; set; }
+		public bool IsLast { get; set; }
 
 		public static event EventHandler TargetReached;
 
@@ -27,15 +31,18 @@ namespace TaleSpireCore
 		Vector3 direction;
 		float totalTravelDistanceInFeet;
 		BezierPath bezierPath;
-		AnimationCurve pathTimeCurve;
-		AnimationCurve growProjectileCurve;
-		AnimationCurve shrinkProjectileCurve;
-		AnimationCurve humpProjectileCurve;
-		AnimationCurve sizeCurve;
+		static AnimationCurve pathTimeCurve;
+		static AnimationCurve growProjectileCurve;
+		static AnimationCurve shrinkProjectileCurve;
+		static AnimationCurve humpProjectileCurve;
+		static AnimationCurve sizeCurve;
 
 		void TriggerCollision()
 		{
-			TargetReached?.Invoke(this, EventArgs.Empty);
+			if (FireCollisionEventOn == FireCollisionEventOn.FirstImpact && IsFirst ||
+					FireCollisionEventOn == FireCollisionEventOn.LastImpact && IsLast ||
+					FireCollisionEventOn == FireCollisionEventOn.EachImpact)
+				TargetReached?.Invoke(this, EventArgs.Empty);
 		}
 
 		AnimationCurve GetAnimationCurve()
@@ -142,6 +149,7 @@ namespace TaleSpireCore
 				ApplyParameter(leftSide, rightSide);
 			}
 		}
+
 		void ApplyParameters()
 		{
 			if (string.IsNullOrWhiteSpace(Parameters))
@@ -150,21 +158,46 @@ namespace TaleSpireCore
 			foreach (string parameter in parameters)
 				ApplyParameter(parameter);
 		}
+
 		private void CreateProjectile()
 		{
 			alreadyCreated = true;
 
 			projectileGameObject = Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, SourcePosition.GetVectorDto());
+
+			CalculateTrajectory();
+			RegisterParticleSystems();
+
+			sizeCurve = GetAnimationCurve();
+
+			ApplyParameters();
+		}
+
+		private void CalculateTrajectory()
+		{
 			direction = ActualTargetPosition - SourcePosition;
 			float distanceInTiles = direction.magnitude;
 			totalTravelDistanceInFeet = Talespire.Convert.TilesToFeet(distanceInTiles);
-			Talespire.Log.Debug($"CreateProjectile - totalTravelDistanceInFeet: {totalTravelDistanceInFeet}");
+			//Talespire.Log.Debug($"CreateProjectile - totalTravelDistanceInFeet: {totalTravelDistanceInFeet}");
 			direction.Normalize();
 
+			CreateBezierPath();
+		}
+
+		private void RegisterParticleSystems()
+		{
+			ParticleSystem[] particleSystems = projectileGameObject.GetComponentsInChildren<ParticleSystem>();
+			if (particleSystems != null)
+				foreach (ParticleSystem particleSystem in particleSystems)
+					RegisterParticleSystem(particleSystem);
+		}
+
+		private void CreateBezierPath()
+		{
 			Transform transform = projectileGameObject.transform;
 			transform.position = SourcePosition;
 			transform.forward = direction.normalized;
-			float maxInclusive = Mathf.Min(7f, Vector3.Distance(SourcePosition, ActualTargetPosition));
+			float maxInclusive = Mathf.Min(7f, Vector3.Distance(SourcePosition, ActualTargetPosition)) * BezierPathMultiplier;
 			bezierPath = new BezierPath();
 			List<Vector3> newControlPoints = new List<Vector3>();
 			newControlPoints.Add(SourcePosition);
@@ -172,15 +205,6 @@ namespace TaleSpireCore
 			newControlPoints.Add((ActualTargetPosition + (transform.right * UnityEngine.Random.Range(-maxInclusive, maxInclusive))) + (transform.up * UnityEngine.Random.Range(0f, maxInclusive)));
 			newControlPoints.Add(ActualTargetPosition);
 			bezierPath.SetControlPoints(newControlPoints);
-
-			ParticleSystem[] particleSystems = projectileGameObject.GetComponentsInChildren<ParticleSystem>();
-			if (particleSystems != null)
-				foreach (ParticleSystem particleSystem in particleSystems)
-					RegisterParticleSystem(particleSystem);
-
-			sizeCurve = GetAnimationCurve();
-
-			ApplyParameters();
 		}
 
 		public void Initialize()
@@ -188,7 +212,7 @@ namespace TaleSpireCore
 
 		}
 
-		public TrackedProjectile()
+		static TrackedProjectile()
 		{
 			// ![](FAA41F806C5DA538A88BAD89DD38C8D8.png;;0,77,584,433;0.03447,0.03566)
 			pathTimeCurve = new AnimationCurve();
@@ -207,12 +231,14 @@ namespace TaleSpireCore
 			growProjectileCurve.AddKey(new Keyframe(0, 0, 1.146773f, 1.146773f, 0, 0.1319095f));
 			growProjectileCurve.AddKey(new Keyframe(1, 1, 3.038543f, 3.038543f, 0.0671643f, 0));
 
+
 			//` ![](C0B10318CCD1214602C9C295C219DF34.png;;5,66,450,334)
 			shrinkProjectileCurve = new AnimationCurve();
 			shrinkProjectileCurve.preWrapMode = WrapMode.ClampForever;
 			shrinkProjectileCurve.postWrapMode = WrapMode.ClampForever;
 			shrinkProjectileCurve.AddKey(new Keyframe(0, 1.002274f, -0.01778922f, -0.01778922f, 0, 0.1278055f));
 			shrinkProjectileCurve.AddKey(new Keyframe(0.9937744f, 0.02050018f, -1.995528f, -1.995528f, 0.07466312f, 0));
+
 
 			//` ![](1DC93544FE420CC37E6BCB1D04536A92.png;;2,63,453,338)
 			humpProjectileCurve = new AnimationCurve();

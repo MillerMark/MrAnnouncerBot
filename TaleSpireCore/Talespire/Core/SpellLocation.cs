@@ -7,6 +7,7 @@ namespace TaleSpireCore
 	{
 		Attached,
 		AtPosition,
-		OverCreature
+		AtCreatureBase,
+		CreatureCastSpell
 	}
 }

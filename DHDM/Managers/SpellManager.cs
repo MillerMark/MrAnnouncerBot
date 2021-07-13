@@ -41,10 +41,16 @@ namespace DHDM
 						targets.Add(player.taleSpireId);
 				}
 			}
+			else
+			{
+				List<Creature> allTargets = TargetManager.GetTargets();
+				foreach (Creature creature in allTargets)
+					targets.Add(creature.taleSpireId);
+			}
 
 			TaleSpireClient.LaunchProjectile(ea.EffectName, ea.TaleSpireId, ea.Kind.ToString(), ea.Count,  
 				ea.Speed, ea.FireCollisionEventOn.ToString(), ea.LaunchTimeVariance,
-				ea.TargetVariance, ea.SpellId, ea.ProjectileSize.ToString(), ea.ProjectileSizeMultiplier, targets);
+				ea.TargetVariance, ea.SpellId, ea.ProjectileSize.ToString(), ea.ProjectileSizeMultiplier, ea.BezierPathMultiplier, targets);
 		}
 
 		/* 
@@ -54,9 +60,9 @@ namespace DHDM
 				* Magic Given  <<<
 				* Spell Expired
 	  */
-		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float secondsDelayStart, float enlargeTime)
+		public static void AttachEffect(string effectName, string spellId, string taleSpireId, float secondsDelayStart, float enlargeTime, float lifeTime, float shrinkTime, float rotationDegrees)
 		{
-			TaleSpireClient.AttachEffect(effectName, spellId, taleSpireId, enlargeTime, secondsDelayStart);
+			TaleSpireClient.AttachEffect(effectName, spellId, taleSpireId, enlargeTime, lifeTime, shrinkTime, secondsDelayStart, rotationDegrees);
 		}
 
 		static void ClearAttached(string spellId, string taleSpireId, float secondsDelayStart)
@@ -79,20 +85,22 @@ namespace DHDM
 			TaleSpireClient.ClearSpell(spellId, shrinkTime);
 		}
 
-		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime)
+		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime, float shrinkTime, float rotationDegrees)
 		{
-			if (effectLocation == EffectLocation.ActiveCreaturePosition)
-				TaleSpireClient.PlayEffectOverCreature(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart);
+			if (effectLocation == EffectLocation.CreatureBase)
+				TaleSpireClient.PlayEffectAtCreatureBase(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
+			else if (effectLocation == EffectLocation.SpellCast)
+				TaleSpireClient.CreatureCastSpell(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
 			else if (effectLocation == EffectLocation.LastTargetPosition)
 			{
 				Vector targetPoint = Targeting.TargetPoint;
 				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
-				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart);
+				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
 			}
 			else if (effectLocation == EffectLocation.AtCollisionTarget)
-				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true);
+				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees);
 			else if (effectLocation == EffectLocation.AtCollision)
-				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, false);
+				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, false, shrinkTime, rotationDegrees);
 		}
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)
@@ -139,12 +147,12 @@ namespace DHDM
 
 		private static void AttachEffectFunction_AttachEffect(object sender, SpellEffectEventArgs ea)
 		{
-			AttachEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.SecondsDelayStart, ea.EnlargeTime);
+			AttachEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.SecondsDelayStart, ea.EnlargeTime, ea.LifeTime, ea.ShrinkTime, ea.RotationDegrees);
 		}
 
 		private static void PlayEffectFunction_PlayEffect(object sender, SpellEffectEventArgs ea)
 		{
-			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation, ea.SecondsDelayStart, ea.EnlargeTime);
+			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation, ea.SecondsDelayStart, ea.EnlargeTime, ea.ShrinkTime, ea.RotationDegrees);
 		}
 
 		private static void ClearAttachedFunction_ClearAttached(object sender, SpellEffectEventArgs ea)

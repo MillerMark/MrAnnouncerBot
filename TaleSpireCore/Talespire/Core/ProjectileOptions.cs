@@ -19,9 +19,9 @@ namespace TaleSpireCore
 		public float launchTimeVariance;
 		public float targetVariance;
 		public float projectileSizeMultiplier;
+		public float bezierPathMultiplier;
 		public ProjectileSizeOption projectileSize;
 		public List<Vector3> targetLocations = new List<Vector3>();
-
 		public void AddTarget(string str)
 		{
 			Talespire.Log.Warning($"AddTarget: \"{str}\"");

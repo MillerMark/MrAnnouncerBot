@@ -5,8 +5,9 @@ namespace DndCore
 {
 	public class ProjectileEffectEventArgs : BaseEffectArgs
 	{
-		public ProjectileEffectEventArgs(string effectName, string iD, string taleSpireId, float speed, int count, ProjectileKind kind, FireCollisionEventOn fireCollisionEventOn, float launchTimeVariance, float targetVariance, Target target, ProjectileSizeOption projectileSize, float projectileSizeMultiplier) : base(effectName, iD, taleSpireId)
+		public ProjectileEffectEventArgs(string effectName, string iD, string taleSpireId, float speed, int count, ProjectileKind kind, FireCollisionEventOn fireCollisionEventOn, float launchTimeVariance, float targetVariance, Target target, ProjectileSizeOption projectileSize, float projectileSizeMultiplier, float bezierPathMultiplier) : base(effectName, iD, taleSpireId)
 		{
+			BezierPathMultiplier = bezierPathMultiplier;
 			ProjectileSizeMultiplier = projectileSizeMultiplier;
 			ProjectileSize = projectileSize;
 			Target = target;
@@ -27,5 +28,6 @@ namespace DndCore
 		public Target Target { get; set; }
 		public ProjectileSizeOption ProjectileSize { get; set; }
 		public float ProjectileSizeMultiplier { get; set; }
+		public float BezierPathMultiplier { get; set; }
 	}
 }

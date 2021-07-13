@@ -114,6 +114,19 @@ namespace TaleSpireCore
 				return null;
 			}
 
+			public static void TryCreateCrocodile(Vector3 position)
+			{
+				//CreatureManager.CreateAndAddNewCreature(data, position, rotation)
+				CreaturePresenter.TryGetAsset(new CreatureGuid("ff5f5a76-bef7-4f83-a823-dd1be9dc01f3"), out CreatureBoardAsset crocodile);
+				if (crocodile != null)
+				{
+					Log.Debug($"Crocodile created.");
+					CreaturePresenter.TeleportCreature(crocodile, position);
+				}
+				else
+					Log.Debug($"Crocodile not found.");
+			}
+
 			public static CreatureBoardAsset[] GetAll()
 			{
 				return CreaturePresenter.AllCreatureAssets.ToArray();

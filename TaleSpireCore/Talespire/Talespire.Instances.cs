@@ -31,7 +31,7 @@ namespace TaleSpireCore
 					return;
 
 				foreach (GameObject spellEffect in spells[spellId])
-					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, shrinkOnDeleteTime);
+					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, shrinkOnDeleteTime: shrinkOnDeleteTime);
 
 				spells.Remove(spellId);
 			}
@@ -43,7 +43,14 @@ namespace TaleSpireCore
 
 				foreach (GameObject effect in instances[instanceId])
 				{
-					DestroyEffect(effect);
+					if (shrinkOnDeleteTimes.ContainsKey(effect))
+					{
+						float shrinkOnDeleteTime = shrinkOnDeleteTimes[effect];
+						shrinkOnDeleteTimes.Remove(effect);
+						AddTemporal(effect, shrinkOnDeleteTime, shrinkOnDeleteTime, 0, shrinkOnDeleteTime);
+					}
+					else
+						DestroyEffectNow(effect);
 				}
 
 				instances.Remove(instanceId);
@@ -62,10 +69,14 @@ namespace TaleSpireCore
 				instances[instanceId].Add(gameObject);
 			}
 
-			public static void AddSpell(string spellId, GameObject gameObject, float enlargeTimeSeconds = 0)
+			static Dictionary<GameObject, float> shrinkOnDeleteTimes = new Dictionary<GameObject, float>();
+
+			public static void AddSpell(string spellId, GameObject gameObject, float enlargeTimeSeconds = 0, float shrinkOnDeleteTime = 0)
 			{
 				EnlargeSoon(gameObject, enlargeTimeSeconds);
 				AddTo(spells, spellId, gameObject);
+				if (shrinkOnDeleteTime > 0)
+					shrinkOnDeleteTimes.Add(gameObject, shrinkOnDeleteTime);
 			}
 
 			public static T Create<T>(string instanceId, GameObject originalAsset) where T : class
@@ -133,7 +144,7 @@ namespace TaleSpireCore
 
 			static Dictionary<GameObject, EnlargeData> enlargingObjects = new Dictionary<GameObject, EnlargeData>();
 
-			public static void AddTemporal(GameObject instance, double lifetimeSeconds, double particleShutoffTimeSeconds = 0, float shrinkOnDeleteTime = 0, float enlargeTimeSeconds = 0)
+			public static void AddTemporal(GameObject instance, double lifetimeSeconds, double particleShutoffTimeSeconds = 0, float enlargeTimeSeconds = 0, float shrinkOnDeleteTime = 0)
 			{
 				EnlargeSoon(instance, enlargeTimeSeconds);
 
@@ -173,7 +184,7 @@ namespace TaleSpireCore
 			{
 				if (gameObjectsToDestroy != null)
 					foreach (GameObject gameObject in gameObjectsToDestroy)
-						DestroyEffect(gameObject);
+						DestroyEffectNow(gameObject);
 			}
 
 			private static List<GameObject> CleanUpAndScaleShrinkingObjects()
@@ -240,7 +251,7 @@ namespace TaleSpireCore
 				}
 			}
 
-			private static void DestroyEffect(GameObject gameObject)
+			private static void DestroyEffectNow(GameObject gameObject)
 			{
 				if (enlargingObjects.ContainsKey(gameObject))
 					enlargingObjects.Remove(gameObject);

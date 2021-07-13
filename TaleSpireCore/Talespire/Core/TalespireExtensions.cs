@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TaleSpireCore
@@ -18,13 +19,26 @@ namespace TaleSpireCore
 			return new VectorDto(vector.x, vector.y, vector.z);
 		}
 
-		public static Component GetScript(this GameObject gameObject, string scriptName)
+		public static MonoBehaviour GetScript(this GameObject gameObject, string scriptName)
 		{
-			Component[] components = gameObject.GetComponents(typeof(Component));
+			Component[] components = gameObject.GetComponents(typeof(MonoBehaviour));
 			foreach (Component component in components)
 				if (component.GetType().Name == scriptName)
-					return component;
+					return component as MonoBehaviour;
 			return null;
+		}
+
+		public static List<MonoBehaviour> GetScriptsInChildren(this GameObject gameObject, string scriptName)
+		{
+			List<MonoBehaviour> result = new List<MonoBehaviour>();
+			Component[] components = gameObject.GetComponentsInChildren(typeof(MonoBehaviour));
+			
+			foreach (Component component in components)
+				if (component.GetType().Name == scriptName)
+					if (component is MonoBehaviour monoBehaviour)
+						result.Add(monoBehaviour);
+
+			return result;
 		}
 
 		/// <summary>
@@ -108,6 +122,31 @@ namespace TaleSpireCore
 			else
 				baseGameObject = creatureBoardAsset.BaseLoader.LoadedAsset;
 			return baseGameObject;
+		}
+
+		public static float GetRotationDegrees(this CreatureBoardAsset creatureBoardAsset)
+		{
+			return creatureBoardAsset.Rotator.localEulerAngles.z;
+		}
+
+		public static void SetRotationDegrees(this CreatureBoardAsset creatureBoardAsset, float rotationDegrees)
+		{
+			creatureBoardAsset.Rotator.localEulerAngles = new Vector3(0, 0, rotationDegrees);
+		}
+
+		public static Vector3 GetRotation(this CreatureBoardAsset creatureBoardAsset)
+		{
+			return creatureBoardAsset.Rotator.localEulerAngles;
+		}
+
+		public static void SetRotation(this CreatureBoardAsset creatureBoardAsset, Vector3 angle)
+		{
+			creatureBoardAsset.Rotator.localEulerAngles = angle;
+		}
+
+		public static void LookAt(this CreatureBoardAsset creatureBoardAsset, Vector3 position)
+		{
+			creatureBoardAsset.Creature.transform.LookAt(position);
 		}
 	}
 }

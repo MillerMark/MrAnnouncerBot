@@ -11,6 +11,8 @@ namespace TaleSpireCore
 		public string SpellId { get; set; }
 		public string CreatureId { get; set; }
 		public float EnlargeTime { get; set; }
+		public float ShrinkTime { get; set; }
+		public float RotationDegrees { get; set; }
 		public float LifeTime { get; set; }
 		public VectorDto Position { get; set; }
 		public SpellLocation Location { get; set; }
@@ -22,13 +24,15 @@ namespace TaleSpireCore
 
 		}
 
-		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, VectorDto position = null)
+		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, VectorDto position = null, float shrinkTime = 0, float rotation = 0)
 		{
 			CreationTime = Time.time + secondsDelayStart;
 			EffectName = effectName;
 			SpellId = spellId;
 			CreatureId = creatureId;
 			EnlargeTime = enlargeTime;
+			ShrinkTime = shrinkTime;
+			RotationDegrees = rotation;
 			LifeTime = lifeTime;
 			Position = position;
 			Location = location;
@@ -40,13 +44,16 @@ namespace TaleSpireCore
 			switch (Location)
 			{
 				case SpellLocation.Attached:
-					Talespire.Spells.AttachEffect(EffectName, SpellId, CreatureId, EnlargeTime, 0);
+					Talespire.Spells.AttachEffect(EffectName, SpellId, CreatureId, 0, EnlargeTime, LifeTime, ShrinkTime, RotationDegrees);
 					break;
 				case SpellLocation.AtPosition:
-					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime);
+					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
 					break;
-				case SpellLocation.OverCreature:
-					Talespire.Spells.PlayEffectOverCreature(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime);
+				case SpellLocation.AtCreatureBase:
+					Talespire.Spells.PlayEffectAtCreatureBase(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
+					break;
+				case SpellLocation.CreatureCastSpell:
+					Talespire.Spells.CreatureCastSpell(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
 					break;
 			}
 		}
