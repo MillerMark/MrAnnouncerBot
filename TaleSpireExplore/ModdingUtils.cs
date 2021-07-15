@@ -132,7 +132,7 @@ namespace TaleSpireExplore
 				input[17]);
 		}
 
-		private static CustomCreatureData convertCreatureData(CreatureData cd)
+		private static CustomCreatureData convertCreatureData(CreatureDataV0 cd)
 		{
 			// This is because NGuid does not serialize nicely
 			CustomCreatureData ccd = new CustomCreatureData();
@@ -560,7 +560,7 @@ namespace TaleSpireExplore
 			float3 pos = math.float3(float.Parse(x), float.Parse(y), float.Parse(z));
 			spawnCreaturePos = pos;
 
-			CreatureData data = new CreatureData();
+			CreatureDataV1 data = new CreatureDataV1();
 			//CreatureData data = new CreatureData(
 			//	new NGuid(nguid),
 			//	NGuid.Empty,
@@ -653,10 +653,11 @@ namespace TaleSpireExplore
 				var board = BoardSessionManager.Board;
 				var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static;
 
-				Dictionary<NGuid, CreatureData> creatures = (Dictionary<NGuid, CreatureData>)board.GetType()
+				// TODO: Check this:
+				Dictionary<NGuid, CreatureDataV0> creatures = (Dictionary<NGuid, CreatureDataV0>)board.GetType()
 					.GetField("_creatures", flags)
 					.GetValue(board);
-				foreach (KeyValuePair<NGuid, CreatureData> entry in creatures)
+				foreach (KeyValuePair<NGuid, CreatureDataV0> entry in creatures)
 				{
 					allCreatures.Add(convertCreatureData(entry.Value));
 				}
@@ -1353,6 +1354,7 @@ namespace TaleSpireExplore
 
 		static string Target(string command, string creatureId = "")
 		{
+			// TODO: Change this "On" command to "Creatures".
 			if (command == "On")
 			{
 				if (!Talespire.Target.IsTargetingSphereSet())
@@ -1990,8 +1992,14 @@ namespace TaleSpireExplore
 			projectileOptions.projectileSizeMultiplier = Talespire.Convert.ToFloat(args[10]);
 			projectileOptions.bezierPathMultiplier = Talespire.Convert.ToFloat(args[11]);
 
+			Talespire.Log.Warning($"-----");
+			Talespire.Log.Warning($"LaunchProjectile Targets....");
 			for (int i = minArgs; i < args.Length; i++)
+			{
+				Talespire.Log.Debug($"{args[i]}");
 				projectileOptions.AddTarget(args[i]);
+			}
+			Talespire.Log.Warning($"-----");
 
 			Talespire.Spells.LaunchProjectile(projectileOptions);
 			return ApiResponse.Good();

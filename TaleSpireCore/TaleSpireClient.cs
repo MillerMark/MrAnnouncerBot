@@ -301,6 +301,11 @@ namespace TaleSpireCore
 			Invoke("Flashlight", "Off");
 		}
 
+		public static void CleanUpTargets()
+		{
+			Invoke("Target", "CleanUp");
+		}
+
 		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance,
 																				string spellId, string projectileSize, float projectileSizeMultiplier, float bezierPathMultiplier, List<string> targets)
 		{

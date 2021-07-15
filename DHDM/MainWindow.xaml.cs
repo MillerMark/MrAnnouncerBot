@@ -2957,20 +2957,8 @@ namespace DHDM
 
 		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
 		{
-			if (castedSpell.Target == null && (castedSpell.Spell.MinTargetsToCast > 0 || castedSpell.Spell.MaxTargetsToCast > 0))
-			{
-				Target target = new Target();
-				target.Type = AttackTargetType.Spell;
-				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					if (inGameCreature.IsTargeted)
-						target.AddCreature(inGameCreature.Creature);
-
-				foreach (CreatureStats creatureStats in PlayerStatManager.Players)
-					if (creatureStats.IsTargeted)
-						target.AddCreature(AllPlayers.GetFromId(creatureStats.CreatureId));
-
-				castedSpell.Target = target;
-			}
+			if (castedSpell.Target == null)  // && (castedSpell.Spell.MinTargetsToCast > 0 || castedSpell.Spell.MaxTargetsToCast > 0)
+				AddCurrentTargets(castedSpell);
 
 			DndCore.ValidationResult validationResult = castedSpell.GetValidation(player, castedSpell.Target);
 			if (validationResult.ValidationAction == ValidationAction.Stop)
@@ -3031,6 +3019,21 @@ namespace DHDM
 			}
 
 			return playerSpellState;
+		}
+
+		private static void AddCurrentTargets(CastedSpell castedSpell)
+		{
+			Target target = new Target();
+			target.Type = AttackTargetType.Spell;
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreature.IsTargeted)
+					target.AddCreature(inGameCreature.Creature);
+
+			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
+				if (creatureStats.IsTargeted)
+					target.AddCreature(AllPlayers.GetFromId(creatureStats.CreatureId));
+
+			castedSpell.Target = target;
 		}
 
 		private void ReportValidation(Character player, DndCore.ValidationResult validationResult)
@@ -11232,6 +11235,11 @@ namespace DHDM
 
 		public void TaleSpireTarget(string targetingCommand)
 		{
+			if (targetingCommand.Contains("Favorite"))
+			{
+				TargetManager.HandleFavoritesCommand(targetingCommand);
+				return;
+			}
 			string modifiedTargetingCommand = targetingCommand;
 			if (targetingCommand == "AllEnemiesInVolume" ||
 				targetingCommand == "AllNeutralsInVolume" ||

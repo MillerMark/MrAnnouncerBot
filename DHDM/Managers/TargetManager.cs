@@ -7,17 +7,12 @@ using TaleSpireCore;
 
 namespace DHDM
 {
-	public class SavedTargets
-	{
-		public List<string> TargetedCreatures { get; set; } = new List<string>();
-		public SavedTargets()
-		{
-			
-		}
-	}
 	public static class TargetManager
 	{
+		const string STR_Favorite = "Favorite";
 		static Dictionary<int, SavedTargets> savedTargets = new Dictionary<int, SavedTargets>();
+		static Dictionary<string, SavedTargets> favoriteTargets = new Dictionary<string, SavedTargets>();
+			
 		public static void TargetPoint(ApiResponse response)
 		{
 			VectorDto vector = response.GetData<VectorDto>();
@@ -117,9 +112,14 @@ namespace DHDM
 
 		public static void Save(int creatureId)
 		{
+			savedTargets[creatureId] = GetCurrentTargets();
+		}
+
+		private static SavedTargets GetCurrentTargets()
+		{
 			SavedTargets currentTargets = new SavedTargets();
 			currentTargets.TargetedCreatures = GetTargets().Select(x => x.taleSpireId).ToList();
-			savedTargets[creatureId] = currentTargets;
+			return currentTargets;
 		}
 
 		static void TargetCreaturesByTaleSpireId(SavedTargets savedTargets)
@@ -141,11 +141,17 @@ namespace DHDM
 		{
 			if (!savedTargets.ContainsKey(creatureId))
 				return;
+			LoadTargets(savedTargets[creatureId]);
+		}
+
+		private static void LoadTargets(SavedTargets targets)
+		{
+			TaleSpireClient.CleanUpTargets();
 			TaleSpireClient.RemoveTargetingUI();
-			TargetCreaturesByTaleSpireId(savedTargets[creatureId]);
+			TargetCreaturesByTaleSpireId(targets);
 			CreatureManager.UpdateInGameCreatures();
 			CreatureManager.UpdatePlayerStatsInGame();
-			foreach (string taleSpireId in savedTargets[creatureId].TargetedCreatures)
+			foreach (string taleSpireId in targets.TargetedCreatures)
 				TaleSpireClient.SetTargeted(taleSpireId, true);
 		}
 
@@ -185,6 +191,30 @@ namespace DHDM
 		public static void ClearTargetHistory()
 		{
 			savedTargets.Clear();
+		}
+		static void SaveTargets(string id)
+		{
+			favoriteTargets[id] = GetCurrentTargets();
+		}
+
+		static void LoadTargets(string id)
+		{
+			if (!favoriteTargets.ContainsKey(id))
+				return;
+			LoadTargets(favoriteTargets[id]);
+		}
+
+		public static void HandleFavoritesCommand(string targetingCommand)
+		{
+			int favoritePosition = targetingCommand.IndexOf(STR_Favorite);
+			if (favoritePosition < 0)
+				return;
+			string id = targetingCommand.Substring(favoritePosition + STR_Favorite.Length);
+			string loadSaveCommand = targetingCommand.Substring(0, favoritePosition);
+			if (loadSaveCommand == "Save")
+				SaveTargets(id);
+			else if (loadSaveCommand == "Load")
+				LoadTargets(id);
 		}
 	}
 }

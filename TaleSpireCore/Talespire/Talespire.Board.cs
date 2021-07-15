@@ -20,18 +20,18 @@ namespace TaleSpireCore
 				}
 			}
 
-			public static void InstantiateCreature(string boardAssetId, Vector3 position)
-			{
-				DataModel.CreatureData cd = new DataModel.CreatureData();
-				cd.Color = new Bounce.Unmanaged.Color888(20, 255, 20);
-				cd.ExplicitlyHidden = false;
-				cd.Flying = false;
-				cd.Hp = new CreatureStat(110f, 120f);
-				cd.BoardAssetId = new Bounce.Unmanaged.NGuid(new Guid(boardAssetId));
-				CreatureManager.CreateAndAddNewCreature(cd, position, Quaternion.identity);
-				//BoardSessionManager.Board.AddAsset(PlaceableKind.Prop, new Bounce.Unmanaged.NGuid(), origin, angle, DataModel.ShaderState.DropInAnimationKind.Place);
-				//BoardSessionManager.
-			}
+			//public static void InstantiateCreature(string boardAssetId, Vector3 position)
+			//{
+			//	CreatureDataV1 cd = new CreatureDataV1();
+			//	cd.Color = new Bounce.Unmanaged.Color888(20, 255, 20);
+			//	cd.ExplicitlyHidden = false;
+			//	cd.Flying = false;
+			//	cd.Hp = new CreatureStat(110f, 120f);
+			//	cd.Get = new Bounce.Unmanaged.NGuid(new Guid(boardAssetId));
+			//	CreatureManager.CreateAndAddNewCreature(cd, position, Quaternion.identity);
+			//	//BoardSessionManager.Board.AddAsset(PlaceableKind.Prop, new Bounce.Unmanaged.NGuid(), origin, angle, DataModel.ShaderState.DropInAnimationKind.Place);
+			//	//BoardSessionManager.
+			//}
 		}
 	}
 }

@@ -350,6 +350,7 @@
     <Compile Include="Managers\ObsManager.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Managers\SavedTargets.cs" />
     <Compile Include="PlayerStats\PlayerStatManagerDto.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />

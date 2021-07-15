@@ -82,6 +82,9 @@
 			this.tbx2 = new System.Windows.Forms.TextBox();
 			this.btnSet3 = new System.Windows.Forms.Button();
 			this.tbx3 = new System.Windows.Forms.TextBox();
+			this.btnSkyScraper = new System.Windows.Forms.Button();
+			this.tbxTargetLocation = new System.Windows.Forms.TextBox();
+			this.btnBattleZone = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -153,9 +156,9 @@
 			// 
 			// txtSunDirection
 			// 
-			this.txtSunDirection.Location = new System.Drawing.Point(52, 145);
+			this.txtSunDirection.Location = new System.Drawing.Point(48, 142);
 			this.txtSunDirection.Name = "txtSunDirection";
-			this.txtSunDirection.Size = new System.Drawing.Size(48, 20);
+			this.txtSunDirection.Size = new System.Drawing.Size(50, 20);
 			this.txtSunDirection.TabIndex = 7;
 			// 
 			// btnSetSun
@@ -250,11 +253,11 @@
 			// lblFlashlightStatus
 			// 
 			this.lblFlashlightStatus.AutoSize = true;
-			this.lblFlashlightStatus.Location = new System.Drawing.Point(27, 458);
+			this.lblFlashlightStatus.Location = new System.Drawing.Point(224, 533);
 			this.lblFlashlightStatus.Name = "lblFlashlightStatus";
-			this.lblFlashlightStatus.Size = new System.Drawing.Size(69, 13);
+			this.lblFlashlightStatus.Size = new System.Drawing.Size(52, 13);
 			this.lblFlashlightStatus.TabIndex = 19;
-			this.lblFlashlightStatus.Text = "(not tracking)";
+			this.lblFlashlightStatus.Text = "create at:";
 			// 
 			// btnGetRuler
 			// 
@@ -363,9 +366,9 @@
 			// btnAttackJanus
 			// 
 			this.btnAttackJanus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAttackJanus.Location = new System.Drawing.Point(224, 549);
+			this.btnAttackJanus.Location = new System.Drawing.Point(224, 557);
 			this.btnAttackJanus.Name = "btnAttackJanus";
-			this.btnAttackJanus.Size = new System.Drawing.Size(99, 31);
+			this.btnAttackJanus.Size = new System.Drawing.Size(99, 23);
 			this.btnAttackJanus.TabIndex = 21;
 			this.btnAttackJanus.Text = "Attack Janus!";
 			this.btnAttackJanus.UseVisualStyleBackColor = true;
@@ -374,9 +377,9 @@
 			// btnClearAttack
 			// 
 			this.btnClearAttack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnClearAttack.Location = new System.Drawing.Point(329, 549);
+			this.btnClearAttack.Location = new System.Drawing.Point(329, 557);
 			this.btnClearAttack.Name = "btnClearAttack";
-			this.btnClearAttack.Size = new System.Drawing.Size(99, 31);
+			this.btnClearAttack.Size = new System.Drawing.Size(99, 23);
 			this.btnClearAttack.TabIndex = 21;
 			this.btnClearAttack.Text = "Clear Attack!";
 			this.btnClearAttack.UseVisualStyleBackColor = true;
@@ -385,9 +388,9 @@
 			// btnTestEffects
 			// 
 			this.btnTestEffects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnTestEffects.Location = new System.Drawing.Point(457, 549);
+			this.btnTestEffects.Location = new System.Drawing.Point(457, 557);
 			this.btnTestEffects.Name = "btnTestEffects";
-			this.btnTestEffects.Size = new System.Drawing.Size(90, 31);
+			this.btnTestEffects.Size = new System.Drawing.Size(90, 23);
 			this.btnTestEffects.TabIndex = 21;
 			this.btnTestEffects.Text = "Test Effects";
 			this.btnTestEffects.UseVisualStyleBackColor = true;
@@ -407,9 +410,9 @@
 			// btnEditPrefabs
 			// 
 			this.btnEditPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 549);
+			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 533);
 			this.btnEditPrefabs.Name = "btnEditPrefabs";
-			this.btnEditPrefabs.Size = new System.Drawing.Size(90, 31);
+			this.btnEditPrefabs.Size = new System.Drawing.Size(135, 56);
 			this.btnEditPrefabs.TabIndex = 21;
 			this.btnEditPrefabs.Text = "Effect Editor...";
 			this.btnEditPrefabs.UseVisualStyleBackColor = true;
@@ -446,7 +449,8 @@
 			// 
 			// btnTest1
 			// 
-			this.btnTest1.Location = new System.Drawing.Point(719, 549);
+			this.btnTest1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnTest1.Location = new System.Drawing.Point(719, 558);
 			this.btnTest1.Name = "btnTest1";
 			this.btnTest1.Size = new System.Drawing.Size(88, 31);
 			this.btnTest1.TabIndex = 26;
@@ -456,7 +460,8 @@
 			// 
 			// btnTest2
 			// 
-			this.btnTest2.Location = new System.Drawing.Point(836, 549);
+			this.btnTest2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnTest2.Location = new System.Drawing.Point(836, 558);
 			this.btnTest2.Name = "btnTest2";
 			this.btnTest2.Size = new System.Drawing.Size(88, 31);
 			this.btnTest2.TabIndex = 26;
@@ -502,7 +507,8 @@
 			// 
 			// tbxAssetId
 			// 
-			this.tbxAssetId.Location = new System.Drawing.Point(930, 555);
+			this.tbxAssetId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.tbxAssetId.Location = new System.Drawing.Point(930, 564);
 			this.tbxAssetId.Name = "tbxAssetId";
 			this.tbxAssetId.Size = new System.Drawing.Size(389, 20);
 			this.tbxAssetId.TabIndex = 25;
@@ -593,12 +599,44 @@
 			this.tbx3.TabIndex = 25;
 			this.tbx3.Text = "10";
 			// 
+			// btnSkyScraper
+			// 
+			this.btnSkyScraper.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnSkyScraper.Location = new System.Drawing.Point(384, 530);
+			this.btnSkyScraper.Name = "btnSkyScraper";
+			this.btnSkyScraper.Size = new System.Drawing.Size(73, 21);
+			this.btnSkyScraper.TabIndex = 26;
+			this.btnSkyScraper.Text = "Skyscraper";
+			this.btnSkyScraper.UseVisualStyleBackColor = true;
+			this.btnSkyScraper.Click += new System.EventHandler(this.btnSkyScraper_Click);
+			// 
+			// tbxTargetLocation
+			// 
+			this.tbxTargetLocation.Location = new System.Drawing.Point(282, 531);
+			this.tbxTargetLocation.Name = "tbxTargetLocation";
+			this.tbxTargetLocation.Size = new System.Drawing.Size(96, 20);
+			this.tbxTargetLocation.TabIndex = 7;
+			this.tbxTargetLocation.Text = "-1,0.2,0";
+			// 
+			// btnBattleZone
+			// 
+			this.btnBattleZone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnBattleZone.Location = new System.Drawing.Point(463, 530);
+			this.btnBattleZone.Name = "btnBattleZone";
+			this.btnBattleZone.Size = new System.Drawing.Size(73, 21);
+			this.btnBattleZone.TabIndex = 26;
+			this.btnBattleZone.Text = "Battle Zone";
+			this.btnBattleZone.UseVisualStyleBackColor = true;
+			this.btnBattleZone.Click += new System.EventHandler(this.btnBattleZone_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1331, 592);
 			this.Controls.Add(this.btnTest2);
+			this.Controls.Add(this.btnBattleZone);
+			this.Controls.Add(this.btnSkyScraper);
 			this.Controls.Add(this.btnTest1);
 			this.Controls.Add(this.tbx3);
 			this.Controls.Add(this.tbx2);
@@ -642,6 +680,7 @@
 			this.Controls.Add(this.btnEffects);
 			this.Controls.Add(this.btnClear);
 			this.Controls.Add(this.label2);
+			this.Controls.Add(this.tbxTargetLocation);
 			this.Controls.Add(this.txtSunDirection);
 			this.Controls.Add(this.btnSetSun);
 			this.Controls.Add(this.label1);
@@ -713,5 +752,8 @@
 		private System.Windows.Forms.TextBox tbx2;
 		private System.Windows.Forms.Button btnSet3;
 		private System.Windows.Forms.TextBox tbx3;
+		private System.Windows.Forms.Button btnSkyScraper;
+		private System.Windows.Forms.TextBox tbxTargetLocation;
+		private System.Windows.Forms.Button btnBattleZone;
 	}
 }

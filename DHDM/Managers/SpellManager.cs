@@ -25,10 +25,34 @@ namespace DHDM
 
 		private static void LaunchProjectileFunction_LaunchProjectile(object sender, ProjectileEffectEventArgs ea)
 		{
+			List<string> targets = GetTargets(ea);
+
+			TaleSpireClient.LaunchProjectile(ea.EffectName, ea.TaleSpireId, ea.Kind.ToString(), ea.Count,
+				ea.Speed, ea.FireCollisionEventOn.ToString(), ea.LaunchTimeVariance,
+				ea.TargetVariance, ea.SpellId, ea.ProjectileSize.ToString(), ea.ProjectileSizeMultiplier, ea.BezierPathMultiplier, targets);
+		}
+
+		private static List<string> GetTargets(ProjectileEffectEventArgs ea)
+		{
 			List<string> targets = new List<string>();
 			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
 				targets.Add(Targeting.TargetPoint.GetXyzStr());  // Adding a vector to the target list. Might add something like "(0, 0, 0) Square20"
 
+			if (CastedSpell.ActiveSpells.ContainsKey(ea.SpellId))
+			{
+				CastedSpell castedSpell = CastedSpell.ActiveSpells[ea.SpellId];
+				TargetDetails targetDetails = castedSpell.Spell.TargetDetails;
+				if (targetDetails.Kind.HasFlag(TargetKind.Volume) && targetDetails.MaxCreatures == 0 && targets.Count > 0)
+					return targets;  // Don't add any active.
+			}
+
+			AddActiveTargets(ea, targets);
+
+			return targets;
+		}
+
+		private static void AddActiveTargets(ProjectileEffectEventArgs ea, List<string> targets)
+		{
 			if (ea.Target != null)
 			{
 				foreach (Creature creature in ea.Target.Creatures)
@@ -47,10 +71,6 @@ namespace DHDM
 				foreach (Creature creature in allTargets)
 					targets.Add(creature.taleSpireId);
 			}
-
-			TaleSpireClient.LaunchProjectile(ea.EffectName, ea.TaleSpireId, ea.Kind.ToString(), ea.Count,  
-				ea.Speed, ea.FireCollisionEventOn.ToString(), ea.LaunchTimeVariance,
-				ea.TargetVariance, ea.SpellId, ea.ProjectileSize.ToString(), ea.ProjectileSizeMultiplier, ea.BezierPathMultiplier, targets);
 		}
 
 		/* 

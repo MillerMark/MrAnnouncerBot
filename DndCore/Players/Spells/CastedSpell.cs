@@ -6,6 +6,7 @@ namespace DndCore
 	[DebuggerDisplay("{SpellCaster?.firstName,nq}: {Spell?.Name,nq}")]
 	public class CastedSpell
 	{
+		static System.Collections.Generic.Dictionary<string, CastedSpell> activeSpells;
 		public string ID { get; set; }
 		public event EventHandler OnDispel;
 		static CastedSpell()
@@ -76,6 +77,16 @@ namespace DndCore
 		public int CastingRound { get; set; }
 		public int CastingTurnIndex { get; set; }
 
+		public static System.Collections.Generic.Dictionary<string, CastedSpell> ActiveSpells { 
+			get 
+			{
+				if (activeSpells == null)
+					activeSpells = new System.Collections.Generic.Dictionary<string, CastedSpell>();
+				return activeSpells; 
+			}
+			private set => activeSpells = value; 
+		}
+
 		public void PreparationComplete()
 		{
 			SpellCaster.ShowPlayerCasting(this);
@@ -114,11 +125,14 @@ namespace DndCore
 		public void Cast()
 		{
 			Active = true;
+			if (!ActiveSpells.ContainsKey(ID))
+				ActiveSpells.Add(ID, this);
 			Spell.TriggerCast(SpellCaster, Target, this);
 		}
 
 		protected virtual void OnOnDispel(object sender, EventArgs e)
 		{
+			ActiveSpells.Remove(ID);
 			OnDispel?.Invoke(sender, e);
 		}
 
@@ -166,60 +180,81 @@ namespace DndCore
 				// TODO: Add validation to make sure the number of targets do not exceed the max.
 
 			}
-			if (Spell.TargetDetails.Kind != TargetKind.None)
-			{
-				
-			}
-			int maxTargetsToCast = Spell.MaxTargetsToCast;
-			int minTargetsToCast = Spell.MinTargetsToCast;
-			// TODO: consider moving this logic directly into the properties MinTargetsToCast and MaxTargetsToCast
-			if (maxTargetsToCast == -1)  // Use spell ammo count
-				maxTargetsToCast = Spell.AmmoCount;
-			if (minTargetsToCast == -1)  // Use spell ammo count
-				minTargetsToCast = Spell.AmmoCount;
 
 			ValidationResult validationResult = new ValidationResult();
-			if (minTargetsToCast > 0 || maxTargetsToCast > 0)
-			{
-				// TODO: Add warnings if min threshold satisfied but more targets are available.
 
-				/* 
-					var targetCount = GetCount(target);
-					if (targetCount == 0)
-						ValidationFailed($"Select up to {spell_AmmoCount} target(s)!", "Select targets!", Stop);
-					else if (targetCount > spell_AmmoCount)
-						ValidationFailed($"Max targets for Enhance Ability ({spell_AmmoCount}) exceeded! Select fewer targets or cast at a higher spell slot!", "Too many targets!", Stop);
-					else if (targetCount < spell_AmmoCount)
-						ValidationFailed($"More targets for Enhance Ability are available ({spell_AmmoCount} total). Are you sure you want to cast?", "Select more targets?", Warn); 
-				 
-				 */
-				if (target.Count < minTargetsToCast)
+			try
+			{
+				if (Spell.TargetDetails.Kind != TargetKind.None)
 				{
-					validationResult.ValidationAction = ValidationAction.Stop;
-					if (minTargetsToCast == 1)
-						validationResult.MessageOverPlayer = $"Need at least one target to cast {Spell.Name}!";
-					else
-						validationResult.MessageOverPlayer = $"Need at least {minTargetsToCast} targets to cast {Spell.Name}!";
+					if (Spell.TargetDetails.Kind.HasFlag(TargetKind.Volume))
+					{
+						if (Spell.TargetDetails.MaxCreatures == 0)
+						{
+							// Hey, no player/npc targets allowed.
+							if (target != null && target.Count > 0)
+							{
+								// chill
+								//validationResult.MessageOverPlayer = "No creature targets allowed";
+								//validationResult.MessageToDm = $"Must clear all targets before casting {spellCaster.Name}'s {Spell.Name}.";
+								//validationResult.ValidationAction = ValidationAction.Stop;
+								//return validationResult;
+							}
+						}
+					}
 				}
-				else if (maxTargetsToCast > 0 && target.Count < maxTargetsToCast)
+				int maxTargetsToCast = Spell.MaxTargetsToCast;
+				int minTargetsToCast = Spell.MinTargetsToCast;
+				// TODO: consider moving this logic directly into the properties MinTargetsToCast and MaxTargetsToCast
+				if (maxTargetsToCast == -1)  // Use spell ammo count
+					maxTargetsToCast = Spell.AmmoCount;
+				if (minTargetsToCast == -1)  // Use spell ammo count
+					minTargetsToCast = Spell.AmmoCount;
+
+				if (minTargetsToCast > 0 || maxTargetsToCast > 0)
 				{
-					validationResult.ValidationAction = ValidationAction.Warn;
-					if (maxTargetsToCast == 1)
-						validationResult.MessageOverPlayer = $"Missing a target for {Spell.Name}?";
-					else
-						validationResult.MessageOverPlayer = $"Only {target.Count} of {maxTargetsToCast} targets with {Spell.Name}?!";
-				}
-				else if (target.Count > maxTargetsToCast)
-				{
-					validationResult.ValidationAction = ValidationAction.Stop;
-					if (maxTargetsToCast == 1)
-						validationResult.MessageOverPlayer = $"Only one target is allowed for {Spell.Name}!";
-					else
-						validationResult.MessageOverPlayer = $"Only {maxTargetsToCast} targets are allowed for {Spell.Name}!";
+					// TODO: Add warnings if min threshold satisfied but more targets are available.
+
+					/* 
+						var targetCount = GetCount(target);
+						if (targetCount == 0)
+							ValidationFailed($"Select up to {spell_AmmoCount} target(s)!", "Select targets!", Stop);
+						else if (targetCount > spell_AmmoCount)
+							ValidationFailed($"Max targets for Enhance Ability ({spell_AmmoCount}) exceeded! Select fewer targets or cast at a higher spell slot!", "Too many targets!", Stop);
+						else if (targetCount < spell_AmmoCount)
+							ValidationFailed($"More targets for Enhance Ability are available ({spell_AmmoCount} total). Are you sure you want to cast?", "Select more targets?", Warn); 
+
+					 */
+					if (target.Count < minTargetsToCast)
+					{
+						validationResult.ValidationAction = ValidationAction.Stop;
+						if (minTargetsToCast == 1)
+							validationResult.MessageOverPlayer = $"Need at least one target to cast {Spell.Name}!";
+						else
+							validationResult.MessageOverPlayer = $"Need at least {minTargetsToCast} targets to cast {Spell.Name}!";
+					}
+					else if (maxTargetsToCast > 0 && target.Count < maxTargetsToCast)
+					{
+						validationResult.ValidationAction = ValidationAction.Warn;
+						if (maxTargetsToCast == 1)
+							validationResult.MessageOverPlayer = $"Missing a target for {Spell.Name}?";
+						else
+							validationResult.MessageOverPlayer = $"Only {target.Count} of {maxTargetsToCast} targets with {Spell.Name}?!";
+					}
+					else if (target.Count > maxTargetsToCast)
+					{
+						validationResult.ValidationAction = ValidationAction.Stop;
+						if (maxTargetsToCast == 1)
+							validationResult.MessageOverPlayer = $"Only one target is allowed for {Spell.Name}!";
+						else
+							validationResult.MessageOverPlayer = $"Only {maxTargetsToCast} targets are allowed for {Spell.Name}!";
+					}
 				}
 			}
-			TriggerSpellValidation(spellCaster, target, validationResult);
-
+			finally
+			{
+				TriggerSpellValidation(spellCaster, target, validationResult);
+			}
 			return validationResult;
 		}
 

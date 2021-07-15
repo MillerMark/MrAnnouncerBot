@@ -1066,7 +1066,8 @@ namespace TaleSpireExplore
 			string spellEffectName = "Fire";
 			if (!string.IsNullOrWhiteSpace(lastSelectedPrefab))
 				spellEffectName = lastSelectedPrefab;
-			AddEffect(STR_SpellTestId, spellEffectName, new Vector3(15f, 22.5f, 95.4f));
+			Vector3 vector = Talespire.Convert.ToVector3(tbxTargetLocation.Text);
+			AddEffect(STR_SpellTestId, spellEffectName, vector);
 		}
 
 		private static GameObject AddEffect(string instanceId, string spellEffectName, Vector3? newPosition = null)
@@ -1108,7 +1109,8 @@ namespace TaleSpireExplore
 			lastSelectedPrefab = cmbPrefabs.SelectedItem as string;
 			if (string.IsNullOrWhiteSpace(lastSelectedPrefab))
 				return;
-			AddEffect(STR_SpellTestId, lastSelectedPrefab, new Vector3(15f, 22.5f, 95.4f));
+			Vector3 vector = Talespire.Convert.ToVector3(tbxTargetLocation.Text);
+			AddEffect(STR_SpellTestId, lastSelectedPrefab, vector);
 		}
 
 		private void cmbPrefabs_DropDown(object sender, EventArgs e)
@@ -1362,7 +1364,7 @@ L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, Wor
 		private void btnTest2_Click(object sender, EventArgs e)
 		{
 			//Talespire.Minis.TryCreateCrocodile(new Vector3(15f, 22.5f, 95.4f));
-			Talespire.Board.InstantiateCreature(tbxAssetId.Text, new Vector3(15f, 22.5f, 95.4f));
+			//Talespire.Board.InstantiateCreature(tbxAssetId.Text, new Vector3(15f, 22.5f, 95.4f));
 		}
 
 		private void btnSetCameraPosition_Click(object sender, EventArgs e)
@@ -1433,6 +1435,16 @@ L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, Wor
 		private void btnSet3_Click(object sender, EventArgs e)
 		{
 			
+		}
+
+		private void btnSkyScraper_Click(object sender, EventArgs e)
+		{
+			tbxTargetLocation.Text = "15, 22.5, 95.4";
+		}
+
+		private void btnBattleZone_Click(object sender, EventArgs e)
+		{
+			tbxTargetLocation.Text = "-1,0.2,0";
 		}
 	}
 }

@@ -300,6 +300,7 @@ namespace TaleSpireCore
 						float saveStartTime = startTime;
 						for (int i = 0; i < projectileOptions.count; i++)
 						{
+							Log.Vector("Target's intended location", location);
 							lastProjectileAdded = AddProjectile(projectileOptions, startTime, sourcePosition, location);
 							if (firstProjectileAdded == null)
 								firstProjectileAdded = lastProjectileAdded;

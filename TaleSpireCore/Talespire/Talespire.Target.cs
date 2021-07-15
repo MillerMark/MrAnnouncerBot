@@ -124,6 +124,7 @@ namespace TaleSpireCore
 				MiniRotator.Initialize();
 			}
 
+			// TODO: Refactor this into multiple dedicated methods with the best names ever!!!
 			public static void On(int diameter = 0, string creatureId = null)
 			{
 				PrepareForSelection();
@@ -160,7 +161,7 @@ namespace TaleSpireCore
 			private static void PrepareForSelection()
 			{
 				TargetSphereDiameter = 0;
-				CleanUp();
+				CleanUp(false);
 				Flashlight.On();
 			}
 
@@ -500,15 +501,18 @@ namespace TaleSpireCore
 				return AddTarget(parent.position, parent, 1);
 			}
 
-			public static void CleanUp()
+			public static void CleanUp(bool removeTargetDisks = true)
 			{
 				Off();
 
-				foreach (GameObject gameObject in targetDisks)
-					UnityEngine.Object.Destroy(gameObject);
-				RemoveTargetingUI();
+				if (removeTargetDisks)
+				{
+					foreach (GameObject gameObject in targetDisks)
+						UnityEngine.Object.Destroy(gameObject);
+					targetDisks.Clear();
+				}
 
-				targetDisks.Clear();
+				RemoveTargetingUI();
 			}
 
 			public static void RemoveTargetingUI()
