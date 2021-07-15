@@ -52,19 +52,36 @@ namespace TaleSpireCore
 			return groundHeight;
 		}
 
-		public static GameObject FindChild(this GameObject gameObject, string name)
+		public static GameObject FindChild(this GameObject gameObject, string name, bool includeInactive = false)
 		{
-			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>();
+			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>(includeInactive);
+			RectTransform[] rectTransforms = gameObject.GetComponentsInChildren<RectTransform>(includeInactive);
 
-			if (childTransforms == null)
-				return null;
+			if (childTransforms != null)
+				foreach (Transform transform in childTransforms)
+				{
+					GameObject child = transform.gameObject;
+					if (child?.name == name)
+						return child;
+				}
 
-			foreach (Transform transform in childTransforms)
-			{
-				GameObject child = transform.gameObject;
-				if (child?.name == name)
-					return child;
-			}
+			if (rectTransforms != null)
+				foreach (Transform transform in rectTransforms)
+				{
+					GameObject child = transform.gameObject;
+					if (child?.name == name)
+						return child;
+				}
+
+			return null;
+		}
+
+		public static GameObject GetChild(this Transform transform, string nameToFind)
+		{
+			Transform[] children = transform.GetComponentsInChildren<Transform>();
+			foreach (Transform child in children)
+				if (child.gameObject.name == nameToFind)
+					return child.gameObject;
 
 			return null;
 		}
@@ -79,15 +96,6 @@ namespace TaleSpireCore
 			return false;
 		}
 
-		public static GameObject GetChild(this Transform transform, string nameToFind)
-		{
-			Transform[] children = transform.GetComponentsInChildren<Transform>();
-			foreach (Transform child in children)
-				if (child.gameObject.name == nameToFind)
-					return child.gameObject;
-
-			return null;
-		}
 
 		public static CharacterPosition GetCharacterPosition(this CreatureBoardAsset creatureAsset)
 		{
@@ -147,6 +155,27 @@ namespace TaleSpireCore
 		public static void LookAt(this CreatureBoardAsset creatureBoardAsset, Vector3 position)
 		{
 			creatureBoardAsset.Creature.transform.LookAt(position);
+		}
+
+		public static void RotateTowards(this CreatureBoardAsset creature, Vector3 targetPosition, float multiplier = 15f)
+		{
+			Vector3 targetFloor = new Vector3(targetPosition.x, 0f, targetPosition.z);
+			Vector3 creaturePosition = creature.transform.position;
+			Vector3 creaturePositionFloor = new Vector3(creaturePosition.x, 0f, creaturePosition.z);
+			Vector3 to = -(creaturePositionFloor - targetFloor).normalized;
+			float angle = Vector3.Angle(new Vector3(-creature.Rotator.right.x, 0f, -creature.Rotator.right.z), to);
+			float dotProduct = Vector3.Dot(-creature.Rotator.up, to);
+
+			if (Vector3.Distance(creaturePositionFloor, targetFloor) <= 0.0002f)
+				return;
+
+			float correctAngle;
+			if (dotProduct < 0f)
+				correctAngle = -angle;
+			else
+				correctAngle = angle;
+			float zAngle = correctAngle * Mathf.Min(Time.deltaTime, 0.08f) * multiplier;
+			creature.Rotator.Rotate(0f, 0f, zAngle, Space.Self);
 		}
 	}
 }

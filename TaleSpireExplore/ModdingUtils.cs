@@ -428,7 +428,6 @@ namespace TaleSpireExplore
 			//currentActions.Add(ma);
 		}
 
-		private const string TaleSpireMachine = "192.168.22.42";
 		const string STR_SpherePrefix = "Sphere";
 		private static void StartSocketServer()
 		{
@@ -442,9 +441,9 @@ namespace TaleSpireExplore
 					() =>
 					{
 						int port = 999;
-						Debug.Log($"Starting Modding Socket at {TaleSpireMachine} and Port: {port}");
+						Debug.Log($"Starting Modding Socket at {TaleSpireClient.TaleSpireMachineIpAddress} and Port: {port}");
 						//byte[] buffer = new Byte[4096];
-						IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachine), port);
+						IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireClient.TaleSpireMachineIpAddress), port);
 						Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
 						try
@@ -1352,14 +1351,14 @@ namespace TaleSpireExplore
 
 		}
 
-		static string Target(string command)
+		static string Target(string command, string creatureId = "")
 		{
 			if (command == "On")
 			{
 				if (!Talespire.Target.IsTargetingSphereSet())
 					TaleSpireExplorePlugin.LoadKnownEffects();
 				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.Creatures;
-				Talespire.Target.On();
+				Talespire.Target.On(0, creatureId);
 			}
 			else if (command == "SelectCreature")
 			{
@@ -1495,6 +1494,10 @@ namespace TaleSpireExplore
 				Talespire.Log.Debug($"  {item}");
 			}
 
+			if (arg.Length == 2)
+			{
+				return Target(arg[0], arg[1]);
+			}
 			if (arg.Length == 1)
 			{
 				return Target(arg[0]);

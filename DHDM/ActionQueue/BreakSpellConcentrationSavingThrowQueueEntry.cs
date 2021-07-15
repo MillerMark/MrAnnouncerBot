@@ -8,6 +8,7 @@ namespace DHDM
 {
 	public class BreakSpellConcentrationSavingThrowQueueEntry : DieRollQueueEntry
 	{
+		static List<string> rollIds = new List<string>();
 		public const string STR_ConcentrationSave = "Concentration Save";
 		List<int> additionalPlayerIds = new List<int>();
 		public BreakSpellConcentrationSavingThrowQueueEntry()
@@ -31,11 +32,25 @@ namespace DHDM
 			return false;
 		}
 
+		public static bool RollWasToSaveConcentration(string rollId)
+		{
+			return rollIds.Contains(rollId);
+		}
+
+		public static void RemoveRoll(string rollId)
+		{
+			rollIds.Remove(rollId);
+		}
+
 		public override void PrepareRoll(DiceRoll diceRoll)
 		{
 			base.PrepareRoll(diceRoll);
 			diceRoll.SavingThrow = Ability.constitution;
 			diceRoll.SuppressLegacyRoll = true;
+			diceRoll.RollID = Guid.NewGuid().ToString();
+			if (rollIds == null)
+				rollIds = new List<string>();
+			rollIds.Add(diceRoll.RollID);
 
 			AddConcentrationSaveForPlayer(diceRoll, PlayerId);
 

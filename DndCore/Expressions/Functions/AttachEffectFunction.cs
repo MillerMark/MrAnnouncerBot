@@ -25,10 +25,19 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1, 6);
+			string spellId = null;
+			if (spell != null)
+				spellId = spell.ID;
+			else
+			{
+				CreaturePlusModId creaturePlusModId = Expressions.GetCustomData<CreaturePlusModId>(evaluator.Variables);
+				if (creaturePlusModId != null)
+					spellId = creaturePlusModId.Guid;
+			}
 			float lifeTime = 0;
 			float shrinkTime = 0;
 			float rotationDegrees = 0;
-			if (player != null && spell != null)
+			if (player != null && spellId != null)
 			{
 				string effectName = Expressions.GetStr(args[0]);
 				float secondsDelayStart = 0;
@@ -52,7 +61,7 @@ namespace DndCore
 					}
 				}
 
-				OnAttachChargingEffect(effectName, spell.ID, player.taleSpireId, secondsDelayStart, enlargeTime, lifeTime, shrinkTime, rotationDegrees);
+				OnAttachChargingEffect(effectName, spellId, player.taleSpireId, secondsDelayStart, enlargeTime, lifeTime, shrinkTime, rotationDegrees);
 			}
 
 			return null;

@@ -38,8 +38,9 @@ namespace TaleSpireCore
 				string searchId = GetSearch(id);
 
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-					if (creatureAsset.WorldId.ToString() == searchId)
+					if (creatureAsset.WorldId != null && creatureAsset.WorldId.ToString() == searchId)
 						return creatureAsset;
+
 				return null;
 			}
 
@@ -49,7 +50,7 @@ namespace TaleSpireCore
 				CreatureBoardAsset[] allCreatureAssets = GetAll();
 				if (allCreatureAssets == null)
 					return null;
-				
+
 				string searchId = GetSearch(id);
 
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
@@ -138,7 +139,7 @@ namespace TaleSpireCore
 				if (allCreatureAssets == null)
 					return null;
 				List<string> result = new List<string>();
-				
+
 				foreach (CreatureBoardAsset creatureBoardAsset in allCreatureAssets)
 				{
 					Creature creature = creatureBoardAsset.GetComponent<Creature>();
@@ -146,6 +147,20 @@ namespace TaleSpireCore
 						result.Add($"{creature.Name}{NameIdSeparator}{creatureBoardAsset.WorldId}");
 				}
 				return result;
+			}
+
+			public static void LookAt(string id, Vector3 position)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset != null)
+					creatureBoardAsset.LookAt(position);
+			}
+
+			public static void RotateTo(string id, float rotationDegrees)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset != null)
+					creatureBoardAsset.SetRotationDegrees(rotationDegrees);
 			}
 
 			static GameObject GetContainer(CreatureBoardAsset creatureBoardAsset)
@@ -306,27 +321,52 @@ namespace TaleSpireCore
 					return;
 				}
 
+				PlayEmote(creatureBoardAsset, emote);
+			}
+
+			private static void PlayEmote(CreatureBoardAsset creatureBoardAsset, string emote)
+			{
 				creatureBoardAsset.Creature.PlayEmote(emote);
 			}
 
 			public static void Wiggle(string creatureId)
 			{
-				PlayEmote(creatureId, "TLA_Wiggle");
+				PlayEmote(creatureId, AnimationNames.Wiggle);
 			}
 
 			public static void Twirl(string creatureId)
 			{
-				PlayEmote(creatureId, "TLA_Twirl");
+				PlayEmote(creatureId, AnimationNames.Twirl);
 			}
 
 			public static void KnockDown(string creatureId)
 			{
-				PlayEmote(creatureId, "TLA_Action_KnockDown");
+				PlayEmote(creatureId, AnimationNames.KnockDown);
 			}
 
 			public static void Surprise(string creatureId)
 			{
-				PlayEmote(creatureId, "TLA_Surprise");
+				PlayEmote(creatureId, AnimationNames.Surprise);
+			}
+
+			public static void Wiggle(CreatureBoardAsset creature)
+			{
+				PlayEmote(creature, AnimationNames.Wiggle);
+			}
+
+			public static void Twirl(CreatureBoardAsset creature)
+			{
+				PlayEmote(creature, AnimationNames.Twirl);
+			}
+
+			public static void KnockDown(CreatureBoardAsset creature)
+			{
+				PlayEmote(creature, AnimationNames.KnockDown);
+			}
+
+			public static void Surprise(CreatureBoardAsset creature)
+			{
+				PlayEmote(creature, AnimationNames.Surprise);
 			}
 
 			static void SetTurnIndicatorColor(GameObject gameObject, string htmlColorStr, float creatureScale)
@@ -417,7 +457,7 @@ namespace TaleSpireCore
 			}
 
 			static Unity.Mathematics.Random random = new Unity.Mathematics.Random((uint)DateTime.Now.Ticks);
-			
+
 			static string GetRandomSmallBloodPrefab()
 			{
 				int[] smallIndices = new int[] { 4, 5, 6, 7 };
@@ -443,7 +483,7 @@ namespace TaleSpireCore
 						continue;
 
 					//Log.Debug($"Found a GameObject (\"{transform.gameObject.name}\") with a MeshRenderer!!!");
-					
+
 					Shader shader = meshRenderer.material?.shader;
 					if (shader == null)
 						continue;
@@ -649,7 +689,7 @@ namespace TaleSpireCore
 				}
 				return null;
 			}
-			
+
 			public static Vector3 GetHitTargetVector(string id)
 			{
 				Vector3 vector = Vector3.zero;

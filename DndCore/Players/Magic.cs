@@ -7,6 +7,7 @@ namespace DndCore
 	{
 		private const int NumArgs = 8;
 		public event MagicEventHandler Dispel;
+		public string Id { get; set; }
 
 		protected virtual void OnDispel(object sender, MagicEventArgs ea)
 		{
@@ -15,6 +16,7 @@ namespace DndCore
 
 		public Magic(Creature caster, DndGame game, string magicItemName, CastedSpell castedSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
+			Id = Guid.NewGuid().ToString();
 			CastedSpellId = castedSpell?.ID;
 			Game = game;
 			SpellName = castedSpell?.Spell?.Name;
@@ -133,7 +135,7 @@ namespace DndCore
 
 			SystemVariables.Creature = magicOwner;
 
-			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
+			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner, Id);
 			creaturePlusModId.Magic = this;
 			List<string> args = GetArgumentList();
 

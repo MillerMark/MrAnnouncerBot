@@ -73,6 +73,15 @@
 			this.btnSetCameraHeight = new System.Windows.Forms.Button();
 			this.tbxCameraHeight = new System.Windows.Forms.TextBox();
 			this.tbxAssetId = new System.Windows.Forms.TextBox();
+			this.chkTrackAngle = new System.Windows.Forms.CheckBox();
+			this.lblRotationStatus = new System.Windows.Forms.Label();
+			this.btnAngle = new System.Windows.Forms.Button();
+			this.btnSet1 = new System.Windows.Forms.Button();
+			this.tbx1 = new System.Windows.Forms.TextBox();
+			this.btnSet2 = new System.Windows.Forms.Button();
+			this.tbx2 = new System.Windows.Forms.TextBox();
+			this.btnSet3 = new System.Windows.Forms.Button();
+			this.tbx3 = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -497,6 +506,92 @@
 			this.tbxAssetId.Name = "tbxAssetId";
 			this.tbxAssetId.Size = new System.Drawing.Size(389, 20);
 			this.tbxAssetId.TabIndex = 25;
+			this.tbxAssetId.Text = "28f7710e-9f79-425b-ac6e-216677454ec3";
+			// 
+			// chkTrackAngle
+			// 
+			this.chkTrackAngle.AutoSize = true;
+			this.chkTrackAngle.Location = new System.Drawing.Point(10, 483);
+			this.chkTrackAngle.Name = "chkTrackAngle";
+			this.chkTrackAngle.Size = new System.Drawing.Size(84, 17);
+			this.chkTrackAngle.TabIndex = 18;
+			this.chkTrackAngle.Text = "Track Angle";
+			this.chkTrackAngle.UseVisualStyleBackColor = true;
+			this.chkTrackAngle.CheckedChanged += new System.EventHandler(this.chkTrackAngle_CheckedChanged);
+			// 
+			// lblRotationStatus
+			// 
+			this.lblRotationStatus.AutoSize = true;
+			this.lblRotationStatus.Location = new System.Drawing.Point(27, 503);
+			this.lblRotationStatus.Name = "lblRotationStatus";
+			this.lblRotationStatus.Size = new System.Drawing.Size(69, 13);
+			this.lblRotationStatus.TabIndex = 19;
+			this.lblRotationStatus.Text = "(not tracking)";
+			// 
+			// btnAngle
+			// 
+			this.btnAngle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnAngle.Location = new System.Drawing.Point(102, 483);
+			this.btnAngle.Name = "btnAngle";
+			this.btnAngle.Size = new System.Drawing.Size(58, 31);
+			this.btnAngle.TabIndex = 21;
+			this.btnAngle.Text = "Angle?";
+			this.btnAngle.UseVisualStyleBackColor = true;
+			this.btnAngle.Click += new System.EventHandler(this.btnAngle_Click);
+			// 
+			// btnSet1
+			// 
+			this.btnSet1.Location = new System.Drawing.Point(1061, 181);
+			this.btnSet1.Name = "btnSet1";
+			this.btnSet1.Size = new System.Drawing.Size(126, 26);
+			this.btnSet1.TabIndex = 21;
+			this.btnSet1.Text = "Set Mini Rotation";
+			this.btnSet1.UseVisualStyleBackColor = true;
+			this.btnSet1.Click += new System.EventHandler(this.btnSet1_Click);
+			// 
+			// tbx1
+			// 
+			this.tbx1.Location = new System.Drawing.Point(992, 185);
+			this.tbx1.Name = "tbx1";
+			this.tbx1.Size = new System.Drawing.Size(63, 20);
+			this.tbx1.TabIndex = 25;
+			this.tbx1.Text = "10";
+			// 
+			// btnSet2
+			// 
+			this.btnSet2.Location = new System.Drawing.Point(1061, 213);
+			this.btnSet2.Name = "btnSet2";
+			this.btnSet2.Size = new System.Drawing.Size(126, 26);
+			this.btnSet2.TabIndex = 21;
+			this.btnSet2.Text = "Target Rotate Up";
+			this.btnSet2.UseVisualStyleBackColor = true;
+			this.btnSet2.Click += new System.EventHandler(this.btnSet2_Click);
+			// 
+			// tbx2
+			// 
+			this.tbx2.Location = new System.Drawing.Point(992, 217);
+			this.tbx2.Name = "tbx2";
+			this.tbx2.Size = new System.Drawing.Size(63, 20);
+			this.tbx2.TabIndex = 25;
+			this.tbx2.Text = "10";
+			// 
+			// btnSet3
+			// 
+			this.btnSet3.Location = new System.Drawing.Point(1061, 245);
+			this.btnSet3.Name = "btnSet3";
+			this.btnSet3.Size = new System.Drawing.Size(126, 26);
+			this.btnSet3.TabIndex = 21;
+			this.btnSet3.Text = "Target Rotate Forward";
+			this.btnSet3.UseVisualStyleBackColor = true;
+			this.btnSet3.Click += new System.EventHandler(this.btnSet3_Click);
+			// 
+			// tbx3
+			// 
+			this.tbx3.Location = new System.Drawing.Point(992, 249);
+			this.tbx3.Name = "tbx3";
+			this.tbx3.Size = new System.Drawing.Size(63, 20);
+			this.tbx3.TabIndex = 25;
+			this.tbx3.Text = "10";
 			// 
 			// FrmExplorer
 			// 
@@ -505,6 +600,9 @@
 			this.ClientSize = new System.Drawing.Size(1331, 592);
 			this.Controls.Add(this.btnTest2);
 			this.Controls.Add(this.btnTest1);
+			this.Controls.Add(this.tbx3);
+			this.Controls.Add(this.tbx2);
+			this.Controls.Add(this.tbx1);
 			this.Controls.Add(this.tbxCameraHeight);
 			this.Controls.Add(this.tbxCameraPosition);
 			this.Controls.Add(this.tbxAssetId);
@@ -512,8 +610,12 @@
 			this.Controls.Add(this.cmbPrefabs);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.btnParticleSystemOff);
+			this.Controls.Add(this.btnSet3);
+			this.Controls.Add(this.btnSet2);
+			this.Controls.Add(this.btnSet1);
 			this.Controls.Add(this.btnSetCameraHeight);
 			this.Controls.Add(this.btnSetCameraPosition);
+			this.Controls.Add(this.btnAngle);
 			this.Controls.Add(this.btnGetActiveGameObjects);
 			this.Controls.Add(this.btnSetScale);
 			this.Controls.Add(this.btnTestSetIndicatorColor);
@@ -527,7 +629,9 @@
 			this.Controls.Add(this.btnPlayer);
 			this.Controls.Add(this.btnSpectatorMode);
 			this.Controls.Add(this.btnGetRuler);
+			this.Controls.Add(this.lblRotationStatus);
 			this.Controls.Add(this.lblFlashlightStatus);
+			this.Controls.Add(this.chkTrackAngle);
 			this.Controls.Add(this.chkTrackFlashlight);
 			this.Controls.Add(this.chkListenToEvents);
 			this.Controls.Add(this.btnShowRelationEffect);
@@ -600,5 +704,14 @@
 		private System.Windows.Forms.Button btnSetCameraHeight;
 		private System.Windows.Forms.TextBox tbxCameraHeight;
 		private System.Windows.Forms.TextBox tbxAssetId;
+		private System.Windows.Forms.CheckBox chkTrackAngle;
+		private System.Windows.Forms.Label lblRotationStatus;
+		private System.Windows.Forms.Button btnAngle;
+		private System.Windows.Forms.Button btnSet1;
+		private System.Windows.Forms.TextBox tbx1;
+		private System.Windows.Forms.Button btnSet2;
+		private System.Windows.Forms.TextBox tbx2;
+		private System.Windows.Forms.Button btnSet3;
+		private System.Windows.Forms.TextBox tbx3;
 	}
 }

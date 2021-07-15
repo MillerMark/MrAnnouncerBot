@@ -199,6 +199,12 @@ namespace TaleSpireCore
 							Vector3 newPosition = new Vector3(x, y, z);
 							CameraController.MoveToPosition(newPosition, true);
 						}
+
+			}
+
+			public static Vector3 GetPosition()
+			{
+				return CameraController.GetCamera().transform.position;
 			}
 
 			public static void SetCameraHeight(string heightStr)

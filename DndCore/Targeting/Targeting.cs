@@ -23,7 +23,7 @@ namespace DndCore
 		public static void SetPoint(Vector vector)
 		{
 			TargetPoint = vector;
-			if (ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume))
+			if (ExpectedTargetDetails != null && ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume))
 				ActualKind = TargetKind.Volume;
 			else
 				ActualKind = TargetKind.Location;

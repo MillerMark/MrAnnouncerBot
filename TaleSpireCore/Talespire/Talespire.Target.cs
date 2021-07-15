@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using Bounce.Unmanaged;
 using UnityEngine;
+using TMPro;
 
 namespace TaleSpireCore
 {
@@ -11,10 +12,10 @@ namespace TaleSpireCore
 	{
 		public static class Target
 		{
-			static string STR_PrefabParent = "PrefabTargetParent";
 			public static InteractiveTargetingMode InteractiveTargetingMode { get; set; }
 			public static int TargetSphereDiameter { get; set; }
 			public static int TargetSquareEdgeLength { get; set; }
+			public static MiniRotator MiniRotator { get; set; } = new MiniRotator();
 
 			static CompositeEffect targetingSphereCompositeEffect;
 			static CompositeEffect targetingSquareCompositeEffect;
@@ -118,7 +119,12 @@ namespace TaleSpireCore
 					Log.Error($"Targeting Fire NOT found!");
 			}
 
-			public static void On(int diameter = 0)
+			static void InitializeTargeting()
+			{
+				MiniRotator.Initialize();
+			}
+
+			public static void On(int diameter = 0, string creatureId = null)
 			{
 				PrepareForSelection();
 				FlashLight flashlight = Flashlight.Get();
@@ -127,7 +133,14 @@ namespace TaleSpireCore
 					Log.Error($"flashlight is null!");
 					return;
 				}
-				AddTargetDisk(flashlight.gameObject.transform);
+				LockTo(creatureId);
+				GameObject targetDisk = AddTargetDisk(flashlight.gameObject.transform);
+				
+				//if (!string.IsNullOrWhiteSpace(creatureId))
+				activeTargetDisk = targetDisk;
+
+				InitializeTargeting();
+
 				if (diameter > 0)
 					AddTargetingSphere(flashlight, diameter);
 			}
@@ -248,20 +261,31 @@ namespace TaleSpireCore
 
 			public static void Off()
 			{
+				LockTo(null);
 				TargetSphereDiameter = 0;
 				// This works because everything we add is parented by the flashlight.
 				Flashlight.Off();
 				targetingPrefab = null;
 				activeTargetDisk = null;
+				activeTargetRangeText = null;
+				activeTargetRangeIndicator = null;
+				activeTargetRangeIndicatorRedX = null;
+				MiniRotator.Done();
+				//activeTargetRangeIndicator = null;
 			}
 
 			private const int maxDistanceToNearestCreatureFt = 10;
 			const string STR_TargetDisk = "TargetDisk";
+			const string STR_TargetRangeIndicator = "TargetRangeIndicator";
+			const string STR_TargetDiskPrefab = "TargetDiskPrefab";
 			static GameObject activeTargetDisk;
+			static GameObject activeTargetRangeIndicator;
+			static GameObject activeTargetRangeIndicatorRedX;
 			static string targetAnchorId;
 			static int targetAnchorRange;
 			static float lastTargetTetherUpdateTime;
-
+			static TextMeshPro activeTargetRangeText;
+			
 			static CreatureBoardAsset AddTargetToNearestCreature()
 			{
 				CreatureBoardAsset creatureBoardAsset = GetNearestCreature();
@@ -327,6 +351,8 @@ namespace TaleSpireCore
 					Log.Warning($"{creatureBoardAsset.name}'s base transform already has a child STR_TargetDisk!");
 					return;
 				}
+
+				Minis.Surprise(creatureBoardAsset);
 
 				Vector3 basePosition = baseTransform.position;
 
@@ -417,6 +443,19 @@ namespace TaleSpireCore
 				else
 					targetDiskPrefab = Prefabs.Clone("TargetEnemy");
 
+				targetDiskPrefab.name = STR_TargetDiskPrefab;
+
+				GameObject targetRangeIndicator = targetDiskPrefab.FindChild(STR_TargetRangeIndicator);
+				if (targetRangeIndicator == null)
+				{
+					Log.Error($"targetRangeIndicator NOT found!!!");
+				}
+				else
+				{
+					Log.Warning($"targetRangeIndicator FOUND!!!");
+					targetRangeIndicator.SetActive(false);
+				}
+
 				targetDisk.name = STR_TargetDisk;
 				const float percentAdjust = 0.6f;
 				Property.Modify(targetDiskPrefab, "<TargetScale>.Scale", scale * percentAdjust);
@@ -425,7 +464,19 @@ namespace TaleSpireCore
 				if (parent != null)
 					targetDisk.transform.SetParent(parent);
 
-				targetDiskPrefab.transform.parent = targetDisk.transform;
+				targetDiskPrefab.transform.SetParent(targetDisk.transform);
+
+				targetRangeIndicator = targetDiskPrefab.FindChild(STR_TargetRangeIndicator);
+				if (targetRangeIndicator != null)
+				{
+					targetRangeIndicator = targetDisk.FindChild(STR_TargetRangeIndicator);
+					if (targetRangeIndicator != null)
+						Log.Warning($"targetRangeIndicator was found! What IS GOING ON???");
+					else
+					{
+						Log.Error($"targetRangeIndicator was NOT found. Why not?");
+					}
+				}
 
 				float yOffset = 0;
 				if (scale == 0.5)
@@ -537,7 +588,11 @@ namespace TaleSpireCore
 					Log.Error($"flashlight is null!");
 					return;
 				}
+
 				activeTargetDisk = AddTargetDisk(flashlight.gameObject.transform);
+
+				InitializeTargeting();
+				//activeTargetRangeIndicator = AddTargetRangeIndicator(flashlight.gameObject.transform);
 
 				if (shapeName == "Sphere" && dimensions > 0)
 					AddTargetingSphere(flashlight, dimensions);
@@ -550,37 +605,124 @@ namespace TaleSpireCore
 				{
 					targetAnchorId = id;
 					targetAnchorRange = rangeInFeet;
-					// TODO: Tether the target to the mini's location. Use Update method in plugin to communicate with fields in this class.
 				}
 			}
 
 			public static void Update()
 			{
-				if (activeTargetDisk != null && !string.IsNullOrWhiteSpace(targetAnchorId))
-				{
-					if (Time.time - lastTargetTetherUpdateTime > 0.25)  // Limit updates to four times a second.
-					{
-						lastTargetTetherUpdateTime = Time.time;
-						CharacterPosition position = Minis.GetPosition(targetAnchorId);
-						if (position != null)
-						{
-							float distanceTiles = (activeTargetDisk.transform.position - new Vector3(position.Position.x, position.Position.y, position.Position.z)).magnitude;
-							float distanceFeet = Convert.TilesToFeet(distanceTiles);
-							bool shouldBeActive = distanceFeet < targetAnchorRange;
-							if (activeTargetDisk.activeSelf != shouldBeActive)
-							{
-								if (!shouldBeActive)
-									Log.Warning($"Target is too far. Limited to {targetAnchorRange} feet.");
-								else
-									Log.Warning($"Target is back in range (within {targetAnchorRange} feet of {position.Name}).");
+				if (IsTargetingWithAnchor)
+					UpdateTarget();
+				MiniRotator.Update();
+			}
 
-								activeTargetDisk.SetActive(shouldBeActive);
-								if (targetingPrefab != null)
-									targetingPrefab.SetActive(shouldBeActive);
-							}
-						}
-					}
+			private static bool IsTargetingWithAnchor => activeTargetDisk != null && !string.IsNullOrWhiteSpace(targetAnchorId);
+
+			private static void UpdateTarget()
+			{
+				if (Time.time - lastTargetTetherUpdateTime <= 0.1)  // Limit updates to ten times a second.
+					return;
+
+				lastTargetTetherUpdateTime = Time.time;
+
+				if (activeTargetRangeIndicator == null)
+					ActivateTargetRangeIndicator();
+
+				KeepTargetTextFacingCamera();
+
+				CharacterPosition position = Minis.GetPosition(targetAnchorId);
+				if (position != null)
+					UpdateTargetDistanceFrom(position);
+			}
+
+			private static void UpdateTargetDistanceFrom(CharacterPosition position)
+			{
+				float distanceFeet = GetTargetingCursorDistanceTo(position);
+
+				if (activeTargetRangeText != null)
+					activeTargetRangeText.text = $"{distanceFeet:F}ft";
+
+				bool isInRange = distanceFeet < targetAnchorRange;
+
+				if (targetingPrefab.activeSelf != isInRange)
+					ToggleTargetIndicatorState(isInRange);
+			}
+
+			private static void ToggleTargetIndicatorState(bool isInRange)
+			{
+				GameObject disk = activeTargetDisk.FindChild("Disk", true);
+				GameObject disabled = activeTargetDisk.FindChild("Disabled", true);
+				if (disk != null && disabled != null)
+				{
+					disk.SetActive(isInRange);
+					disabled.SetActive(!isInRange);
 				}
+				if (!isInRange)
+					TargetIsOutOfRange();
+				else
+					TargetIsInRange();
+
+				if (targetingPrefab != null)
+					targetingPrefab.SetActive(isInRange);
+			}
+
+			private static void TargetIsInRange()
+			{
+				activeTargetRangeText.color = new Color32(255, 255, 255, 255);
+				activeTargetRangeText.fontSize = 2;
+				activeTargetRangeText.transform.localPosition = new Vector3(0, 0.433f, 0);
+			}
+
+			private static void TargetIsOutOfRange()
+			{
+				activeTargetRangeText.color = new Color32(255, 99, 99, 255);
+				activeTargetRangeText.fontSize = 4;
+				activeTargetRangeText.transform.localPosition = new Vector3(0, 0.8f, 0);
+			}
+
+			public static float GetTargetingCursorDistanceTo(CharacterPosition position)
+			{
+				return GetTargetingCursorDistanceTo(new Vector3(position.Position.x, position.Position.y, position.Position.z));
+			}
+
+			public static float GetTargetingCursorDistanceTo(Vector3 position)
+			{
+				float distanceTiles = (TargetingPosition - position).magnitude;
+				return Convert.TilesToFeet(distanceTiles);
+			}
+
+			public static Vector3 TargetingPosition => activeTargetDisk?.transform != null ? activeTargetDisk.transform.position : Vector3.zero;
+
+			private static void KeepTargetTextFacingCamera()
+			{
+				Vector3 cameraPosition = Camera.GetPosition();
+
+				if (activeTargetRangeIndicator != null)
+				{
+					activeTargetRangeIndicator.transform.LookAt(cameraPosition);
+					activeTargetRangeIndicator.transform.Rotate(Vector3.up, 180);
+				}
+
+				if (activeTargetRangeIndicatorRedX != null)
+				{
+					activeTargetRangeIndicatorRedX.transform.LookAt(cameraPosition);
+					activeTargetRangeIndicatorRedX.transform.Rotate(Vector3.right, 45);
+				}
+			}
+
+			private static void ActivateTargetRangeIndicator()
+			{
+				activeTargetRangeIndicator = activeTargetDisk.FindChild(STR_TargetRangeIndicator, true);
+				activeTargetRangeIndicatorRedX = activeTargetDisk.FindChild("Red X", true);
+				if (activeTargetRangeIndicator != null)
+				{
+					activeTargetRangeIndicator.SetActive(true);
+					activeTargetRangeText = activeTargetRangeIndicator.GetComponent<TextMeshPro>();
+				}
+			}
+
+			public static void LockTo(string creatureId)
+			{
+				targetAnchorId = creatureId;
 			}
 		}
 	}

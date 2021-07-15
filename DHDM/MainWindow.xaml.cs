@@ -345,10 +345,8 @@ namespace DHDM
 		{
 			if (ea.Creature is Character player)
 				if (player.concentratedSpell != null)
-				{
-					EnqueueBreakSpellConcentrationSavingThrow(player.playerID, ea.DamageAmount);
-					// TODO: Trigger the saving throw roll to see if they break concentration with the spell.
-				}
+					if (player.TotalHitPoints > 0)
+						EnqueueBreakSpellConcentrationSavingThrow(player.playerID, ea.DamageAmount);
 		}
 
 		// TODO: Delete playerShowStateDispatchTimers...
@@ -4598,20 +4596,21 @@ namespace DHDM
 				return;
 
 			foreach (PlayerRoll playerRoll in playerRolls)
-			{
 				if (playerRoll.data == BreakSpellConcentrationSavingThrowQueueEntry.STR_ConcentrationSave)
-				{
-					Character player = game.GetPlayerFromId(playerRoll.id);
-					if (player != null && player.concentratedSpell != null)
-					{
-						string focusedSpellName = player.concentratedSpell.Spell.Name;
-						string focusedSpellId = player.concentratedSpell.ID;
-						TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
-						game.RemoveActiveSpellById(player, focusedSpellId);
-						player.BreakConcentration();
-					}
-				}
-			}
+					BreakPlayerConcentration(playerRoll.id);
+		}
+
+		private void BreakPlayerConcentration(int playerId)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null || player.concentratedSpell == null)
+				return;
+
+			string focusedSpellName = player.concentratedSpell.Spell.Name;
+			string focusedSpellId = player.concentratedSpell.ID;
+			TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
+			game.RemoveActiveSpellById(player, focusedSpellId);
+			player.BreakConcentration();
 		}
 
 		string ToDisplayList(List<PlayerRoll> playerRolls)
@@ -4849,6 +4848,23 @@ namespace DHDM
 		{
 			List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
 			ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
+
+			if (stopRollingData.type == DiceRollType.SavingThrow)
+			{
+				if (BreakSpellConcentrationSavingThrowQueueEntry.RollWasToSaveConcentration(stopRollingData.rollId))
+				{
+					BreakSpellConcentrationSavingThrowQueueEntry.RemoveRoll(stopRollingData.rollId);
+					if (stopRollingData.multiplayerSummary != null)
+						BreakSpellConcentrationForGroup(stopRollingData.multiplayerSummary);
+					else if (stopRollingData.roll < stopRollingData.hiddenThreshold)
+					{
+						Character player = stopRollingData.GetSingleRollingPlayer();
+						if (player != null)
+							BreakPlayerConcentration(player.playerID);
+					}
+
+				}
+			}
 			//if (stopRollingData.multiplayerSummary != null)
 			//	ApplyMultiplayerSavingThrowDamage(stopRollingData);
 			//else
@@ -4884,6 +4900,22 @@ namespace DHDM
 				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
 			else if (thoseWhoCritSaved.Count == 1)
 				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and takes no damage!");
+			CreatureManager.UpdateInGameCreatures();
+		}
+
+		private void BreakSpellConcentrationForGroup(List<PlayerRoll> multiplayerSummary)
+		{
+			List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
+			List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
+			foreach (PlayerRoll playerRoll in multiplayerSummary)
+			{
+				if (playerRoll.isCompleteFail)
+					thoseWhoCritFailed.Add(playerRoll);
+				else if (!playerRoll.isCrit && !playerRoll.success)
+					thoseWhoFailed.Add(playerRoll);
+			}
+			BreakSpellConcentrationFromLastSavingThrow(thoseWhoFailed);
+			BreakSpellConcentrationFromLastSavingThrow(thoseWhoCritFailed);
 			CreatureManager.UpdateInGameCreatures();
 		}
 
@@ -5986,6 +6018,7 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
+				TargetManager.ClearTargetHistory();
 				if (game.Clock.InCombat)
 				{
 					TellDungeonMaster($"{Icons.WarningSign} Already in combat!");
@@ -6814,6 +6847,10 @@ namespace DHDM
 					player.ChangeTempHP(damageHealthChange.DamageHealth);
 				else
 					player.ChangeHealth(damageHealthChange.DamageHealth);
+
+				if (player.TotalHitPoints <= 0)
+					BreakPlayerConcentration(player.playerID);
+
 				UpdatePlayerScrollInGame(player);
 				UpdatePlayerScrollUI(player);
 				if (damageHealthChange.DamageHealth < 0)
@@ -9682,6 +9719,7 @@ namespace DHDM
 		{
 			SendPlayerData();
 			SetInGameCreatures();
+			TellTaleSpireWhoIsOnWhatSide();
 		}
 
 		private void InitializePlayerStats()
@@ -11206,7 +11244,17 @@ namespace DHDM
 			{
 				TargetNone();
 			}
-			ApiResponse response = TaleSpireClient.Invoke("Target", new string[] { modifiedTargetingCommand });
+			ApiResponse response;
+			if (targetingCommand == "On")
+			{
+				string taleSpireId = Game?.ActiveTurnTaleSpireId;
+				if (taleSpireId == null)
+					taleSpireId = "";
+				response = TaleSpireClient.Invoke("Target", new string[] { "On", taleSpireId });
+			}
+			else
+				response = TaleSpireClient.Invoke("Target", new string[] { modifiedTargetingCommand });
+
 			if (response == null)
 				return;
 			if (response.Result == ResponseType.Success)
@@ -11329,11 +11377,24 @@ namespace DHDM
 		public void NextTurn()
 		{
 			lock (game)
+			{
+				int activeTurnCreatureId = game.ActiveTurnCreatureId;
+				if (activeTurnCreatureId != int.MinValue)
+					TargetManager.Save(activeTurnCreatureId);
+				int lastTurnCreatureId = activeTurnCreatureId;
 				game.NextTurn();
+				activeTurnCreatureId = game.ActiveTurnCreatureId;
+				if (activeTurnCreatureId != int.MinValue)
+					TargetManager.LoadOnly(activeTurnCreatureId, lastTurnCreatureId);
+			}
+
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 			{
-				TaleSpireClient.Invoke("SetActiveTurn", new string[] { activeTurnTaleSpireId, game.ActiveTurnCreatureColor });
+				string activeTurnCreatureColor = game.ActiveTurnCreatureColor;
+				if (activeTurnCreatureColor == "#000000" || activeTurnCreatureColor == null)
+					activeTurnCreatureColor = "#757575";
+				TaleSpireClient.Invoke("SetActiveTurn", new string[] { activeTurnTaleSpireId, activeTurnCreatureColor });
 				TaleSpireClient.LookAt(activeTurnTaleSpireId);
 			}
 			else

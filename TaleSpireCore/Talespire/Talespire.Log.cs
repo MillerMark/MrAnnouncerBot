@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace TaleSpireCore
@@ -60,6 +61,21 @@ namespace TaleSpireCore
 			public static void Vector(string message, UnityEngine.Vector3 vector)
 			{
 				Debug($"{message} = ({vector.x:N}, {vector.y:N}, {vector.z:N})");
+			}
+
+			static Dictionary<string, string> logValueHistory = new Dictionary<string, string>();
+			
+			public static void ChangeOnly(string label, string value)
+			{
+				if (logValueHistory.ContainsKey(label))
+				{
+					if (logValueHistory[label] == value)
+						return;
+					logValueHistory[label] = value;
+				}
+				else
+					logValueHistory.Add(label, value);
+				Warning($"{label}: {value}");
 			}
 		}
 	}

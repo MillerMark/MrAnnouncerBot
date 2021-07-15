@@ -7,8 +7,17 @@ using TaleSpireCore;
 
 namespace DHDM
 {
+	public class SavedTargets
+	{
+		public List<string> TargetedCreatures { get; set; } = new List<string>();
+		public SavedTargets()
+		{
+			
+		}
+	}
 	public static class TargetManager
 	{
+		static Dictionary<int, SavedTargets> savedTargets = new Dictionary<int, SavedTargets>();
 		public static void TargetPoint(ApiResponse response)
 		{
 			VectorDto vector = response.GetData<VectorDto>();
@@ -106,7 +115,77 @@ namespace DHDM
 			return creatures;
 		}
 
+		public static void Save(int creatureId)
+		{
+			SavedTargets currentTargets = new SavedTargets();
+			currentTargets.TargetedCreatures = GetTargets().Select(x => x.taleSpireId).ToList();
+			savedTargets[creatureId] = currentTargets;
+		}
 
+		static void TargetCreaturesByTaleSpireId(SavedTargets savedTargets)
+		{
+			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
+			{
+				Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
+				if (player != null)
+					creatureStats.IsTargeted = savedTargets.TargetedCreatures.Contains(player.taleSpireId);
+				else
+					creatureStats.IsTargeted = false;
+			}
+
+			foreach (InGameCreature creature in AllInGameCreatures.Creatures)
+				creature.IsTargeted = savedTargets.TargetedCreatures.Contains(creature.TaleSpireId);
+		}
+
+		public static void Load(int creatureId)
+		{
+			if (!savedTargets.ContainsKey(creatureId))
+				return;
+			TaleSpireClient.RemoveTargetingUI();
+			TargetCreaturesByTaleSpireId(savedTargets[creatureId]);
+			CreatureManager.UpdateInGameCreatures();
+			CreatureManager.UpdatePlayerStatsInGame();
+			foreach (string taleSpireId in savedTargets[creatureId].TargetedCreatures)
+				TaleSpireClient.SetTargeted(taleSpireId, true);
+		}
+
+		public static void LoadOnly(int activeTurnCreatureId, int lastTurnCreatureId)
+		{
+			if (!savedTargets.ContainsKey(activeTurnCreatureId))
+				return;
+
+			List<string> currentlyTargetedCreatures;
+			List<string> soonToBeTargetedCreatures = savedTargets[activeTurnCreatureId].TargetedCreatures;
+
+			if (!savedTargets.ContainsKey(lastTurnCreatureId))
+				currentlyTargetedCreatures = new List<string>();
+			else
+				currentlyTargetedCreatures = savedTargets[lastTurnCreatureId].TargetedCreatures;
+
+			List<string> creaturesToUntarget = currentlyTargetedCreatures.Except(soonToBeTargetedCreatures).ToList();
+			List<string> creaturesToTarget = soonToBeTargetedCreatures.Except(currentlyTargetedCreatures).ToList();
+
+			TargetCreaturesByTaleSpireId(savedTargets[activeTurnCreatureId]);
+			CreatureManager.UpdateInGameCreatures();
+			CreatureManager.UpdatePlayerStatsInGame();
+			foreach (string taleSpireId in creaturesToUntarget)
+				TaleSpireClient.SetTargeted(taleSpireId, false);
+			foreach (string taleSpireId in creaturesToTarget)
+				TaleSpireClient.SetTargeted(taleSpireId, true);
+		}
+
+		public static void ClearTaleSpireTargets(int creatureId)
+		{
+			if (!savedTargets.ContainsKey(creatureId))
+				return;
+			foreach (string taleSpireId in savedTargets[creatureId].TargetedCreatures)
+				TaleSpireClient.SetTargeted(taleSpireId, false);
+		}
+
+		public static void ClearTargetHistory()
+		{
+			savedTargets.Clear();
+		}
 	}
 }
 

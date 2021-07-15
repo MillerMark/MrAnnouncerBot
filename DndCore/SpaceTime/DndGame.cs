@@ -236,7 +236,7 @@ namespace DndCore
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
 			player.RequestMessageToAll += Player_RequestMessageToAll;
-			player.ConcentratedSpellChanged += Player_ConcentratedSpellChanged; ;
+			player.ConcentratedSpellChanged += Player_ConcentratedSpellChanged;
 		}
 
 		public event CreatureDamagedEventHandler PlayerDamaged;
@@ -949,6 +949,19 @@ namespace DndCore
 				if (activeTurnCreature is Character character)
 					return character.taleSpireId;
 				return null;
+			}
+		}
+
+		public int ActiveTurnCreatureId
+		{
+			get
+			{
+				object activeTurnCreature = GetActiveTurnCreature();
+				if (activeTurnCreature is InGameCreature inGameCreature)
+					return inGameCreature.Creature.SafeId;
+				if (activeTurnCreature is Character character)
+					return character.SafeId;
+				return int.MinValue;
 			}
 		}
 

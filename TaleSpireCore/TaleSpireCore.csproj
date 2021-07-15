@@ -97,6 +97,10 @@
     <Reference Include="Unity.Physics">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Unity.Physics.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\DLLs\UnityEngine.dll</HintPath>
     </Reference>
@@ -119,6 +123,9 @@
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -159,7 +166,7 @@
     <Compile Include="Color\HueSatLight.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
-    <Compile Include="Talespire\CollisionEffect.cs" />
+    <Compile Include="Talespire\Core\CollisionEffect.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\FireCollisionEventOn.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileSizeOption.cs" />
     <Compile Include="Talespire\Core\ColorUtils.cs" />
@@ -170,11 +177,13 @@
     <Compile Include="Talespire\Core\ProjectileOptions.cs" />
     <Compile Include="Talespire\Core\SpellLocation.cs" />
     <Compile Include="Talespire\Core\TrackedProjectile.cs" />
-    <Compile Include="Talespire\EnlargeData.cs" />
+    <Compile Include="Talespire\Core\EnlargeData.cs" />
+    <Compile Include="Talespire\Core\MiniRotator.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />
     <Compile Include="Talespire\Talespire.Camera.cs" />
+    <Compile Include="Talespire\Talespire.cs" />
     <Compile Include="Talespire\Talespire.Main.cs" />
     <Compile Include="Talespire\Talespire.Spells.cs" />
     <Compile Include="Talespire\Talespire.Property.cs" />
@@ -195,7 +204,7 @@
     <Compile Include="Talespire\Core\TargetVolume.cs" />
     <Compile Include="Talespire\Core\WhatSide.cs" />
     <Compile Include="Talespire\Scripts\Spinner.cs" />
-    <Compile Include="Talespire\WaitingToCast.cs" />
+    <Compile Include="Talespire\Core\WaitingToCast.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
     <Compile Include="Talespire\Talespire.Flashlight.cs" />

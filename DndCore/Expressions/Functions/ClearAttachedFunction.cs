@@ -20,7 +20,18 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 0, 1);
-			if (player == null || spell == null)
+			
+			string spellId = null;
+			if (spell != null)
+				spellId = spell.ID;
+			else
+			{
+				CreaturePlusModId creaturePlusModId = Expressions.GetCustomData<CreaturePlusModId>(evaluator.Variables);
+				if (creaturePlusModId != null)
+					spellId = creaturePlusModId.Guid;
+			}
+
+			if (player == null || spellId == null)
 				return null;
 
 			float secondsDelayStart = 0;
@@ -28,7 +39,7 @@ namespace DndCore
 			if (args.Count > 0)
 				float.TryParse(args[0], out secondsDelayStart);
 
-			OnClearAttached(spell.ID, player.taleSpireId, secondsDelayStart);
+			OnClearAttached(spellId, player.taleSpireId, secondsDelayStart);
 
 			return null;
 		}

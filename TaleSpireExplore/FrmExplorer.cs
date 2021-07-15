@@ -536,7 +536,7 @@ namespace TaleSpireExplore
 					string uniqueIdStr = "";
 					if (creatureAsset.Creature.IsUnique)
 						uniqueIdStr = " UniqueId: {creatureAsset.Creature.UniqueId},";
-					
+
 					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition},{uniqueIdStr} WorldId: {creatureAsset.WorldId}, BoardAssetId: {creatureAsset.BoardAssetId}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
@@ -846,10 +846,11 @@ namespace TaleSpireExplore
 		private void btnGetFlashlight_Click(object sender, EventArgs e)
 		{
 			//LocalClient.SelectedCreatureId
-			
+
 		}
 
 		System.Timers.Timer flashlightTimer;
+		System.Timers.Timer rotationTimer;
 		void StartFlashlightTimer()
 		{
 			if (flashlightTimer == null)
@@ -857,12 +858,42 @@ namespace TaleSpireExplore
 				lblFlashlightStatus.Text = "(tracking)";
 				flashlightTimer = new System.Timers.Timer();
 				flashlightTimer.Interval = 100;
-				flashlightTimer.Elapsed += FlashlightTimer_Tick;
+				flashlightTimer.Elapsed += FlashlightTimer_Elapsed;
 				flashlightTimer.Start();
 			}
 		}
+		void StartRotationTimer()
+		{
+			if (rotationTimer == null)
+			{
+				lblRotationStatus.Text = "(tracking)";
+				rotationTimer = new System.Timers.Timer();
+				rotationTimer.Interval = 100;
+				rotationTimer.Elapsed += RotationTimer_Elapsed;
+				rotationTimer.Start();
+			}
+		}
 
-		private void FlashlightTimer_Tick(object sender, EventArgs e)
+		private float AngleBetweenVector2(Vector2 vec1, Vector2 vec2)
+		{
+			Vector2 difference = vec2 - vec1;
+			float sign = (vec2.y < vec1.y) ? -1.0f : 1.0f;
+			return Vector2.Angle(Vector2.right, difference) * sign;
+		}
+
+		private void RotationTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			try
+			{
+				UpdateMiniRotation();
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex);
+			}
+		}
+
+		private void FlashlightTimer_Elapsed(object sender, EventArgs e)
 		{
 			string mouseState;
 			if (Input.GetMouseButton(0))
@@ -881,6 +912,15 @@ namespace TaleSpireExplore
 			flashlightTimer = null;
 		}
 
+		void StopRotationTimer()
+		{
+			lblRotationStatus.Text = "(not tracking)";
+			if (rotationTimer == null)
+				return;
+			rotationTimer.Stop();
+			rotationTimer = null;
+		}
+
 		private void chkTrackFlashlight_CheckedChanged(object sender, EventArgs e)
 		{
 			if (chkTrackFlashlight.Checked)
@@ -891,16 +931,16 @@ namespace TaleSpireExplore
 
 		private void btnGetRuler_Click(object sender, EventArgs e)
 		{
-			
+
 			UnityEngine.Object[] lineRulers = Talespire.Components.GetAll<LineRulerIndicator>();
-			
+
 			if (lineRulers == null)
 			{
 				tbxScratch.Text += $"No LineRulerIndicators found.\n";
 				return;
 			}
-			
-			
+
+
 			tbxScratch.Text += $"{lineRulers.Length} LineRulerIndicators found!\n";
 
 			for (int j = 0; j < 11; j++)
@@ -972,7 +1012,7 @@ namespace TaleSpireExplore
 					ReflectionHelper.SetNonPublicFieldValue(spellMissile, "impact", particleSystem);
 				}
 			}
-				
+
 
 			//ParticleSystem drizzle = ReflectionHelper.GetNonPublicFieldValue<ParticleSystem>(spellMissile, "drizzle");
 			//if (drizzle != null)
@@ -1080,7 +1120,14 @@ namespace TaleSpireExplore
 
 		// TODO: Replace these IDs with the equivalent world IDs:
 		public const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
-		public const string MerkinId = "b9529862-8d73-4662-ab13-cf9232b1ccf9";
+		public const string MerkinId = "35400cec-9539-424f-b185-00569d4850c4"; // "b9529862-8d73-4662-ab13-cf9232b1ccf9";
+
+		/* 
+		 Merkin: (11.5, 22.5, 95.9), UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: 35400cec-9539-424f-b185-00569d4850c4, BoardAssetId: b9529862-8d73-4662-ab13-cf9232b1ccf9
+L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: 4c795076-7bdc-489c-afff-4112d12f1138, BoardAssetId: 537d21df-3cd7-4873-bd75-3913621e484c
+		 */
+		public const string CutieId = "4c795076-7bdc-489c-afff-4112d12f1138"; // "537d21df-3cd7-4873-bd75-3913621e484c";
+
 		const string MediumFireEffectId = "MediumFireEffectId";
 
 		private void btnAttackJanus_Click(object sender, EventArgs e)
@@ -1257,7 +1304,7 @@ namespace TaleSpireExplore
 		}
 
 		bool lastRed;
-		
+
 		private void btnTestSetIndicatorColor_Click(object sender, EventArgs e)
 		{
 			if ((ModifierKeys & Keys.Shift) == Keys.Shift)
@@ -1326,6 +1373,66 @@ namespace TaleSpireExplore
 		private void btnSetCameraHeight_Click(object sender, EventArgs e)
 		{
 			Talespire.Camera.SetCameraHeight(tbxCameraHeight.Text);
+		}
+
+		private void chkTrackAngle_CheckedChanged(object sender, EventArgs e)
+		{
+			if (chkTrackAngle.Checked)
+				StartRotationTimer();
+			else
+				StopRotationTimer();
+		}
+
+		private void btnAngle_Click(object sender, EventArgs e)
+		{
+			UpdateMiniRotation();
+		}
+
+		private void UpdateMiniRotation()
+		{
+			CreatureBoardAsset merkinCreatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(MerkinId);
+			if (merkinCreatureBoardAsset == null)
+			{
+				Talespire.Log.Error($"merkinCreatureBoardAsset is null!");
+				return;
+			}
+
+			Talespire.Log.ChangeOnly("merkinCreatureBoardAsset.Creature.transform.forward", $"{merkinCreatureBoardAsset.Creature.transform.forward}");
+
+			CreatureBoardAsset cutieCreatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(CutieId);
+			
+			Vector3 cutiePosition = cutieCreatureBoardAsset.transform.position;
+			
+			float angleBetweenVectors = AngleBetweenVector2(merkinCreatureBoardAsset.Creature.transform.forward, cutiePosition - merkinCreatureBoardAsset.transform.position);
+
+			float rotationDegrees = merkinCreatureBoardAsset.GetRotationDegrees();
+
+			Talespire.Log.ChangeOnly("Merkin's rotationDegrees", $"{rotationDegrees}");
+
+			Talespire.Log.ChangeOnly("angleBetweenVectors", $"{angleBetweenVectors}");
+
+			lblRotationStatus.Text = $"{angleBetweenVectors:F}";
+		}
+
+		private void btnSet1_Click(object sender, EventArgs e)
+		{
+			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
+
+			CreatureBoardAsset cutie = Talespire.Minis.GetCreatureBoardAsset(CutieId);
+			if (selected != null)
+				cutie.RotateTowards(selected.transform.position);
+			else
+				Talespire.Log.Error($"No selected creature!");
+		}
+
+		private void btnSet2_Click(object sender, EventArgs e)
+		{
+			
+		}
+
+		private void btnSet3_Click(object sender, EventArgs e)
+		{
+			
 		}
 	}
 }

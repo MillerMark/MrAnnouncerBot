@@ -49,7 +49,6 @@ namespace DndCore
 		{
 			get
 			{
-
 				if (this is Character)
 					return Math.Abs(IntId);
 				return -Math.Abs(IntId);  // In game creatures all have negative creature indices.
@@ -684,6 +683,15 @@ namespace DndCore
 				CalculateModsForItem(itemViewModel);
 			}
 		}
+
+		public double TotalHitPoints
+		{
+			get
+			{
+				return HitPoints + tempHitPoints;
+			}
+		}
+		
 
 		public void TakeDamage(DamageType damageType, AttackKind attackKind, double points)
 		{

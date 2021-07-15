@@ -396,6 +396,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080, speedOverride = 6): TextEffect {
+		// TODO: Consider adding engine logic to prevent multiple messages at the same time from overlapping.
 		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, yPos), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;

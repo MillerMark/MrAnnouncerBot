@@ -10,7 +10,8 @@ namespace TaleSpireCore
 {
 	public static class TaleSpireClient
 	{
-		private const string TaleSpireMachine = "192.168.22.42";
+		//private const string TaleSpireMachine = "192.168.22.42";
+		public const string TaleSpireMachineIpAddress = "192.168.22.41";
 
 		public static ApiResponse SendMessageToServer(string command, float num)
 		{
@@ -39,7 +40,7 @@ namespace TaleSpireCore
 			try
 			{
 				int port = 999;
-				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachine), port);
+				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachineIpAddress), port);
 
 				// Create a TCP/IP  socket.  
 				Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
