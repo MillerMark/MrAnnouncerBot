@@ -41,14 +41,17 @@ namespace TaleSpireCore
 			{
 				try
 				{
+					EffectParameters.GetEffectNameAndParameters(ref prefabName, out string parameters);
+					
 					GameObject original = Get(prefabName);
 					if (original == null)
 						return null;
 
-					Log.Debug($"GameObject prefab = UnityEngine.Object.Instantiate(original);");
 					GameObject prefab = UnityEngine.Object.Instantiate(original);
 					if (prefab == null)
 						return null;
+
+					EffectParameters.ApplyAfterCreation(prefab, parameters);
 
 					if (instanceId != null)
 						Instances.Add(instanceId, prefab);

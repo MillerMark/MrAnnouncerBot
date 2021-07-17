@@ -309,12 +309,12 @@ namespace TaleSpireCore
 		public static void LaunchProjectile(string effectName, string taleSpireId, string kind, int count, float speed, string fireCollisionEventOn, float launchTimeVariance, float targetVariance,
 																				string spellId, string projectileSize, float projectileSizeMultiplier, float bezierPathMultiplier, List<string> targets)
 		{
-			List<string> msgparams = new List<string>() { effectName, taleSpireId, kind, 
+			List<string> msgParams = new List<string>() { effectName, taleSpireId, kind, 
 				count.ToString(), speed.ToString(), fireCollisionEventOn, launchTimeVariance.ToString(), targetVariance.ToString(),
 			spellId, projectileSize, projectileSizeMultiplier.ToString(), bezierPathMultiplier.ToString() };
 
-			msgparams.AddRange(targets);
-			Invoke("LaunchProjectile", msgparams.ToArray());
+			msgParams.AddRange(targets);
+			Invoke("LaunchProjectile", msgParams.ToArray());
 		}
 	}
 }

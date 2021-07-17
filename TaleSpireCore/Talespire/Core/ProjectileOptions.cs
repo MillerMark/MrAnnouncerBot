@@ -12,7 +12,6 @@ namespace TaleSpireCore
 		public string taleSpireId;
 		public ProjectileKind kind;
 		public string spellId;
-		public string parameters;
 		public int count;
 		public float speed;
 		public FireCollisionEventOn fireCollisionEventOn;

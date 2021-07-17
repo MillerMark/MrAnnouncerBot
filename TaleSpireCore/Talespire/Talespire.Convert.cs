@@ -84,6 +84,29 @@ namespace TaleSpireCore
 					return result;
 				return defaultValue;
 			}
+
+			/// <summary>
+			/// Converts the specified string to a number. If the string ends with "ft", 
+			/// this method also converts from feet to tiles before returning that number.
+			/// </summary>
+			public static float ToDistanceTiles(string str)
+			{
+				bool inFeet = false;
+				if (str.EndsWith("ft"))
+				{
+					inFeet = true;
+					str = str.Substring(0, str.Length - 2);
+				}
+				if (float.TryParse(str, out float rightSideValue))
+				{
+					if (inFeet)
+						return FeetToTiles(rightSideValue);
+					else
+						return rightSideValue;
+				}
+				Log.Error($"Unable to convert \"{str}\" to a number.");
+				return 0;
+			}
 		}
 	}
 }

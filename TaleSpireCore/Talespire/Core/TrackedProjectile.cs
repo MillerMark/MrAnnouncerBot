@@ -18,7 +18,6 @@ namespace TaleSpireCore
 		public float ProjectileSizeMultiplier { get; set; }
 		GameObject projectileGameObject { get; set; }
 		public bool readyToDelete { get; set; }
-		public string Parameters { get; set; }
 		public Vector3 IntendedTargetPosition { get; set; }
 		public float BezierPathMultiplier { get; set; }
 		public FireCollisionEventOn FireCollisionEventOn { get; set; }
@@ -113,52 +112,6 @@ namespace TaleSpireCore
 			particleSystems.Add(new ParticleSystemDetails(particleSystem));
 		}
 
-		void ApplyColorOverride(Color colorOverride)
-		{
-			Talespire.Log.Debug($"colorOverride: {colorOverride}");
-			Component script = projectileGameObject.GetScript("RFX4_EffectSettings");
-			if (script != null)
-			{
-				Talespire.Log.Warning($"Found script!");
-				ReflectionHelper.SetPublicFieldValue(script, "UseCustomColor", true);
-				ReflectionHelper.SetPublicFieldValue(script, "EffectColor", colorOverride);
-				if (script is MonoBehaviour monoBehaviour)
-				{
-					monoBehaviour.enabled = false;
-					monoBehaviour.enabled = true;
-				}
-			}
-		}
-
-		void ApplyParameter(string leftSide, string rightSide)
-		{
-			if (leftSide == "color")
-			{
-				Color colorOverride = new HueSatLight(rightSide).AsRGB.ToUnityColor();
-				ApplyColorOverride(colorOverride);
-			}
-		}
-
-		void ApplyParameter(string parameter)
-		{
-			int indexOfEquals = parameter.IndexOf('=');
-			if (indexOfEquals > 0)
-			{
-				string leftSide = parameter.Substring(0, indexOfEquals).Trim();
-				string rightSide = parameter.Substring(indexOfEquals + 1).Trim();
-				ApplyParameter(leftSide, rightSide);
-			}
-		}
-
-		void ApplyParameters()
-		{
-			if (string.IsNullOrWhiteSpace(Parameters))
-				return;
-			string[] parameters = Parameters.Split(';');
-			foreach (string parameter in parameters)
-				ApplyParameter(parameter);
-		}
-
 		private void CreateProjectile()
 		{
 			alreadyCreated = true;
@@ -169,8 +122,6 @@ namespace TaleSpireCore
 			RegisterParticleSystems();
 
 			sizeCurve = GetAnimationCurve();
-
-			ApplyParameters();
 		}
 
 		private void CalculateTrajectory()

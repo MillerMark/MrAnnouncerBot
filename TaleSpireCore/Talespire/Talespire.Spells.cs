@@ -84,7 +84,10 @@ namespace TaleSpireCore
 				spell.name = GetAttachedEffectName(spellId);
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				spell.transform.SetParent(creatureBase.transform);
+				//spell.transform.
 				spell.transform.position = creatureBase.transform.position;
+
+				EffectParameters.ApplyAfterPositioning(spell);
 			}
 
 
@@ -134,9 +137,11 @@ namespace TaleSpireCore
 				float creatureRotationDegrees = creatureBoardAsset.GetRotationDegrees();
 				spell.transform.Rotate(Vector3.up, creatureRotationDegrees);
 				//spell.transform.localEulerAngles = new Vector3(spell.transform.localEulerAngles.x, rotationDegrees, spell.transform.localEulerAngles.z);
-				Log.Vector("spell.transform.localEulerAngles", spell.transform.localEulerAngles);
+				//Log.Vector("spell.transform.localEulerAngles", spell.transform.localEulerAngles);
 				//spell.transform.Rotate(creatureBoardAsset.GetRotation());
 				//Log.Vector("spell.transform.localEulerAngles2", spell.transform.localEulerAngles);
+
+				EffectParameters.ApplyAfterPositioning(spell);
 			}
 
 			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
@@ -147,10 +152,14 @@ namespace TaleSpireCore
 					return null;
 				}
 
+				Log.Warning($"PlayEffectAtPosition(\"{effectName}\"...)");
 				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees);
 
 				if (spell != null)
+				{
 					spell.transform.position = position.GetVector3();
+					EffectParameters.ApplyAfterPositioning(spell);
+				}
 
 				return spell;
 			}
@@ -215,7 +224,7 @@ namespace TaleSpireCore
 			{
 				GameObject result;
 				
-				if (Prefabs.Has(effectName))
+				if (Prefabs.Has(EffectParameters.GetEffectNameOnly(effectName)))
 					result = Prefabs.Clone(effectName);
 				else
 					result = CompositeEffect.CreateKnownEffect(effectName);
@@ -337,7 +346,6 @@ namespace TaleSpireCore
 				TrackedProjectile trackedProjectile = new TrackedProjectile();
 				trackedProjectile.StartTime = startTime;
 				trackedProjectile.EffectName = projectileOptions.effectName;
-				trackedProjectile.Parameters = projectileOptions.parameters;
 				trackedProjectile.SpellId = projectileOptions.spellId;
 				trackedProjectile.FireCollisionEventOn = projectileOptions.fireCollisionEventOn;
 				trackedProjectile.SourcePosition = sourcePosition;

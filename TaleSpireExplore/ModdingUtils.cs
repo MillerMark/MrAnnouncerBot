@@ -1971,15 +1971,8 @@ namespace TaleSpireExplore
 
 			ProjectileOptions projectileOptions = new ProjectileOptions();
 			string effectName = args[0];
-			string parameterStr = "";
-			int colonIndex = effectName.IndexOf(":");
-			if (colonIndex > 0)
-			{
-				parameterStr = effectName.Substring(colonIndex + 1).Trim();
-				effectName = effectName.Substring(0, colonIndex).Trim();
-			}
+
 			projectileOptions.effectName = effectName;
-			projectileOptions.parameters = parameterStr;
 			projectileOptions.taleSpireId = args[1];
 			projectileOptions.kind = Talespire.Convert.ToProjectileKind(args[2]);
 			projectileOptions.count = Talespire.Convert.ToInt(args[3]);

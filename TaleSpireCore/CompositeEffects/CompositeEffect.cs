@@ -234,7 +234,6 @@ namespace TaleSpireCore
 					else
 						Talespire.Log.Error($"nestedEffectDto == null!");
 
-			//Talespire.Log.Debug($"return instance;");
 			return instance;
 		}
 
@@ -242,8 +241,10 @@ namespace TaleSpireCore
 		{
 			if (KnownEffectsBuilder != null)
 			{
-				//Talespire.Log.Debug($"KnownEffectsBuilder.Create(EffectNameToCreate, instanceId);");
-				return KnownEffectsBuilder.Create(effectName, instanceId);
+				EffectParameters.GetEffectNameAndParameters(ref effectName, out string parameters);
+				GameObject result = KnownEffectsBuilder.Create(effectName, instanceId);
+				EffectParameters.ApplyAfterCreation(result, parameters);
+				return result;
 			}
 			return null;
 		}
