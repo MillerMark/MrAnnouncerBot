@@ -33,6 +33,7 @@ namespace DndCore
 	public delegate void DndCreatureEventHandler(object sender, DndCreatureEventArgs ea);
 	public delegate void ConditionsChangedEventHandler(object sender, ConditionsChangedEventArgs ea);
 	public delegate void PlayerStateChangedEventHandler(object sender, PlayerStateEventArgs ea);
+	public delegate void CreatureStateChangedEventHandler(object sender, CreatureStateEventArgs ea);
 	public delegate void LevelChangedEventHandler(object sender, LevelChangedEventArgs ea);
 	public delegate void ShortcutEventHandler(object sender, ShortcutEventArgs ea);
 	public delegate void MessageEventHandler(object sender, MessageEventArgs ea);

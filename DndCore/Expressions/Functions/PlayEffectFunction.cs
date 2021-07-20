@@ -8,7 +8,7 @@ namespace DndCore
 	[Tooltip("Plays the specified spell effect over the active player's TaleSpire mini.")]
 	[Param(1, typeof(string), "spellEffectName", "The name of the known effect or Prefab to create.", ParameterIs.Required)]
 	[Param(2, typeof(float), "duration", "The duration, in seconds, for this spell effect to last before destroying it.", ParameterIs.Optional)]
-	[Param(3, typeof(EffectLocation), "effectLocation", "The location to play this effect. One of CreatureBase (default), SpellCast, LastTargetPosition, AtCollision, or AtCollisionTarget (using the intended target position).", ParameterIs.Optional)]
+	[Param(3, typeof(EffectLocation), "effectLocation", "The location to play this effect. One of CreatureBase (default), SpellCast, LastTargetPosition, AtCollision, AtCollisionTarget (using the *intended* target position), MoveableTarget, or MoveableSpellCast.", ParameterIs.Optional)]
 	[Param(4, typeof(float), "secondsDelay", "The seconds to delay playing this effect.", ParameterIs.Optional)]
 	[Param(5, typeof(float), "enlargeTime", "The seconds to enlarge this effect.", ParameterIs.Optional)]
 	[Param(6, typeof(float), "shrinkTime", "The seconds to shrink this effect when it stops.", ParameterIs.Optional)]

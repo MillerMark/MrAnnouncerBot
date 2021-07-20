@@ -335,6 +335,7 @@ namespace DHDM
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
+			game.CreatureStateChanged += Game_CreatureStateChanged;
 			game.PlayerDamaged += Game_PlayerDamaged;
 			game.RoundStarting += Game_RoundStarting;
 			game.ActivePlayerChanged += Game_ActivePlayerChanged;
@@ -1123,7 +1124,31 @@ namespace DHDM
 
 			if (ea.Player != null)
 				UpdateStateUIForPlayer(ea.Player);
+
+			if (ea.Contains("Visible"))
+				CreatureVisibilityChanged(ea, ea.Player);
+
 			SetShortcutVisibility();
+		}
+
+		private void Game_CreatureStateChanged(object sender, CreatureStateEventArgs ea)
+		{
+			if (ea.Contains("Visible"))
+				CreatureVisibilityChanged(ea, ea.Creature);
+		}
+
+		private static void CreatureVisibilityChanged(StateChangedEventArgs ea, Creature creature)
+		{
+			if (creature != null)
+			{
+				StateChangedData visibleStateChange = ea.GetStateChange("Visible");
+
+				if (visibleStateChange != null)
+					if ((bool)(visibleStateChange.NewValue) == true)
+						TaleSpireClient.MakeMiniVisible(creature.taleSpireId);
+					else
+						TaleSpireClient.MakeMiniInvisible(creature.taleSpireId);
+			}
 		}
 
 		bool updatingUI;
@@ -2871,6 +2896,12 @@ namespace DHDM
 				castedSpell.Target = ActivePlayer.ActiveTarget;
 
 			bool castingForFirstTimeNow = playerSpellCastState != PlayerSpellCastState.AlreadyCasting || !forceRepeat;
+
+			if (forceRepeat && ActivePlayer.concentratedSpell != null)
+			{
+				// Use original spellId so TaleSpire moveable effects move!!!
+				castedSpell.ID = ActivePlayer.concentratedSpell.ID;
+			}
 
 			if (castingForFirstTimeNow)
 				castedSpell.PreparationStarted(game);  // Triggers onPreparing event here.
@@ -11228,7 +11259,7 @@ namespace DHDM
 						// TODO: Target everyone in the volume around the caster?
 						return;
 					}
-					TaleSpireClient.StartTargeting(targetDetails.Shape.ToString(), targetDetails.Dimensions, player.taleSpireId, rangeInFeet);
+					TaleSpireClient.StartTargeting(targetDetails.Shape.ToString(), targetDetails.DimensionsFeet, player.taleSpireId, rangeInFeet);
 				}
 			}
 		}

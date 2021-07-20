@@ -181,7 +181,7 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				AssetLoader[] creatureLoaders = creatureBoardAsset?.CreatureLoaders;
+				AssetLoader[] creatureLoaders = creatureBoardAsset.CreatureLoaders;
 				if (creatureLoaders.Length > 0)
 					return creatureLoaders[0].LoadedAsset;
 				return null;
@@ -293,24 +293,24 @@ namespace TaleSpireCore
 				return Convert.TilesToFeet(distanceTiles);
 			}
 
-			public static List<CreatureBoardAsset> GetCreaturesInsideSphere(Vector3 position, float targetSphereDiameterFeet)
-			{
-				CreatureBoardAsset[] allCreatureAssets = GetAll();
-				if (allCreatureAssets == null)
-					return null;
+			//public static List<CreatureBoardAsset> GetCreaturesInsideSphere(Vector3 position, float targetSphereDiameterFeet)
+			//{
+			//	CreatureBoardAsset[] allCreatureAssets = GetAll();
+			//	if (allCreatureAssets == null)
+			//		return null;
 
-				float radiusFeet = targetSphereDiameterFeet / 2f;
-				List<CreatureBoardAsset> result = new List<CreatureBoardAsset>();
+			//	float radiusFeet = targetSphereDiameterFeet / 2f;
+			//	List<CreatureBoardAsset> result = new List<CreatureBoardAsset>();
 
-				foreach (CreatureBoardAsset creatureBoardAsset in allCreatureAssets)
-				{
-					float distanceFeet = GetDistanceInFeet(position, creatureBoardAsset);
-					if (distanceFeet <= radiusFeet)
-						result.Add(creatureBoardAsset);
-				}
+			//	foreach (CreatureBoardAsset creatureBoardAsset in allCreatureAssets)
+			//	{
+			//		float distanceFeet = GetDistanceInFeet(position, creatureBoardAsset);
+			//		if (distanceFeet <= radiusFeet)
+			//			result.Add(creatureBoardAsset);
+			//	}
 
-				return result;
-			}
+			//	return result;
+			//}
 
 			public static void PlayEmote(string creatureId, string emote)
 			{
@@ -554,6 +554,93 @@ namespace TaleSpireCore
 				Instances.AddTemporal(bloodEffect, 16);
 			}
 
+			const string STR_Ghost = "Talespire.Core.Ghost.Mini";
+			static GameObject GetGhost(Transform parent, GameObject mini)
+			{
+				GameObject ghost = parent.GetChild(STR_Ghost, true);
+				if (ghost != null)
+					return ghost;
+
+				Shader ghostShader = GetGhostShader();
+
+				if (ghostShader == null)
+				{
+					Log.Error($"_ghostShader field NOT Found!!!");
+					return null;
+				}
+
+				ghost = new GameObject();
+				ghost.transform.SetParent(parent);
+				ghost.name = STR_Ghost;
+				ghost.transform.name = STR_Ghost;
+				Renderer[] componentsInChildren = mini.GetComponentsInChildren<Renderer>();
+				for (int i = 0; i < componentsInChildren.Length; i++)
+				{
+					GameObject child = UnityEngine.Object.Instantiate(componentsInChildren[i].gameObject, ghost.transform, true);
+					child.GetComponent<Renderer>().material.shader = ghostShader;
+					child.layer = 0;
+				}
+
+				return ghost;
+			}
+
+			public static void MakeVisible(string creatureId)
+			{
+				SetVisibility(creatureId, VisibilityChange.Visible);
+			}
+
+			public static void MakeInvisible(string creatureId)
+			{
+				SetVisibility(creatureId, VisibilityChange.Invisible);
+			}
+
+			public static void SetVisibility(string creatureId, VisibilityChange visibilityChange = VisibilityChange.Toggle)
+			{
+				GameObject mini = GetLoadedAsset(creatureId);
+				if (mini == null)
+				{
+					Log.Error($"Creature with id of {creatureId} not found.");
+					return;
+				}
+				Transform parent = mini.transform.parent;
+				if (parent == null)
+				{
+					Log.Error($"mini's parent not found.");
+					return;
+				}
+
+				GameObject ghost = GetGhost(parent, mini);
+				if (ghost == null)
+					return;
+
+				if (visibilityChange == VisibilityChange.Invisible || visibilityChange == VisibilityChange.Toggle && mini.activeSelf)
+				{
+					//Log.Debug($"Activating ghost...");
+					ghost.SetActive(true);
+					mini.SetActive(false);
+				}
+				else
+				{
+					//Log.Debug($"Activating normal mini...");
+					ghost.SetActive(false);
+					mini.SetActive(true);
+				}
+			}
+
+			private static Shader GetGhostShader()
+			{
+				CreatureTeleportBoardTool creatureTeleportBoardTool = SingletonBehaviour<BoardToolManager>.Instance.GetTool<CreatureTeleportBoardTool>();
+				if (creatureTeleportBoardTool == null)
+				{
+					Log.Error($"creatureTeleportBoardTool NOT Found!!!");
+					return null;
+				}
+
+				// Shader's name is "CreatureGhosting"
+
+				return ReflectionHelper.GetNonPublicField<Shader>(creatureTeleportBoardTool, "_ghostShader");
+			}
+
 			static void ShowHealth(string creatureId, int healthAmount, string effectName)
 			{
 				CreatureBoardAsset creatureAsset = GetCreatureBoardAsset(creatureId);
@@ -664,12 +751,11 @@ namespace TaleSpireCore
 				return GetAll().ToList().ConvertAll(x => x.GetCharacterPosition());
 			}
 
-			public static CharacterPositions GetAllInVolume(VectorDto volumeCenter, TargetVolume volume, float dimensionFeet1, float dimensionFeet2 = 0, float dimensionFeet3 = 0, float dimensionFeet4 = 0)
+			public static CharacterPositions GetAllInVolume(VectorDto volumeCenter, TargetVolume volume, float dimensionFeet1, float dimensionFeet2 = 0, float dimensionFeet3 = 0)
 			{
 				float dimensionTiles1 = Convert.FeetToTiles(dimensionFeet1);
 				float dimensionTiles2 = Convert.FeetToTiles(dimensionFeet2);
 				float dimensionTiles3 = Convert.FeetToTiles(dimensionFeet3);
-				float dimensionTiles4 = Convert.FeetToTiles(dimensionFeet4);
 
 				List<CharacterPosition> characterPositions = GetAll().ToList().ConvertAll(x => x.GetCharacterPosition());
 				switch (volume)

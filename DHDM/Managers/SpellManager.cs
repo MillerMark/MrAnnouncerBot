@@ -109,13 +109,17 @@ namespace DHDM
 		{
 			if (effectLocation == EffectLocation.CreatureBase)
 				TaleSpireClient.PlayEffectAtCreatureBase(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
-			else if (effectLocation == EffectLocation.SpellCast)
-				TaleSpireClient.CreatureCastSpell(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
-			else if (effectLocation == EffectLocation.LastTargetPosition)
+			else if (effectLocation == EffectLocation.SpellCast || effectLocation == EffectLocation.MoveableSpellCast)
+			{
+				bool isMoveable = effectLocation == EffectLocation.MoveableSpellCast;
+				TaleSpireClient.CreatureCastSpell(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees, isMoveable);
+			}
+			else if (effectLocation == EffectLocation.LastTargetPosition || effectLocation == EffectLocation.MoveableTarget)
 			{
 				Vector targetPoint = Targeting.TargetPoint;
 				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
-				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
+				bool isMoveable = effectLocation == EffectLocation.MoveableTarget;
+				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees, isMoveable);
 			}
 			else if (effectLocation == EffectLocation.AtCollisionTarget)
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees);

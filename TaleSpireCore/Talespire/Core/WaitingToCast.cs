@@ -16,7 +16,7 @@ namespace TaleSpireCore
 		public float LifeTime { get; set; }
 		public VectorDto Position { get; set; }
 		public SpellLocation Location { get; set; }
-		
+		public bool IsMoveable { get; set; }
 		bool readyToDelete { get; set; }
 		public bool ShouldCreateNow => Time.time > CreationTime && !readyToDelete;
 		public WaitingToCast()
@@ -24,7 +24,7 @@ namespace TaleSpireCore
 
 		}
 
-		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, VectorDto position = null, float shrinkTime = 0, float rotation = 0)
+		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, VectorDto position = null, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
 		{
 			CreationTime = Time.time + secondsDelayStart;
 			EffectName = effectName;
@@ -36,6 +36,7 @@ namespace TaleSpireCore
 			LifeTime = lifeTime;
 			Position = position;
 			Location = location;
+			IsMoveable = isMoveable;
 		}
 
 		public void CreateNow()
@@ -47,13 +48,13 @@ namespace TaleSpireCore
 					Talespire.Spells.AttachEffect(EffectName, SpellId, CreatureId, 0, EnlargeTime, LifeTime, ShrinkTime, RotationDegrees);
 					break;
 				case SpellLocation.AtPosition:
-					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
+					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees, IsMoveable);
 					break;
 				case SpellLocation.AtCreatureBase:
 					Talespire.Spells.PlayEffectAtCreatureBase(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
 					break;
 				case SpellLocation.CreatureCastSpell:
-					Talespire.Spells.CreatureCastSpell(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);
+					Talespire.Spells.CreatureCastSpell(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees, IsMoveable);
 					break;
 			}
 		}

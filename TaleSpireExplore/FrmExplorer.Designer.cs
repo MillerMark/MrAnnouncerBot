@@ -66,7 +66,7 @@
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.btnSetScale = new System.Windows.Forms.Button();
 			this.txtScale = new System.Windows.Forms.TextBox();
-			this.btnTest1 = new System.Windows.Forms.Button();
+			this.btnGhostUnghost = new System.Windows.Forms.Button();
 			this.btnTest2 = new System.Windows.Forms.Button();
 			this.btnSetCameraPosition = new System.Windows.Forms.Button();
 			this.tbxCameraPosition = new System.Windows.Forms.TextBox();
@@ -85,6 +85,7 @@
 			this.btnSkyScraper = new System.Windows.Forms.Button();
 			this.tbxTargetLocation = new System.Windows.Forms.TextBox();
 			this.btnBattleZone = new System.Windows.Forms.Button();
+			this.tbxGhostId = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -447,20 +448,20 @@
 			this.txtScale.TabIndex = 25;
 			this.txtScale.Text = "1";
 			// 
-			// btnTest1
+			// btnGhostUnghost
 			// 
-			this.btnTest1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnTest1.Location = new System.Drawing.Point(719, 558);
-			this.btnTest1.Name = "btnTest1";
-			this.btnTest1.Size = new System.Drawing.Size(88, 31);
-			this.btnTest1.TabIndex = 26;
-			this.btnTest1.Text = "Test 1";
-			this.btnTest1.UseVisualStyleBackColor = true;
-			this.btnTest1.Click += new System.EventHandler(this.btnTest1_Click);
+			this.btnGhostUnghost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnGhostUnghost.Location = new System.Drawing.Point(836, 521);
+			this.btnGhostUnghost.Name = "btnGhostUnghost";
+			this.btnGhostUnghost.Size = new System.Drawing.Size(88, 31);
+			this.btnGhostUnghost.TabIndex = 26;
+			this.btnGhostUnghost.Text = "Ghost:";
+			this.btnGhostUnghost.UseVisualStyleBackColor = true;
+			this.btnGhostUnghost.Click += new System.EventHandler(this.btnGhostToggle_Click);
 			// 
 			// btnTest2
 			// 
-			this.btnTest2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnTest2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnTest2.Location = new System.Drawing.Point(836, 558);
 			this.btnTest2.Name = "btnTest2";
 			this.btnTest2.Size = new System.Drawing.Size(88, 31);
@@ -507,7 +508,7 @@
 			// 
 			// tbxAssetId
 			// 
-			this.tbxAssetId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.tbxAssetId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.tbxAssetId.Location = new System.Drawing.Point(930, 564);
 			this.tbxAssetId.Name = "tbxAssetId";
 			this.tbxAssetId.Size = new System.Drawing.Size(389, 20);
@@ -629,6 +630,15 @@
 			this.btnBattleZone.UseVisualStyleBackColor = true;
 			this.btnBattleZone.Click += new System.EventHandler(this.btnBattleZone_Click);
 			// 
+			// tbxGhostId
+			// 
+			this.tbxGhostId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbxGhostId.Location = new System.Drawing.Point(930, 527);
+			this.tbxGhostId.Name = "tbxGhostId";
+			this.tbxGhostId.Size = new System.Drawing.Size(389, 20);
+			this.tbxGhostId.TabIndex = 25;
+			this.tbxGhostId.Text = "35400cec-9539-424f-b185-00569d4850c4";
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -637,12 +647,13 @@
 			this.Controls.Add(this.btnTest2);
 			this.Controls.Add(this.btnBattleZone);
 			this.Controls.Add(this.btnSkyScraper);
-			this.Controls.Add(this.btnTest1);
+			this.Controls.Add(this.btnGhostUnghost);
 			this.Controls.Add(this.tbx3);
 			this.Controls.Add(this.tbx2);
 			this.Controls.Add(this.tbx1);
 			this.Controls.Add(this.tbxCameraHeight);
 			this.Controls.Add(this.tbxCameraPosition);
+			this.Controls.Add(this.tbxGhostId);
 			this.Controls.Add(this.tbxAssetId);
 			this.Controls.Add(this.txtScale);
 			this.Controls.Add(this.cmbPrefabs);
@@ -736,7 +747,7 @@
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Button btnSetScale;
 		private System.Windows.Forms.TextBox txtScale;
-		private System.Windows.Forms.Button btnTest1;
+		private System.Windows.Forms.Button btnGhostUnghost;
 		private System.Windows.Forms.Button btnTest2;
 		private System.Windows.Forms.Button btnSetCameraPosition;
 		private System.Windows.Forms.TextBox tbxCameraPosition;
@@ -755,5 +766,6 @@
 		private System.Windows.Forms.Button btnSkyScraper;
 		private System.Windows.Forms.TextBox tbxTargetLocation;
 		private System.Windows.Forms.Button btnBattleZone;
+		private System.Windows.Forms.TextBox tbxGhostId;
 	}
 }

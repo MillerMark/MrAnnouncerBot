@@ -69,9 +69,9 @@ namespace TaleSpireCore
 					string data = string.Empty;
 					int bytesRec = 0;
 					int sleeps = 0;
-					while (sender.Available == 0 && sleeps < 3000)
+					while (sender.Available == 0 && sleeps < 1000)
 					{
-						System.Threading.Thread.Sleep(3);
+						System.Threading.Thread.Sleep(30);
 						sleeps++;
 					}
 					while (sender.Available > 0)
@@ -205,14 +205,14 @@ namespace TaleSpireCore
 			Invoke("PlayEffectAtCreatureBase", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
 		}
 
-		public static void CreatureCastSpell(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
+		public static void CreatureCastSpell(string effectName, string spellId, string taleSpireId, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
 		{
-			Invoke("CreatureCastSpell", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
+			Invoke("CreatureCastSpell", new string[] { effectName, spellId, taleSpireId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString(), isMoveable.ToString() });
 		}
 
-		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
+		public static void PlayEffectAtPosition(string effectName, string spellId, VectorDto vector, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
 		{
-			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
+			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString(), isMoveable.ToString() });
 		}
 
 		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
@@ -257,14 +257,14 @@ namespace TaleSpireCore
 			return response.GetData<VectorDto>();
 		}
 
-		public static void StartTargeting(string shape, int dimensions, string casterTaleSpireId, float rangeInFeet)
+		public static void StartTargeting(string shape, string dimensionsFeet, string casterTaleSpireId, float rangeInFeet)
 		{
-			Invoke("StartTargeting", new string[] { shape, dimensions.ToString(), casterTaleSpireId, rangeInFeet.ToString() });
+			Invoke("StartTargeting", new string[] { shape, dimensionsFeet, casterTaleSpireId, rangeInFeet.ToString() });
 		}
 
-		public static CharacterPositions GetAllTargetsInVolume(VectorDto vectorDto, string shape, int dimensions)
+		public static CharacterPositions GetAllTargetsInVolume(VectorDto vectorDto, string shape, string dimensionStr)
 		{
-			ApiResponse response = Invoke("GetAllTargetsInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensions.ToString() });
+			ApiResponse response = Invoke("GetAllTargetsInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensionStr });
 			if (response.Result == ResponseType.Failure)
 				return null;
 
@@ -299,6 +299,16 @@ namespace TaleSpireCore
 		public static void FlashlightOff()
 		{
 			Invoke("Flashlight", "Off");
+		}
+
+		public static void MakeMiniVisible(string creatureId)
+		{
+			Invoke("MakeMiniVisible", creatureId);
+		}
+
+		public static void MakeMiniInvisible(string creatureId)
+		{
+			Invoke("MakeMiniInvisible", creatureId);
 		}
 
 		public static void CleanUpTargets()

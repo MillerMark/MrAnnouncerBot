@@ -11,6 +11,8 @@ namespace DndCore
 		SpellCast = 2,
 		LastTargetPosition = 3,
 		AtCollision = 4,
-		AtCollisionTarget = 5
+		AtCollisionTarget = 5,
+		MoveableTarget = 6,
+		MoveableSpellCast = 7
 	}
 }

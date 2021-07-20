@@ -306,6 +306,7 @@ namespace TaleSpireExplore
 			KnownEffects.Invalidate();
 			SetTargetingSphere();
 			SetTargetingSquare();
+			SetTargetingCylinder();
 			SetTargetingFire();
 		}
 
@@ -317,7 +318,17 @@ namespace TaleSpireExplore
 				Talespire.Log.Error($"TargetingSphere effect not found!!!");
 				return;
 			}
-			Talespire.Target.SetTargetingSphere(targetingSphereJson);
+			TargetingSphere.SetTargetingEffect(targetingSphereJson);
+		}
+		private static void SetTargetingCylinder()
+		{
+			string targetingCylinderJson = KnownEffects.Get("TargetingCylinder")?.Effect;
+			if (string.IsNullOrWhiteSpace(targetingCylinderJson))
+			{
+				Talespire.Log.Error($"TargetingCylinder effect not found!!!");
+				return;
+			}
+			TargetingCylinder.SetTargetingEffect(targetingCylinderJson);
 		}
 
 		private static void SetTargetingSquare()
@@ -328,7 +339,7 @@ namespace TaleSpireExplore
 				Talespire.Log.Error($"TargetingSquare effect not found!!!");
 				return;
 			}
-			Talespire.Target.SetTargetingSquare(targetingSquareJson);
+			TargetingSquare.SetTargetingEffect(targetingSquareJson);
 		}
 
 		private static void SetTargetingFire()

@@ -36,6 +36,20 @@ namespace TaleSpireCore
 				spells.Remove(spellId);
 			}
 
+			internal static GameObject GetMoveableSpell(string spellId, string effectName)
+			{
+				if (!spells.ContainsKey(spellId))
+					return null;
+
+				string spellName = Spells.GetSpellName(spellId, effectName, true);
+
+				foreach (GameObject spellEffect in spells[spellId])
+					if (spellEffect.name == spellName)
+						return spellEffect;
+
+				return null;
+			}
+
 			private static void DeleteFrom(string instanceId, Dictionary<string, List<GameObject>> instances)
 			{
 				if (!instances.ContainsKey(instanceId))

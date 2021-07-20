@@ -15,6 +15,8 @@ namespace DndCore
 		public bool CenteredOnSelf { get; set; }
 		public double MaxCreatures { get; set; }
 		public int Dimensions { get; set; }
+		public string DimensionsFeet { get; set; }
+
 		public SizeUnits SizeUnits { get; set; }
 		public string CreatureQualifications { get; set; } // A text description of what kind of creatures can be targeted.
 
@@ -44,7 +46,7 @@ namespace DndCore
 				Shape = Shape,
 				CenteredOnSelf = CenteredOnSelf,
 				MaxCreatures = MaxCreatures,
-				Dimensions = Dimensions,
+				DimensionsFeet = DimensionsFeet,
 				SizeUnits = SizeUnits,
 				CreatureQualifications = CreatureQualifications
 			};
@@ -86,22 +88,51 @@ namespace DndCore
 				System.Diagnostics.Debugger.Break();
 			}
 
-			Match sizeShape = Regex.Match(trimmedPart, $"^(\\d+)'\\s+(\\w+)$");
+			const string firstName = "first";
+			const string secondName = "second";
+			const string thirdName = "third";
+			const string shapeName = "shape";
+
+			Match sizeShape = Regex.Match(trimmedPart, $"^(?<{firstName}>\\d+)'(x(?<{secondName}>\\d+)')?(x(?<{thirdName}>\\d+)')?\\s+(?<{shapeName}>\\w+)$");
 			if (sizeShape.Success)
 				SizeUnits = SizeUnits.Feet;
 			else
 			{
-				sizeShape = Regex.Match(trimmedPart, $"^(\\d+)\\s+mile\\s+(\\w+)$");
+				sizeShape = Regex.Match(trimmedPart, $"^(?<{firstName}>\\d+)\\s+mile\\s+(?<{shapeName}>\\w+)$");
 				if (sizeShape.Success)
 					SizeUnits = SizeUnits.Miles;
 			}
 
 			if (sizeShape.Success)
 			{
-				string dimensionStr = sizeShape.Groups[1].Value;
-				if (int.TryParse(dimensionStr, out int dimensions))
-					Dimensions = dimensions;
-				Shape = DndUtils.ToShape(sizeShape.Groups[2].Value);
+				float value1;
+				float value2;
+				float value3;
+				Group first = sizeShape.Groups[firstName];
+				Group second = sizeShape.Groups[secondName];
+				Group third = sizeShape.Groups[thirdName];
+
+				float.TryParse(first.Value, out value1);
+
+				string dimensionStr;
+
+				if (second.Success)
+				{
+					float.TryParse(second.Value, out value2);
+
+					if (third.Success)
+					{
+						float.TryParse(third.Value, out value3);
+						dimensionStr = $"{value1}x{value2}x{value3}";
+					}
+					else
+						dimensionStr = $"{value1}x{value2}";
+				}
+				else
+					dimensionStr = $"{value1}";
+
+				DimensionsFeet = dimensionStr;
+				Shape = DndUtils.ToShape(sizeShape.Groups[shapeName].Value);
 				Kind |= TargetKind.Volume | TargetKind.Creatures;
 				// Is there ever a time when there's a shape but no creatures? If so, consider changing the text in the target column of the Spells data to indicate that (and modify code here to detect/parse that).
 			}

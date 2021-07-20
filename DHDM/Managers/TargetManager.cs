@@ -35,7 +35,7 @@ namespace DHDM
 		{
 			VectorDto volumeCenter = Targeting.TargetPoint.ToVectorDto();
 			string shapeName = Targeting.ExpectedTargetDetails.Shape.ToString();
-			CharacterPositions allTargetsInVolume = TaleSpireClient.GetAllTargetsInVolume(volumeCenter, shapeName, Targeting.ExpectedTargetDetails.Dimensions);
+			CharacterPositions allTargetsInVolume = TaleSpireClient.GetAllTargetsInVolume(volumeCenter, shapeName, Targeting.ExpectedTargetDetails.DimensionsFeet);
 			return allTargetsInVolume;
 		}
 

@@ -50,7 +50,11 @@ namespace DndCore
 		{
 			if (fieldNames.IndexOf(variableName) >= 0)
 			{
-				FieldInfo field = typeof(Character).GetField(variableName);
+				FieldInfo field;
+				if (player is Character)
+					field = typeof(Character).GetField(variableName);
+				else
+					field = typeof(Creature).GetField(variableName);
 
 				object value = field?.GetValue(player);
 				CheckValue(player, field, ref value);
@@ -59,7 +63,11 @@ namespace DndCore
 
 			if (propertyNames.IndexOf(variableName) >= 0)
 			{
-				PropertyInfo property = typeof(Character).GetProperty(variableName);
+				PropertyInfo property;
+				if (player is Character)
+					property = typeof(Character).GetProperty(variableName);
+				else
+					property = typeof(Creature).GetProperty(variableName);
 
 				object value = property?.GetValue(player);
 				CheckValue(player, property, ref value);
@@ -77,11 +85,18 @@ namespace DndCore
 
 		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
-			if (!(player is Character))
+			if (player is Character)
+			{
+				if (Handles<Character>(tokenName, false))  // No prefix for active character's properties.
+					return true;
+			}
+			else if (player is Creature)
+			{
+				if (Handles<Creature>(tokenName, false))  // No prefix for active character's properties.
+					return true;
+			}
+			else
 				return false;
-
-			if (Handles<Character>(tokenName, false))  // No prefix for active character's properties.
-				return true;
 
 			return player.HasState(tokenName) || tokenName.StartsWith("_");
 		}

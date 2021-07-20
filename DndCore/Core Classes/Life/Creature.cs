@@ -2001,5 +2001,21 @@ namespace DndCore
 			}
 			return false;
 		}
+
+		bool visible = true;
+		public bool Visible
+		{ 
+			get 
+			{ 
+				return visible; 
+			}
+			set
+			{
+				if (visible == value)
+					return;
+				visible = value;
+				OnStateChanged(this, new StateChangedEventArgs("Visible", !visible, visible));
+			}
+		}
 	}
 }

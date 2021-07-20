@@ -212,6 +212,11 @@
     <Compile Include="Talespire\Core\WhatSide.cs" />
     <Compile Include="Talespire\Scripts\Spinner.cs" />
     <Compile Include="Talespire\Core\WaitingToCast.cs" />
+    <Compile Include="Talespire\Core\VisibilityChange.cs" />
+    <Compile Include="Talespire\TargetingCylinder.cs" />
+    <Compile Include="Talespire\TargetingSphere.cs" />
+    <Compile Include="Talespire\TargetingSquare.cs" />
+    <Compile Include="Talespire\TargetingVolume.cs" />
     <None Include="packages.config" />
     <None Include="TaleSpireEvents.cs" />
     <Compile Include="Talespire\Talespire.Flashlight.cs" />

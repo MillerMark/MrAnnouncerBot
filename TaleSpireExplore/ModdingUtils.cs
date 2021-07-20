@@ -19,6 +19,7 @@ using UnityEngine.Rendering.PostProcessing;
 using System.Windows.Forms;
 using TaleSpireCore;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace TaleSpireExplore
 {
@@ -104,6 +105,8 @@ namespace TaleSpireExplore
 			Commands.Add("GetSelectedMini", GetSelectedMini);
 			Commands.Add("GetFlashlightPosition", GetFlashlightPosition);
 			Commands.Add("Flashlight", Flashlight);
+			Commands.Add("MakeMiniVisible", MakeMiniVisible);
+			Commands.Add("MakeMiniInvisible", MakeMiniInvisible);
 			Commands.Add("LookAtPoint", LookAtPoint);
 			Commands.Add("SpinAroundPoint", SpinAroundPoint);
 			Commands.Add("LaunchProjectile", LaunchProjectile);
@@ -1357,7 +1360,7 @@ namespace TaleSpireExplore
 			// TODO: Change this "On" command to "Creatures".
 			if (command == "On")
 			{
-				if (!Talespire.Target.IsTargetingSphereSet())
+				if (!TargetingSphere.IsTargetingSphereSet())
 					TaleSpireExplorePlugin.LoadKnownEffects();
 				Talespire.Target.InteractiveTargetingMode = InteractiveTargetingMode.Creatures;
 				Talespire.Target.On(0, creatureId);
@@ -1377,15 +1380,12 @@ namespace TaleSpireExplore
 				Talespire.Target.RemoveTargetingUI();
 			else if (command == "AllInVolume")
 			{
-				List<CreatureBoardAsset> creatureBoardAssets = Talespire.Minis.GetCreaturesInsideSphere(Talespire.Flashlight.GetPosition(), Talespire.Target.TargetSphereDiameter);
-				string creaturesInRange = string.Join(", ", creatureBoardAssets.Select(x => x.name).ToArray());
-				Talespire.Log.Debug($"{creatureBoardAssets.Count} creatures in sphere: {creaturesInRange}");
+				CharacterPositions characterPositions = Talespire.Target.GetCreaturesInsideTargetingVolume();
+				
+				if (characterPositions == null)
+					ApiResponse.Bad("No creatures found in volume.");
 
-				List<CharacterPosition> characterPositions = new List<CharacterPosition>();
-				foreach (CreatureBoardAsset creatureBoardAsset in creatureBoardAssets)
-					characterPositions.Add(creatureBoardAsset.GetCharacterPosition());
-
-				string response = ApiResponse.Good("Success", characterPositions);
+				string response = ApiResponse.Good("Success", characterPositions.Characters);
 				Talespire.Log.Debug($"response successfully created!");
 				return response;
 			}
@@ -1607,6 +1607,49 @@ namespace TaleSpireExplore
 			return ApiResponse.Good("LookAt", creature.GetCharacterPosition());
 		}
 
+		/// <summary>
+		/// Parses a dimension string that looks like "1", "1x2", or "1x2x3".
+		/// </summary>
+		static bool TryParseDimensions(string dimensionsStr, out float value1, out float value2, out float value3)
+		{
+			value1 = 0;
+			value2 = 0;
+			value3 = 0;
+
+			// 1x2x3
+			string firstName = "first";
+			string secondName = "second";
+			string thirdName = "third";
+			Match sizeShape = Regex.Match(dimensionsStr, $"^(?<{firstName}>\\d+)(x(?<{secondName}>\\d+)(x(?<{thirdName}>\\d+))?)?$");
+			if (sizeShape.Success)
+			{
+				Group first = sizeShape.Groups[firstName];
+				Group second = sizeShape.Groups[secondName];
+				Group third = sizeShape.Groups[thirdName];
+
+				float.TryParse(first.Value, out value1);
+
+				if (second.Success)
+				{
+					float.TryParse(second.Value, out value2);
+
+					if (third.Success)
+					{
+						float.TryParse(third.Value, out value3);
+						Talespire.Log.Warning($"Got dimensions: {value1}x{value2}x{value3}");
+					}
+					else
+						Talespire.Log.Warning($"Got dimensions: {value1}x{value2}");
+				}
+				else
+					Talespire.Log.Warning($"Got dimensions: {value1}");
+
+				return true;
+			}
+			Talespire.Log.Error($"Unable to get dimensions: \"{dimensionsStr}\"");
+			return false;
+		}
+
 		static string StartTargeting(string[] args)
 		{
 			if (args.Length != 4)
@@ -1617,10 +1660,13 @@ namespace TaleSpireExplore
 			string rangeInFeetStr = args[3];
 			if (!int.TryParse(rangeInFeetStr, out int rangeInFeet))
 				return ApiResponse.Bad($"rangeInFeet \"{rangeInFeetStr}\" should be a number.");
-			if (!int.TryParse(dimensionsStr, out int dimensions))
+			
+			// TODO: add multidimensional parsing of dimensionsStr
+
+			if (!TryParseDimensions(dimensionsStr, out float dimension1Feet, out float dimension2Feet, out float dimension3Feet))
 				return ApiResponse.Bad($"dimensions \"{dimensionsStr}\" should be a number.");
 
-			Talespire.Target.StartTargeting(shapeName, dimensions, id, rangeInFeet);
+			Talespire.Target.StartTargeting(shapeName, id, rangeInFeet, dimension1Feet, dimension2Feet, dimension3Feet);
 			return ApiResponse.Good();
 		}
 
@@ -1694,22 +1740,26 @@ namespace TaleSpireExplore
 
 		static string CreatureCastSpell(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 8)
-				return ApiResponse.Bad($"{nameof(CreatureCastSpell)} - Expecting 3-8 args.");
+			if (args.Length < 3 || args.Length > 9)
+				return ApiResponse.Bad($"{nameof(CreatureCastSpell)} - Expecting 3-9 args.");
 			GetSpellFloatArgs(args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotationDegrees);
-			Talespire.Spells.CreatureCastSpell(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
+			bool isMoveable = false;
+			if (args.Length > 8)
+				bool.TryParse(args[8], out isMoveable);
+			Talespire.Spells.CreatureCastSpell(args[0], args[1], args[2], lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees, isMoveable);
 			return ApiResponse.Good();
 		}
 
 		static string PlayEffectAtPosition(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 8)
-				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-8 args. Got {args.Length}.");
+			if (args.Length < 3 || args.Length > 9)
+				return ApiResponse.Bad($"{nameof(PlayEffectAtPosition)} - Expecting 3-9 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
 			float secondsDelayStart = 0;
 			float shrinkTime = 0;
 			float rotation = 0;
+			bool isMoveable = false;
 			if (args.Length > 3)
 			{
 				float.TryParse(args[3], out lifeTime);
@@ -1722,14 +1772,18 @@ namespace TaleSpireExplore
 					{
 						float.TryParse(args[6], out shrinkTime);
 						if (args.Length > 7)
+						{
 							float.TryParse(args[7], out rotation);
+							if (args.Length > 8)
+								bool.TryParse(args[8], out isMoveable);
+						}
 					}
 				}
 			}
 
 			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
 
-			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation);
+			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, isMoveable);
 			return ApiResponse.Good();
 		}
 		static string PlayEffectOnCollision(string[] args)
@@ -1798,6 +1852,10 @@ namespace TaleSpireExplore
 			float dimension2 = 0;
 			float dimension3 = 0;
 			float dimension4 = 0;
+
+			if (!TryParseDimensions(dimensionsStr, out float dimension1Feet, out float dimension2Feet, out float dimension3Feet))
+				return ApiResponse.Bad($"dimensions \"{dimensionsStr}\" should be a number.");
+
 			if (split.Length > 0)
 			{
 				float.TryParse(split[0], out dimension1);
@@ -1813,7 +1871,7 @@ namespace TaleSpireExplore
 				}
 			}
 
-			CharacterPositions characterPositions = Talespire.Minis.GetAllInVolume(volumeCenter, volume, dimension1, dimension2, dimension3, dimension4);
+			CharacterPositions characterPositions = Talespire.Minis.GetAllInVolume(volumeCenter, volume, dimension1, dimension2, dimension3);
 			if (characterPositions != null)
 				return ApiResponse.Good("Success", characterPositions);
 			return ApiResponse.Bad("Something went wrong.");
@@ -1945,6 +2003,26 @@ namespace TaleSpireExplore
 				Talespire.Flashlight.On();
 			else
 				Talespire.Flashlight.Off();
+			return ApiResponse.Good();
+		}
+
+		static string MakeMiniVisible(string[] args)
+		{
+			const int expectedArgs = 1;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(MakeMiniVisible)} - Expecting {expectedArgs} arg.");
+
+			Talespire.Minis.MakeVisible(args[0]);
+			return ApiResponse.Good();
+		}
+
+		static string MakeMiniInvisible(string[] args)
+		{
+			const int expectedArgs = 1;
+			if (args.Length != expectedArgs)
+				return ApiResponse.Bad($"{nameof(MakeMiniInvisible)} - Expecting {expectedArgs} arg.");
+
+			Talespire.Minis.MakeInvisible(args[0]);
 			return ApiResponse.Good();
 		}
 

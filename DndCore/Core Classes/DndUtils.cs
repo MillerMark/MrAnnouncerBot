@@ -979,6 +979,8 @@ namespace DndCore
 					return SpellTargetShape.Square;
 				case "circle":
 					return SpellTargetShape.Circle;
+				case "cylinder":
+					return SpellTargetShape.Cylinder;
 			}
 			return SpellTargetShape.None;
 		}

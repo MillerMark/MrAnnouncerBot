@@ -49,6 +49,7 @@ namespace DndCore
 		public event DndCharacterEventHandler TurnEnded;
 		public event DndCharacterEventHandler TurnStarting;
 		public event PlayerStateChangedEventHandler PlayerStateChanged;
+		public event CreatureStateChangedEventHandler CreatureStateChanged;
 		public event PlayerRollRequestEventHandler PlayerRequestsRoll;
 		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
 		{
@@ -77,6 +78,10 @@ namespace DndCore
 		protected virtual void OnPlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
 			PlayerStateChanged?.Invoke(sender, ea);
+		}
+		protected virtual void OnCreatureStateChanged(object sender, CreatureStateEventArgs ea)
+		{
+			CreatureStateChanged?.Invoke(sender, ea);
 		}
 		protected virtual void OnEnterCombat(object sender, DndGameEventArgs ea)
 		{
@@ -230,7 +235,7 @@ namespace DndCore
 			player.PickWeapon += Player_PickWeapon;
 			player.PickAmmunition += Player_PickAmmunition;
 			player.PlayerShowState += Player_PlayerShowState;
-			player.StateChanged += Player_StateChanged;
+			player.StateChanged += Creature_StateChanged;
 			player.Damaged += Player_Damaged;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
@@ -283,9 +288,12 @@ namespace DndCore
 			OnPlayerRequestsRoll(this, new PlayerRollRequestEventArgs(sender as Character, ea.DiceRollStr));
 		}
 
-		private void Player_StateChanged(object sender, StateChangedEventArgs ea)
+		private void Creature_StateChanged(object sender, StateChangedEventArgs ea)
 		{
-			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea));
+			if (sender is Character)
+				OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea));
+			else
+				OnCreatureStateChanged(this, new CreatureStateEventArgs(sender as Creature, ea));
 		}
 
 		Creature lastPlayer = null;

@@ -76,9 +76,9 @@ namespace TaleSpireCore
 			return null;
 		}
 
-		public static GameObject GetChild(this Transform transform, string nameToFind)
+		public static GameObject GetChild(this Transform transform, string nameToFind, bool includeInactive = false)
 		{
-			Transform[] children = transform.GetComponentsInChildren<Transform>();
+			Transform[] children = transform.GetComponentsInChildren<Transform>(includeInactive);
 			foreach (Transform child in children)
 				if (child.gameObject.name == nameToFind)
 					return child.gameObject;
@@ -86,9 +86,9 @@ namespace TaleSpireCore
 			return null;
 		}
 
-		public static bool HasChild(this Transform transform, string nameToFind)
+		public static bool HasChild(this Transform transform, string nameToFind, bool includeInactive = false)
 		{
-			Transform[] children = transform.GetComponentsInChildren<Transform>();
+			Transform[] children = transform.GetComponentsInChildren<Transform>(includeInactive);
 			foreach (Transform child in children)
 				if (child.gameObject.name == nameToFind)
 					return true;

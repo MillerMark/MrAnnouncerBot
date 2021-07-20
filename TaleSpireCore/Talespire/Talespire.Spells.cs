@@ -93,20 +93,20 @@ namespace TaleSpireCore
 
 			public static void PlayEffectAtCreatureBase(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
 			{
-				PlayEffect(effectName, spellId, creatureId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.AtCreatureBase, rotationDegrees);
+				PlayEffect(effectName, spellId, creatureId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.AtCreatureBase, rotationDegrees, false);
 			}
 
-			public static void CreatureCastSpell(string effectName, string spellId, string creatureCastSpellId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
+			public static void CreatureCastSpell(string effectName, string spellId, string creatureCastSpellId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
 			{
-				PlayEffect(effectName, spellId, creatureCastSpellId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.CreatureCastSpell, rotationDegrees);
+				PlayEffect(effectName, spellId, creatureCastSpellId, lifeTime, enlargeTimeSeconds, secondsDelayStart, shrinkTime, SpellLocation.CreatureCastSpell, rotationDegrees, isMoveable);
 			}
 
-			private static void PlayEffect(string effectName, string spellId, string creatureId, float lifeTime, float enlargeTimeSeconds, float secondsDelayStart, float shrinkTime, SpellLocation location, float rotationDegrees)
+			private static void PlayEffect(string effectName, string spellId, string creatureId, float lifeTime, float enlargeTimeSeconds, float secondsDelayStart, float shrinkTime, SpellLocation location, float rotationDegrees, bool isMoveable)
 			{
 				if (secondsDelayStart > 0)
 				{
 					Log.Debug($"QueueEffect \"{effectName}\" for {secondsDelayStart} seconds...");
-					QueueEffect(new WaitingToCast(location, secondsDelayStart, effectName, spellId, creatureId, enlargeTimeSeconds, lifeTime, null, shrinkTime, rotationDegrees));
+					QueueEffect(new WaitingToCast(location, secondsDelayStart, effectName, spellId, creatureId, enlargeTimeSeconds, lifeTime, null, shrinkTime, rotationDegrees, isMoveable));
 					return;
 				}
 
@@ -117,7 +117,7 @@ namespace TaleSpireCore
 					return;
 				}
 
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees, isMoveable);
 
 				if (spell == null)
 				{
@@ -144,16 +144,16 @@ namespace TaleSpireCore
 				EffectParameters.ApplyAfterPositioning(spell);
 			}
 
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
 			{
 				if (secondsDelayStart > 0)
 				{
-					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position, shrinkTime, rotationDegrees));
+					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position, shrinkTime, rotationDegrees, isMoveable));
 					return null;
 				}
 
 				Log.Warning($"PlayEffectAtPosition(\"{effectName}\"...)");
-				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees);
+				GameObject spell = GetSpell(effectName, spellId, lifeTime, enlargeTimeSeconds, shrinkTime, rotationDegrees, isMoveable);
 
 				if (spell != null)
 				{
@@ -174,9 +174,9 @@ namespace TaleSpireCore
 				return "Attached." + spellId;
 			}
 
-			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds, float shrinkOnDeleteTime, float rotationDegrees)
+			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds, float shrinkOnDeleteTime, float rotationDegrees, bool isMoveable)
 			{
-				GameObject spell = GetEffect(effectName);
+				GameObject spell = GetEffect(effectName, spellId, isMoveable);
 
 				if (spell == null)
 				{
@@ -186,7 +186,8 @@ namespace TaleSpireCore
 
 				spell.transform.Rotate(Vector3.up, rotationDegrees);
 
-				spell.name = GetSpellName(spellId);
+				spell.name = GetSpellName(spellId, effectName, isMoveable);
+				// TODO: Figure out how to implement Moveable spells.
 				if (lifeTime > 0)
 				{
 					float particleShutoffTimeSeconds = Math.Min(2, lifeTime / 5);
@@ -200,9 +201,11 @@ namespace TaleSpireCore
 				return spell;
 			}
 
-			private static string GetSpellName(string spellId)
+			internal static string GetSpellName(string spellId, string effectName, bool isMoveable)
 			{
-				return "Spell." + spellId;
+				if (isMoveable)
+					return $"Moveable.{spellId}.{effectName}";
+				return $"Spell.{spellId}";
 			}
 
 			static void PrepareEffect(GameObject gameObject)
@@ -220,10 +223,22 @@ namespace TaleSpireCore
 				}
 			}
 
-			private static GameObject GetEffect(string effectName)
+			private static GameObject GetEffect(string effectName, string spellId = "", bool isMoveable = false)
 			{
 				GameObject result;
-				
+
+				if (isMoveable)
+				{
+					result = Instances.GetMoveableSpell(spellId, effectName);
+					if (result == null)
+						Log.Error($"Moveable spell {spellId}.{effectName} not found!");
+					else
+					{
+						Log.Warning($"Moveable spell {spellId}.{effectName} FOUND!");
+						return result;
+					}
+				}
+
 				if (Prefabs.Has(EffectParameters.GetEffectNameOnly(effectName)))
 					result = Prefabs.Clone(effectName);
 				else

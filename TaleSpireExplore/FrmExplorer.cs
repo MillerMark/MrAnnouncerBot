@@ -1345,20 +1345,7 @@ L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, Wor
 
 		private void btnTest1_Click(object sender, EventArgs e)
 		{
-			//Talespire.Minis.Delete(JanusId);
-			GameObject animationCurveExplorerPrefab = Talespire.Prefabs.Clone("AnimationCurveExplorerPrefab");
-			if (animationCurveExplorerPrefab != null)
-			{
-				Talespire.Log.Debug($"AnimationCurveExplorerPrefab found!");
-				UnityEngine.Component component = animationCurveExplorerPrefab.GetScript("AnimationCurveExplorer");
-				AnimationCurve growProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "GrowProjectileCurve");
-				GenerateAnimationCurveCode("growProjectileCurve", growProjectileCurve);
-				AnimationCurve shrinkProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "ShrinkProjectileCurve");
-				GenerateAnimationCurveCode("shrinkProjectileCurve", shrinkProjectileCurve);
-				AnimationCurve humpProjectileCurve = ReflectionHelper.GetPublicField<AnimationCurve>(component, "HumpProjectileCurve");
-				GenerateAnimationCurveCode("humpProjectileCurve", humpProjectileCurve);
 
-			}
 		}
 
 		private void btnTest2_Click(object sender, EventArgs e)
@@ -1445,6 +1432,11 @@ L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, Wor
 		private void btnBattleZone_Click(object sender, EventArgs e)
 		{
 			tbxTargetLocation.Text = "-1,0.2,0";
+		}
+
+		private void btnGhostToggle_Click(object sender, EventArgs e)
+		{
+			Talespire.Minis.SetVisibility(tbxGhostId.Text);
 		}
 	}
 }

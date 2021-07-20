@@ -13,16 +13,13 @@ namespace TaleSpireCore
 		public static class Target
 		{
 			public static InteractiveTargetingMode InteractiveTargetingMode { get; set; }
-			public static int TargetSphereDiameter { get; set; }
-			public static int TargetSquareEdgeLength { get; set; }
+			public static TargetingVolume TargetingVolume { get; set; }
+			public static float TargetSquareEdgeLength { get; set; }
 			public static MiniRotator MiniRotator { get; set; } = new MiniRotator();
 
-			static CompositeEffect targetingSphereCompositeEffect;
-			static CompositeEffect targetingSquareCompositeEffect;
 			static CompositeEffect targetingFireCompositeEffect;
 			static GameObject savedTargetingUI;
 			static List<GameObject> targetDisks = new List<GameObject>();
-			static GameObject targetingPrefab;
 			static GameObject targetingFire;
 
 			static List<string> allies = new List<string>();
@@ -77,37 +74,9 @@ namespace TaleSpireCore
 				InteractiveTargetingMode = mode;
 			}
 
-			public static bool IsTargetingSphereSet()
-			{
-				return targetingSphereCompositeEffect != null;
-			}
-
-			public static bool IsTargetingSquareSet()
-			{
-				return targetingSquareCompositeEffect != null;
-			}
-
 			public static bool IsTargetingFireSet()
 			{
 				return targetingFireCompositeEffect != null;
-			}
-
-			public static void SetTargetingSphere(string sphereCompositeEffectJson)
-			{
-				targetingSphereCompositeEffect = CompositeEffect.CreateFrom(sphereCompositeEffectJson);
-				if (targetingSphereCompositeEffect != null)
-					Log.Debug($"Targeting Sphere found!");
-				else
-					Log.Error($"Targeting Sphere NOT found!");
-			}
-
-			public static void SetTargetingSquare(string squareCompositeEffectJson)
-			{
-				targetingSquareCompositeEffect = CompositeEffect.CreateFrom(squareCompositeEffectJson);
-				if (targetingSquareCompositeEffect != null)
-					Log.Debug($"Targeting Square found!");
-				else
-					Log.Error($"Targeting Square NOT found!");
 			}
 
 			public static void SetTargetingFire(string fireCompositeEffectJson)
@@ -160,72 +129,25 @@ namespace TaleSpireCore
 
 			private static void PrepareForSelection()
 			{
-				TargetSphereDiameter = 0;
+				TargetingVolume = null;
 				CleanUp(false);
 				Flashlight.On();
 			}
 
-			static void AddTargetingSphere(FlashLight flashlight, int diameterFeet)
+			static void AddTargetingSphere(FlashLight flashlight, float diameterFeet)
 			{
-				TargetSphereDiameter = diameterFeet;
-				try
-				{
-					targetingPrefab = targetingSphereCompositeEffect?.CreateOrFindUnsafe();
-					if (targetingPrefab == null)
-					{
-						Log.Error($"targetingSphere is NULL!!!");
-						return;
-					}
-
-					SetSphereScale(diameterFeet);
-					targetingPrefab.transform.SetParent(flashlight.gameObject.transform);
-					targetingPrefab.transform.localPosition = new Vector3(0, 0, 0);
-				}
-				catch (Exception ex)
-				{
-					Log.Exception(ex);
-					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSphere!");
-				}
+				TargetingVolume = new TargetingSphere(diameterFeet, flashlight.gameObject.transform);
 			}
 
-			static void AddTargetingSquare(FlashLight flashlight, int edgeLengthFeet)
+			static void AddTargetingSquare(FlashLight flashlight, float edgeLengthFeet)
 			{
-				TargetSquareEdgeLength = edgeLengthFeet;
-				try
-				{
-					targetingPrefab = targetingSquareCompositeEffect?.CreateOrFindUnsafe();
-					if (targetingPrefab == null)
-					{
-						Log.Error($"targetingPrefab is NULL!!!");
-						return;
-					}
-
-					SetSquareScale(edgeLengthFeet);
-					targetingPrefab.transform.SetParent(flashlight.gameObject.transform);
-					targetingPrefab.transform.localPosition = new Vector3(0, 0.1f, 0);
-				}
-				catch (Exception ex)
-				{
-					Log.Exception(ex);
-					MessageBox.Show(ex.Message, $"{ex.GetType()} in AddTargetingSquare!");
-				}
+				TargetingVolume = new TargetingSquare(edgeLengthFeet, flashlight.gameObject.transform);
 			}
 
-			static void SetSquareScale(int edgeLengthFeet)
-			{
-				if (targetingPrefab == null)
-					return;
-				float edgeLengthTiles = Convert.FeetToTiles(edgeLengthFeet);
-				targetingPrefab.transform.localScale = new Vector3(edgeLengthTiles, edgeLengthTiles, edgeLengthTiles);
-			}
 
-			public static void SetSphereScale(int diameterFeet)
+			static void AddTargetingCylinder(FlashLight flashlight, float diameter, float height)
 			{
-				if (targetingPrefab == null)
-					return;
-				float diameterTiles = Convert.FeetToTiles(diameterFeet);
-				targetingPrefab.transform.localScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
-
+				TargetingVolume = new TargetingCylinder(diameter, height, flashlight.gameObject.transform);
 			}
 
 			static void AddSelectionIndicator(FlashLight flashlight)
@@ -263,10 +185,9 @@ namespace TaleSpireCore
 			public static void Off()
 			{
 				LockTo(null);
-				TargetSphereDiameter = 0;
+				TargetingVolume = null;
 				// This works because everything we add is parented by the flashlight.
 				Flashlight.Off();
-				targetingPrefab = null;
 				activeTargetDisk = null;
 				activeTargetRangeText = null;
 				activeTargetRangeIndicator = null;
@@ -378,7 +299,7 @@ namespace TaleSpireCore
 				FlashLight flashLight = Flashlight.Get();
 				if (flashLight != null)
 				{
-					if (targetingPrefab != null)
+					if (TargetingVolume != null)
 						MoveTargetingPrefabToWorld(flashLight);
 					Vector3 position = flashLight.transform.position;
 					VectorDto result = new VectorDto(position.x, position.y, position.z);
@@ -391,13 +312,16 @@ namespace TaleSpireCore
 
 			private static void MoveTargetingPrefabToWorld(FlashLight flashLight)
 			{
-				float saveY = targetingPrefab.transform.localPosition.y;
-				targetingPrefab.transform.SetParent(null);
-				targetingPrefab.transform.position = flashLight.transform.position;
+				if (TargetingVolume == null)
+					return;
+				Transform transform = TargetingVolume.PrefabTransform;
+				float saveY = transform.localPosition.y;
+				transform.SetParent(null);
+				transform.position = flashLight.transform.position;
 				Vector3 localPosition = flashLight.transform.localPosition;
-				targetingPrefab.transform.localPosition = new Vector3(localPosition.x, localPosition.y + saveY, localPosition.z);
-				savedTargetingUI = targetingPrefab;
-				AddTargetDisk(targetingPrefab.transform);
+				transform.localPosition = new Vector3(localPosition.x, localPosition.y + saveY, localPosition.z);
+				savedTargetingUI = TargetingVolume?.targetingPrefab;
+				AddTargetDisk(transform);
 			}
 
 			public static CreatureBoardAsset GetTargetedCreature()
@@ -579,7 +503,7 @@ namespace TaleSpireCore
 				return creatureBoardAsset;
 			}
 
-			public static void StartTargeting(string shapeName, int dimensions, string id, int rangeInFeet)
+			public static void StartTargeting(string shapeName, string id, int rangeInFeet, float dimension1Feet, float dimension2Feet = 0, float dimension3Feet = 0)
 			{
 				targetAnchorId = null;
 				
@@ -598,12 +522,14 @@ namespace TaleSpireCore
 				InitializeTargeting();
 				//activeTargetRangeIndicator = AddTargetRangeIndicator(flashlight.gameObject.transform);
 
-				if (shapeName == "Sphere" && dimensions > 0)
-					AddTargetingSphere(flashlight, dimensions);
-				else if (shapeName == "Square" && dimensions > 0)
-					AddTargetingSquare(flashlight, dimensions);
+				if (shapeName == "Sphere" && dimension1Feet > 0)
+					AddTargetingSphere(flashlight, dimension1Feet);
+				else if (shapeName == "Square" && dimension1Feet > 0)
+					AddTargetingSquare(flashlight, dimension1Feet);
+				else if (shapeName == "Cylinder" && dimension1Feet > 0 && dimension2Feet > 0)
+					AddTargetingCylinder(flashlight, dimension1Feet, dimension2Feet);
 				else
-					Log.Error($"Unsupported targeting shape: {shapeName} at {dimensions} feet.");
+					Log.Error($"Unsupported targeting shape: {shapeName} at {dimension1Feet} feet.");
 
 				if (rangeInFeet > 0)
 				{
@@ -647,7 +573,7 @@ namespace TaleSpireCore
 
 				bool isInRange = distanceFeet < targetAnchorRange;
 
-				if (targetingPrefab.activeSelf != isInRange)
+				if (TargetingVolume?.activeSelf != isInRange)
 					ToggleTargetIndicatorState(isInRange);
 			}
 
@@ -665,8 +591,8 @@ namespace TaleSpireCore
 				else
 					TargetIsInRange();
 
-				if (targetingPrefab != null)
-					targetingPrefab.SetActive(isInRange);
+				if (TargetingVolume != null)
+					TargetingVolume.SetActive(isInRange);
 			}
 
 			private static void TargetIsInRange()
@@ -727,6 +653,12 @@ namespace TaleSpireCore
 			public static void LockTo(string creatureId)
 			{
 				targetAnchorId = creatureId;
+			}
+			public static CharacterPositions GetCreaturesInsideTargetingVolume()
+			{	
+				if (TargetingVolume != null)
+					return TargetingVolume.GetAllTargetsInVolume();
+				return null;
 			}
 		}
 	}
