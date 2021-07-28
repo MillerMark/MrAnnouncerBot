@@ -860,7 +860,7 @@
 			}
 		}
 		else if (activeCharacter.forceShowSpell)
-			this.spellBook.draw(nowSec, context, 600, minTop, activeCharacter);
+			this.spellBook.draw(nowSec, context, 200, minTop, activeCharacter);
 	}
 
 

@@ -456,6 +456,11 @@ namespace DndCore
 			return castedSpell;
 		}
 
+		bool IsNewActiveSpell(CastedSpell castedSpell)
+		{
+			return !activeSpells.Where(x => x.ID == castedSpell.ID).Any();
+		}
+
 		public void CompleteCast(Creature spellCaster, CastedSpell castedSpell)
 		{
 			if (castedSpell.Target == null && spellCaster != null)
@@ -479,7 +484,8 @@ namespace DndCore
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
 
-			activeSpells.Add(castedSpell);
+			if (IsNewActiveSpell(castedSpell))
+				activeSpells.Add(castedSpell);
 			//if (castedSpell.Target == null && castedSpell.NeedsTargets)
 			//	if (castedSpell.Spell.PreferredTarget == SpellTarget.Friends)
 			//		AddTargets(castedSpell, SpellTarget.Friends);

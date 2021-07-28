@@ -31,7 +31,10 @@ namespace TaleSpireCore
 					return;
 
 				foreach (GameObject spellEffect in spells[spellId])
+				{
+					EffectParameters.EndingSpell(spellEffect);
 					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, shrinkOnDeleteTime: shrinkOnDeleteTime);
+				}
 
 				spells.Remove(spellId);
 			}

@@ -984,5 +984,9 @@ namespace DndCore
 			}
 			return SpellTargetShape.None;
 		}
+		public static double TilesToFeet(double distanceTiles)
+		{
+			return distanceTiles * 5;
+		}
 	}
 }

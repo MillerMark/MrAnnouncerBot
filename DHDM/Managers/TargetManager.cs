@@ -86,7 +86,8 @@ namespace DHDM
 				}
 			}
 		}
-		public static void AboutToRoll()
+
+		public static void AboutToValidate()
 		{
 			if (!Targeting.IsReady)
 			{
@@ -96,6 +97,11 @@ namespace DHDM
 					TargetActivePoint();
 			}
 			TaleSpireClient.RemoveTargetingUI();
+		}
+
+		public static void AboutToRoll()
+		{
+			// May not need anything here.
 		}
 
 		public static List<Creature> GetTargets()

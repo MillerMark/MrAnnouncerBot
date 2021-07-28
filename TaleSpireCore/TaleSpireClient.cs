@@ -326,5 +326,9 @@ namespace TaleSpireCore
 			msgParams.AddRange(targets);
 			Invoke("LaunchProjectile", msgParams.ToArray());
 		}
+		public static ApiResponse GetCreatures()
+		{
+			return Invoke("GetCreatures");
+		}
 	}
 }

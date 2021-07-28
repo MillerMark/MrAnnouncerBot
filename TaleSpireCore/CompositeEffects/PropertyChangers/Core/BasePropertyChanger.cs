@@ -156,7 +156,7 @@ namespace TaleSpireCore
 								if (component.GetType().Name == componentTypeName)
 								{
 									if (logDetails)
-										Talespire.Log.Warning($"  Found \"{component.GetType().Name}\" through iteration!");
+										Talespire.Log.Debug($"  Found \"{component.GetType().Name}\" through iteration!");
 									nextInstance = component;
 									break;
 								}

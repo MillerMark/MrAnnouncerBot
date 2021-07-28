@@ -1,4 +1,9 @@
-﻿using System;
+﻿/* 
+,
+ 
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +11,7 @@ namespace DndCore
 {
 	public static class Targeting
 	{
+		
 		public static void Start(TargetDetails targetDetails, WhatSide whatSide)
 		{
 			ExpectedSide = whatSide;

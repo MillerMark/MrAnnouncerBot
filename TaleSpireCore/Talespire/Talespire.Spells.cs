@@ -86,7 +86,6 @@ namespace TaleSpireCore
 				spell.transform.SetParent(creatureBase.transform);
 				//spell.transform.
 				spell.transform.position = creatureBase.transform.position;
-
 				EffectParameters.ApplyAfterPositioning(spell);
 			}
 
@@ -141,7 +140,11 @@ namespace TaleSpireCore
 				//spell.transform.Rotate(creatureBoardAsset.GetRotation());
 				//Log.Vector("spell.transform.localEulerAngles2", spell.transform.localEulerAngles);
 
-				EffectParameters.ApplyAfterPositioning(spell);
+				if (isMoveable)
+				{
+					Log.Warning($"EffectParameters.ApplyAfterPositioning(spell) on moveable effect {effectName}");
+				}
+				EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 			}
 
 			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
@@ -158,7 +161,7 @@ namespace TaleSpireCore
 				if (spell != null)
 				{
 					spell.transform.position = position.GetVector3();
-					EffectParameters.ApplyAfterPositioning(spell);
+					EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 				}
 
 				return spell;

@@ -36,10 +36,26 @@ namespace TaleSpireCore
 		{
 			if (targetingPrefab == null)
 				return;
+
 			float diameterTiles = Talespire.Convert.FeetToTiles(diameter);
 			float heightTiles = Talespire.Convert.FeetToTiles(height);
-			// TODO: Scale this.
-			//targetingPrefab.transform.localScale = new Vector3(edgeLengthTiles, edgeLengthTiles, edgeLengthTiles);
+
+			GameObject top = targetingPrefab.FindChild("Top");
+			GameObject sides = targetingPrefab.FindChild("Sides");
+			GameObject bottom = targetingPrefab.FindChild("Bottom");
+
+			if (top == null || bottom == null || sides == null)
+				return;
+
+			Vector3 topBottomScale = new Vector3(diameterTiles, diameterTiles, diameterTiles);
+			Vector3 sidesScale = new Vector3(diameterTiles, heightTiles, diameterTiles);
+			Vector3 position = top.transform.localPosition;
+			Vector3 topPosition = new Vector3(position.x, heightTiles, position.z);
+
+			top.transform.localPosition = topPosition;
+			top.transform.localScale = topBottomScale;
+			bottom.transform.localScale = topBottomScale;
+			sides.transform.localScale = sidesScale;
 		}
 
 		public float Diameter { get; set; }

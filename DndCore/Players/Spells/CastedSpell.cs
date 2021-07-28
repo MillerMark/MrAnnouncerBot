@@ -203,6 +203,19 @@ namespace DndCore
 						}
 					}
 				}
+
+				if (Spell.Range > 0)
+				{
+					double feetFromCaster = DndUtils.TilesToFeet(spellCaster.MapPosition.DistanceTo(Targeting.TargetPoint));
+					if (feetFromCaster > Spell.Range)
+					{
+						validationResult.ValidationAction = ValidationAction.Stop;
+						validationResult.MessageOverPlayer = $"Target out of range - {Spell.Range}ft!";
+					}
+					// - 
+				}
+
+
 				int maxTargetsToCast = Spell.MaxTargetsToCast;
 				int minTargetsToCast = Spell.MinTargetsToCast;
 				// TODO: consider moving this logic directly into the properties MinTargetsToCast and MaxTargetsToCast

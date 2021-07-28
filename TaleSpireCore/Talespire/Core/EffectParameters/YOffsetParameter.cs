@@ -13,7 +13,7 @@ namespace TaleSpireCore
 				return;
 			Vector3 position = gameObject.transform.localPosition;
 			Vector3 newPosition = new Vector3(position.x, position.y + distanceTiles, position.z);
-			Talespire.Log.Warning($"Moving {gameObject.name} from {position} to {newPosition}.");
+			Talespire.Log.Warning($"yOffset parameter - Moving {gameObject.name} from {position} to {newPosition}.");
 			gameObject.transform.localPosition = newPosition;
 		}
 

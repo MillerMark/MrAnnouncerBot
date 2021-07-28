@@ -124,8 +124,8 @@ namespace TaleSpireCore
 			ApplyParameters(gameObject, parameters, WhenToApply.AfterCreation);
 			savedParameters[gameObject] = parameters;
 		}
-
-		public static void ApplyAfterPositioning(GameObject gameObject)
+		
+		public static void ApplyAfterPositioning(GameObject gameObject, bool isMoveable = false)
 		{
 			if (gameObject == null)
 				return;
@@ -133,8 +133,14 @@ namespace TaleSpireCore
 			{
 				Talespire.Log.Debug($"ApplyAfterPositioning (\"{savedParameters[gameObject]}\")...");
 				ApplyParameters(gameObject, savedParameters[gameObject], WhenToApply.AfterPositioning);
-				savedParameters.Remove(gameObject);
+				if (!isMoveable)
+					savedParameters.Remove(gameObject);
 			}
+		}
+		public static void EndingSpell(GameObject spellEffect)
+		{
+			if (spellEffect != null)
+				savedParameters.Remove(spellEffect);
 		}
 	}
 }

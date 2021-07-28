@@ -2900,6 +2900,7 @@ namespace DHDM
 			if (forceRepeat && ActivePlayer.concentratedSpell != null)
 			{
 				// Use original spellId so TaleSpire moveable effects move!!!
+				SpellManager.nextSpellIdWeAreCasting = ActivePlayer.concentratedSpell.ID;
 				castedSpell.ID = ActivePlayer.concentratedSpell.ID;
 			}
 
@@ -2986,12 +2987,32 @@ namespace DHDM
 			return castedSpell;
 		}
 
+		void UpdatePlayerPositions()
+		{
+			ApiResponse response = TaleSpireClient.GetCreatures();
+			if (response.Result == ResponseType.Failure)
+				return;
+
+			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
+
+			foreach (CharacterPosition characterPosition in characterPositions.Characters)
+			{
+				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
+				if (creature != null)
+					creature.SetMapPosition(characterPosition.Position.x, characterPosition.Position.y, characterPosition.Position.z);
+			}
+		}
 		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
 		{
 			if (castedSpell.Target == null)  // && (castedSpell.Spell.MinTargetsToCast > 0 || castedSpell.Spell.MaxTargetsToCast > 0)
 				AddCurrentTargets(castedSpell);
 
+			TargetManager.AboutToValidate();
+
+			UpdatePlayerPositions();
+
 			DndCore.ValidationResult validationResult = castedSpell.GetValidation(player, castedSpell.Target);
+			
 			if (validationResult.ValidationAction == ValidationAction.Stop)
 			{
 				ReportValidation(player, validationResult);
@@ -7082,15 +7103,16 @@ namespace DHDM
 
 		bool forceRepeatNextSpellShortcut;
 		// TODO: Rename substring.
-		async Task RepeatSpell(int playerId, string substring)
+		void RepeatSpell(int playerId, string substring)
 		{
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
 			if (player.concentratedSpell != null && player.concentratedSpell.Spell.Name == substring.Trim())
-			{
+			{ // TODO: Invoke TS Targeting UI if necessary.
 				PlayerActionShortcut playerActionShortcut = PlayerActionShortcut.FromSpell(substring, player, player.concentratedSpell.SpellSlotLevel);
-				await ActivateSpellShortcut(playerActionShortcut, true);
+				PrepareTaleSpireTargeting(playerActionShortcut);
+				spellToCastOnRoll = playerActionShortcut;
 				forceRepeatNextSpellShortcut = true;
 				NextDieRollType = DiceRollType.DamageOnly;
 			}
@@ -7104,9 +7126,7 @@ namespace DHDM
 				ActivePlayerId = playerId;
 				CheckOnlyOnePlayer(playerId);
 				if (shortcutName.EndsWith(STR_RepeatSpell))
-				{
-					await RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
-				}
+					RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
 				else
 					ActivatePlayerShortcut(shortcutName, playerId);
 			});
@@ -7695,6 +7715,7 @@ namespace DHDM
 			bool needToAddSavingThrows = false;
 			int spellSaveDc = 12;
 			PlayerActionShortcut localSpellToCastOnRoll = spellToCastOnRoll;
+
 			//Title = "Rolling Dice...";
 
 			Spell spellWeAreCasting = null;
@@ -11325,6 +11346,7 @@ namespace DHDM
 		}
 
 		string lastIdOverwriteId;
+		PlayerActionShortcut repeatSpellShortcut;
 
 		void BindCreature(ApiResponse response)
 		{
