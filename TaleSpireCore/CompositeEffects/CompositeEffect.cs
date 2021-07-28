@@ -7,11 +7,24 @@ using System.Collections;
 using System.Threading;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Management.Instrumentation;
 
 namespace TaleSpireCore
 {
 	public class CompositeEffect
 	{
+		/// <summary>
+		/// <see cref="refreshableProperties"></see> is a list of properties that, if changed, would require a refresh of the parent GameObject.
+		/// For example, "&lt;ParticleSystem&gt;.main.prewarm".
+		/// </summary>
+		static List<string> refreshableProperties = new List<string>();
+		static List<GameObject> objectsToRefresh = new List<GameObject>();
+		static List<GameObject> objectsToActivate = new List<GameObject>();
+
+		static CompositeEffect()
+		{
+			refreshableProperties.Add("<ParticleSystem>.main.prewarm");
+		}
 		public static IKnownEffectsBuilder KnownEffectsBuilder { get; set; }
 
 		/// <summary>
@@ -65,10 +78,23 @@ namespace TaleSpireCore
 
 		CharacterPosition sourcePosition;
 		CharacterPosition targetPosition;
+		bool needRefresh;
 
 		public CompositeEffect()
 		{
 
+		}
+
+		public bool NeedsRefreshing()
+		{
+			if (needRefresh)
+				return true;
+			
+			foreach (CompositeEffect compositeEffect in Children)
+				if (compositeEffect.NeedsRefreshing())
+					return true;
+
+			return false;
 		}
 
 		/// <summary>
@@ -134,7 +160,11 @@ namespace TaleSpireCore
 
 			foreach (var basePropertyDto in properties)
 			{
-				Talespire.Log.Warning($">> Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
+				Talespire.Log.Debug($">> Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
+
+				if (refreshableProperties.Contains(basePropertyDto.Name))
+					needRefresh = true;
+
 				basePropertyDto.ModifyProperty(effect);
 			}
 		}
@@ -145,8 +175,9 @@ namespace TaleSpireCore
 			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
 			{
 				gameObject = CreateOrFindUnsafe(instanceId, sourcePosition, targetPosition, parentInstance);
+				RefreshIfNecessary(gameObject);
 			});
-			
+
 			return gameObject;
 		}
 
@@ -248,12 +279,37 @@ namespace TaleSpireCore
 			}
 			return null;
 		}
-
+		//
 		public static CompositeEffect CreateFrom(string json, string instanceId = null)
 		{
 			CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
 			compositeEffect.RebuildPropertiesAfterLoad();
 			return compositeEffect;
+		}
+
+		public void RefreshIfNecessary(GameObject gameObject)
+		{
+			if (gameObject == null)
+				return;
+
+			if (NeedsRefreshing() && gameObject.activeSelf)
+				objectsToRefresh.Add(gameObject);
+		}
+
+		public static void Update()
+		{
+			foreach (GameObject gameObject in objectsToActivate)
+				gameObject.SetActive(true);
+
+			objectsToActivate.Clear();
+
+			foreach (GameObject gameObject in objectsToRefresh)
+			{
+				gameObject.SetActive(false);
+				objectsToActivate.Add(gameObject);
+			}
+			
+			objectsToRefresh.Clear();
 		}
 	}
 }

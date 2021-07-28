@@ -155,6 +155,7 @@ namespace TaleSpireCore
 				try
 				{
 					targetingFire = targetingFireCompositeEffect?.CreateOrFindUnsafe();
+					targetingFireCompositeEffect?.RefreshIfNecessary(targetingFire);
 					if (targetingFire == null)
 					{
 						Log.Error($"targetingFire is NULL!!!");
@@ -461,17 +462,20 @@ namespace TaleSpireCore
 			public static void PickupAllDroppedTargets()
 			{
 				FlashLight flashLight = Flashlight.Get();
+				if (flashLight == null)
+					return;
 				Transform flashLightTransform = flashLight.transform;
 				for (int i = targetDisks.Count - 1; i >= 0; i--)
 				{
 					GameObject gameObject = targetDisks[i];
-					if (gameObject.transform.parent == flashLightTransform)
-						continue;
-					else
-					{
-						gameObject.transform.SetParent(null);
-						UnityEngine.Object.Destroy(gameObject);
-					}
+					if (gameObject != null)
+						if (gameObject.transform.parent == flashLightTransform)
+							continue;
+						else
+						{
+							gameObject.transform.SetParent(null);
+							UnityEngine.Object.Destroy(gameObject);
+						}
 
 					targetDisks.RemoveAt(i);
 				}
@@ -657,7 +661,7 @@ namespace TaleSpireCore
 			public static CharacterPositions GetCreaturesInsideTargetingVolume()
 			{	
 				if (TargetingVolume != null)
-					return TargetingVolume.GetAllTargetsInVolume();
+					return TargetingVolume.GetAllCreaturesInVolume();
 				return null;
 			}
 		}

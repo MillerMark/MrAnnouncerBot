@@ -7,8 +7,9 @@ namespace TaleSpireCore
 	public class TargetingCylinder : TargetingVolume
 	{
 		static CompositeEffect targetingCylinderCompositeEffect;
-		public override CharacterPositions GetAllTargetsInVolume()
+		public override CharacterPositions GetAllCreaturesInVolume()
 		{
+			
 			return null;
 		}
 

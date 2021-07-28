@@ -366,6 +366,11 @@ namespace DndCore
 			return GetElement<Weapons>(weaponStr);
 		}
 
+		public static WhatSide ToWhatSide(string whatSideStr)
+		{
+			return GetElement<WhatSide>(whatSideStr);
+		}
+
 		public static string GetCleanItemName(string name)
 		{
 			if (name.IndexOf(',') > 0)

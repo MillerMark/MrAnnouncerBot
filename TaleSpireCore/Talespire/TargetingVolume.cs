@@ -34,7 +34,7 @@ namespace TaleSpireCore
 		}
 
 		protected float offsetY = 0;
-		public abstract CharacterPositions GetAllTargetsInVolume();
+		public abstract CharacterPositions GetAllCreaturesInVolume();
 		public GameObject targetingPrefab { get; set; }
 		public Transform Transform { get; }
 
@@ -47,13 +47,13 @@ namespace TaleSpireCore
 		{
 			Transform = transform;
 		}
-
-
+		
 		protected void CreateTargetSelector(CompositeEffect compositeEffect)
 		{
 			try
 			{
 				targetingPrefab = compositeEffect?.CreateOrFindUnsafe();
+				compositeEffect?.RefreshIfNecessary(targetingPrefab);
 				if (targetingPrefab == null)
 					Talespire.Log.Error($"targetingPrefab is NULL!!!");
 				else

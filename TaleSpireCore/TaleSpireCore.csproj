@@ -141,6 +141,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
+    <Compile Include="ConvertUtils.cs" />
     <Compile Include="Decompiles\AssetDb2.cs" />
     <Compile Include="DndControllerAppClient.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />

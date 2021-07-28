@@ -700,10 +700,30 @@ namespace TaleSpireCore
 				return result;
 			}
 
-			static CharacterPositions GetAllInCylinder(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float dimension1, float dimension2)
+			static CharacterPositions GetAllInCylinder(List<CharacterPosition> characterPositions, VectorDto volumeFloorCenter, float diameter, float height)
 			{
-				// TODO: Implement this.
-				return null;
+				CharacterPositions result = new CharacterPositions();
+				Vector3 floorCenter = volumeFloorCenter.GetVector3();
+				Vector3 floorCenter2d = new Vector3(floorCenter.x, 0, floorCenter.z);
+				float verticalSlop = 0.5f; // Amount above/below cylinder to include in the target.
+				float floorY = volumeFloorCenter.y - verticalSlop;
+				float ceilingY = floorY + height + verticalSlop;
+				float radius = diameter / 2f;
+				foreach (CharacterPosition characterPosition in characterPositions)
+				{
+					// TODO: Thinking about adding a "slop" to take creature size (radius & height) into account.
+					bool inVerticalRange = characterPosition.Position.y >= floorY && characterPosition.Position.y <= ceilingY;
+					if (inVerticalRange)
+					{
+						Vector3 position = characterPosition.Position.GetVector3();
+						Vector3 position2d = new Vector3(position.x, 0, position.z);
+						Vector3 delta = position2d - floorCenter2d;
+						float distanceFromCenter = delta.magnitude;
+						if (distanceFromCenter < radius)
+							result.Characters.Add(characterPosition);
+					}
+				}
+				return result;
 			}
 
 			static CharacterPositions GetAllInCone(List<CharacterPosition> characterPositions, VectorDto volumeCenter, float dimension1, float dimension2)

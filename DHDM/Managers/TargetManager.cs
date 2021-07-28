@@ -12,7 +12,30 @@ namespace DHDM
 		const string STR_Favorite = "Favorite";
 		static Dictionary<int, SavedTargets> savedTargets = new Dictionary<int, SavedTargets>();
 		static Dictionary<string, SavedTargets> favoriteTargets = new Dictionary<string, SavedTargets>();
-			
+
+		static TargetManager()
+		{
+			TargetCreaturesInVolume.TargetCreaturesInVolumeRequest += TargetCreaturesInVolume_TargetCreaturesInVolumeRequest;
+		}
+
+		private static void TargetCreaturesInVolume_TargetCreaturesInVolumeRequest(object sender, WhatSideEventArgs ea)
+		{
+			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
+			{
+				CharacterPositions characterPositions = TaleSpireClient.GetAllCreaturesInVolume(Targeting.TargetPoint.ToVectorDto(),
+					Targeting.ExpectedTargetDetails.Shape.ToString(), Targeting.ExpectedTargetDetails.DimensionsFeet,
+					ea.WhatSide.ToString());
+
+				TaleSpireClient.CleanUpTargets();
+				List<string> charactersToTarget = characterPositions.Characters.Select(x => x.ID).ToList();
+				TaleSpireClient.TargetCreatures(charactersToTarget);
+				TargetCreaturesByTaleSpireId(charactersToTarget);
+				CreatureManager.UpdateInGameCreatures();
+				CreatureManager.UpdatePlayerStatsInGame();
+			}
+
+		}
+
 		public static void TargetPoint(ApiResponse response)
 		{
 			VectorDto vector = response.GetData<VectorDto>();
@@ -31,11 +54,12 @@ namespace DHDM
 			Targeting.Ready();
 		}
 
+		// TODO: Consolidate with the code in TargetCreaturesInVolume_TargetCreaturesInVolumeRequest and the WhatSide parameter
 		public static CharacterPositions GetAllCreaturesInVolume()
 		{
 			VectorDto volumeCenter = Targeting.TargetPoint.ToVectorDto();
 			string shapeName = Targeting.ExpectedTargetDetails.Shape.ToString();
-			CharacterPositions allTargetsInVolume = TaleSpireClient.GetAllTargetsInVolume(volumeCenter, shapeName, Targeting.ExpectedTargetDetails.DimensionsFeet);
+			CharacterPositions allTargetsInVolume = TaleSpireClient.GetAllCreaturesInVolume(volumeCenter, shapeName, Targeting.ExpectedTargetDetails.DimensionsFeet);
 			return allTargetsInVolume;
 		}
 
@@ -130,17 +154,22 @@ namespace DHDM
 
 		static void TargetCreaturesByTaleSpireId(SavedTargets savedTargets)
 		{
+			TargetCreaturesByTaleSpireId(savedTargets.TargetedCreatures);
+		}
+
+		private static void TargetCreaturesByTaleSpireId(List<string> targetCreatureIds)
+		{
 			foreach (CreatureStats creatureStats in PlayerStatManager.Players)
 			{
 				Character player = AllPlayers.GetFromId(creatureStats.CreatureId);
 				if (player != null)
-					creatureStats.IsTargeted = savedTargets.TargetedCreatures.Contains(player.taleSpireId);
+					creatureStats.IsTargeted = targetCreatureIds.Contains(player.taleSpireId);
 				else
 					creatureStats.IsTargeted = false;
 			}
 
 			foreach (InGameCreature creature in AllInGameCreatures.Creatures)
-				creature.IsTargeted = savedTargets.TargetedCreatures.Contains(creature.TaleSpireId);
+				creature.IsTargeted = targetCreatureIds.Contains(creature.TaleSpireId);
 		}
 
 		public static void Load(int creatureId)

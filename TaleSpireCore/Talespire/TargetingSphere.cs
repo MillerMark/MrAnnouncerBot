@@ -10,7 +10,7 @@ namespace TaleSpireCore
 		static CompositeEffect targetingSphereCompositeEffect;
 
 		public float DiameterFeet { get; set; }
-		public override CharacterPositions GetAllTargetsInVolume()
+		public override CharacterPositions GetAllCreaturesInVolume()
 		{
 			return Talespire.Minis.GetAllInSphere(Center.GetVectorDto(), DiameterFeet);
 		}

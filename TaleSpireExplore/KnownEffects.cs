@@ -46,6 +46,8 @@ namespace TaleSpireExplore
 			Talespire.GameObjects.InvalidateFound();
 			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
 			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
+			compositeEffect.RefreshIfNecessary(gameObject);
+
 			if (gameObject != null)
 				gameObject.name = effectName;
 			return gameObject;
@@ -60,7 +62,8 @@ namespace TaleSpireExplore
 			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
 			//Talespire.Log.Debug($"GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);");
 			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
-			
+			compositeEffect.RefreshIfNecessary(gameObject);
+
 			if (gameObject != null)
 				Talespire.Log.Debug($"gameObject: {gameObject.name}");
 			else

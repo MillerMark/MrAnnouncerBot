@@ -101,7 +101,7 @@ namespace TaleSpireExplore
 			Commands.Add("PlayEffectOnCollision", PlayEffectOnCollision);
 			Commands.Add("ClearAttached", ClearAttached);
 			Commands.Add("ClearSpell", ClearSpell);
-			Commands.Add("GetAllTargetsInVolume", GetAllTargetsInVolume);
+			Commands.Add("GetAllCreaturesInVolume", GetAllCreaturesInVolume);
 			Commands.Add("GetSelectedMini", GetSelectedMini);
 			Commands.Add("GetFlashlightPosition", GetFlashlightPosition);
 			Commands.Add("Flashlight", Flashlight);
@@ -1838,13 +1838,16 @@ namespace TaleSpireExplore
 				return ApiResponse.Bad("No mini selected.");
 		}
 
-		static string GetAllTargetsInVolume(string[] args)
+		static string GetAllCreaturesInVolume(string[] args)
 		{
-			if (args.Length < 3)
-				return ApiResponse.Bad($"{nameof(GetAllTargetsInVolume)} - Expecting 3 args.");
+			if (args.Length < 4)
+				return ApiResponse.Bad($"{nameof(GetAllCreaturesInVolume)} - Expecting 4 args.");
 			string volumeCenterStr = args[0];
 			string shapeName = args[1];
 			string dimensionsStr = args[2];
+			string whatSideStr = args[3];
+			WhatSide whatSide = ConvertUtils.ToWhatSide(whatSideStr);
+
 			VectorDto volumeCenter = Talespire.Convert.ToVectorDto(volumeCenterStr);
 			TargetVolume volume = Talespire.Convert.ToTargetVolume(shapeName);
 			string[] split = dimensionsStr.Split('x');  // 10x20
@@ -1872,8 +1875,13 @@ namespace TaleSpireExplore
 			}
 
 			CharacterPositions characterPositions = Talespire.Minis.GetAllInVolume(volumeCenter, volume, dimension1, dimension2, dimension3);
+
 			if (characterPositions != null)
+			{
+				characterPositions.PruneSides(whatSide);
 				return ApiResponse.Good("Success", characterPositions);
+			}
+
 			return ApiResponse.Bad("Something went wrong.");
 		}
 

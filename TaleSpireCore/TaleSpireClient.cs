@@ -262,9 +262,10 @@ namespace TaleSpireCore
 			Invoke("StartTargeting", new string[] { shape, dimensionsFeet, casterTaleSpireId, rangeInFeet.ToString() });
 		}
 
-		public static CharacterPositions GetAllTargetsInVolume(VectorDto vectorDto, string shape, string dimensionStr)
+		public static CharacterPositions GetAllCreaturesInVolume(VectorDto vectorDto, string shape, string dimensionStr, string whatSide = "All")
 		{
-			ApiResponse response = Invoke("GetAllTargetsInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensionStr });
+			whatSide = whatSide.Replace(',', '|');
+			ApiResponse response = Invoke("GetAllCreaturesInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensionStr, whatSide });
 			if (response.Result == ResponseType.Failure)
 				return null;
 

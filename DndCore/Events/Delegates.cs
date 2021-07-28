@@ -49,5 +49,6 @@ namespace DndCore
 	public delegate void ValidationEventHandler(object sender, ValidationEventArgs ea);
 	public delegate void TargetCountEventHandler(object sender, TargetCountEventArgs ea);
 	public delegate void EffectEventHandler(object sender, EffectEventArgs ea);
+	public delegate void WhatSideEventHandler(object sender, WhatSideEventArgs ea);
 
 }

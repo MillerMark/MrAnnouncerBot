@@ -7,7 +7,7 @@ namespace TaleSpireCore
 	public class TargetingSquare : TargetingVolume
 	{
 		static CompositeEffect targetingSquareCompositeEffect;
-		public override CharacterPositions GetAllTargetsInVolume()
+		public override CharacterPositions GetAllCreaturesInVolume()
 		{
 			return null;
 		}
