@@ -11,7 +11,7 @@ namespace TaleSpireCore
 		{
 			if (scale == Vector3.zero)
 				return;
-			Talespire.Log.Warning($"Scaling {gameObject.name} from {gameObject.transform.localScale} to {scale}.");
+			Talespire.Log.Warning($"Changing {gameObject.name} Scale from {gameObject.transform.localScale} to {scale}.");
 			gameObject.transform.localScale = scale;
 		}
 

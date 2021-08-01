@@ -154,5 +154,34 @@ namespace TaleSpireExplore
 			filterTimer.Stop();
 			filterTimer.Start();
 		}
+
+		private void lstItems_MouseDoubleClick(object sender, MouseEventArgs e)
+		{
+			Talespire.Log.Warning($"Double-click! - AcceptSelected();");
+			AcceptSelected();
+		}
+
+		private void AcceptSelected()
+		{
+			DialogResult = DialogResult.OK;
+			Close();
+		}
+
+		private void tbxFilter_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
+				Talespire.Log.Warning($"Enter key pressed!");
+				int indexFilter = lstItems.Items.IndexOf(tbxFilter.Text);
+				if (indexFilter >= 0)
+				{
+					Talespire.Log.Debug($"\"{tbxFilter.Text}\" found!!!");
+					lstItems.SelectedIndex = indexFilter;
+					AcceptSelected();
+				}
+				else
+					Talespire.Log.Error($"\"{tbxFilter.Text}\" NOT found!!!");
+			}
+		}
 	}
 }

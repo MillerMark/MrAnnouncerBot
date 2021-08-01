@@ -147,18 +147,31 @@ namespace TaleSpireCore
 						Talespire.Log.Debug($"Getting <\"{componentTypeName}\">...");
 					if (nextInstance is GameObject gameObject)
 					{
+						if (logDetails)
+							Talespire.Log.Debug($"nextInstance = gameObject.GetComponent(\"{componentTypeName}\")...");
 						nextInstance = gameObject.GetComponent(componentTypeName);
 						if (nextInstance == null)
 						{
+							if (logDetails)
+								Talespire.Log.Debug($"Component[] components = gameObject.GetComponents(typeof(Component))...");
 							Component[] components = gameObject.GetComponents(typeof(Component));
-							foreach (Component component in components)
+							if (components != null)
 							{
-								if (component.GetType().Name == componentTypeName)
+								if (logDetails)
+									Talespire.Log.Debug($"foreach (Component component in components)");
+								foreach (Component component in components)
 								{
 									if (logDetails)
-										Talespire.Log.Debug($"  Found \"{component.GetType().Name}\" through iteration!");
-									nextInstance = component;
-									break;
+										Talespire.Log.Debug($"if (component.GetType().Name == componentTypeName)");
+									if (component == null)
+										Talespire.Log.Error($"Missing component (most likely a script?)");
+									if (component?.GetType().Name == componentTypeName)
+									{
+										if (logDetails)
+											Talespire.Log.Debug($"  Found \"{component.GetType().Name}\" through iteration!");
+										nextInstance = component;
+										break;
+									}
 								}
 							}
 

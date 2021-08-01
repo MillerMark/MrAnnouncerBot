@@ -8,7 +8,7 @@ namespace DndCore
 	[Tooltip("Plays the specified spell effect over the active player's TaleSpire mini.")]
 	[Param(1, typeof(string), "spellEffectName", "The name of the known effect or Prefab to create.", ParameterIs.Required)]
 	[Param(2, typeof(float), "duration", "The duration, in seconds, for this spell effect to last before destroying it.", ParameterIs.Optional)]
-	[Param(3, typeof(EffectLocation), "effectLocation", "The location to play this effect. One of CreatureBase (default), SpellCast, LastTargetPosition, AtCollision, AtCollisionTarget (using the *intended* target position), MoveableTarget, or MoveableSpellCast.", ParameterIs.Optional)]
+	[Param(3, typeof(EffectLocation), "effectLocation", "The location to play this effect. One of CreatureBase (default), SpellCast, LastTargetPosition, AtCollision, AtCollisionTarget (using the *intended* target position), AtCollisionBase (hitting the floor beneath the intended target), MoveableTarget, or MoveableSpellCast.", ParameterIs.Optional)]
 	[Param(4, typeof(float), "secondsDelay", "The seconds to delay playing this effect.", ParameterIs.Optional)]
 	[Param(5, typeof(float), "enlargeTime", "The seconds to enlarge this effect.", ParameterIs.Optional)]
 	[Param(6, typeof(float), "shrinkTime", "The seconds to shrink this effect when it stops.", ParameterIs.Optional)]
@@ -26,8 +26,14 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 1, 7);
-			if (player == null || spell == null)
+			if (player == null)
 				return null;
+
+			string spellId;
+			if (spell == null)
+				spellId = Guid.NewGuid().ToString();
+			else
+				spellId = spell.ID;
 
 			string effectName = Expressions.GetStr(args[0]);
 			float lifeTime = 0;
@@ -59,7 +65,7 @@ namespace DndCore
 				}
 			}
 
-			OnPlayKnownEffect(effectName, spell.ID, player.taleSpireId, lifeTime, effectLocation, secondsDelayStart, enlargeTime, shrinkTime, rotation);
+			OnPlayKnownEffect(effectName, spellId, player.taleSpireId, lifeTime, effectLocation, secondsDelayStart, enlargeTime, shrinkTime, rotation);
 
 			return null;
 		}

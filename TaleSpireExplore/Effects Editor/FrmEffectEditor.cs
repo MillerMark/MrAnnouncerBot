@@ -1260,31 +1260,45 @@ namespace TaleSpireExplore
 
 		private void btnAddPropTest_Click(object sender, EventArgs e)
 		{
-			try
-			{
-				GameObject prop = Talespire.GameObjects.TryAddProp();
-				GameObjectNode node = new GameObjectNode()
-				{
-					Text = prop.name,
-					CompositeEffect = new CompositeEffect()
-					{
-						ItemToBorrow = prop.name
-					}
-				};
 
-				TreeNode selectedNode = trvEffectHierarchy.SelectedNode;
-				if (selectedNode != null)
-					selectedNode.Nodes.Add(node);
-				else
-					trvEffectHierarchy.Nodes.Add(node);
-				node.GameObject = prop;
-				node.Checked = node.GameObject.activeSelf;
-				AddChildren(node);
-			}
-			catch (Exception ex)
+		}
+
+		void ExpandNode(TreeNodeCollection nodes, string path)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				return;
+
+			if (nodes == null || nodes.Count == 0)
+				return;
+
+			int separatorIndex = path.IndexOf("|");
+			string remainingPath = "";
+			string matchingName;
+			if (separatorIndex > 0)
 			{
-				Talespire.Log.Exception(ex);
+				remainingPath = path.Substring(separatorIndex + 1);
+				matchingName = path.Substring(0, separatorIndex);
 			}
+			else
+				matchingName = path;
+
+			TreeNode firstNode = nodes[0];
+
+			if (firstNode.Text == matchingName)
+			{
+				firstNode.Expand();
+				if (string.IsNullOrWhiteSpace(remainingPath))
+					trvEffectHierarchy.SelectedNode = firstNode;
+				else
+					ExpandNode(firstNode.Nodes, remainingPath);
+			}
+		}
+
+		private void btnClothBase_Click(object sender, EventArgs e)
+		{
+			ExpandNode(trvEffectHierarchy.Nodes, "Character(Clone)|MoveableOffset|Container|_Visual|_Rotator|BaseAsset|BaseLoader|clothBase(Clone)");
+			
+			// ![](73D62174C7FCA6DC128DF9379D5AEC4C.png;;13,165,283,326)
 		}
 	}
 }

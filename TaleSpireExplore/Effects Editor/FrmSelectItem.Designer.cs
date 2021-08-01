@@ -73,15 +73,16 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.lstItems.FormattingEnabled = true;
-			this.lstItems.Location = new System.Drawing.Point(12, 43);
+			this.lstItems.Location = new System.Drawing.Point(12, 56);
 			this.lstItems.Name = "lstItems";
-			this.lstItems.Size = new System.Drawing.Size(438, 303);
+			this.lstItems.Size = new System.Drawing.Size(438, 290);
 			this.lstItems.TabIndex = 4;
+			this.lstItems.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lstItems_MouseDoubleClick);
 			// 
 			// lblTitle
 			// 
 			this.lblTitle.AutoSize = true;
-			this.lblTitle.Location = new System.Drawing.Point(9, 27);
+			this.lblTitle.Location = new System.Drawing.Point(9, 37);
 			this.lblTitle.Name = "lblTitle";
 			this.lblTitle.Size = new System.Drawing.Size(41, 13);
 			this.lblTitle.TabIndex = 0;
@@ -96,6 +97,7 @@
 			this.tbxFilter.Size = new System.Drawing.Size(410, 20);
 			this.tbxFilter.TabIndex = 5;
 			this.tbxFilter.TextChanged += new System.EventHandler(this.tbxFilter_TextChanged);
+			this.tbxFilter.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbxFilter_KeyDown);
 			// 
 			// FrmSelectItem
 			// 

@@ -72,7 +72,7 @@ namespace Streamloots
 			return Task.FromResult(0);
 		}
 
-		private void BackgroundCheck()
+		private async void BackgroundCheck()
 		{
 			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//`! !!!                                                                                      !!!
@@ -94,7 +94,7 @@ namespace Streamloots
 				{
 					while (responseStream.CanRead)
 					{
-						int len = responseStream.Read(buffer, 0, 100000);
+						int len = await responseStream.ReadAsync(buffer, 0, 100000);
 						if (len <= 10)
 							continue;
 

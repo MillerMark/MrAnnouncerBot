@@ -8,6 +8,21 @@ namespace DndCore
 {
 	public static class Expressions
 	{
+		public static string GetSpellId(this ExpressionEvaluator evaluator, CastedSpell spell)
+		{
+			string spellId = null;
+			if (spell != null)
+				spellId = spell.ID;
+			else
+			{
+				CreaturePlusModId creaturePlusModId = Expressions.GetCustomData<CreaturePlusModId>(evaluator.Variables);
+				if (creaturePlusModId != null)
+					spellId = creaturePlusModId.Guid;
+			}
+
+			return spellId;
+		}
+
 		static bool debugging;
 		public static bool Debugging
 		{

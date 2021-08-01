@@ -1,4 +1,5 @@
-﻿using Bounce.TaleSpire.AssetManagement;
+﻿using Unity.Physics;
+using Bounce.TaleSpire.AssetManagement;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -18,6 +19,25 @@ namespace TaleSpireCore
 									BoardSessionManager.HasBoardAndIsInNominalState &&
 									!BoardSessionManager.IsLoading);
 				}
+			}
+
+			// TODO: On game shutdown, dispose of legalPlacement
+			static Creature.LegalPlacement legalPlacement;
+			static CollisionFilter tileAndMatQuery;
+
+			static Board()
+			{
+				legalPlacement = new Creature.LegalPlacement();
+			}
+
+			public static Vector3 GetFloorPositionClosestTo(Vector3 position)
+			{
+				const float baseRadius = 0.5f;
+				legalPlacement.Init(position);
+				legalPlacement.UpdateLegalCheck(position + new Vector3(0.1f, baseRadius + 0.05f, 0.1f), baseRadius * 0.65f, baseRadius * 0.8f);
+				legalPlacement.UpdateLegalCheck(position + new Vector3(-0.1f, baseRadius + 0.05f, -0.1f), baseRadius * 0.65f, baseRadius * 0.8f);
+				legalPlacement.UpdateLegalCheck(position + new Vector3(0f, baseRadius + 0.05f, 0f), baseRadius * 0.65f, baseRadius * 0.8f);
+				return legalPlacement.GetMostCurrentLegal();
 			}
 
 			//public static void InstantiateCreature(string boardAssetId, Vector3 position)

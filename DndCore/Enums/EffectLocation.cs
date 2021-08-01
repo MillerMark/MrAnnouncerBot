@@ -13,6 +13,7 @@ namespace DndCore
 		AtCollision = 4,
 		AtCollisionTarget = 5,
 		MoveableTarget = 6,
-		MoveableSpellCast = 7
+		MoveableSpellCast = 7,
+		AtCollisionBase = 8
 	}
 }

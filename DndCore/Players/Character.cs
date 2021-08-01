@@ -2264,13 +2264,19 @@ namespace DndCore
 
 		public void RollHasStopped()
 		{
-			if (spellActivelyCasting != null)
-			{
-				spellPreviouslyCasting = spellActivelyCasting; // So we can show the spell for a longer time before we hide it.
-				spellActivelyCasting = null;
-				spellPrepared = null;
-				OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
-			}
+			//ShowActiveSpell();
+		}
+
+		// TODO: Add a UI Stream Deck button to invoke this.
+		public void ShowActiveSpell()
+		{
+			if (spellActivelyCasting == null)
+				return;
+
+			spellPreviouslyCasting = spellActivelyCasting; // So we can show the spell for a longer time before we hide it.
+			spellActivelyCasting = null;
+			spellPrepared = null;
+			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
 		public void ClearPreviouslyCastingSpell()

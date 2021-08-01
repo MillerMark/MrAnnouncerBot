@@ -56,11 +56,6 @@ namespace DndCore
 				name = signature;
 		}
 
-		public void TriggerDispel(Magic magic)
-		{
-			TriggerEvent(magic, onDispel);
-		}
-
 		public void TriggerReceived(Magic magic)
 		{
 			TriggerEvent(magic, onReceived);
@@ -165,9 +160,6 @@ namespace DndCore
 		public string onRecipientHitsTarget { get; set; }
 
 		
-		[Column]
-		public string onDispel { get; set; }
-
 		public MagicItem()
 		{
 

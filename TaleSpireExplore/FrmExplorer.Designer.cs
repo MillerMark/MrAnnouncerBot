@@ -46,7 +46,7 @@
 			this.btnShowRelationEffect = new System.Windows.Forms.Button();
 			this.chkListenToEvents = new System.Windows.Forms.CheckBox();
 			this.chkTrackFlashlight = new System.Windows.Forms.CheckBox();
-			this.lblFlashlightStatus = new System.Windows.Forms.Label();
+			this.lblCreateAt = new System.Windows.Forms.Label();
 			this.btnGetRuler = new System.Windows.Forms.Button();
 			this.btnSpectatorMode = new System.Windows.Forms.Button();
 			this.btnPlayer = new System.Windows.Forms.Button();
@@ -86,6 +86,10 @@
 			this.tbxTargetLocation = new System.Windows.Forms.TextBox();
 			this.btnBattleZone = new System.Windows.Forms.Button();
 			this.tbxGhostId = new System.Windows.Forms.TextBox();
+			this.lblFlashlightStatus = new System.Windows.Forms.Label();
+			this.btnCamera1 = new System.Windows.Forms.Button();
+			this.btnCamera2 = new System.Windows.Forms.Button();
+			this.btnReloadSpellEffects = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -251,14 +255,15 @@
 			this.chkTrackFlashlight.UseVisualStyleBackColor = true;
 			this.chkTrackFlashlight.CheckedChanged += new System.EventHandler(this.chkTrackFlashlight_CheckedChanged);
 			// 
-			// lblFlashlightStatus
+			// lblCreateAt
 			// 
-			this.lblFlashlightStatus.AutoSize = true;
-			this.lblFlashlightStatus.Location = new System.Drawing.Point(224, 533);
-			this.lblFlashlightStatus.Name = "lblFlashlightStatus";
-			this.lblFlashlightStatus.Size = new System.Drawing.Size(52, 13);
-			this.lblFlashlightStatus.TabIndex = 19;
-			this.lblFlashlightStatus.Text = "create at:";
+			this.lblCreateAt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.lblCreateAt.AutoSize = true;
+			this.lblCreateAt.Location = new System.Drawing.Point(224, 533);
+			this.lblCreateAt.Name = "lblCreateAt";
+			this.lblCreateAt.Size = new System.Drawing.Size(52, 13);
+			this.lblCreateAt.TabIndex = 19;
+			this.lblCreateAt.Text = "create at:";
 			// 
 			// btnGetRuler
 			// 
@@ -613,6 +618,7 @@
 			// 
 			// tbxTargetLocation
 			// 
+			this.tbxTargetLocation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.tbxTargetLocation.Location = new System.Drawing.Point(282, 531);
 			this.tbxTargetLocation.Name = "tbxTargetLocation";
 			this.tbxTargetLocation.Size = new System.Drawing.Size(96, 20);
@@ -639,6 +645,46 @@
 			this.tbxGhostId.TabIndex = 25;
 			this.tbxGhostId.Text = "35400cec-9539-424f-b185-00569d4850c4";
 			// 
+			// lblFlashlightStatus
+			// 
+			this.lblFlashlightStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.lblFlashlightStatus.AutoSize = true;
+			this.lblFlashlightStatus.Location = new System.Drawing.Point(27, 458);
+			this.lblFlashlightStatus.Name = "lblFlashlightStatus";
+			this.lblFlashlightStatus.Size = new System.Drawing.Size(52, 13);
+			this.lblFlashlightStatus.TabIndex = 19;
+			this.lblFlashlightStatus.Text = "create at:";
+			// 
+			// btnCamera1
+			// 
+			this.btnCamera1.Location = new System.Drawing.Point(1193, 115);
+			this.btnCamera1.Name = "btnCamera1";
+			this.btnCamera1.Size = new System.Drawing.Size(66, 26);
+			this.btnCamera1.TabIndex = 21;
+			this.btnCamera1.Text = "Camera 1";
+			this.btnCamera1.UseVisualStyleBackColor = true;
+			this.btnCamera1.Click += new System.EventHandler(this.btnCamera1_Click);
+			// 
+			// btnCamera2
+			// 
+			this.btnCamera2.Location = new System.Drawing.Point(1265, 116);
+			this.btnCamera2.Name = "btnCamera2";
+			this.btnCamera2.Size = new System.Drawing.Size(66, 26);
+			this.btnCamera2.TabIndex = 21;
+			this.btnCamera2.Text = "Camera 2";
+			this.btnCamera2.UseVisualStyleBackColor = true;
+			this.btnCamera2.Click += new System.EventHandler(this.btnCamera2_Click);
+			// 
+			// btnReloadSpellEffects
+			// 
+			this.btnReloadSpellEffects.Location = new System.Drawing.Point(989, 282);
+			this.btnReloadSpellEffects.Name = "btnReloadSpellEffects";
+			this.btnReloadSpellEffects.Size = new System.Drawing.Size(169, 26);
+			this.btnReloadSpellEffects.TabIndex = 21;
+			this.btnReloadSpellEffects.Text = "Reload Spell Effects";
+			this.btnReloadSpellEffects.UseVisualStyleBackColor = true;
+			this.btnReloadSpellEffects.Click += new System.EventHandler(this.btnReloadSpellEffects_Click);
+			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -663,6 +709,9 @@
 			this.Controls.Add(this.btnSet2);
 			this.Controls.Add(this.btnSet1);
 			this.Controls.Add(this.btnSetCameraHeight);
+			this.Controls.Add(this.btnCamera2);
+			this.Controls.Add(this.btnReloadSpellEffects);
+			this.Controls.Add(this.btnCamera1);
 			this.Controls.Add(this.btnSetCameraPosition);
 			this.Controls.Add(this.btnAngle);
 			this.Controls.Add(this.btnGetActiveGameObjects);
@@ -680,6 +729,7 @@
 			this.Controls.Add(this.btnGetRuler);
 			this.Controls.Add(this.lblRotationStatus);
 			this.Controls.Add(this.lblFlashlightStatus);
+			this.Controls.Add(this.lblCreateAt);
 			this.Controls.Add(this.chkTrackAngle);
 			this.Controls.Add(this.chkTrackFlashlight);
 			this.Controls.Add(this.chkListenToEvents);
@@ -727,7 +777,7 @@
 		private System.Windows.Forms.Button btnShowRelationEffect;
 		private System.Windows.Forms.CheckBox chkListenToEvents;
 		private System.Windows.Forms.CheckBox chkTrackFlashlight;
-		private System.Windows.Forms.Label lblFlashlightStatus;
+		private System.Windows.Forms.Label lblCreateAt;
 		private System.Windows.Forms.Button btnGetRuler;
 		private System.Windows.Forms.Button btnSpectatorMode;
 		private System.Windows.Forms.Button btnPlayer;
@@ -767,5 +817,9 @@
 		private System.Windows.Forms.TextBox tbxTargetLocation;
 		private System.Windows.Forms.Button btnBattleZone;
 		private System.Windows.Forms.TextBox tbxGhostId;
+		private System.Windows.Forms.Label lblFlashlightStatus;
+		private System.Windows.Forms.Button btnCamera1;
+		private System.Windows.Forms.Button btnCamera2;
+		private System.Windows.Forms.Button btnReloadSpellEffects;
 	}
 }

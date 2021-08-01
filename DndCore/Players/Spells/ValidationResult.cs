@@ -9,7 +9,7 @@ namespace DndCore
 		public string MessageOverPlayer { get; set; }
 		public ValidationResult()
 		{
-
+			ValidationAction = ValidationAction.None;
 		}
 	}
 }

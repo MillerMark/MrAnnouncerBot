@@ -174,6 +174,7 @@
     <Compile Include="Talespire\Core\ColorUtils.cs" />
     <Compile Include="Talespire\Core\EffectParameters\ColorParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\Core\EffectParameterAttribute.cs" />
+    <Compile Include="Talespire\Core\EffectParameters\MoveParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\RotationParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\ScaleParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\YOffsetParameter.cs" />

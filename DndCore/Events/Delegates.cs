@@ -50,5 +50,5 @@ namespace DndCore
 	public delegate void TargetCountEventHandler(object sender, TargetCountEventArgs ea);
 	public delegate void EffectEventHandler(object sender, EffectEventArgs ea);
 	public delegate void WhatSideEventHandler(object sender, WhatSideEventArgs ea);
-
+	public delegate void CreatureHealthChangedEventHandler(object sender, CreatureHealthChangedEventArgs ea);
 }

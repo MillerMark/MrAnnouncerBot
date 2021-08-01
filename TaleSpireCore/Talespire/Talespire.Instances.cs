@@ -33,7 +33,7 @@ namespace TaleSpireCore
 				foreach (GameObject spellEffect in spells[spellId])
 				{
 					EffectParameters.EndingSpell(spellEffect);
-					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, shrinkOnDeleteTime: shrinkOnDeleteTime);
+					AddTemporal(spellEffect, Mathf.Max(2, shrinkOnDeleteTime), 2, 0, shrinkOnDeleteTime);
 				}
 
 				spells.Remove(spellId);
@@ -93,7 +93,7 @@ namespace TaleSpireCore
 				EnlargeSoon(gameObject, enlargeTimeSeconds);
 				AddTo(spells, spellId, gameObject);
 				if (shrinkOnDeleteTime > 0)
-					shrinkOnDeleteTimes.Add(gameObject, shrinkOnDeleteTime);
+					shrinkOnDeleteTimes[gameObject] = shrinkOnDeleteTime;
 			}
 
 			public static T Create<T>(string instanceId, GameObject originalAsset) where T : class
@@ -161,7 +161,7 @@ namespace TaleSpireCore
 
 			static Dictionary<GameObject, EnlargeData> enlargingObjects = new Dictionary<GameObject, EnlargeData>();
 
-			public static void AddTemporal(GameObject instance, double lifetimeSeconds, double particleShutoffTimeSeconds = 0, float enlargeTimeSeconds = 0, float shrinkOnDeleteTime = 0)
+			public static void AddTemporal(GameObject instance, float lifetimeSeconds, float particleShutoffTimeSeconds = 0, float enlargeTimeSeconds = 0, float shrinkOnDeleteTime = 0)
 			{
 				EnlargeSoon(instance, enlargeTimeSeconds);
 
@@ -178,12 +178,12 @@ namespace TaleSpireCore
 				if (instance == null || instance.transform == null || !instance.activeInHierarchy)
 					return;
 
-				enlargingObjects.Add(instance, new EnlargeData()
+				enlargingObjects[instance] = new EnlargeData()
 				{
 					CreationTime = Time.time,
 					EnlargeTimeSeconds = enlargeTimeSeconds,
 					OriginalScale = instance.transform.localScale
-				});
+				};
 
 				instance.transform.localScale = Vector3.zero;
 			}

@@ -41,7 +41,7 @@ namespace TaleSpireCore
 			{
 				int port = 999;
 				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachineIpAddress), port);
-
+					
 				// Create a TCP/IP  socket.  
 				Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
@@ -215,9 +215,9 @@ namespace TaleSpireCore
 			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString(), isMoveable.ToString() });
 		}
 
-		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
+		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation, bool hitFloor = false)
 		{
-			Invoke("PlayEffectOnCollision", new string[] { effectName, spellId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), useIntendedTarget.ToString(), shrinkTime.ToString(), rotation.ToString() });
+			Invoke("PlayEffectOnCollision", new string[] { effectName, spellId, lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), useIntendedTarget.ToString(), shrinkTime.ToString(), rotation.ToString(), hitFloor.ToString() });
 		}
 
 		public static void ClearAttached(string spellId, string taleSpireId)
@@ -266,7 +266,8 @@ namespace TaleSpireCore
 		{
 			whatSide = whatSide.Replace(',', '|');
 			ApiResponse response = Invoke("GetAllCreaturesInVolume", new string[] { vectorDto.GetXyzStr(), shape, dimensionStr, whatSide });
-			if (response.Result == ResponseType.Failure)
+
+			if (response == null || response.Result == ResponseType.Failure)
 				return null;
 
 			return response.GetData<CharacterPositions>();

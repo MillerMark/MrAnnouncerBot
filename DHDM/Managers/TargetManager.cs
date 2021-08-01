@@ -27,11 +27,13 @@ namespace DHDM
 					ea.WhatSide.ToString());
 
 				TaleSpireClient.CleanUpTargets();
-				List<string> charactersToTarget = characterPositions.Characters.Select(x => x.ID).ToList();
-				TaleSpireClient.TargetCreatures(charactersToTarget);
-				TargetCreaturesByTaleSpireId(charactersToTarget);
-				CreatureManager.UpdateInGameCreatures();
-				CreatureManager.UpdatePlayerStatsInGame();
+				if (characterPositions != null)
+				{
+					List<string> charactersToTarget = characterPositions.Characters.Select(x => x.ID).ToList();
+					TaleSpireClient.TargetCreatures(charactersToTarget);
+					TargetCreaturesByTaleSpireId(charactersToTarget);
+				}
+				CreatureManager.UpdateInGameStats();
 			}
 
 		}
@@ -184,8 +186,7 @@ namespace DHDM
 			TaleSpireClient.CleanUpTargets();
 			TaleSpireClient.RemoveTargetingUI();
 			TargetCreaturesByTaleSpireId(targets);
-			CreatureManager.UpdateInGameCreatures();
-			CreatureManager.UpdatePlayerStatsInGame();
+			CreatureManager.UpdateInGameStats();
 			foreach (string taleSpireId in targets.TargetedCreatures)
 				TaleSpireClient.SetTargeted(taleSpireId, true);
 		}
@@ -207,8 +208,7 @@ namespace DHDM
 			List<string> creaturesToTarget = soonToBeTargetedCreatures.Except(currentlyTargetedCreatures).ToList();
 
 			TargetCreaturesByTaleSpireId(savedTargets[activeTurnCreatureId]);
-			CreatureManager.UpdateInGameCreatures();
-			CreatureManager.UpdatePlayerStatsInGame();
+			CreatureManager.UpdateInGameStats();
 			foreach (string taleSpireId in creaturesToUntarget)
 				TaleSpireClient.SetTargeted(taleSpireId, false);
 			foreach (string taleSpireId in creaturesToTarget)

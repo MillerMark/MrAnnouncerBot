@@ -1693,11 +1693,13 @@ namespace TaleSpireExplore
 			const int expectedArgs = 8;
 			if (args.Length != expectedArgs)
 				return ApiResponse.Bad($"{nameof(AttachEffect)} - Expecting {expectedArgs} args.");
-			float enlargeTime = Talespire.Convert.ToFloat(args[3]);
-			float lifeTime = Talespire.Convert.ToFloat(args[4]);
-			float shrinkTime = Talespire.Convert.ToFloat(args[5]);
-			float secondsDelayStart = Talespire.Convert.ToFloat(args[6]);
+			float lifeTime = Talespire.Convert.ToFloat(args[3]);
+			float enlargeTime = Talespire.Convert.ToFloat(args[4]);
+			float secondsDelayStart = Talespire.Convert.ToFloat(args[5]);
+			float shrinkTime = Talespire.Convert.ToFloat(args[6]);
 			float rotation = Talespire.Convert.ToFloat(args[7]);
+
+			Talespire.Log.Warning($"AttachEffect({args[0]}, secondsDelayStart = {secondsDelayStart}, enlargeTime = {enlargeTime}, lifeTime = {lifeTime}, shrinkTime = {shrinkTime}, rotation = {rotation});");
 			Talespire.Spells.AttachEffect(args[0], args[1], args[2], secondsDelayStart, enlargeTime, lifeTime, shrinkTime, rotation);
 			return ApiResponse.Good();
 		}
@@ -1781,15 +1783,15 @@ namespace TaleSpireExplore
 				}
 			}
 
-			VectorDto vector = Talespire.Convert.ToVectorDto(args[2]);
+			Vector3 vector = Talespire.Convert.ToVector3(args[2]);
 
 			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, isMoveable);
 			return ApiResponse.Good();
 		}
 		static string PlayEffectOnCollision(string[] args)
 		{
-			if (args.Length != 8)
-				return ApiResponse.Bad($"{nameof(PlayEffectOnCollision)} - Expecting 8 args. Got {args.Length}.");
+			if (args.Length != 9)
+				return ApiResponse.Bad($"{nameof(PlayEffectOnCollision)} - Expecting 9 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
 			float secondsDelayStart = 0;
@@ -1798,14 +1800,16 @@ namespace TaleSpireExplore
 			string effectName = args[0];
 			string spellId = args[1];
 			bool useIntendedTarget = false;
+			bool hitFloor = false;
 			float.TryParse(args[2], out lifeTime);
 			float.TryParse(args[3], out enlargeTime);
 			float.TryParse(args[4], out secondsDelayStart);
 			bool.TryParse(args[5], out useIntendedTarget);
 			float.TryParse(args[6], out shrinkTime);
 			float.TryParse(args[7], out rotation);
+			bool.TryParse(args[8], out hitFloor);
 
-			Talespire.Spells.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation);
+			Talespire.Spells.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation, hitFloor);
 			return ApiResponse.Good();
 		}
 

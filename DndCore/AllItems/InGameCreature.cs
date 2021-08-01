@@ -117,10 +117,59 @@ namespace DndCore
 			}
 		}
 
+		public static event CreatureHealthChangedEventHandler CreatureHealthChanged;
 
+		void InGameCreatureHealthChanged(double percentChange)
+		{
+			CreatureHealthChanged?.Invoke(this, new CreatureHealthChangedEventArgs(Creature, percentChange));
+		}
+
+		void InGameCreatureHealed(double percentHealthJustGiven)
+		{
+			InGameCreatureHealthChanged(percentHealthJustGiven);
+		}
+
+		void InGameCreatureDamaged(double percentDamageJustInflicted)
+		{
+			InGameCreatureHealthChanged(-percentDamageJustInflicted);
+		}
+
+
+		double percentDamageJustInflicted;
 		// TODO: Handle this in TS and show damage effects.
-		public double PercentDamageJustInflicted { get; set; }
-		public double PercentHealthJustGiven { get; set; }
+		public double PercentDamageJustInflicted 
+		{ 
+			get 
+			{ 
+				return percentDamageJustInflicted; 
+			}
+			set
+			{
+				if (percentDamageJustInflicted == value)
+					return;
+				percentDamageJustInflicted = value;
+				if (percentDamageJustInflicted > 0)
+					InGameCreatureDamaged(percentDamageJustInflicted);
+			}
+		}
+
+		double percentHealthJustGiven;
+		// TODO: Handle this in TS and show damage effects.
+		public double PercentHealthJustGiven
+		{
+			get
+			{
+				return percentHealthJustGiven;
+			}
+			set
+			{
+				if (percentHealthJustGiven == value)
+					return;
+				percentHealthJustGiven = value;
+				if (percentHealthJustGiven > 0)
+					InGameCreatureHealed(percentHealthJustGiven);
+			}
+		}
 
 
 		public double CropX

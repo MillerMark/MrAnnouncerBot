@@ -344,6 +344,7 @@ namespace DHDM
 
 		private void Game_PlayerDamaged(object sender, CreatureDamagedEventArgs ea)
 		{
+			TaleSpireClient.ShowDamage(ea.Creature.taleSpireId, (int)ea.DamageAmount, ea.Creature.bloodColor);
 			if (ea.Creature is Character player)
 				if (player.concentratedSpell != null)
 					if (player.TotalHitPoints > 0)
@@ -573,7 +574,7 @@ namespace DHDM
 
 		private void DispelMagic_RequestDispelMagic(DispelMagicEventArgs ea)
 		{
-			ea.Recipient.Magic.DispelMagic();
+			ea.Recipient.Magic.Expire();
 		}
 
 		private void RevealCard_RequestCardReveal(CreaturePlusModIdEventArgs ea)
@@ -1125,16 +1126,23 @@ namespace DHDM
 			if (ea.Player != null)
 				UpdateStateUIForPlayer(ea.Player);
 
-			if (ea.Contains("Visible"))
-				CreatureVisibilityChanged(ea, ea.Player);
+			CreatureStateChanged(ea, ea.Player);
 
 			SetShortcutVisibility();
 		}
 
 		private void Game_CreatureStateChanged(object sender, CreatureStateEventArgs ea)
 		{
+			CreatureStateChanged(ea, ea.Creature);
+		}
+
+		private static void CreatureStateChanged(StateChangedEventArgs ea, Creature creature)
+		{
 			if (ea.Contains("Visible"))
-				CreatureVisibilityChanged(ea, ea.Creature);
+				CreatureVisibilityChanged(ea, creature);
+
+			if (ea.Contains("Conditions"))
+				CreatureManager.NeedToUpdateInGameStats();
 		}
 
 		private static void CreatureVisibilityChanged(StateChangedEventArgs ea, Creature creature)
@@ -2130,20 +2138,13 @@ namespace DHDM
 					{
 						CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 						if (playerStats != null)
-						{
 							playerStats.Conditions = player.AllConditions;
-						}
 					}
 					conditionsChanged = true;
 				}
 
 			if (conditionsChanged)
-			{
-				// TODO: Update UI for that creature.
-				// TODO: We have to update the InGame UI. Get this right.
-				CreatureManager.UpdateInGameCreatures();
-				CreatureManager.UpdatePlayerStatsInGame();
-			}
+				CreatureManager.UpdateInGameStatsIfNecessary();
 
 			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
@@ -2909,6 +2910,7 @@ namespace DHDM
 
 			if (castingForFirstTimeNow && actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
+				actionShortcut.LongCastingSpell = castedSpell;
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
 				return true;
 			}
@@ -2963,7 +2965,16 @@ namespace DHDM
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 			if (castedSpell == null)
-				castedSpell = game.Cast(player, spell);
+			{
+				if (actionShortcut.LongCastingSpell != null)
+				{
+					castedSpell = actionShortcut.LongCastingSpell;
+					actionShortcut.LongCastingSpell = null;
+					game.Cast(player, spell, castedSpell);
+				}
+				else
+					castedSpell = game.Cast(player, spell);
+			}
 			else
 				game.Cast(player, spell, castedSpell);
 			if (castedSpell == null)
@@ -2990,7 +3001,7 @@ namespace DHDM
 		void UpdatePlayerPositions()
 		{
 			ApiResponse response = TaleSpireClient.GetCreatures();
-			if (response.Result == ResponseType.Failure)
+			if (response == null || response.Result == ResponseType.Failure)
 				return;
 
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
@@ -5318,8 +5329,7 @@ namespace DHDM
 			game.ClearInitiativeOrder();
 			AllInGameCreatures.ClearAllActiveTurns();
 			PlayerStatManager.ClearAllActiveTurns();
-			CreatureManager.UpdateInGameCreatures();
-			CreatureManager.UpdatePlayerStatsInGame();
+			CreatureManager.UpdateInGameStats();
 			TaleSpireClient.ClearActiveTurnIndicator();
 		}
 
@@ -5572,6 +5582,9 @@ namespace DHDM
 
 		void UpdateStateFromTimer(object sender, EventArgs e)
 		{
+			if (CreatureManager.ShouldUpdateInGameStats)
+				CreatureManager.UpdateInGameStatsIfNecessary();
+			
 			if (ActivePlayer == null)
 				return;
 
@@ -7696,6 +7709,17 @@ namespace DHDM
 					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType, diceRoll.SavingThrow));
 					inGameCreature.CreatureRollingSavingThrow();
 				}
+
+			foreach (CreatureStats playerStats in PlayerStatManager.Players)
+			{
+				if (playerStats.IsTargeted)
+				{
+					Character player = AllPlayers.GetFromId(playerStats.CreatureId);
+					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, "", player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
+					diceRoll.DiceDtos.Add(diceDto);
+					player.RollingSavingThrowNow();
+				}
+			}
 		}
 
 		void PrepareContestRoll(ContestDto contestDto, DiceRoll diceRoll)
@@ -9812,8 +9836,7 @@ namespace DHDM
 				ActivePlayerId = character.playerID;
 			}
 
-			CreatureManager.UpdateInGameCreatures();
-			CreatureManager.UpdatePlayerStatsInGame();
+			CreatureManager.UpdateInGameStats();
 			UpdateConcentratedSpells();
 			ShowCardsForActivePlayer();
 		}
@@ -10735,8 +10758,7 @@ namespace DHDM
 					Creature targetCreature = DndUtils.GetCreatureById(targetId);
 					ConditionManager.ApplyToCreature(targetCreature, stopRollingData.spellId, stopRollingData.conditions);
 				}
-				CreatureManager.UpdateInGameCreatures();
-				CreatureManager.UpdatePlayerStatsInGame();
+				CreatureManager.UpdateInGameStats();
 			}
 
 			int totalDamage = 0;
@@ -11229,7 +11251,7 @@ namespace DHDM
 		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
 		{
 			ApiResponse response = TaleSpireClient.Invoke("GetCreatures");
-			if (response.Result == ResponseType.Failure)
+			if (response == null || response.Result == ResponseType.Failure)
 				return;
 
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();

@@ -83,11 +83,6 @@ namespace DndCore
 				trimmedPart = trimmedPart.Remove(trimmedPart.Length - 1);
 			}
 
-			if (trimmedPart.Contains("mile"))
-			{
-				System.Diagnostics.Debugger.Break();
-			}
-
 			const string firstName = "first";
 			const string secondName = "second";
 			const string thirdName = "third";

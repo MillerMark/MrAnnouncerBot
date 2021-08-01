@@ -1989,17 +1989,30 @@ namespace DndCore
 		
 		public void AddSpellCondition(string spellId, Conditions conditions)
 		{
-			spellConditions.Add(spellId, conditions);
+			Conditions saveConditions = AllConditions;
+			spellConditions[spellId] = conditions;
+			if (saveConditions != AllConditions)
+				OnStateChanged("Conditions", saveConditions, AllConditions);
 		}
 
 		public bool RemoveSpellCondition(string spellId)
 		{
+			Conditions saveConditions = AllConditions;
 			if (spellConditions.ContainsKey(spellId))
 			{
 				spellConditions.Remove(spellId);
+				OnStateChanged("Conditions", saveConditions, AllConditions);
 				return true;
 			}
 			return false;
+		}
+		public void Dispels(string castedSpellId)
+		{
+			List<Magic> magics = castedMagic.Where(x => x.CastedSpellId == castedSpellId).ToList();
+			foreach (Magic magic in magics)
+			{
+				magic.Expire();
+			}
 		}
 
 		bool visible = true;

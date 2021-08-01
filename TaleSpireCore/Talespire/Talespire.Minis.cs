@@ -657,8 +657,8 @@ namespace TaleSpireCore
 				Property.Modify(heal, "ParticlesHeal", "<ParticleSystem>.startSize", 0.4f * creatureAsset.CreatureScale);
 				Property.Modify(heal, "ParticlesHealPlus", "<ParticleSystem>.startSize", 0.3f * creatureAsset.CreatureScale);
 
-				double lifetimeSeconds = Math.Max(5, Math.Min(healthAmount, 16));
-				double particleFadeOutTime = Math.Max(lifetimeSeconds / 2.0, 3);
+				float lifetimeSeconds = Math.Max(5f, Math.Min(healthAmount, 16f));
+				float particleFadeOutTime = Math.Max(lifetimeSeconds / 2f, 3f);
 				Instances.AddTemporal(heal, lifetimeSeconds, particleFadeOutTime);
 			}
 

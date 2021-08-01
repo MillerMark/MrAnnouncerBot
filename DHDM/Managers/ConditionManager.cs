@@ -14,9 +14,7 @@ namespace DHDM
 			{
 				CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 				if (playerStats != null)
-				{
 					playerStats.Conditions = player.AllConditions;
-				}
 			}
 		}
 	}

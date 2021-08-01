@@ -530,6 +530,8 @@ namespace DndCore
 				if (castedSpell.HasSpellCasterConcentration())
 					castedSpell.SpellCaster.BreakConcentration();
 
+				castedSpell.SpellCaster.Dispels(castedSpell.ID);
+
 				Dispel(castedSpell);
 			}
 		}

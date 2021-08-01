@@ -80,6 +80,10 @@ namespace DndCore
 		public string AvailableWhen { get; set; }
 		public Feature SourceFeature { get; set; }
 		public bool Available { get; set; }
+		/// <summary>
+		/// A CastedSpell that takes some time to cast.
+		/// </summary>
+		public CastedSpell LongCastingSpell { get; set; }
 		public string lastPrefix;
 
 		public PlayerActionShortcut()

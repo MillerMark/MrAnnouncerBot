@@ -58,6 +58,11 @@ namespace TaleSpireCore
 			return null;
 		}
 
+		void DestroyProjectile()
+		{
+			Talespire.Instances.AddTemporal(projectileGameObject, 0.5f, 0.5f, 0, 0.5f);
+		}
+
 		public void UpdatePosition()
 		{
 			if (StartTime > Time.time)
@@ -76,7 +81,7 @@ namespace TaleSpireCore
 			if (feetTraveled > totalTravelDistanceInFeet)
 			{
 				TriggerCollision();
-				UnityEngine.Object.Destroy(projectileGameObject);
+				DestroyProjectile();
 				readyToDelete = true;
 				projectileGameObject = null;
 				return;
@@ -116,7 +121,7 @@ namespace TaleSpireCore
 		{
 			alreadyCreated = true;
 
-			projectileGameObject = Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, SourcePosition.GetVectorDto());
+			projectileGameObject = Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, SourcePosition);
 
 			CalculateTrajectory();
 			RegisterParticleSystems();

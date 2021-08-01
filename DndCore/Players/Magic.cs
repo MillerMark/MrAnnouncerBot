@@ -66,6 +66,7 @@ namespace DndCore
 			{
 				TriggerEvent(creature, MagicItem.onExpire);
 				creature.RemoveMagic(this);
+				creature.RemoveSpellCondition(Id);
 			}
 		}
 
@@ -94,15 +95,15 @@ namespace DndCore
 
 		}
 
-		public void DispelMagic()
+		public void Expire()
 		{
-			MagicItem.TriggerDispel(this);
+			MagicItem.TriggerExpire(this);
 			OnDispel(this, new MagicEventArgs(this));
 		}
 
 		void MagicExpiresHandler(object sender, DndTimeEventArgs ea)
 		{
-			DispelMagic();
+			Expire();
 		}
 
 		public static string ActiveModId;

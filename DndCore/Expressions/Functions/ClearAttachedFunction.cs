@@ -20,24 +20,22 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
 			ExpectingArguments(args, 0, 1);
+
 			
-			string spellId = null;
-			if (spell != null)
-				spellId = spell.ID;
-			else
-			{
-				CreaturePlusModId creaturePlusModId = Expressions.GetCustomData<CreaturePlusModId>(evaluator.Variables);
-				if (creaturePlusModId != null)
-					spellId = creaturePlusModId.Guid;
-			}
-
-			if (player == null || spellId == null)
-				return null;
-
 			float secondsDelayStart = 0;
 
 			if (args.Count > 0)
 				float.TryParse(args[0], out secondsDelayStart);
+
+			Magic magic = Expressions.GetCustomData<Magic>(evaluator.Variables);
+			if (magic != null && target != null && target.Creatures != null && target.Creatures.Count > 0)
+				foreach (Creature creature in target.Creatures)
+					OnClearAttached(magic.Id, creature.taleSpireId, secondsDelayStart);
+
+			string spellId = evaluator.GetSpellId(spell);
+			
+			if (player == null || spellId == null)
+				return null;
 
 			OnClearAttached(spellId, player.taleSpireId, secondsDelayStart);
 

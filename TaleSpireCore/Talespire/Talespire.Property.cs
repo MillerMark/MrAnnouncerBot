@@ -58,7 +58,7 @@ namespace TaleSpireCore
 			{
 				Log.Debug($"Modify - {propertyName} to {value}");
 				PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(instance, propertyName, logErrors);
-				if (!propertyModDetails.Found)
+				if (propertyModDetails == null || !propertyModDetails.Found)
 				{
 					if (logErrors)
 						Log.Error($"{propertyName} not found in instance.");

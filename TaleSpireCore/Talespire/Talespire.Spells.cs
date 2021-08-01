@@ -27,16 +27,23 @@ namespace TaleSpireCore
 				List<CollisionEffect> collisionsEffectsToRemove		= null;
 				foreach (CollisionEffect collisionEffect in collisionsEffectsToCreate)
 				{
-					VectorDto position;
-					if (collisionEffect.UseIntendedTarget)
+					Vector3 position;
+					if (collisionEffect.UseIntendedTarget || collisionEffect.HitFloor)
 					{
-						position = trackedProjectile.IntendedTargetPosition.GetVectorDto();
+						position = trackedProjectile.IntendedTargetPosition;
+						if (collisionEffect.HitFloor)
+						{
+							Log.Warning($"Getting floor position closest to: {position}");
+							position = Board.GetFloorPositionClosestTo(position);
+							Log.Warning($"Closest floor position: {position}");
+						}
+
 						if (collisionsEffectsToRemove == null)
 							collisionsEffectsToRemove = new List<CollisionEffect>();
 						collisionsEffectsToRemove.Add(collisionEffect);  // Only allow one of these per spell effect.
 					}
 					else  // Use actual target...
-						position = trackedProjectile.ActualTargetPosition.GetVectorDto();
+						position = trackedProjectile.ActualTargetPosition;
 
 					PlayEffectAtPosition(collisionEffect.EffectName, collisionEffect.SpellId, position, collisionEffect.LifeTime, collisionEffect.EnlargeTime, collisionEffect.SecondsDelayStart, collisionEffect.ShrinkTime, collisionEffect.Rotation);
 				}
@@ -78,15 +85,18 @@ namespace TaleSpireCore
 					return;
 				}
 
-				if (enlargeTime > 0)
-					Instances.EnlargeSoon(spell, enlargeTime);
-
 				spell.name = GetAttachedEffectName(spellId);
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				spell.transform.SetParent(creatureBase.transform);
 				//spell.transform.
 				spell.transform.position = creatureBase.transform.position;
+				
 				EffectParameters.ApplyAfterPositioning(spell);
+
+				if (lifeTime > 0)
+					Instances.AddTemporal(spell, lifeTime, 2f * shrinkTime / 3f, enlargeTime, shrinkTime);
+				else if (enlargeTime > 0)
+					Instances.EnlargeSoon(spell, enlargeTime);
 			}
 
 
@@ -147,7 +157,7 @@ namespace TaleSpireCore
 				EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 			}
 
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, VectorDto position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, Vector3 position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
 			{
 				if (secondsDelayStart > 0)
 				{
@@ -160,16 +170,16 @@ namespace TaleSpireCore
 
 				if (spell != null)
 				{
-					spell.transform.position = position.GetVector3();
+					spell.transform.position = position;
 					EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 				}
 
 				return spell;
 			}
 
-			public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation)
+			public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation, bool hitFloor)
 			{
-				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation));
+				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation, hitFloor));
 			}
 
 			private static string GetAttachedEffectName(string spellId)
@@ -262,6 +272,7 @@ namespace TaleSpireCore
 
 				GameObject creatureBase = creatureBoardAsset.GetBase();
 				string attachedEffectName = GetAttachedEffectName(spellId);
+
 				GameObject childEffect = creatureBase.FindChild(attachedEffectName);
 				if (childEffect == null)
 				{
@@ -269,8 +280,12 @@ namespace TaleSpireCore
 					return;
 				}
 
-				childEffect.transform.SetParent(null);
-				Instances.AddTemporal(childEffect, 2, 2);
+				while (childEffect != null)
+				{
+					childEffect.transform.SetParent(null);
+					Instances.AddTemporal(childEffect, 2, 2);
+					childEffect = creatureBase.FindChild(attachedEffectName);
+				}
 			}
 
 			public static void Clear(string spellId, float shrinkOnDeleteTime = 1)

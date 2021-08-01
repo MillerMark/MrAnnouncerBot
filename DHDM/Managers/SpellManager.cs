@@ -58,12 +58,13 @@ namespace DHDM
 				foreach (Creature creature in ea.Target.Creatures)
 					targets.Add(creature.taleSpireId);
 
-				foreach (int playerID in ea.Target.PlayerIds)
-				{
-					Character player = Game.GetPlayerFromId(playerID);
-					if (player != null)
-						targets.Add(player.taleSpireId);
-				}
+				if (ea.Target.PlayerIds != null)
+					foreach (int playerID in ea.Target.PlayerIds)
+					{
+						Character player = Game.GetPlayerFromId(playerID);
+						if (player != null)
+							targets.Add(player.taleSpireId);
+					}
 			}
 			else
 			{
@@ -125,6 +126,8 @@ namespace DHDM
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees);
 			else if (effectLocation == EffectLocation.AtCollision)
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, false, shrinkTime, rotationDegrees);
+			else if (effectLocation == EffectLocation.AtCollisionBase)
+				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees, true);
 		}
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)

@@ -14,7 +14,7 @@ namespace TaleSpireCore
 		public float ShrinkTime { get; set; }
 		public float RotationDegrees { get; set; }
 		public float LifeTime { get; set; }
-		public VectorDto Position { get; set; }
+		public Vector3 Position { get; set; }
 		public SpellLocation Location { get; set; }
 		public bool IsMoveable { get; set; }
 		bool readyToDelete { get; set; }
@@ -24,7 +24,7 @@ namespace TaleSpireCore
 
 		}
 
-		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, VectorDto position = null, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
+		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, Vector3? position = null, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
 		{
 			CreationTime = Time.time + secondsDelayStart;
 			EffectName = effectName;
@@ -34,7 +34,8 @@ namespace TaleSpireCore
 			ShrinkTime = shrinkTime;
 			RotationDegrees = rotation;
 			LifeTime = lifeTime;
-			Position = position;
+			if (position.HasValue)
+				Position = position.Value;
 			Location = location;
 			IsMoveable = isMoveable;
 		}

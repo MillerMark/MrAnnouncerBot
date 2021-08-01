@@ -855,7 +855,7 @@ namespace TaleSpireExplore
 		{
 			if (flashlightTimer == null)
 			{
-				lblFlashlightStatus.Text = "(tracking)";
+				lblCreateAt.Text = "(tracking)";
 				flashlightTimer = new System.Timers.Timer();
 				flashlightTimer.Interval = 100;
 				flashlightTimer.Elapsed += FlashlightTimer_Elapsed;
@@ -900,12 +900,12 @@ namespace TaleSpireExplore
 				mouseState = " [x";
 			else
 				mouseState = " [";
-			lblFlashlightStatus.Text = Talespire.Flashlight.GetPositionStr() + mouseState;
+			lblCreateAt.Text = Talespire.Flashlight.GetPositionStr() + mouseState;
 		}
 
 		void StopFlashlightTimer()
 		{
-			lblFlashlightStatus.Text = "(not tracking)";
+			lblCreateAt.Text = "(not tracking)";
 			if (flashlightTimer == null)
 				return;
 			flashlightTimer.Stop();
@@ -1079,6 +1079,7 @@ namespace TaleSpireExplore
 
 				Talespire.Property.Modify(effect, "<FX_LifeTime>.LifeTime", 0, false);
 
+				Talespire.Log.Debug($"Back from Modify");
 				if (effect == null)
 				{
 					Talespire.Log.Debug($"Talespire.Prefabs.Clone(\"{spellEffectName}\") returned null.");
@@ -1437,6 +1438,21 @@ L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, Wor
 		private void btnGhostToggle_Click(object sender, EventArgs e)
 		{
 			Talespire.Minis.SetVisibility(tbxGhostId.Text);
+		}
+
+		private void btnCamera2_Click(object sender, EventArgs e)
+		{
+			Talespire.Camera.SetPosition("0, 12, 0");
+		}
+
+		private void btnCamera1_Click(object sender, EventArgs e)
+		{
+			Talespire.Camera.SetPosition("15, 25, 95.4");
+		}
+
+		private void btnReloadSpellEffects_Click(object sender, EventArgs e)
+		{
+			TaleSpireExplorePlugin.LoadKnownEffects();
 		}
 	}
 }
