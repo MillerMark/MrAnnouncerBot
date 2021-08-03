@@ -480,7 +480,7 @@ namespace DndCore
 				{
 					turnIndex = InitiativeIndex;
 				}
-				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, spellCaster.playerID), spellCaster, castedSpell, turnIndex);
+				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(castedSpell, spellCaster.playerID), spellCaster, castedSpell, turnIndex);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
 
@@ -518,7 +518,7 @@ namespace DndCore
 				return;
 
 			activeSpells.Remove(castedSpell);
-			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell.Spell, castedSpell.SpellCaster.IntId));
+			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell, castedSpell.SpellCaster.IntId));
 			OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));  // Triggers the event.
 			castedSpell.Dispel();  // Sets its Active state to false and evaluates low-level dispel code associated with this spell.
 		}
@@ -732,37 +732,27 @@ namespace DndCore
 			player.BreakConcentration();
 		}
 
-		//void CreateAlarm(Spell spell, int playerId)
-		//{
-		//	CreateAlarm(spell.Duration.GetTimeSpan(), GetAlarmName(spell, playerId));
-		//}
+		public static string GetSpellPlayerName(CastedSpell spell, int playerId)
+		{
+			return $"{spell.Spell.Name}({playerId}).[{spell.ID}]";
+		}
 
-		public static string GetSpellPlayerName(Spell spell, int playerId)
+		public static string GetSimpleSpellPlayerName(Spell spell, int playerId)
 		{
 			return $"{spell.Name}({playerId})";
 		}
-		public static string GetSpellAlarmName(Spell spell, int playerId)
+
+		public static string GetSpellAlarmName(CastedSpell spell, int playerId)
 		{
 			return $"{STR_EndSpell}{GetSpellPlayerName(spell, playerId)}";
 		}
 
-		//void CreateAlarm(TimeSpan timeSpan, string name)
-		//{
-		//	DndAlarm dndAlarm = Clock.CreateAlarm(timeSpan, name);
-		//	dndAlarm.AlarmFired += DndAlarm_AlarmFired;
-		//}
-
-		//private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
-		//{
-		//	
-		//}
-
-		public string GetRemainingSpellTimeStr(int playerId, Spell spell)
+		public string GetRemainingSpellTimeStr(int playerId, CastedSpell spell)
 		{
 			return DndUtils.GetTimeSpanStr(GetRemainingSpellTime(playerId, spell));
 		}
 
-		public TimeSpan GetRemainingSpellTime(int playerId, Spell spell)
+		public TimeSpan GetRemainingSpellTime(int playerId, CastedSpell spell)
 		{
 			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(spell, playerId));
 			if (alarm == null)
@@ -781,7 +771,7 @@ namespace DndCore
 					continue;
 				Spell spell = concentratedCastedSpell.Spell;
 				if (concentratedCastedSpell != null)
-					concentrationReport += $"{player.emoticon} {player.name} is casting {spell.Name} with {GetRemainingSpellTimeStr(player.playerID, spell)} remaining; ";
+					concentrationReport += $"{player.emoticon} {player.name} is casting {spell.Name} with {GetRemainingSpellTimeStr(player.playerID, concentratedCastedSpell)} remaining; ";
 			}
 			if (concentrationReport == string.Empty)
 				concentrationReport = "No players are concentrating on any spells at this time.";
@@ -866,7 +856,7 @@ namespace DndCore
 		{
 			if (castedSpell == null)
 				return false;
-			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(castedSpell.Spell, playerId));
+			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(castedSpell, playerId));
 			return alarm != null;
 		}
 		void ChangeWealth(int playerId, decimal totalGold)

@@ -1662,11 +1662,16 @@ namespace TaleSpireExplore
 				return ApiResponse.Bad($"rangeInFeet \"{rangeInFeetStr}\" should be a number.");
 			
 			// TODO: add multidimensional parsing of dimensionsStr
+			if (shapeName == "None" || string.IsNullOrWhiteSpace(shapeName))
+			{
+				Talespire.Target.StartTargeting(id, rangeInFeet);
+				return ApiResponse.Good();
+			}
 
 			if (!TryParseDimensions(dimensionsStr, out float dimension1Feet, out float dimension2Feet, out float dimension3Feet))
 				return ApiResponse.Bad($"dimensions \"{dimensionsStr}\" should be a number.");
 
-			Talespire.Target.StartTargeting(shapeName, id, rangeInFeet, dimension1Feet, dimension2Feet, dimension3Feet);
+			Talespire.Target.StartVolumeTargeting(shapeName, id, rangeInFeet, dimension1Feet, dimension2Feet, dimension3Feet);
 			return ApiResponse.Good();
 		}
 
@@ -2077,11 +2082,16 @@ namespace TaleSpireExplore
 
 			Talespire.Log.Warning($"-----");
 			Talespire.Log.Warning($"LaunchProjectile Targets....");
+			int numTargetsAdded = 0;
 			for (int i = minArgs; i < args.Length; i++)
 			{
 				Talespire.Log.Debug($"{args[i]}");
 				projectileOptions.AddTarget(args[i]);
+				numTargetsAdded++;
 			}
+			if (numTargetsAdded == 0)
+				Talespire.Log.Error($"LaunchProjectile.numTargetsAdded == 0");
+
 			Talespire.Log.Warning($"-----");
 
 			Talespire.Spells.LaunchProjectile(projectileOptions);

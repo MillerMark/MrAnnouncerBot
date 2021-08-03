@@ -507,24 +507,36 @@ namespace TaleSpireCore
 				return creatureBoardAsset;
 			}
 
-			public static void StartTargeting(string shapeName, string id, int rangeInFeet, float dimension1Feet, float dimension2Feet = 0, float dimension3Feet = 0)
+			public static FlashLight StartTargeting(string id, int rangeInFeet)
 			{
 				targetAnchorId = null;
-				
+
 				RemoveTargetingUI();
 
 				PrepareForSelection();
 				FlashLight flashlight = Flashlight.Get();
+				if (flashlight != null)
+					activeTargetDisk = AddTargetDisk(flashlight.gameObject.transform);
+
+				InitializeTargeting();
+
+				if (rangeInFeet > 0)
+				{
+					targetAnchorId = id;
+					targetAnchorRange = rangeInFeet;
+				}
+				return flashlight;
+			}
+
+			public static void StartVolumeTargeting(string shapeName, string id, int rangeInFeet, float dimension1Feet, float dimension2Feet = 0, float dimension3Feet = 0)
+			{
+				FlashLight flashlight = StartTargeting(id, rangeInFeet);
+
 				if (flashlight == null)
 				{
 					Log.Error($"flashlight is null!");
 					return;
 				}
-
-				activeTargetDisk = AddTargetDisk(flashlight.gameObject.transform);
-
-				InitializeTargeting();
-				//activeTargetRangeIndicator = AddTargetRangeIndicator(flashlight.gameObject.transform);
 
 				if (shapeName == "Sphere" && dimension1Feet > 0)
 					AddTargetingSphere(flashlight, dimension1Feet);
@@ -534,12 +546,6 @@ namespace TaleSpireCore
 					AddTargetingCylinder(flashlight, dimension1Feet, dimension2Feet);
 				else
 					Log.Error($"Unsupported targeting shape: {shapeName} at {dimension1Feet} feet.");
-
-				if (rangeInFeet > 0)
-				{
-					targetAnchorId = id;
-					targetAnchorRange = rangeInFeet;
-				}
 			}
 
 			public static void Update()

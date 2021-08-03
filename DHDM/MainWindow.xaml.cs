@@ -1183,12 +1183,12 @@ namespace DHDM
 						List<string> stateReport = player.GetStateReport();
 						stateReport.Sort();
 						if (player.concentratedSpell != null)
-							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell.Spell)} remaining.");
+							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell)} remaining.");
 
 						List<CastedSpell> activeSpells = game.GetActiveSpells(player);
 						if (activeSpells != null && activeSpells.Count > 0)
 							foreach (CastedSpell activeSpell in activeSpells)
-								stateReport.Add($"Active spell: {activeSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, activeSpell.Spell)} remaining.");
+								stateReport.Add($"Active spell: {activeSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, activeSpell)} remaining.");
 
 						foreach (string item in stateReport)
 							stateList.Items.Add(item);
@@ -2116,7 +2116,7 @@ namespace DHDM
 
 			ClearSpellWindupsInGame(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.IntId);
 
-			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.IntId);
+			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell, ea.CastedSpell.SpellCaster.IntId);
 			EndSpellEffects(spellToEnd);
 
 			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
@@ -2182,7 +2182,7 @@ namespace DHDM
 
 		void ClearSpellWindupsInGame(Spell spell, int playerId)
 		{
-			HubtasticBaseStation.ClearWindup(PlayerActionShortcut.SpellWindupPrefix + DndGame.GetSpellPlayerName(spell, playerId));
+			HubtasticBaseStation.ClearWindup(PlayerActionShortcut.SpellWindupPrefix + DndGame.GetSimpleSpellPlayerName(spell, playerId));
 		}
 
 		public void BreakConcentration(int playerId)
@@ -2862,7 +2862,7 @@ namespace DHDM
 			string spellName = actionShortcut.Spell.Name;
 			string timeSpanStr = actionShortcut.Spell.CastingTimeStr;
 			TellAll($"{playerName} is preparing to cast {spellName} (takes {timeSpanStr}).");
-			string alarmName = DndGame.GetSpellAlarmName(actionShortcut.Spell, actionShortcut.PlayerId);
+			string alarmName = DndGame.GetSimpleSpellPlayerName(actionShortcut.Spell, actionShortcut.PlayerId);
 			game.CreateAlarm(alarmName, castingTime, DndAlarm_CastSpellNow, actionShortcut, null);
 		}
 
@@ -3055,10 +3055,10 @@ namespace DHDM
 					if (concentratedSpell.Name == castedSpell.Spell.Name)
 					{
 						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
-						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, concentratedSpell);
+						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, player.concentratedSpell);
 						if (remainingSpellTime.TotalSeconds > 0)
 						{
-							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining)");
+							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell)} remaining)");
 							return PlayerSpellCastState.AlreadyCasting;
 						}
 						else  // No time remaining. No longer concentrating on this spell.
@@ -3068,7 +3068,7 @@ namespace DHDM
 					}
 
 					// At this point, we know the player is concentrating on a spell and the player wants to cast a different spell that also requires concentration
-					int result = await AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" });
+					int result = await AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" });
 					if (result == 1)
 						playerSpellState = PlayerSpellCastState.FreeToCast;
 					else
@@ -11291,7 +11291,7 @@ namespace DHDM
 
 			TargetDetails targetDetails = actionShortcut.Spell.TargetDetails;
 			Targeting.Start(targetDetails, actionShortcut.Spell.WhatSide);
-			if (targetDetails.Shape != SpellTargetShape.None)
+			if (targetDetails.Shape != SpellTargetShape.None || targetDetails.Kind == TargetKind.Location)
 			{
 				Character player = GetPlayer(actionShortcut.PlayerId);
 				if (player != null)

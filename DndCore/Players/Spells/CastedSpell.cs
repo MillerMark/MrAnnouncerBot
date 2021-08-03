@@ -314,7 +314,7 @@ namespace DndCore
 		{
 			if (Spell.Range > 0)
 			{
-				if (Targeting.ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume))
+				if (Targeting.ExpectedTargetDetails.Kind.HasFlag(TargetKind.Volume) || Targeting.ExpectedTargetDetails.Kind.HasFlag(TargetKind.Location))
 				{
 					double feetFromCaster = DndUtils.TilesToFeet(spellCaster.MapPosition.DistanceTo(Targeting.TargetPoint));
 					if (feetFromCaster > Spell.Range)

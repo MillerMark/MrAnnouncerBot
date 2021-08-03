@@ -35,7 +35,7 @@ namespace DHDM
 		private static List<string> GetTargets(ProjectileEffectEventArgs ea)
 		{
 			List<string> targets = new List<string>();
-			if (Targeting.ActualKind.HasFlag(TargetKind.Volume))
+			if (Targeting.ActualKind.HasFlag(TargetKind.Volume) || Targeting.ActualKind.HasFlag(TargetKind.Location))
 				targets.Add(Targeting.TargetPoint.GetXyzStr());  // Adding a vector to the target list. Might add something like "(0, 0, 0) Square20"
 
 			if (CastedSpell.ActiveSpells.ContainsKey(ea.SpellId))

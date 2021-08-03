@@ -56,7 +56,10 @@ namespace TaleSpireCore
 
 					// Encode commas in the strings...
 					for (int i = 0; i < msgparams.Length; i++)
-						msgparams[i] = msgparams[i].Replace(',', '⁞');
+						if (msgparams[i] == null)
+							msgparams[i] = "";
+						else
+							msgparams[i] = msgparams[i].Replace(',', '⁞');
 
 					byte[] msg = Encoding.UTF8.GetBytes(command + " " + string.Join(",", msgparams));
 

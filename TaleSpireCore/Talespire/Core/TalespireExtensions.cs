@@ -34,7 +34,7 @@ namespace TaleSpireCore
 			Component[] components = gameObject.GetComponentsInChildren(typeof(MonoBehaviour));
 			
 			foreach (Component component in components)
-				if (component.GetType().Name == scriptName)
+				if (component?.GetType().Name == scriptName)
 					if (component is MonoBehaviour monoBehaviour)
 						result.Add(monoBehaviour);
 

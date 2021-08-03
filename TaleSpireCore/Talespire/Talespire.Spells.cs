@@ -325,8 +325,16 @@ namespace TaleSpireCore
 
 			private static void LaunchMissiles(ProjectileOptions projectileOptions, ref float startTime, Vector3 sourcePosition, ref int missilesRemaining)
 			{
-				if (projectileOptions.targetLocations == null || projectileOptions.targetLocations.Count == 0)
+				if (projectileOptions.targetLocations == null)
 				{
+					Log.Error($"projectileOptions.targetLocations is null!");
+					missilesRemaining = 0;
+					return;
+				}
+
+				if (projectileOptions.targetLocations.Count == 0)
+				{
+					Log.Error($"projectileOptions.targetLocations.Count == 0!");
 					missilesRemaining = 0;
 					return;
 				}
