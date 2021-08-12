@@ -157,11 +157,11 @@ namespace TaleSpireCore
 				EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 			}
 
-			public static GameObject PlayEffectAtPosition(string effectName, string spellId, Vector3 position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false)
+			public static GameObject PlayEffectAtPosition(string effectName, string spellId, Vector3 position, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0, bool isMoveable = false, Action<GameObject> conditioning = null)
 			{
 				if (secondsDelayStart > 0)
 				{
-					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position, shrinkTime, rotationDegrees, isMoveable));
+					QueueEffect(new WaitingToCast(SpellLocation.AtPosition, secondsDelayStart, effectName, spellId, null, enlargeTimeSeconds, lifeTime, position, shrinkTime, rotationDegrees, isMoveable, conditioning));
 					return null;
 				}
 
@@ -173,6 +173,8 @@ namespace TaleSpireCore
 					spell.transform.position = position;
 					EffectParameters.ApplyAfterPositioning(spell, isMoveable);
 				}
+
+				conditioning?.Invoke(spell);
 
 				return spell;
 			}
@@ -197,7 +199,10 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				spell.transform.Rotate(Vector3.up, rotationDegrees);
+				float actualRotation = rotationDegrees;
+				if (actualRotation == -1)
+					actualRotation = RandomRange(0, 360);
+				spell.transform.Rotate(Vector3.up, actualRotation);
 
 				spell.name = GetSpellName(spellId, effectName, isMoveable);
 				// TODO: Figure out how to implement Moveable spells.
@@ -485,9 +490,7 @@ namespace TaleSpireCore
 				}
 			}
 
-			const float distanceBetweenWallEffectsFeet = 2.5f;
-
-			static void BuildWallSegment(Vector3 position1, Vector3 position2, string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, ref float availableWallLength, ref float gapSoFar)
+			static void BuildWallSegment(Vector3 position1, Vector3 position2, string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, float distanceBetweenWallEffectsFeet, ref float availableWallLength, ref float gapSoFar, ref float totalWallBuiltSoFarFeet)
 			{
 				if (availableWallLength <= 0)
 					return;
@@ -500,24 +503,43 @@ namespace TaleSpireCore
 
 				if (gapSoFar > 0)
 					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet);
+				else
+				{
+					availableWallLength -= distanceBetweenWallEffectsFeet / 2;
+					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet) / 2;
+				}
 
 				Log.Debug($"BuildWallSegment: availableWallLength: {availableWallLength}");
 				while (availableWallLength > 0)
 				{
-					Vector3 position = position1 + normalizedDelta * (distanceToNextEffectTiles - gapSoFar);
+					Vector3 yOffset = new Vector3(0, RandomRange(-0.01f, 0.01f), 0);
+					Vector3 position = position1 + normalizedDelta * (distanceToNextEffectTiles - gapSoFar) + yOffset;
 					Log.Debug($"position: {position}");
-					GameObject wallPart = PlayEffectAtPosition(effectName, spellId, position, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation);
+					const float feetPerSecond = 60f;
 
-					if (wallPart != null)
-					{
-						ParticleSystem[] particleSystems = wallPart.GetComponentsInChildren<ParticleSystem>(true);
+					Action<GameObject> rotateAndVary = (gameObject) => {
+						ParticleSystem[] particleSystems = gameObject.GetComponentsInChildren<ParticleSystem>(true);
 						foreach (ParticleSystem particleSystem in particleSystems)
 						{
 							ParticleSystem.MainModule main = particleSystem.main;
 							main.simulationSpeed *= RandomRange(0.9f, 1.1f);
 							//particleSystem.randomSeed = (uint)UnityEngine.Random.value * 100000;
 						}
-					}
+						if (rotation == 0 || rotation == -1)
+						{
+							// rotate effect to line-up between the two ruler points:
+							Vector3 saveEulerAngles = gameObject.transform.localEulerAngles;
+							float degreesOffset = 0;
+							if (rotation == -1)
+								degreesOffset = RandomRange(0, 360);
+							gameObject.transform.LookAt(position2);
+							gameObject.transform.localEulerAngles = new Vector3(saveEulerAngles.x, gameObject.transform.localEulerAngles.y + degreesOffset, saveEulerAngles.z);
+						}
+					};
+
+					PlayEffectAtPosition(effectName, spellId, position, lifeTime, enlargeTime, secondsDelayStart + totalWallBuiltSoFarFeet / feetPerSecond, shrinkTime, 0, false, rotateAndVary);
+					totalWallBuiltSoFarFeet += distanceBetweenWallEffectsFeet;
+					
 
 					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet);
 					if (distanceToNextEffectTiles - gapSoFar > totalDistanceThisSegmentTiles)
@@ -533,7 +555,7 @@ namespace TaleSpireCore
 				availableWallLength -= distanceBetweenWallEffectsFeet;
 			}
 
-			public static void BuildWall(string effectName, string spellId, float wallLength, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation)
+			public static void BuildWall(string effectName, string spellId, float wallLength, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, float distanceBetweenWallEffectsFeet = 2.5f)
 			{
 				List<LineRulerIndicator> allLineRulers = Rulers.GetAllLineRulers();
 				if (!allLineRulers.Any())
@@ -559,11 +581,12 @@ namespace TaleSpireCore
 				}
 
 				float gapSoFar = 0;
+				float totalWallBuiltSoFar = 0;
 				float availableWallLength = wallLength + distanceBetweenWallEffectsFeet / 2.0f;
 				for (int j = 0; j < handles.Count - 1; j++)
 				{
 					Log.Debug($"Segment {j} goes from {handles[j].position} to {handles[j + 1].position}");
-					BuildWallSegment(handles[j].position, handles[j + 1].position, effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, ref availableWallLength, ref gapSoFar);
+					BuildWallSegment(handles[j].position, handles[j + 1].position, effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, ref availableWallLength, ref gapSoFar, ref totalWallBuiltSoFar);
 				}
 			}
 		}

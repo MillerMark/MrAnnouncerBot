@@ -6,7 +6,7 @@ namespace DndCore
 	public class SpellEffectEventArgs : BaseEffectArgs
 	{
 		public SpellEffectEventArgs(string effectName, string iD, string taleSpireId, EffectLocation effectLocation = EffectLocation.CreatureBase, 
-																float lifeTime = 0, float secondsDelayStart = 0, float enlargeTime = 0, float shrinkTime = 0, float rotationDegrees = 0, float wallLength = 0) : base(effectName, iD, taleSpireId)
+																float lifeTime = 0, float secondsDelayStart = 0, float enlargeTime = 0, float shrinkTime = 0, float rotationDegrees = 0, float wallLength = 0, float distanceBetweenWallEffectsFeet = 0) : base(effectName, iD, taleSpireId)
 		{
 			RotationDegrees = rotationDegrees;
 			ShrinkTime = shrinkTime;
@@ -15,6 +15,7 @@ namespace DndCore
 			EffectLocation = effectLocation;
 			LifeTime = lifeTime;
 			WallLength = wallLength;
+			DistanceBetweenWallEffectsFeet = distanceBetweenWallEffectsFeet;
 		}
 		public float LifeTime { get; set; }
 		public EffectLocation EffectLocation { get; set; }
@@ -23,5 +24,6 @@ namespace DndCore
 		public float ShrinkTime { get; set; }
 		public float RotationDegrees { get; set; }
 		public float WallLength { get; set; }
+		public float DistanceBetweenWallEffectsFeet { get; set; }
 	}
 }

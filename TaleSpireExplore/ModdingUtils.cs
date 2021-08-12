@@ -46,6 +46,7 @@ namespace TaleSpireExplore
 
 		static ModdingUtils()
 		{
+			Talespire.Log.Warning($"ModdingUtils() - static constructor start!");
 			Commands.Add("SelectNextPlayerControlled", SelectNextPlayerControlled);
 			Commands.Add("SelectPlayerControlledByAlias", SelectPlayerControlledByAlias);
 			Commands.Add("GetPlayerControlledList", GetPlayerControlledList);
@@ -112,6 +113,7 @@ namespace TaleSpireExplore
 			Commands.Add("LaunchProjectile", LaunchProjectile);
 			Commands.Add("GetRulerCount", GetRulerCount);
 			Commands.Add("BuildWall", BuildWall);
+			Talespire.Log.Warning($"ModdingUtils() - static constructor end!");
 		}
 
 		private static string AddCreature(string[] input)
@@ -492,7 +494,7 @@ namespace TaleSpireExplore
 			if (boardsToLoad.Count > 0)
 			{
 				BoardInfo bi = boardsToLoad.Dequeue();
-				SingletonBehaviour<BoardSaverManager>.Instance.Load(bi);
+				CampaignSessionManager.LoadBoard(bi);
 			}
 		}
 
@@ -565,7 +567,7 @@ namespace TaleSpireExplore
 			float3 pos = math.float3(float.Parse(x), float.Parse(y), float.Parse(z));
 			spawnCreaturePos = pos;
 
-			CreatureDataV1 data = new CreatureDataV1();
+			CreatureDataV2 data = new CreatureDataV2();
 			//CreatureData data = new CreatureData(
 			//	new NGuid(nguid),
 			//	NGuid.Empty,
@@ -983,7 +985,6 @@ namespace TaleSpireExplore
 			UpdateCustomStatNames();
 			UpdateSlab();
 			GetSlabSize();
-			UpdateBoardLoad();
 		}
 
 		public static string RotateCamera(string rotation, string absolute)
@@ -1798,8 +1799,8 @@ namespace TaleSpireExplore
 
 		static string BuildWall(string[] args)
 		{
-			if (args.Length < 3 || args.Length > 8)
-				return ApiResponse.Bad($"{nameof(BuildWall)} - Expecting 3-8 args. Got {args.Length}.");
+			if (args.Length < 3 || args.Length > 9)
+				return ApiResponse.Bad($"{nameof(BuildWall)} - Expecting 3-9 args. Got {args.Length}.");
 			float lifeTime = 0;
 			float enlargeTime = 0;
 			float secondsDelayStart = 0;
@@ -1807,25 +1808,32 @@ namespace TaleSpireExplore
 			float rotation = 0;
 			float.TryParse(args[2], out float wallLength);
 
+			float distanceBetweenWallEffectsFeet = 2.5f;
+
 			if (args.Length > 3)
-			{
-				float.TryParse(args[3], out lifeTime);
+			{ 
+				float.TryParse(args[3], out distanceBetweenWallEffectsFeet);
+
 				if (args.Length > 4)
-					float.TryParse(args[4], out enlargeTime);
-				if (args.Length > 5)
 				{
-					float.TryParse(args[5], out secondsDelayStart);
+					float.TryParse(args[4], out lifeTime);
+					if (args.Length > 5)
+						float.TryParse(args[5], out enlargeTime);
 					if (args.Length > 6)
 					{
-						float.TryParse(args[6], out shrinkTime);
+						float.TryParse(args[6], out secondsDelayStart);
 						if (args.Length > 7)
-							float.TryParse(args[7], out rotation);
+						{
+							float.TryParse(args[7], out shrinkTime);
+							if (args.Length > 8)
+								float.TryParse(args[8], out rotation);
+						}
 					}
 				}
 			}
 
 
-			Talespire.Spells.BuildWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation);
+			Talespire.Spells.BuildWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet);
 			return ApiResponse.Good();
 		}
 

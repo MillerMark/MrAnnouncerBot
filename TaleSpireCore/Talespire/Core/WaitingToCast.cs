@@ -19,13 +19,15 @@ namespace TaleSpireCore
 		public bool IsMoveable { get; set; }
 		bool readyToDelete { get; set; }
 		public bool ShouldCreateNow => Time.time > CreationTime && !readyToDelete;
+		public Action<GameObject> Conditioning { get; set; }
 		public WaitingToCast()
 		{
 
 		}
 
-		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, Vector3? position = null, float shrinkTime = 0, float rotation = 0, bool isMoveable = false)
+		public WaitingToCast(SpellLocation location, float secondsDelayStart, string effectName, string spellId, string creatureId, float enlargeTime, float lifeTime = 0, Vector3? position = null, float shrinkTime = 0, float rotation = 0, bool isMoveable = false, Action<GameObject> conditioning = null)
 		{
+			Conditioning = conditioning;
 			CreationTime = Time.time + secondsDelayStart;
 			EffectName = effectName;
 			SpellId = spellId;
@@ -49,7 +51,7 @@ namespace TaleSpireCore
 					Talespire.Spells.AttachEffect(EffectName, SpellId, CreatureId, 0, EnlargeTime, LifeTime, ShrinkTime, RotationDegrees);
 					break;
 				case SpellLocation.AtPosition:
-					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees, IsMoveable);
+					Talespire.Spells.PlayEffectAtPosition(EffectName, SpellId, Position, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees, IsMoveable, Conditioning);
 					break;
 				case SpellLocation.AtCreatureBase:
 					Talespire.Spells.PlayEffectAtCreatureBase(EffectName, SpellId, CreatureId, LifeTime, EnlargeTime, 0, ShrinkTime, RotationDegrees);

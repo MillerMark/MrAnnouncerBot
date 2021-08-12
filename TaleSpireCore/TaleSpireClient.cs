@@ -218,10 +218,11 @@ namespace TaleSpireCore
 			Invoke("PlayEffectAtPosition", new string[] { effectName, spellId, vector.GetXyzStr(), lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString(), isMoveable.ToString() });
 		}
 
-		public static void BuildWall(string effectName, string spellId, float wallLength, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
+		public static void BuildWall(string effectName, string spellId, float wallLength, float distanceBetweenWallEffectsFeet, float lifeTime = 0, float enlargeTime = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotation = 0)
 		{
-			Invoke("BuildWall", new string[] { effectName, spellId, wallLength.ToString(), lifeTime.ToString(), 
-																enlargeTime.ToString(), secondsDelayStart.ToString(), shrinkTime.ToString(), rotation.ToString() });
+			Invoke("BuildWall", new string[] { effectName, spellId, wallLength.ToString(), distanceBetweenWallEffectsFeet.ToString(), 
+																lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), 
+																shrinkTime.ToString(), rotation.ToString() });
 		}
 
 		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation, bool hitFloor = false)

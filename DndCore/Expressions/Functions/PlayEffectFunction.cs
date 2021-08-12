@@ -12,21 +12,22 @@ namespace DndCore
 	[Param(4, typeof(float), "secondsDelay", "The seconds to delay playing this effect.", ParameterIs.Optional)]
 	[Param(5, typeof(float), "enlargeTime", "The seconds to enlarge this effect.", ParameterIs.Optional)]
 	[Param(6, typeof(float), "shrinkTime", "The seconds to shrink this effect when it stops.", ParameterIs.Optional)]
-	[Param(7, typeof(float), "rotation", "The degrees to rotate this effect.", ParameterIs.Optional)]
-	[Param(8, typeof(float), "wallLength", "Length of the wall (for walls).", ParameterIs.Optional)]
+	[Param(7, typeof(float), "rotation", "The degrees to rotate this effect. Use -1 for a random rotation.", ParameterIs.Optional)]
+	[Param(8, typeof(float), "wallLength", "Length of the wall in feet (for walls).", ParameterIs.Optional)]
+	[Param(9, typeof(float), "distanceBetweenWallEffectsFeet", "The distance between wall effects in feet.", ParameterIs.Optional)]
 	public class PlayEffectFunction : DndFunction
 	{
 		public static event SpellEffectEventHandler PlayEffect;
 		public override string Name { get; set; } = "PlayEffect";
 
-		static void OnPlayKnownEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime, float shrinkTime, float rotation, float wallLength)
+		static void OnPlayKnownEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime, float shrinkTime, float rotation, float wallLength, float distanceBetweenWallEffectsFeet)
 		{
-			PlayEffect?.Invoke(null, new SpellEffectEventArgs(effectName, spellId, taleSpireId, effectLocation, lifeTime, secondsDelayStart, enlargeTime, shrinkTime, rotation, wallLength));
+			PlayEffect?.Invoke(null, new SpellEffectEventArgs(effectName, spellId, taleSpireId, effectLocation, lifeTime, secondsDelayStart, enlargeTime, shrinkTime, rotation, wallLength, distanceBetweenWallEffectsFeet));
 		}
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, RollResults dice = null)
 		{
-			ExpectingArguments(args, 1, 8);
+			ExpectingArguments(args, 1, 9);
 			if (player == null)
 				return null;
 
@@ -43,6 +44,7 @@ namespace DndCore
 			float shrinkTime = 0;
 			float rotation = 0;
 			float wallLength = 0;
+			float distanceBetweenWallEffectsFeet = 2.5f;
 			EffectLocation effectLocation = EffectLocation.CreatureBase;
 			if (args.Count > 1)
 			{
@@ -63,7 +65,11 @@ namespace DndCore
 								{
 									rotation = Expressions.GetFloat(args[6]);
 									if (args.Count > 7)
+									{
 										wallLength = Expressions.GetFloat(args[7]);
+										if (args.Count > 8)
+											distanceBetweenWallEffectsFeet = Expressions.GetFloat(args[8]);
+									}
 								}
 							}
 						}
@@ -71,7 +77,7 @@ namespace DndCore
 				}
 			}
 
-			OnPlayKnownEffect(effectName, spellId, player.taleSpireId, lifeTime, effectLocation, secondsDelayStart, enlargeTime, shrinkTime, rotation, wallLength);
+			OnPlayKnownEffect(effectName, spellId, player.taleSpireId, lifeTime, effectLocation, secondsDelayStart, enlargeTime, shrinkTime, rotation, wallLength, distanceBetweenWallEffectsFeet);
 
 			return null;
 		}
