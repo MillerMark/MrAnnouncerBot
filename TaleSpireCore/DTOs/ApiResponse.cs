@@ -101,5 +101,13 @@ namespace TaleSpireCore
 			apiResponse.Result = ResponseType.Failure;
 			return apiResponse.ToString();
 		}
+
+		public int ToInt()
+		{
+			if (Data is Newtonsoft.Json.Linq.JObject jObject)
+				return jObject.ToObject<int>();
+
+			return 0;
+		}
 	}
 }

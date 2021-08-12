@@ -110,6 +110,8 @@ namespace TaleSpireExplore
 			Commands.Add("LookAtPoint", LookAtPoint);
 			Commands.Add("SpinAroundPoint", SpinAroundPoint);
 			Commands.Add("LaunchProjectile", LaunchProjectile);
+			Commands.Add("GetRulerCount", GetRulerCount);
+			Commands.Add("BuildWall", BuildWall);
 		}
 
 		private static string AddCreature(string[] input)
@@ -1793,6 +1795,41 @@ namespace TaleSpireExplore
 			Talespire.Spells.PlayEffectAtPosition(args[0], args[1], vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, isMoveable);
 			return ApiResponse.Good();
 		}
+
+		static string BuildWall(string[] args)
+		{
+			if (args.Length < 3 || args.Length > 8)
+				return ApiResponse.Bad($"{nameof(BuildWall)} - Expecting 3-8 args. Got {args.Length}.");
+			float lifeTime = 0;
+			float enlargeTime = 0;
+			float secondsDelayStart = 0;
+			float shrinkTime = 0;
+			float rotation = 0;
+			float.TryParse(args[2], out float wallLength);
+
+			if (args.Length > 3)
+			{
+				float.TryParse(args[3], out lifeTime);
+				if (args.Length > 4)
+					float.TryParse(args[4], out enlargeTime);
+				if (args.Length > 5)
+				{
+					float.TryParse(args[5], out secondsDelayStart);
+					if (args.Length > 6)
+					{
+						float.TryParse(args[6], out shrinkTime);
+						if (args.Length > 7)
+							float.TryParse(args[7], out rotation);
+					}
+				}
+			}
+
+
+			Talespire.Spells.BuildWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation);
+			return ApiResponse.Good();
+		}
+
+
 		static string PlayEffectOnCollision(string[] args)
 		{
 			if (args.Length != 9)
@@ -1985,6 +2022,15 @@ namespace TaleSpireExplore
 			CharacterPosition characterPosition = Talespire.Minis.GetPosition(id);
 
 			return ApiResponse.Good("Success", characterPosition);
+		}
+
+		static string GetRulerCount(string[] arg)
+		{
+			const int expectedArgs = 0;
+			if (arg.Length != expectedArgs)
+				return ApiResponse.Bad($"GetRulerCount - Expecting {expectedArgs} args.");
+
+			return ApiResponse.Good("Success", Talespire.Rulers.GetLineRulerCount());
 		}
 
 		static string GetFlashlightPosition(string[] arg)

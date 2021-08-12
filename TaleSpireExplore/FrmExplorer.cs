@@ -931,7 +931,6 @@ namespace TaleSpireExplore
 
 		private void btnGetRuler_Click(object sender, EventArgs e)
 		{
-
 			UnityEngine.Object[] lineRulers = Talespire.Components.GetAll<LineRulerIndicator>();
 
 			if (lineRulers == null)
@@ -949,6 +948,7 @@ namespace TaleSpireExplore
 			for (int i = 0; i < lineRulers.Length; i++)
 			{
 				LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
+				
 				if (lineRulerIndicator != null)
 				{
 					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");

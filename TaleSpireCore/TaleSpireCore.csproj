@@ -216,6 +216,7 @@
     <Compile Include="Talespire\Scripts\Spinner.cs" />
     <Compile Include="Talespire\Core\WaitingToCast.cs" />
     <Compile Include="Talespire\Core\VisibilityChange.cs" />
+    <Compile Include="Talespire\Talespire.Rulers.cs" />
     <Compile Include="Talespire\TargetingCylinder.cs" />
     <Compile Include="Talespire\TargetingSphere.cs" />
     <Compile Include="Talespire\TargetingSquare.cs" />

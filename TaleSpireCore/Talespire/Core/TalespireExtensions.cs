@@ -19,6 +19,11 @@ namespace TaleSpireCore
 			return new VectorDto(vector.x, vector.y, vector.z);
 		}
 
+		public static List<Transform> GetHandles(this LineRulerIndicator lineRulerIndicator)
+		{
+			return ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
+		}
+
 		public static MonoBehaviour GetScript(this GameObject gameObject, string scriptName)
 		{
 			Component[] components = gameObject.GetComponents(typeof(MonoBehaviour));

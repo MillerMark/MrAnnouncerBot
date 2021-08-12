@@ -480,7 +480,7 @@ namespace DHDM
 			if (result > 0)
 				ea.Ammunition = filteredAmmunition[result - 1];
 		}
-
+		
 		private void HookEvents()
 		{
 			DeltaTargetFunction.RequestPropertyChange += DeltaTargetFunction_RequestPropertyChange;

@@ -106,7 +106,7 @@ namespace DHDM
 			TaleSpireClient.ClearSpell(spellId, shrinkTime);
 		}
 
-		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime, float shrinkTime, float rotationDegrees)
+		static void PlayEffect(string effectName, string spellId, string taleSpireId, float lifeTime, EffectLocation effectLocation, float secondsDelayStart, float enlargeTime, float shrinkTime, float rotationDegrees, float wallLength)
 		{
 			if (effectLocation == EffectLocation.CreatureBase)
 				TaleSpireClient.PlayEffectAtCreatureBase(effectName, spellId, taleSpireId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
@@ -128,6 +128,8 @@ namespace DHDM
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, false, shrinkTime, rotationDegrees);
 			else if (effectLocation == EffectLocation.AtCollisionBase)
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees, true);
+			else if (effectLocation == EffectLocation.AtWall)
+				TaleSpireClient.BuildWall(effectName, spellId, wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
 		}
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)
@@ -179,7 +181,7 @@ namespace DHDM
 
 		private static void PlayEffectFunction_PlayEffect(object sender, SpellEffectEventArgs ea)
 		{
-			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation, ea.SecondsDelayStart, ea.EnlargeTime, ea.ShrinkTime, ea.RotationDegrees);
+			PlayEffect(ea.EffectName, ea.SpellId, ea.TaleSpireId, ea.LifeTime, ea.EffectLocation, ea.SecondsDelayStart, ea.EnlargeTime, ea.ShrinkTime, ea.RotationDegrees, ea.WallLength);
 		}
 
 		private static void ClearAttachedFunction_ClearAttached(object sender, SpellEffectEventArgs ea)
