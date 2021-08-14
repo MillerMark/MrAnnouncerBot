@@ -241,6 +241,7 @@ namespace TaleSpireCore
 				}
 			}
 
+
 			private static GameObject GetEffect(string effectName, string spellId = "", bool isMoveable = false)
 			{
 				GameObject result;
@@ -257,7 +258,8 @@ namespace TaleSpireCore
 					}
 				}
 
-				if (Prefabs.Has(EffectParameters.GetEffectNameOnly(effectName)))
+				string prefabName = Effects.GetIndividualEffectName(EffectParameters.GetEffectNameOnly(effectName));
+				if (Prefabs.Has(prefabName))
 					result = Prefabs.Clone(effectName);
 				else
 					result = CompositeEffect.CreateKnownEffect(effectName);

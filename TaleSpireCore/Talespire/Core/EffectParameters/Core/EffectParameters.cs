@@ -106,10 +106,13 @@ namespace TaleSpireCore
 			int colonPos = effectName.IndexOf(":");
 			parameters = "";
 			if (colonPos <= 0)
+			{
+				effectName = Talespire.Effects.GetIndividualEffectName(effectName);
 				return;
+			}
 
 			parameters = effectName.Substring(colonPos + 1).Trim();
-			effectName = effectName.Substring(0, colonPos).Trim();
+			effectName = Talespire.Effects.GetIndividualEffectName(effectName.Substring(0, colonPos)).Trim();
 			Talespire.Log.Warning($"effectName is \"{effectName}\"; parameters are \"{parameters}\"");
 		}
 

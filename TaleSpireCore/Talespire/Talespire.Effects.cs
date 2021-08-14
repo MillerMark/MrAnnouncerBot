@@ -76,6 +76,35 @@ namespace TaleSpireCore
 
 				return stringBuilder.ToString();
 			}
+
+			static System.Random randomFileIndexer = new System.Random((int)DateTime.Now.Ticks);
+
+			/// <summary>
+			/// Converts "effectName[4]" into a random indexed effect name (e.g., "effectName1", "effectName2", "effectName3", or "effectName4")
+			/// </summary>
+			public static string GetIndividualEffectName(string effectName)
+			{
+				effectName = effectName.Trim();
+				if (effectName.EndsWith("]"))
+				{
+					int openBracketPos = effectName.LastIndexOf("[");
+					if (openBracketPos > 0)
+					{
+						string baseEffectName = effectName.Substring(0, openBracketPos);
+						int numberStrLength = effectName.Length - openBracketPos - 2;
+						if (numberStrLength > 0)
+						{
+							string effectNumberStr = effectName.Substring(openBracketPos + 1, numberStrLength);
+							if (int.TryParse(effectNumberStr, out int effectNumber))
+							{
+								int randomIndex = randomFileIndexer.Next(effectNumber) + 1;
+								return baseEffectName + randomIndex;
+							}
+						}
+					}
+				}
+				return effectName;
+			}
 		}
 	}
 }
