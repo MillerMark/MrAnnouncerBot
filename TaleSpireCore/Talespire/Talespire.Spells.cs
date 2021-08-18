@@ -86,9 +86,8 @@ namespace TaleSpireCore
 				}
 
 				spell.name = GetAttachedEffectName(spellId);
-				GameObject creatureBase = creatureBoardAsset.GetBase();
+				GameObject creatureBase = creatureBoardAsset.GetAssetLoader();
 				spell.transform.SetParent(creatureBase.transform);
-				//spell.transform.
 				spell.transform.position = creatureBase.transform.position;
 				
 				EffectParameters.ApplyAfterPositioning(spell);

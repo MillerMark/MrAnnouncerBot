@@ -41,7 +41,6 @@ namespace TaleSpireExploreDecompiles
 		protected abstract void StartingSetHandle(int index);
 
 		// Properties
-		public virtual bool SupportsReturningToEdit =>
-				false;
+		public virtual bool SupportsReturningToEdit => false;
 	}
 }

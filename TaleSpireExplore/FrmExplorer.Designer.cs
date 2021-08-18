@@ -471,7 +471,7 @@
 			this.btnTest2.Name = "btnTest2";
 			this.btnTest2.Size = new System.Drawing.Size(88, 31);
 			this.btnTest2.TabIndex = 26;
-			this.btnTest2.Text = "Test 2";
+			this.btnTest2.Text = "Instantiate";
 			this.btnTest2.UseVisualStyleBackColor = true;
 			this.btnTest2.Click += new System.EventHandler(this.btnTest2_Click);
 			// 
@@ -518,7 +518,7 @@
 			this.tbxAssetId.Name = "tbxAssetId";
 			this.tbxAssetId.Size = new System.Drawing.Size(389, 20);
 			this.tbxAssetId.TabIndex = 25;
-			this.tbxAssetId.Text = "28f7710e-9f79-425b-ac6e-216677454ec3";
+			this.tbxAssetId.Text = "71a127d8-a437-414d-a845-a39606a8a2fa";
 			// 
 			// chkTrackAngle
 			// 

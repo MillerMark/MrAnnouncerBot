@@ -62,6 +62,16 @@ namespace TaleSpireCore
 			return groundHeight;
 		}
 
+		/// <summary>
+		/// Returns the AssetLoader GameObject for the specified creature.
+		/// </summary>
+		public static GameObject GetAssetLoader(this CreatureBoardAsset creatureAsset)
+		{
+			// ![](907E4122717C4D32C3EC6832C50B5A85.png;;0,206,283,490)
+			GameObject _Rotator = creatureAsset.BaseLoader.gameObject?.transform?.parent?.parent?.gameObject;
+			return _Rotator?.FindChild("AssetLoader");
+		}
+
 		public static GameObject FindChild(this GameObject gameObject, string name, bool includeInactive = false)
 		{
 			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>(includeInactive);

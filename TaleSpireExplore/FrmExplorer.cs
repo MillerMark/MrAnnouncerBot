@@ -1347,6 +1347,14 @@ namespace TaleSpireExplore
 
 		private void btnTest2_Click(object sender, EventArgs e)
 		{
+			try
+			{
+				Talespire.PersistentEffects.Create();
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex);
+			}
 			//Talespire.Minis.TryCreateCrocodile(new Vector3(15f, 22.5f, 95.4f));
 			//Talespire.Board.InstantiateCreature(tbxAssetId.Text, new Vector3(15f, 22.5f, 95.4f));
 		}

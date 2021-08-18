@@ -67,6 +67,9 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="StatMessaging">
+      <HintPath>..\StatMessaging\TaleSpireStatMessaging\bin\Debug\StatMessaging.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -218,6 +221,7 @@
     <Compile Include="Talespire\Core\WaitingToCast.cs" />
     <Compile Include="Talespire\Core\VisibilityChange.cs" />
     <Compile Include="Talespire\Talespire.Rulers.cs" />
+    <Compile Include="Talespire\Talespire.PersistentEffects.cs" />
     <Compile Include="Talespire\TargetingCylinder.cs" />
     <Compile Include="Talespire\TargetingSphere.cs" />
     <Compile Include="Talespire\TargetingSquare.cs" />

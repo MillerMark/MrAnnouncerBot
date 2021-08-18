@@ -11,6 +11,7 @@ namespace TaleSpireCore
 			Spells.Update();
 			Instances.Update();
 			CompositeEffect.Update();
+			PersistentEffects.Update();
 		}
 	}
 }
