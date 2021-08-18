@@ -503,12 +503,14 @@ namespace TaleSpireCore
 
 				float distanceToNextEffectTiles = 0;
 
+				float distanceBetweenWallEffectsTiles = Convert.FeetToTiles(distanceBetweenWallEffectsFeet);
+				Vector3 targetPointToLookAt = position1 + delta * distanceBetweenWallEffectsTiles * 2;
 				if (gapSoFar > 0)
-					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet);
+					distanceToNextEffectTiles += distanceBetweenWallEffectsTiles;
 				else
 				{
 					availableWallLength -= distanceBetweenWallEffectsFeet / 2;
-					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet) / 2;
+					distanceToNextEffectTiles += distanceBetweenWallEffectsTiles / 2;
 				}
 
 				Log.Debug($"BuildWallSegment: availableWallLength: {availableWallLength}");
@@ -534,7 +536,7 @@ namespace TaleSpireCore
 							float degreesOffset = 0;
 							if (rotation == -1)
 								degreesOffset = RandomRange(0, 360);
-							gameObject.transform.LookAt(position2);
+							gameObject.transform.LookAt(targetPointToLookAt);
 							gameObject.transform.localEulerAngles = new Vector3(saveEulerAngles.x, gameObject.transform.localEulerAngles.y + degreesOffset, saveEulerAngles.z);
 						}
 					};
@@ -543,7 +545,7 @@ namespace TaleSpireCore
 					totalWallBuiltSoFarFeet += distanceBetweenWallEffectsFeet;
 					
 
-					distanceToNextEffectTiles += Convert.FeetToTiles(distanceBetweenWallEffectsFeet);
+					distanceToNextEffectTiles += distanceBetweenWallEffectsTiles;
 					if (distanceToNextEffectTiles - gapSoFar > totalDistanceThisSegmentTiles)
 					{
 						gapSoFar = Math.Abs((position2 - position).magnitude);
@@ -559,6 +561,8 @@ namespace TaleSpireCore
 
 			public static void BuildWall(string effectName, string spellId, float wallLength, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, float distanceBetweenWallEffectsFeet = 2.5f)
 			{
+				List<Vector3> handles = null;
+
 				List<LineRulerIndicator> allLineRulers = Rulers.GetAllLineRulers();
 				if (!allLineRulers.Any())
 				{
@@ -574,26 +578,68 @@ namespace TaleSpireCore
 					return;
 				}
 
-				List<Transform> handles = lineRulerIndicator.GetHandles();
+				handles = lineRulerIndicator.GetPositions();
 
 				if (handles == null)
 				{
 					Log.Error($"handles not found!");
 					return;
 				}
+				BuildWallSegments(effectName, spellId, wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, handles);
+			}
 
+			private static void BuildWallSegments(string effectName, string spellId, float wallLength, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, float distanceBetweenWallEffectsFeet, List<Vector3> handles)
+			{
 				float gapSoFar = 0;
 				float totalWallBuiltSoFar = 0;
 				float availableWallLength = wallLength + distanceBetweenWallEffectsFeet / 2.0f;
 				for (int j = 0; j < handles.Count - 1; j++)
 				{
-					Log.Debug($"Segment {j} goes from {handles[j].position} to {handles[j + 1].position}");
-					BuildWallSegment(handles[j].position, handles[j + 1].position, effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, ref availableWallLength, ref gapSoFar, ref totalWallBuiltSoFar);
+					Log.Debug($"Segment {j} goes from {handles[j]} to {handles[j + 1]}");
+					BuildWallSegment(handles[j], handles[j + 1], effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, ref availableWallLength, ref gapSoFar, ref totalWallBuiltSoFar);
+				}
+			}
+
+			public static void BuildRingedWall(string effectName, string spellId, float wallLength, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotation, float distanceBetweenWallEffectsFeet, Vector3 center, float ringDiameter)
+			{
+				Log.Warning($"BuildRingedWall: center = {center}, ringDiameter = {ringDiameter}");
+				List<Vector3> handles = Target.GetHandlesAroundPoint(center, ringDiameter / 2f, 10f);
+				Log.Warning($"handles.Count = {handles.Count}");
+				BuildWallSegments(effectName, spellId, wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, handles);
+			}
+
+			public static void SetDamageSide(string spellId, DamageSide damageSide)
+			{
+				//Log.Warning($"SetDamageSide - spellId: {spellId}, damageSide: {damageSide}");
+				List<GameObject> spellEffects = Instances.GetSpellEffects(spellId);
+				foreach (GameObject spellEffect in spellEffects)
+				{
+					GameObject leftSide = spellEffect.FindChild("Left", true);
+					if (leftSide == null)
+						continue;
+					
+					GameObject rightSide = spellEffect.FindChild("Right", true);
+					if (rightSide == null)
+						continue;
+
+					if (leftSide?.transform?.parent != spellEffect.transform)
+						continue;
+
+					if (rightSide?.transform?.parent != spellEffect.transform)
+						continue;
+
+					if (damageSide == DamageSide.Left)
+					{
+						leftSide.SetActive(true);
+						rightSide.SetActive(false);
+					}
+					else
+					{
+						leftSide.SetActive(false);
+						rightSide.SetActive(true);
+					}
 				}
 			}
 		}
 	}
 }
-
-
-

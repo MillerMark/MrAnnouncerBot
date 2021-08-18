@@ -282,7 +282,7 @@ namespace TaleSpireCore
 				// Bump the target position up a bit...
 				Vector3 targetPosition = new Vector3(basePosition.x, basePosition.y + 0.05f, basePosition.z);
 
-				AddTarget(targetPosition, baseTransform, creatureBoardAsset.CreatureScale, WhatSide(creatureBoardAsset.WorldId));
+				AddTarget(targetPosition, baseTransform, creatureBoardAsset.CreatureScale, WhatSide(creatureBoardAsset.Creature.CreatureId.Value));
 			}
 
 			static CreatureBoardAsset RemoveTargetFromNearestCreature()
@@ -669,6 +669,29 @@ namespace TaleSpireCore
 				if (TargetingVolume != null)
 					return TargetingVolume.GetAllCreaturesInVolume();
 				return null;
+			}
+
+			public static List<Vector3> GetHandlesAroundPoint(Vector3 center, float radiusFeet, float segmentLengthFeet)
+			{
+				List<Vector3> handles = new List<Vector3>();
+				float radiusTiles = Convert.FeetToTiles(radiusFeet);
+				float circumferenceFeet = Mathf.PI * radiusFeet * 2;
+				int numSegments = Mathf.CeilToInt(circumferenceFeet / segmentLengthFeet);
+				float degreesBetweenSegments = 360f / numSegments;
+
+				for (int i = 0; i < numSegments; i++)
+				{
+					float rotatedAngleY = i * degreesBetweenSegments;
+					Quaternion q = Quaternion.AngleAxis(rotatedAngleY, Vector3.up);
+					Vector3 offset = new Vector3(radiusTiles, 0, 0);
+					Vector3 rotatedPoint = center + q * offset;
+					handles.Add(rotatedPoint);
+				}
+
+				if (handles.Count > 0)
+					handles.Add(handles[0]);  // The first point is also the last.
+
+				return handles;
 			}
 		}
 	}

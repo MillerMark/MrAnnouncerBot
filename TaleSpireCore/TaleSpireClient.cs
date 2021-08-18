@@ -120,6 +120,11 @@ namespace TaleSpireCore
 			return Invoke(command, new string[] { msgparams });
 		}
 
+		public static ApiResponse Invoke(string command, string msgparam1, string msgparam2)
+		{
+			return Invoke(command, new string[] { msgparam1, msgparam2 });
+		}
+
 		public static void ClearActiveTurnIndicator()
 		{
 			Invoke("ClearActiveTurnIndicator");
@@ -223,6 +228,12 @@ namespace TaleSpireCore
 			Invoke("BuildWall", new string[] { effectName, spellId, wallLength.ToString(), distanceBetweenWallEffectsFeet.ToString(), 
 																lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(), 
 																shrinkTime.ToString(), rotation.ToString() });
+		}
+		public static void BuildRingedWall(string effectName, string spellId, float wallLength, float distanceBetweenWallEffectsFeet, float lifeTime, float enlargeTime, float secondsDelayStart, float shrinkTime, float rotationDegrees, VectorDto targetPoint, float ringDiameter)
+		{
+			Invoke("BuildRingedWall", new string[] { effectName, spellId, wallLength.ToString(), distanceBetweenWallEffectsFeet.ToString(),
+																lifeTime.ToString(), enlargeTime.ToString(), secondsDelayStart.ToString(),
+																shrinkTime.ToString(), rotationDegrees.ToString(), targetPoint.GetXyzStr(), ringDiameter.ToString() });
 		}
 
 		public static void PlayEffectOnCollision(string effectName, string spellId, float lifeTime, float enlargeTime, float secondsDelayStart, bool useIntendedTarget, float shrinkTime, float rotation, bool hitFloor = false)
@@ -350,6 +361,10 @@ namespace TaleSpireCore
 		public static ApiResponse GetCreatures()
 		{
 			return Invoke("GetCreatures");
+		}
+		public static void SetDamageSide(string spellId, string direction)
+		{
+			Invoke("SetDamageSide", spellId, direction);
 		}
 	}
 }

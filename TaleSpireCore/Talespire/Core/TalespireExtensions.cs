@@ -24,6 +24,11 @@ namespace TaleSpireCore
 			return ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
 		}
 
+		public static List<Vector3> GetPositions(this LineRulerIndicator lineRulerIndicator)
+		{
+			return lineRulerIndicator.GetHandles()?.ConvertAll(x => x.position);
+		}
+
 		public static MonoBehaviour GetScript(this GameObject gameObject, string scriptName)
 		{
 			Component[] components = gameObject.GetComponents(typeof(MonoBehaviour));
@@ -116,7 +121,7 @@ namespace TaleSpireCore
 			{
 				Name = TaleSpireUtils.GetName(creatureAsset),
 				Position = creaturePosition,
-				ID = creatureAsset.WorldId.ToString(),
+				ID = creatureAsset.Creature?.CreatureId.Value.ToString(),
 				FlyingAltitude = altitude
 			};
 			return characterPosition;

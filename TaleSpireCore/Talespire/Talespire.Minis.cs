@@ -38,7 +38,7 @@ namespace TaleSpireCore
 				string searchId = GetSearch(id);
 
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-					if (creatureAsset.WorldId != null && creatureAsset.WorldId.ToString() == searchId)
+					if (creatureAsset.Creature?.CreatureId.Value != null && creatureAsset.Creature.CreatureId.Value.ToString() == searchId)
 						return creatureAsset;
 
 				return null;
@@ -54,7 +54,7 @@ namespace TaleSpireCore
 				string searchId = GetSearch(id);
 
 				foreach (CreatureBoardAsset creatureAsset in allCreatureAssets)
-					if (creatureAsset.WorldId.ToString() != searchId)
+					if (creatureAsset.CreatureId.Value.ToString() != searchId)
 						results.Add(creatureAsset);
 
 				return results.ToArray();
@@ -144,7 +144,7 @@ namespace TaleSpireCore
 				{
 					Creature creature = creatureBoardAsset.GetComponent<Creature>();
 					if (creature != null)
-						result.Add($"{creature.Name}{NameIdSeparator}{creatureBoardAsset.WorldId}");
+						result.Add($"{creature.Name}{NameIdSeparator}{creatureBoardAsset.Creature.CreatureId.Value}");
 				}
 				return result;
 			}

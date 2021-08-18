@@ -113,6 +113,8 @@ namespace TaleSpireExplore
 			Commands.Add("LaunchProjectile", LaunchProjectile);
 			Commands.Add("GetRulerCount", GetRulerCount);
 			Commands.Add("BuildWall", BuildWall);
+			Commands.Add("BuildRingedWall", BuildRingedWall);
+			Commands.Add("SetDamageSide", SetDamageSide);
 			Talespire.Log.Warning($"ModdingUtils() - static constructor end!");
 		}
 
@@ -1797,21 +1799,61 @@ namespace TaleSpireExplore
 			return ApiResponse.Good();
 		}
 
+		static string SetDamageSide(string[] args)
+		{
+			if (args.Length != 2)
+				return ApiResponse.Bad($"{nameof(SetDamageSide)} - Expecting 2 args. Got {args.Length}.");
+
+			string spellId = args[0];
+			DamageSide damageSide = ConvertUtils.ToDamageSide(args[1]);
+
+			Talespire.Spells.SetDamageSide(spellId, damageSide);
+			return ApiResponse.Good();
+		}
+
 		static string BuildWall(string[] args)
+
 		{
 			if (args.Length < 3 || args.Length > 9)
 				return ApiResponse.Bad($"{nameof(BuildWall)} - Expecting 3-9 args. Got {args.Length}.");
-			float lifeTime = 0;
-			float enlargeTime = 0;
-			float secondsDelayStart = 0;
-			float shrinkTime = 0;
-			float rotation = 0;
-			float.TryParse(args[2], out float wallLength);
 
-			float distanceBetweenWallEffectsFeet = 2.5f;
+			GetWallArguments(args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotation, out float wallLength, out float distanceBetweenWallEffectsFeet);
 
+			Talespire.Spells.BuildWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet);
+			return ApiResponse.Good();
+		}
+		static string BuildRingedWall(string[] args)
+
+		{
+			if (args.Length < 3 || args.Length > 11)
+				return ApiResponse.Bad($"{nameof(BuildRingedWall)} - Expecting 3-11 args. Got {args.Length}.");
+
+			GetWallArguments(args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotation, out float wallLength, out float distanceBetweenWallEffectsFeet);
+			float ringDiameter = 10;
+			Vector3 center = Vector3.zero;
+			if (args.Length > 9)
+			{
+				center = Talespire.Convert.ToVector3(args[9]);
+				if (args.Length > 10)
+					float.TryParse(args[10], out ringDiameter);
+			}
+
+			Talespire.Spells.BuildRingedWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, center, ringDiameter);
+			return ApiResponse.Good();
+		}
+
+		private static void GetWallArguments(string[] args, out float lifeTime, out float enlargeTime, out float secondsDelayStart, out float shrinkTime, out float rotation, out float wallLength, out float distanceBetweenWallEffectsFeet)
+		{
+			lifeTime = 0;
+			enlargeTime = 0;
+			secondsDelayStart = 0;
+			shrinkTime = 0;
+			rotation = 0;
+			float.TryParse(args[2], out wallLength);
+
+			distanceBetweenWallEffectsFeet = 2.5f;
 			if (args.Length > 3)
-			{ 
+			{
 				float.TryParse(args[3], out distanceBetweenWallEffectsFeet);
 
 				if (args.Length > 4)
@@ -1831,12 +1873,7 @@ namespace TaleSpireExplore
 					}
 				}
 			}
-
-
-			Talespire.Spells.BuildWall(args[0], args[1], wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet);
-			return ApiResponse.Good();
 		}
-
 
 		static string PlayEffectOnCollision(string[] args)
 		{

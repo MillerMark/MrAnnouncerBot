@@ -993,5 +993,10 @@ namespace DndCore
 		{
 			return distanceTiles * 5;
 		}
+
+		public static DamageSide ToDamageSide(string direction)
+		{
+			return GetElement<DamageSide>(direction);
+		}
 	}
 }

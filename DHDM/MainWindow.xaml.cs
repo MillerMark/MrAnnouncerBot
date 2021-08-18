@@ -11625,6 +11625,14 @@ namespace DHDM
 			else
 				TaleSpireClient.FlashlightOff();
 		}
+
+		public void SetDamageSide(string direction)
+		{
+			// TODO: Flip the damage in the game engine for the active wall.
+			Targeting.SetDamageSide(DndUtils.ToDamageSide(direction));
+			if (game.LastCastedSpell != null)
+				TaleSpireClient.SetDamageSide(game.LastCastedSpell.ID, direction);
+		}
 	}
 }
 

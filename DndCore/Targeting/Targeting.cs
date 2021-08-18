@@ -9,6 +9,8 @@ using System.Text;
 
 namespace DndCore
 {
+
+	
 	public static class Targeting
 	{
 		
@@ -34,12 +36,17 @@ namespace DndCore
 			else
 				ActualKind = TargetKind.Location;
 		}
+		public static void SetDamageSide(DamageSide damageSide)
+		{
+			DamageSide = damageSide;
+		}
 
 		public static TargetDetails ExpectedTargetDetails { get; set; }
 		public static WhatSide ExpectedSide { get; set; }
 		public static TargetKind ActualKind { get; set; }
 		public static bool IsReady { get; private set; }
 		public static Vector TargetPoint { get; set; }
+		public static DamageSide DamageSide { get; set; }
 
 	}
 }

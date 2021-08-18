@@ -139,6 +139,9 @@
       <HintPath>..\DLLs\Unity.Burst.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Collections">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\TaleSpire_Data\Managed\Unity.Collections.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Mathematics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DLLs\Unity.Mathematics.dll</HintPath>
@@ -205,6 +208,12 @@
     <None Include="Decompiles\EffectManager.cs" />
     <None Include="Decompiles\FactoryItemBehaviour.cs" />
     <None Include="Decompiles\VisualEffect.cs" />
+    <Compile Include="Decompiles\LineRuler\BezierPath.cs" />
+    <Compile Include="Decompiles\LineRuler\LineIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\LineRulerIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\RulerBoardTool.cs" />
+    <Compile Include="Decompiles\LineRuler\RulerIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\Ruler.cs" />
     <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />

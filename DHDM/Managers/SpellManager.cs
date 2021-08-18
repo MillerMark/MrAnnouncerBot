@@ -129,7 +129,14 @@ namespace DHDM
 			else if (effectLocation == EffectLocation.AtCollisionBase)
 				TaleSpireClient.PlayEffectOnCollision(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, true, shrinkTime, rotationDegrees, true);
 			else if (effectLocation == EffectLocation.AtWall)
-				TaleSpireClient.BuildWall(effectName, spellId, wallLength, distanceBetweenWallEffectsFeet, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
+				if (Targeting.ActualKind == TargetKind.Volume && Targeting.ExpectedTargetDetails.Shape == SpellTargetShape.Cylinder)
+				{
+					string dimensionsFeet = Targeting.ExpectedTargetDetails.DimensionsFeet;
+					float ringDiameter = (float)dimensionsFeet.GetFirstDouble();
+					TaleSpireClient.BuildRingedWall(effectName, spellId, wallLength, distanceBetweenWallEffectsFeet, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees, Targeting.TargetPoint.ToVectorDto(), ringDiameter);
+				}
+				else
+					TaleSpireClient.BuildWall(effectName, spellId, wallLength, distanceBetweenWallEffectsFeet, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees);
 		}
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)

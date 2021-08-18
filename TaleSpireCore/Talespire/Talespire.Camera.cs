@@ -18,7 +18,7 @@ namespace TaleSpireCore
 				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(id);
 				if (creatureBoardAsset != null)
 				{
-					CreatureGuid creatureGuid = new CreatureGuid(creatureBoardAsset.WorldId);
+					CreatureGuid creatureGuid = new CreatureGuid(creatureBoardAsset.Creature.CreatureId.Value);
 					CameraController.LookAtCreature(creatureGuid);
 				}
 
@@ -90,8 +90,8 @@ namespace TaleSpireCore
 				if (targetCreatureBoardAsset == null)
 					return null;
 
-				CreatureGuid targetCreatureGuid = new CreatureGuid(targetCreatureBoardAsset.WorldId);
-				targetWorldIdForRestoreCamera = targetCreatureBoardAsset.WorldId.ToString();
+				CreatureGuid targetCreatureGuid = new CreatureGuid(targetCreatureBoardAsset.Creature.CreatureId.Value);
+				targetWorldIdForRestoreCamera = targetCreatureBoardAsset.Creature.CreatureId.Value.ToString();
 				CameraController.LookAtCreature(targetCreatureGuid);
 				Vector3 targetPosition = targetCreatureBoardAsset.transform.position;
 				StartSpinningCamera(targetPosition);

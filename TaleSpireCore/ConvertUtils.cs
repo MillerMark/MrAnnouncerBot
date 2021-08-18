@@ -17,5 +17,10 @@ namespace TaleSpireCore
 		{
 			return GetElement<WhatSide>(whatSideStr);
 		}
+
+		public static DamageSide ToDamageSide(string damageSideStr)
+		{
+			return GetElement<DamageSide>(damageSideStr);
+		}
 	}
 }

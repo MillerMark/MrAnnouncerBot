@@ -274,6 +274,18 @@ namespace TaleSpireCore
 					enlargingObjects.Remove(gameObject);
 				UnityEngine.Object.Destroy(gameObject);
 			}
+
+			public static List<GameObject> GetSpellEffects(string spellId)
+			{
+				List<GameObject> results = new List<GameObject>();
+				foreach (string key in spells.Keys)
+				{
+					// Couple different name conventions "Spell.{guid}", "Moveable.{guid}
+					if (key.Contains(spellId))
+						results.AddRange(spells[key]);
+				}
+				return results;
+			}
 		}
 	}
 }

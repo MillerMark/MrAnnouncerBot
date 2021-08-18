@@ -168,6 +168,7 @@
     <Compile Include="Color\HueSatLight.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
+    <Compile Include="Talespire\Core\Cloned Enums\DamageSide.cs" />
     <Compile Include="Talespire\Core\CollisionEffect.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\FireCollisionEventOn.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileSizeOption.cs" />

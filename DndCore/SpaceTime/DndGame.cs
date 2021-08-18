@@ -444,6 +444,8 @@ namespace DndCore
 				castedSpell = new CastedSpell(spell, player);
 			castedSpell.PreparationComplete();
 
+			LastCastedSpell = castedSpell;
+
 			nextTarget = player.ActiveTarget;
 
 			if (spell.MustRollDiceToCast())
@@ -984,6 +986,7 @@ namespace DndCore
 			}
 		}
 
+		public CastedSpell LastCastedSpell { get; set; }
 
 		public object GetActiveTurnCreature()
 		{

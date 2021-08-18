@@ -362,6 +362,7 @@
     <Compile Include="StreamDeck Commands\CameraCommand.cs" />
     <Compile Include="StreamDeck Commands\CodeRushDemo.cs" />
     <Compile Include="StreamDeck Commands\ContestCommand.cs" />
+    <Compile Include="StreamDeck Commands\DamageFlipCommand.cs" />
     <Compile Include="StreamDeck Commands\Debouncer.cs" />
     <Compile Include="StreamDeck Commands\DigitManager.cs" />
     <Compile Include="StreamDeck Commands\FlashlightCommand.cs" />

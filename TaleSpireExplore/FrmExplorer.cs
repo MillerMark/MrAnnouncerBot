@@ -45,7 +45,7 @@ namespace TaleSpireExplore
 			tbxLog.Text += "--------------" + Environment.NewLine;
 			tbxLog.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: \n";
 			tbxLog.Text += $"  BoardAssetId: {creatureAsset.BoardAssetId}\n";
-			tbxLog.Text += $"  WorldId: {creatureAsset.WorldId}\n";
+			tbxLog.Text += $"  CreatureId: {creatureAsset.Creature.CreatureId.Value}\n";
 			tbxLog.Text += $"  Position: {creatureAsset.PlacedPosition}\n";
 			tbxLog.Text += $"  Scale: {creatureAsset.CreatureScale}\n";
 			if (creatureAsset.IsGrounded)
@@ -535,9 +535,9 @@ namespace TaleSpireExplore
 				{
 					string uniqueIdStr = "";
 					if (creatureAsset.Creature.IsUnique)
-						uniqueIdStr = " UniqueId: {creatureAsset.Creature.UniqueId},";
+						uniqueIdStr = $" UniqueId: {creatureAsset.Creature.UniqueId},";
 
-					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition},{uniqueIdStr} WorldId: {creatureAsset.WorldId}, BoardAssetId: {creatureAsset.BoardAssetId}\n"; // , Scale: {creatureAsset.CreatureScale}
+					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition},{uniqueIdStr} BoardAssetId: {creatureAsset.BoardAssetId} CreatureId: {creatureAsset.Creature.CreatureId}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
 			catch (Exception ex)
@@ -1125,10 +1125,6 @@ namespace TaleSpireExplore
 		public const string JanusId = "aba6b475-a026-48dd-9722-c8d7049e2566";
 		public const string MerkinId = "35400cec-9539-424f-b185-00569d4850c4"; // "b9529862-8d73-4662-ab13-cf9232b1ccf9";
 
-		/* 
-		 Merkin: (11.5, 22.5, 95.9), UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: 35400cec-9539-424f-b185-00569d4850c4, BoardAssetId: b9529862-8d73-4662-ab13-cf9232b1ccf9
-L'il Cutie: (11.3, 22.5, 98.4), UniqueId: {creatureAsset.Creature.UniqueId}, WorldId: 4c795076-7bdc-489c-afff-4112d12f1138, BoardAssetId: 537d21df-3cd7-4873-bd75-3913621e484c
-		 */
 		public const string CutieId = "4c795076-7bdc-489c-afff-4112d12f1138"; // "537d21df-3cd7-4873-bd75-3913621e484c";
 
 		const string MediumFireEffectId = "MediumFireEffectId";

@@ -88,5 +88,6 @@ namespace DHDM
 		void TaleSpireTarget(string targetingCommand);
 		void TaleSpireCamera(string cameraCommand);
 		void TaleSpireFlashlight(string flashlightCommand);
+		void SetDamageSide(string direction);
 	}
 }
