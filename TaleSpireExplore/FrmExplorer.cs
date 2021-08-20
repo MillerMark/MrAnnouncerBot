@@ -1250,10 +1250,10 @@ namespace TaleSpireExplore
 
 		private void btnGetActiveGameObjects_Click(object sender, EventArgs e)
 		{
-			Talespire.Material.Refresh();
+			Talespire.Materials.Refresh();
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.AppendLine("All Materials: ");
-			foreach (string name in Talespire.Material.GetAllNames())
+			foreach (string name in Talespire.Materials.GetAllMaterialNames())
 				stringBuilder.AppendLine($"  {name}");
 
 			tbxScratch.Text = stringBuilder.ToString();
@@ -1350,6 +1350,7 @@ namespace TaleSpireExplore
 			try
 			{
 				Talespire.PersistentEffects.Create();
+				Talespire.Log.Debug($"Application.ExecutablePath = {System.Windows.Forms.Application.ExecutablePath}");
 			}
 			catch (Exception ex)
 			{

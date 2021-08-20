@@ -17,7 +17,7 @@ namespace TaleSpireCore
 
 		protected override object ParseValue()
 		{
-			return Talespire.Material.Get(Value);
+			return Talespire.Materials.GetMaterial(Value);
 		}
 
 		public void SetValue(string materialName)

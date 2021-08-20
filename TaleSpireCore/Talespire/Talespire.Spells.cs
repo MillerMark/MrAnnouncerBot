@@ -77,6 +77,11 @@ namespace TaleSpireCore
 					return;
 				}
 
+				AttachEffect(creatureBoardAsset, effectName, spellId, enlargeTime, lifeTime, shrinkTime);
+			}
+
+			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime)
+			{
 				GameObject spell = GetEffect(effectName);
 
 				if (spell == null)
@@ -89,7 +94,7 @@ namespace TaleSpireCore
 				GameObject creatureBase = creatureBoardAsset.GetAssetLoader();
 				spell.transform.SetParent(creatureBase.transform);
 				spell.transform.position = creatureBase.transform.position;
-				
+
 				EffectParameters.ApplyAfterPositioning(spell);
 
 				if (lifeTime > 0)
@@ -97,7 +102,6 @@ namespace TaleSpireCore
 				else if (enlargeTime > 0)
 					Instances.EnlargeSoon(spell, enlargeTime);
 			}
-
 
 			public static void PlayEffectAtCreatureBase(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)
 			{

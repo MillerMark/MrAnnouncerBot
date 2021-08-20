@@ -187,6 +187,7 @@
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileKind.cs" />
     <Compile Include="Talespire\Core\EffectParameters\Core\BaseEffectParameter.cs" />
     <Compile Include="Talespire\Core\ParticleSystemDetails.cs" />
+    <Compile Include="Talespire\Core\PrimitiveHelper.cs" />
     <Compile Include="Talespire\Core\ProjectileOptions.cs" />
     <Compile Include="Talespire\Core\SpellLocation.cs" />
     <Compile Include="Talespire\Core\TrackedProjectile.cs" />
@@ -204,7 +205,7 @@
     <Compile Include="Talespire\Talespire.Mesh.cs" />
     <Compile Include="Talespire\Talespire.Target.cs" />
     <Compile Include="Talespire\Talespire.GameObjects.cs" />
-    <Compile Include="Talespire\Talespire.Material.cs" />
+    <Compile Include="Talespire\Talespire.Materials.cs" />
     <Compile Include="Talespire\Talespire.Components.cs" />
     <Compile Include="Talespire\Talespire.Minis.cs" />
     <Compile Include="Talespire\Talespire.Log.cs" />

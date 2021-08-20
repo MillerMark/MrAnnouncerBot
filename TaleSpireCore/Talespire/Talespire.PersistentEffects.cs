@@ -14,6 +14,8 @@ namespace TaleSpireCore
 		{
 			static List<string> effectsToInitialize = new List<string>();
 			const string STR_Goat1BoardAssetId = "71a127d8-a437-414d-a845-a39606a8a2fa";
+			const string STR_UninitializedMiniMeshName = "Goat_01(Clone)";
+			const string STR_InitializedMiniMeshName = "EffectOrb";
 			//const string STR_RichTextSizeModifier = "<size=0>";
 			static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
 			public static void Create()
@@ -24,12 +26,22 @@ namespace TaleSpireCore
 			}
 
 			static List<string> updatedCreatures = new List<string>();
+			static float boardActivationTime;
 
 			static void UpdatePersistentEffect(CreatureBoardAsset creatureAsset, string value)
 			{
 				if (creatureAsset == null)
 					return;
-				Log.Warning($"UpdatePersistentEffect {creatureAsset.CreatureId} - \"{value}\"");
+				Log.Warning($"UpdatePersistentEffect for {creatureAsset.Creature.Name} - \"{value}\"");
+				if (InitializeMiniAsEffect(creatureAsset))
+				{
+					Log.Debug($"Initialization succeeded!");
+				}
+				else
+				{
+					Log.Debug($"Initialization failed, will try to initialize later!");
+					effectsToInitialize.Add(creatureAsset.CreatureId.ToString());
+				}
 			}
 
 			static void DataChangeCallback(StatMessaging.Change[] obj)
@@ -45,30 +57,70 @@ namespace TaleSpireCore
 			static PersistentEffects()
 			{
 				StatMessaging.Subscribe(STR_PersistentEffect, DataChangeCallback);
+				BoardSessionManager.OnStateChange += BoardSessionManager_OnStateChange;
 			}
 
+			static void BoardHasBecomeActive()
+			{
+				Log.Warning($"BoardHasBecomeActive - these are the minis we see now:");
+				CreatureBoardAsset[] allMinis = Minis.GetAll();
+				foreach (CreatureBoardAsset creatureBoardAsset in allMinis)
+				{
+					Log.Debug($"  {creatureBoardAsset.name} - {creatureBoardAsset.Creature.name}");
+				}
+				Log.Debug($"-----------------------");
+				boardActivationTime = Time.time;
+			}
+
+			private static void BoardSessionManager_OnStateChange(PhotonSimpleSingletonStateMBehaviour<BoardSessionManager>.State obj)
+			{
+				if (obj?.Name == "Active")
+					BoardHasBecomeActive();
+			}
+
+			static int frameCount;
+			static int lastMiniCount;
+
+			static void CheckForNewMinis()
+			{
+				CreatureBoardAsset[] allMinis = Minis.GetAll();
+				if (lastMiniCount == allMinis.Length)
+					return;
+				Log.Debug($"CheckForNewMinis()...");
+				lastMiniCount = allMinis.Length;
+				foreach (CreatureBoardAsset creatureBoardAsset in allMinis)
+				{
+					if (IsMiniAnUninitializedEffect(creatureBoardAsset))
+						InitializeMiniAsEffect(creatureBoardAsset);
+				}
+			}
 			public static void Update()
 			{
-				if (effectsToInitialize.Count == 0)
-					return;
-
-				foreach (string creatureId in effectsToInitialize)
+				InitializeEffectsIfNecessary();
+				if (Time.time - boardActivationTime < 60)
 				{
-					CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
-					
-					if (creatureAsset != null)
+					frameCount++;
+					if (frameCount > 5) // Every five frames we will check for new minis...
 					{
-						updatedCreatures.Add(creatureId);
-						Spells.AttachEffect("MediumFire", creatureId, creatureId, 0, 0, 0, 0, 0);
-						CreatureManager.SetCreatureName(creatureAsset.CreatureId, "Effect");
-						StatMessaging.SetInfo(creatureAsset.CreatureId, STR_PersistentEffect, "MediumFire");
-					}
-					else
-					{
-						Log.Debug($"creatureAsset is null this update cycle....");
+						frameCount = 0;
+						CheckForNewMinis();
 					}
 				}
+			}
 
+			private static void InitializeEffectsIfNecessary()
+			{
+				if (effectsToInitialize.Count != 0)
+				{
+					foreach (string creatureId in effectsToInitialize)
+						InitializeEffect(creatureId);
+
+					CleanUp();
+				}
+			}
+
+			private static void CleanUp()
+			{
 				if (updatedCreatures.Count > 0)
 				{
 					foreach (string creatureId in updatedCreatures)
@@ -76,8 +128,119 @@ namespace TaleSpireCore
 
 					updatedCreatures.Clear();
 				}
+			}
 
+			private static void InitializeEffect(string creatureId)
+			{
+				CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
 
+				if (creatureAsset != null)
+				{
+					InitializeMiniAsEffect(creatureAsset);
+				}
+				else
+				{
+					Log.Debug($"creatureAsset is null this update cycle....");
+				}
+			}
+
+			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset)
+			{
+				GameObject assetLoader = creatureAsset.GetAssetLoader();
+				if (assetLoader != null)
+				{
+					GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+					if (goatClone != null)
+					{
+						MeshFilter meshFilter = goatClone.GetComponent<MeshFilter>();
+						MeshRenderer meshRenderer = goatClone.GetComponent<MeshRenderer>();
+						if (meshFilter != null && meshRenderer != null)
+						{
+							Log.Warning($"Name = \"{creatureAsset.Creature.Name}\"");
+							Log.Debug($"  meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);");
+							meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);
+							if (meshFilter.sharedMesh != null)
+								Log.Warning($"  meshFilter.sharedMesh is assigned!!!");
+
+							goatClone.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
+							goatClone.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+							MarkMiniAsInitializedEffect(creatureAsset);
+
+							Material baseGlow = Materials.GetMaterial("Standard (Instance)");
+
+							if (baseGlow != null)
+								baseGlow.SetColor("_Color", Color.black);
+
+							meshRenderer.material = baseGlow;  // Reassigning kills hide?
+							meshRenderer.material.shader = Materials.GetShader("Taleweaver/CreatureShader");
+
+							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
+							if (!StatMessaging.HasSizeZeroMarker(creatureAsset.Creature.Name))
+								CreatureManager.SetCreatureName(creatureAsset.CreatureId, "Effect");
+
+							string defaultNewEffect = "R1.WaterWallSegment1";
+							if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
+							{
+								Log.Warning($"  Creature has no attached data - Adding {defaultNewEffect}!");
+								StatMessaging.SetInfo(creatureAsset.CreatureId, STR_PersistentEffect, defaultNewEffect);
+							}
+							else
+							{
+								Log.Warning($"  Attached data = \"{creatureAsset.GetAttachedData()[STR_PersistentEffect]}\"");
+							}
+
+							AttachEffect(creatureAsset, defaultNewEffect);
+							Log.Debug($"---");
+							Log.Debug($"");
+							return true;
+						}
+						else
+							Log.Debug($"Mesh Filter or Mesh Renderer not found in this update cycle...");
+					}
+					else
+						Log.Debug($"goatClone not found in this update cycle...");
+				}
+				else
+					Log.Debug($"Asset Loader not found in this update cycle...");
+				return false;
+			}
+
+			private static void MarkMiniAsInitializedEffect(CreatureBoardAsset creatureAsset)
+			{
+				GameObject assetLoader = creatureAsset.GetAssetLoader();
+				if (assetLoader != null)
+				{
+					GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+					goatClone.name = STR_InitializedMiniMeshName;  // renaming Goat_01(Clone) to EffectOrb to indicate we have added effects and re-meshed the goat!
+				}
+			}
+
+			private static bool IsMiniAnUninitializedEffect(CreatureBoardAsset creatureAsset)
+			{
+				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
+					return false;
+
+				GameObject assetLoader = creatureAsset.GetAssetLoader();
+				if (assetLoader == null)
+					return false;
+
+				GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+				return goatClone != null;
+			}
+
+			private static void AttachEffect(CreatureBoardAsset creatureAsset, string defaultNewEffect = "MediumFire")
+			{
+				Dictionary<string, string> dictionaries = creatureAsset.GetAttachedData();
+				if (dictionaries.ContainsKey(STR_PersistentEffect))
+				{
+					Log.Warning($"Adding effect \"{dictionaries[STR_PersistentEffect]}\"...");
+					Spells.AttachEffect(creatureAsset, dictionaries[STR_PersistentEffect], creatureAsset.CreatureId.ToString(), 0, 0, 0);
+				}
+				else
+				{
+					Log.Warning($"Adding default \"{defaultNewEffect}\"...");
+					Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0);
+				}
 			}
 		}
 	}

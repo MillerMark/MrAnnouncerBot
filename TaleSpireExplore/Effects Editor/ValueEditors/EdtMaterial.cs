@@ -84,7 +84,7 @@ namespace TaleSpireExplore
 			string selectedMaterialName = cmbMaterial.SelectedItem as string;
 			if (selectedMaterialName == null)
 				return;
-			Material existingMaterial = Talespire.Material.Get(selectedMaterialName);
+			Material existingMaterial = Talespire.Materials.GetMaterial(selectedMaterialName);
 			if (existingMaterial != null)
 				ValueChanged(existingMaterial);
 		}
@@ -92,8 +92,8 @@ namespace TaleSpireExplore
 		void LoadComboboxWithAllMaterials()
 		{
 			cmbMaterial.Items.Clear();
-			Talespire.Material.Invalidate();
-			List<string> allNames = Talespire.Material.GetAllNames();
+			Talespire.Materials.Invalidate();
+			List<string> allNames = Talespire.Materials.GetAllMaterialNames();
 			cmbMaterial.Items.AddRange(allNames.ToArray());
 		}
 

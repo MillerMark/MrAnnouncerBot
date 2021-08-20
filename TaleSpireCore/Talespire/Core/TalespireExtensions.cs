@@ -67,7 +67,7 @@ namespace TaleSpireCore
 		/// </summary>
 		public static GameObject GetAssetLoader(this CreatureBoardAsset creatureAsset)
 		{
-			// ![](907E4122717C4D32C3EC6832C50B5A85.png;;0,206,283,490)
+			// ![](907E4122717C4D32C3EC6832C50B5A85.png;;13,213,283,490)
 			GameObject _Rotator = creatureAsset.BaseLoader.gameObject?.transform?.parent?.parent?.gameObject;
 			return _Rotator?.FindChild("AssetLoader");
 		}

@@ -40,6 +40,12 @@ namespace TaleSpireCore
 				return legalPlacement.GetMostCurrentLegal();
 			}
 
+			/// <summary>
+			/// Creates a new creature of the specified boardAssetId, at the specified position, and returns it's CreaturedId.
+			/// </summary>
+			/// <param name="boardAssetId">The board asset to create.</param>
+			/// <param name="position">The position to place the new asset.</param>
+			/// <returns>The CreatureId as a string.</returns>
 			public static string InstantiateCreature(string boardAssetId, Vector3 position)
 			{
 				CreatureDataV1 creatureDataV1 = new CreatureDataV1(new Bounce.Unmanaged.NGuid(boardAssetId));
