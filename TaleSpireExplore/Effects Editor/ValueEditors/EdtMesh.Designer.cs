@@ -38,7 +38,7 @@
 			this.cmbMesh.Location = new System.Drawing.Point(3, 3);
 			this.cmbMesh.MaxDropDownItems = 22;
 			this.cmbMesh.Name = "cmbMesh";
-			this.cmbMesh.Size = new System.Drawing.Size(224, 21);
+			this.cmbMesh.Size = new System.Drawing.Size(316, 21);
 			this.cmbMesh.Sorted = true;
 			this.cmbMesh.TabIndex = 0;
 			this.cmbMesh.DropDown += new System.EventHandler(this.cmbMesh_DropDown);
@@ -50,7 +50,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.cmbMesh);
 			this.Name = "EdtMesh";
-			this.Size = new System.Drawing.Size(230, 35);
+			this.Size = new System.Drawing.Size(330, 35);
 			this.ResumeLayout(false);
 
 		}

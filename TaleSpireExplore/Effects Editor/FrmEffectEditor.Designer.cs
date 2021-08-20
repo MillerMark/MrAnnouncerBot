@@ -88,7 +88,7 @@
 			// btnCopyJson
 			// 
 			this.btnCopyJson.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnCopyJson.Location = new System.Drawing.Point(953, 12);
+			this.btnCopyJson.Location = new System.Drawing.Point(1018, 12);
 			this.btnCopyJson.Name = "btnCopyJson";
 			this.btnCopyJson.Size = new System.Drawing.Size(84, 26);
 			this.btnCopyJson.TabIndex = 2;
@@ -101,16 +101,16 @@
 			this.tbxJson.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbxJson.Location = new System.Drawing.Point(751, 43);
+			this.tbxJson.Location = new System.Drawing.Point(819, 43);
 			this.tbxJson.Multiline = true;
 			this.tbxJson.Name = "tbxJson";
-			this.tbxJson.Size = new System.Drawing.Size(286, 544);
+			this.tbxJson.Size = new System.Drawing.Size(283, 589);
 			this.tbxJson.TabIndex = 3;
 			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(748, 23);
+			this.label1.Location = new System.Drawing.Point(816, 27);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(38, 13);
 			this.label1.TabIndex = 4;
@@ -125,7 +125,7 @@
 			this.trvEffectHierarchy.HideSelection = false;
 			this.trvEffectHierarchy.Location = new System.Drawing.Point(12, 133);
 			this.trvEffectHierarchy.Name = "trvEffectHierarchy";
-			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 454);
+			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 499);
 			this.trvEffectHierarchy.TabIndex = 5;
 			this.trvEffectHierarchy.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.trvEffectHierarchy_AfterCheck);
 			this.trvEffectHierarchy.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.trvEffectHierarchy_NodeMouseClick);
@@ -215,13 +215,13 @@
             | System.Windows.Forms.AnchorStyles.Left)));
 			this.pnlProperties.Location = new System.Drawing.Point(483, 192);
 			this.pnlProperties.Name = "pnlProperties";
-			this.pnlProperties.Size = new System.Drawing.Size(262, 395);
+			this.pnlProperties.Size = new System.Drawing.Size(330, 440);
 			this.pnlProperties.TabIndex = 7;
 			// 
 			// btnClearEffect
 			// 
 			this.btnClearEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnClearEffect.Location = new System.Drawing.Point(172, 593);
+			this.btnClearEffect.Location = new System.Drawing.Point(172, 638);
 			this.btnClearEffect.Name = "btnClearEffect";
 			this.btnClearEffect.Size = new System.Drawing.Size(109, 26);
 			this.btnClearEffect.TabIndex = 3;
@@ -232,7 +232,7 @@
 			// btnTestEffect
 			// 
 			this.btnTestEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnTestEffect.Location = new System.Drawing.Point(857, 12);
+			this.btnTestEffect.Location = new System.Drawing.Point(922, 12);
 			this.btnTestEffect.Name = "btnTestEffect";
 			this.btnTestEffect.Size = new System.Drawing.Size(90, 26);
 			this.btnTestEffect.TabIndex = 3;
@@ -257,7 +257,7 @@
 			this.trvProperties.HideSelection = false;
 			this.trvProperties.Location = new System.Drawing.Point(287, 53);
 			this.trvProperties.Name = "trvProperties";
-			this.trvProperties.Size = new System.Drawing.Size(186, 534);
+			this.trvProperties.Size = new System.Drawing.Size(186, 579);
 			this.trvProperties.TabIndex = 9;
 			this.trvProperties.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.trvProperties_BeforeExpand);
 			this.trvProperties.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.trvProperties_DrawNode);
@@ -266,7 +266,7 @@
 			// btnStopAllParticleSystems
 			// 
 			this.btnStopAllParticleSystems.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnStopAllParticleSystems.Location = new System.Drawing.Point(387, 593);
+			this.btnStopAllParticleSystems.Location = new System.Drawing.Point(387, 638);
 			this.btnStopAllParticleSystems.Name = "btnStopAllParticleSystems";
 			this.btnStopAllParticleSystems.Size = new System.Drawing.Size(86, 26);
 			this.btnStopAllParticleSystems.TabIndex = 4;
@@ -277,7 +277,7 @@
 			// btnStartAllParticleSystems
 			// 
 			this.btnStartAllParticleSystems.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnStartAllParticleSystems.Location = new System.Drawing.Point(287, 593);
+			this.btnStartAllParticleSystems.Location = new System.Drawing.Point(287, 638);
 			this.btnStartAllParticleSystems.Name = "btnStartAllParticleSystems";
 			this.btnStartAllParticleSystems.Size = new System.Drawing.Size(86, 26);
 			this.btnStartAllParticleSystems.TabIndex = 4;
@@ -288,7 +288,7 @@
 			// btnAttackJanus
 			// 
 			this.btnAttackJanus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAttackJanus.Location = new System.Drawing.Point(655, 593);
+			this.btnAttackJanus.Location = new System.Drawing.Point(655, 638);
 			this.btnAttackJanus.Name = "btnAttackJanus";
 			this.btnAttackJanus.Size = new System.Drawing.Size(90, 26);
 			this.btnAttackJanus.TabIndex = 3;
@@ -300,7 +300,7 @@
 			// 
 			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(482, 600);
+			this.label3.Location = new System.Drawing.Point(482, 645);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(66, 13);
 			this.label3.TabIndex = 11;
@@ -309,7 +309,7 @@
 			// tbxTravelTime
 			// 
 			this.tbxTravelTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.tbxTravelTime.Location = new System.Drawing.Point(548, 597);
+			this.tbxTravelTime.Location = new System.Drawing.Point(548, 642);
 			this.tbxTravelTime.Name = "tbxTravelTime";
 			this.tbxTravelTime.Size = new System.Drawing.Size(100, 20);
 			this.tbxTravelTime.TabIndex = 12;
@@ -411,7 +411,7 @@
 			// 
 			this.btnSaveEffect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnSaveEffect.Enabled = false;
-			this.btnSaveEffect.Location = new System.Drawing.Point(953, 593);
+			this.btnSaveEffect.Location = new System.Drawing.Point(1018, 638);
 			this.btnSaveEffect.Name = "btnSaveEffect";
 			this.btnSaveEffect.Size = new System.Drawing.Size(84, 26);
 			this.btnSaveEffect.TabIndex = 15;
@@ -423,7 +423,7 @@
 			// 
 			this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(748, 600);
+			this.label5.Location = new System.Drawing.Point(816, 645);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(38, 13);
 			this.label5.TabIndex = 11;
@@ -433,9 +433,9 @@
 			// 
 			this.txtEffectName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtEffectName.Location = new System.Drawing.Point(789, 597);
+			this.txtEffectName.Location = new System.Drawing.Point(860, 642);
 			this.txtEffectName.Name = "txtEffectName";
-			this.txtEffectName.Size = new System.Drawing.Size(158, 20);
+			this.txtEffectName.Size = new System.Drawing.Size(152, 20);
 			this.txtEffectName.TabIndex = 12;
 			this.txtEffectName.TextChanged += new System.EventHandler(this.txtEffectName_TextChanged);
 			// 
@@ -472,7 +472,7 @@
 			// btnShapeRadius
 			// 
 			this.btnShapeRadius.Enabled = false;
-			this.btnShapeRadius.Location = new System.Drawing.Point(479, 37);
+			this.btnShapeRadius.Location = new System.Drawing.Point(481, 37);
 			this.btnShapeRadius.Name = "btnShapeRadius";
 			this.btnShapeRadius.Size = new System.Drawing.Size(169, 23);
 			this.btnShapeRadius.TabIndex = 13;
@@ -494,7 +494,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1045, 626);
+			this.ClientSize = new System.Drawing.Size(1110, 671);
 			this.Controls.Add(this.btnLocalEulerAngles);
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.btnSaveEffect);

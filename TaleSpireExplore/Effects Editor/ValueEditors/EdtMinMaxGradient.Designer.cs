@@ -127,7 +127,7 @@
 			this.Controls.Add(this.rbGradient);
 			this.Controls.Add(this.rbColor);
 			this.Name = "EdtMinMaxGradient";
-			this.Size = new System.Drawing.Size(230, 141);
+			this.Size = new System.Drawing.Size(330, 141);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

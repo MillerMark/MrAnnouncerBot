@@ -37,7 +37,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.txtStringValue.Location = new System.Drawing.Point(3, 3);
 			this.txtStringValue.Name = "txtStringValue";
-			this.txtStringValue.Size = new System.Drawing.Size(224, 20);
+			this.txtStringValue.Size = new System.Drawing.Size(324, 20);
 			this.txtStringValue.TabIndex = 0;
 			this.txtStringValue.TextChanged += new System.EventHandler(this.txtStringValue_TextChanged);
 			// 
@@ -47,7 +47,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.txtStringValue);
 			this.Name = "EdtString";
-			this.Size = new System.Drawing.Size(230, 28);
+			this.Size = new System.Drawing.Size(330, 28);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

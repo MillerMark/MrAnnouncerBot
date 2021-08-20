@@ -40,7 +40,7 @@
 			this.tbxClassInfo.Multiline = true;
 			this.tbxClassInfo.Name = "tbxClassInfo";
 			this.tbxClassInfo.ReadOnly = true;
-			this.tbxClassInfo.Size = new System.Drawing.Size(224, 288);
+			this.tbxClassInfo.Size = new System.Drawing.Size(324, 288);
 			this.tbxClassInfo.TabIndex = 0;
 			// 
 			// EdtNone
@@ -49,7 +49,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.tbxClassInfo);
 			this.Name = "EdtNone";
-			this.Size = new System.Drawing.Size(230, 294);
+			this.Size = new System.Drawing.Size(330, 294);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

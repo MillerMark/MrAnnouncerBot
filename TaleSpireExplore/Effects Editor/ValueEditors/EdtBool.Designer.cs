@@ -63,7 +63,7 @@
 			this.Controls.Add(this.rbTrue);
 			this.Controls.Add(this.rbFalse);
 			this.Name = "EdtBool";
-			this.Size = new System.Drawing.Size(230, 66);
+			this.Size = new System.Drawing.Size(330, 66);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

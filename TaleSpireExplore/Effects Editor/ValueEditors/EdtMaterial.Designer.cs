@@ -38,7 +38,7 @@
 			this.cmbMaterial.Location = new System.Drawing.Point(3, 3);
 			this.cmbMaterial.MaxDropDownItems = 22;
 			this.cmbMaterial.Name = "cmbMaterial";
-			this.cmbMaterial.Size = new System.Drawing.Size(224, 21);
+			this.cmbMaterial.Size = new System.Drawing.Size(315, 21);
 			this.cmbMaterial.Sorted = true;
 			this.cmbMaterial.TabIndex = 0;
 			this.cmbMaterial.DropDown += new System.EventHandler(this.cmbMaterial_DropDown);
@@ -50,7 +50,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.cmbMaterial);
 			this.Name = "EdtMaterial";
-			this.Size = new System.Drawing.Size(230, 35);
+			this.Size = new System.Drawing.Size(330, 35);
 			this.ResumeLayout(false);
 
 		}

@@ -86,7 +86,7 @@
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(7, 120);
+			this.label3.Location = new System.Drawing.Point(7, 137);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(26, 13);
 			this.label3.TabIndex = 6;
@@ -95,7 +95,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(7, 162);
+			this.label4.Location = new System.Drawing.Point(7, 190);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(33, 13);
 			this.label4.TabIndex = 6;
@@ -106,27 +106,27 @@
 			this.trkHue.Location = new System.Drawing.Point(43, 77);
 			this.trkHue.Maximum = 100;
 			this.trkHue.Name = "trkHue";
-			this.trkHue.Size = new System.Drawing.Size(184, 45);
+			this.trkHue.Size = new System.Drawing.Size(284, 45);
 			this.trkHue.TabIndex = 7;
 			this.trkHue.TickFrequency = 10;
 			this.trkHue.Scroll += new System.EventHandler(this.trkColor_Scroll);
 			// 
 			// trkSat
 			// 
-			this.trkSat.Location = new System.Drawing.Point(43, 116);
+			this.trkSat.Location = new System.Drawing.Point(43, 133);
 			this.trkSat.Maximum = 100;
 			this.trkSat.Name = "trkSat";
-			this.trkSat.Size = new System.Drawing.Size(184, 45);
+			this.trkSat.Size = new System.Drawing.Size(284, 45);
 			this.trkSat.TabIndex = 7;
 			this.trkSat.TickFrequency = 10;
 			this.trkSat.Scroll += new System.EventHandler(this.trkColor_Scroll);
 			// 
 			// trkLight
 			// 
-			this.trkLight.Location = new System.Drawing.Point(43, 159);
+			this.trkLight.Location = new System.Drawing.Point(43, 187);
 			this.trkLight.Maximum = 100;
 			this.trkLight.Name = "trkLight";
-			this.trkLight.Size = new System.Drawing.Size(184, 45);
+			this.trkLight.Size = new System.Drawing.Size(284, 45);
 			this.trkLight.TabIndex = 7;
 			this.trkLight.TickFrequency = 10;
 			this.trkLight.Scroll += new System.EventHandler(this.trkColor_Scroll);
@@ -136,7 +136,7 @@
 			this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
 			this.pictureBox1.Location = new System.Drawing.Point(57, 98);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(157, 12);
+			this.pictureBox1.Size = new System.Drawing.Size(260, 12);
 			this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
 			this.pictureBox1.TabIndex = 8;
 			this.pictureBox1.TabStop = false;
@@ -144,7 +144,7 @@
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(7, 218);
+			this.label5.Location = new System.Drawing.Point(7, 262);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(51, 13);
 			this.label5.TabIndex = 6;
@@ -152,11 +152,11 @@
 			// 
 			// trkMultiplier
 			// 
-			this.trkMultiplier.Location = new System.Drawing.Point(57, 210);
+			this.trkMultiplier.Location = new System.Drawing.Point(57, 254);
 			this.trkMultiplier.Maximum = 200;
 			this.trkMultiplier.Minimum = 10;
 			this.trkMultiplier.Name = "trkMultiplier";
-			this.trkMultiplier.Size = new System.Drawing.Size(170, 45);
+			this.trkMultiplier.Size = new System.Drawing.Size(270, 45);
 			this.trkMultiplier.TabIndex = 9;
 			this.trkMultiplier.TickFrequency = 10;
 			this.trkMultiplier.Value = 10;
@@ -179,7 +179,7 @@
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.trkHue);
 			this.Name = "EdtColor";
-			this.Size = new System.Drawing.Size(230, 307);
+			this.Size = new System.Drawing.Size(330, 445);
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSat)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkLight)).EndInit();

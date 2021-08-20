@@ -61,13 +61,13 @@ namespace TaleSpireExplore
 			UpdateValue();
 		}
 
-		private void UpdateValue()
+		private void UpdateValue(float multiplier = 1)
 		{
 			if (changingInternally)
 				return;
 			try
 			{
-				if (GetXYZ(out float x, out float y, out float z))
+				if (GetXYZ(out float x, out float y, out float z, multiplier))
 					ValueChanged(new Vector3(x, y, z));
 			}
 			catch (Exception ex)
@@ -76,26 +76,26 @@ namespace TaleSpireExplore
 			}
 		}
 
-		private bool GetXYZ(out float x, out float y, out float z)
+		private bool GetXYZ(out float x, out float y, out float z, float multiplier = 1)
 		{
 			x = 0;
 			y = 0;
 			z = 0;
 			string[] xyz = tbxVector3.Text.Split(',');
-			if (xyz.Length != 3)
+			if (xyz.Length == 1 && float.TryParse(xyz[0].Trim(), out x))
+			{
+				y = x;
+				z = x;
+			}
+			else if (xyz.Length != 3)
+				return false;
+			else if (!(float.TryParse(xyz[0].Trim(), out x) && float.TryParse(xyz[1].Trim(), out y) && float.TryParse(xyz[2].Trim(), out z)))
 				return false;
 
-			if (float.TryParse(xyz[0].Trim(), out x))
-				if (float.TryParse(xyz[1].Trim(), out y))
-					if (float.TryParse(xyz[2].Trim(), out z))
-					{
-						x += trkOffsetX.Value / 10f;
-						y += trkOffsetY.Value / 10f;
-						z += trkOffsetZ.Value / 10f;
-						return true;
-					}
-
-			return false;
+			x += multiplier * trkOffsetX.Value / 10f;
+			y += multiplier * trkOffsetY.Value / 10f;
+			z += multiplier * trkOffsetZ.Value / 10f;
+			return true;
 		}
 
 		public BasePropertyChanger GetPropertyChanger()
@@ -109,17 +109,17 @@ namespace TaleSpireExplore
 		{
 			if (changingInternally)
 				return;
-			UpdateValue();
+			UpdateValue(trackBarMultiplier);
 		}
 
 		private void trkOffset_Leave(object sender, EventArgs e)
 		{
-			ApplyAndResetOffsets();
+			ApplyAndResetTrackbarOffsets();
 		}
 
-		private void ApplyAndResetOffsets()
+		private void ApplyAndResetTrackbarOffsets()
 		{
-			if (GetXYZ(out float x, out float y, out float z))
+			if (GetXYZ(out float x, out float y, out float z, trackBarMultiplier))
 			{
 				changingInternally = true;
 				try
@@ -139,17 +139,57 @@ namespace TaleSpireExplore
 
 		private void trkOffset_MouseUp(object sender, MouseEventArgs e)
 		{
-			ApplyAndResetOffsets();
+			ApplyAndResetTrackbarOffsets();
 		}
 
-		private void btnAllZeros_Click(object sender, EventArgs e)
+		private void btnPreset_Click(object sender, EventArgs e)
 		{
-			tbxVector3.Text = "0, 0, 0";
+			if (sender is Button button)
+				tbxVector3.Text = button.Text;
 		}
 
-		private void btnAllOnes_Click(object sender, EventArgs e)
+		float trackBarMultiplier = 1;
+
+		private void ChangeMultiplier(object sender, EventArgs e)
 		{
-			tbxVector3.Text = "1, 1, 1";
+			if (sender is RadioButton radioButton)
+			{
+				string multiplierStr = radioButton.Text.Substring(2).Trim();  // Removes the leading "x ".
+				if (!float.TryParse(multiplierStr, out trackBarMultiplier))
+					trackBarMultiplier = 1;
+			}
+		}
+
+		private static float GetAmountToChange(object sender)
+		{
+			float amountToChange = 0;
+			if (sender is Button button)
+			{
+				float.TryParse(button.Text, out amountToChange);
+			}
+
+			return amountToChange;
+		}
+		
+		private void changeY_Click(object sender, EventArgs e)
+		{
+			float amountToChange = GetAmountToChange(sender);
+			if (GetXYZ(out float x, out float y, out float z))
+				tbxVector3.Text = $"{x}, {y + amountToChange}, {z}";
+		}
+
+		private void changeX_Click(object sender, EventArgs e)
+		{
+			float amountToChange = GetAmountToChange(sender);
+			if (GetXYZ(out float x, out float y, out float z))
+				tbxVector3.Text = $"{x + amountToChange}, {y}, {z}";
+		}
+
+		private void changeZ_Click(object sender, EventArgs e)
+		{
+			float amountToChange = GetAmountToChange(sender);
+			if (GetXYZ(out float x, out float y, out float z))
+				tbxVector3.Text = $"{x}, {y}, {z + amountToChange}";
 		}
 	}
 }

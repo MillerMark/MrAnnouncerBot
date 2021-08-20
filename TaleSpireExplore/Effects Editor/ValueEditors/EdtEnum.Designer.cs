@@ -35,7 +35,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Name = "EdtEnum";
-			this.Size = new System.Drawing.Size(230, 337);
+			this.Size = new System.Drawing.Size(330, 445);
 			this.ResumeLayout(false);
 
 		}

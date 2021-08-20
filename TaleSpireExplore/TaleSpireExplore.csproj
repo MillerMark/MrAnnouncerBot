@@ -341,6 +341,12 @@
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtEnum.resx">
       <DependentUpon>EdtEnum.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtFloat.resx">
+      <DependentUpon>EdtFloat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtInt.resx">
+      <DependentUpon>EdtInt.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMesh.resx">
       <DependentUpon>EdtMesh.cs</DependentUpon>
     </EmbeddedResource>

@@ -45,18 +45,18 @@
 			// 
 			this.tbxValue.Location = new System.Drawing.Point(55, 8);
 			this.tbxValue.Name = "tbxValue";
-			this.tbxValue.Size = new System.Drawing.Size(80, 20);
+			this.tbxValue.Size = new System.Drawing.Size(159, 20);
 			this.tbxValue.TabIndex = 1;
 			this.tbxValue.TextChanged += new System.EventHandler(this.tbxValue_TextChanged);
 			// 
-			// EdtFloat
+			// EdtInt
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.tbxValue);
 			this.Controls.Add(this.label1);
-			this.Name = "EdtFloat";
-			this.Size = new System.Drawing.Size(230, 35);
+			this.Name = "EdtInt";
+			this.Size = new System.Drawing.Size(330, 35);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
