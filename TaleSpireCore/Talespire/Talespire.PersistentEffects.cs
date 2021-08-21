@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Bounce.Unmanaged;
 using UnityEngine;
 using Newtonsoft.Json;
 using LordAshes;
@@ -12,12 +13,13 @@ namespace TaleSpireCore
 	{
 		public static class PersistentEffects
 		{
+			public static readonly string Folder = "TaleSpire_CustomData/PersistentEffects/";
 			static List<string> effectsToInitialize = new List<string>();
 			const string STR_Goat1BoardAssetId = "71a127d8-a437-414d-a845-a39606a8a2fa";
 			const string STR_UninitializedMiniMeshName = "Goat_01(Clone)";
 			const string STR_InitializedMiniMeshName = "EffectOrb";
 			//const string STR_RichTextSizeModifier = "<size=0>";
-			static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
+			internal static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
 			public static void Create()
 			{
 				float3 pointerPos = RulerHelpers.GetPointerPos();
@@ -198,7 +200,21 @@ namespace TaleSpireCore
 							Log.Debug($"Mesh Filter or Mesh Renderer not found in this update cycle...");
 					}
 					else
-						Log.Debug($"goatClone not found in this update cycle...");
+					{
+						if (assetLoader.FindChild(STR_InitializedMiniMeshName) != null)
+						{
+							if (effectsToInitialize.Count > 0)
+								Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
+							if (updatedCreatures.Count > 0)
+								Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
+
+							Log.Warning($"Whoa! We already initialized this? Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
+							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
+						}
+						else
+							Log.Debug($"goatClone not found in this update cycle...");
+
+					}
 				}
 				else
 					Log.Debug($"Asset Loader not found in this update cycle...");
@@ -241,6 +257,19 @@ namespace TaleSpireCore
 					Log.Warning($"Adding default \"{defaultNewEffect}\"...");
 					Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0);
 				}
+			}
+
+			public static bool IsPersistentEffect(string creatureId)
+			{
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset != null)
+					return creatureBoardAsset.IsPersistentEffect();
+				return false;
+			}
+
+			public static bool IsPersistentEffect(NGuid creatureId)
+			{
+				return IsPersistentEffect(creatureId.ToString());
 			}
 		}
 	}

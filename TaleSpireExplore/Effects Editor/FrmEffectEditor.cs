@@ -1282,15 +1282,17 @@ namespace TaleSpireExplore
 			else
 				matchingName = path;
 
-			TreeNode firstNode = nodes[0];
-
-			if (firstNode.Text == matchingName)
+			foreach (TreeNode treeNode in nodes)
 			{
-				firstNode.Expand();
-				if (string.IsNullOrWhiteSpace(remainingPath))
-					trvEffectHierarchy.SelectedNode = firstNode;
-				else
-					ExpandNode(firstNode.Nodes, remainingPath);
+				if (treeNode.Text == matchingName)
+				{
+					treeNode.Expand();
+					if (string.IsNullOrWhiteSpace(remainingPath))
+						trvEffectHierarchy.SelectedNode = treeNode;
+					else
+						ExpandNode(treeNode.Nodes, remainingPath);
+					break;
+				}
 			}
 		}
 
@@ -1298,7 +1300,48 @@ namespace TaleSpireExplore
 		{
 			ExpandNode(trvEffectHierarchy.Nodes, "Character(Clone)|MoveableOffset|Container|_Visual|_Rotator|BaseAsset|BaseLoader|clothBase(Clone)");
 			
-			// ![](73D62174C7FCA6DC128DF9379D5AEC4C.png;;13,165,283,326)
+			//`![](73D62174C7FCA6DC128DF9379D5AEC4C.png;;13,165,283,326)
+		}
+
+		private void btnJumpToAssetLoader_Click(object sender, EventArgs e)
+		{
+			//`![](0D786283B65E28618092EDE3E235DCC1.png;;13,165,279,392)
+			ExpandNode(trvEffectHierarchy.Nodes, 
+				"Character(Clone)|" +
+					"MoveableOffset|" +
+						"Container|" +
+							"_Visual|" +
+								"_Rotator|" +
+									"CharacterRoot|" +
+										"AssetLoaders|" +
+											"AssetLoader");
+		}
+
+		private void UseWithExistingVariableToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+		{
+			if (sender is ToolStripMenuItem toolStripMenuItem)
+			{
+				while (toolStripMenuItem.DropDownItems.Count > 0)
+					toolStripMenuItem.DropDownItems.RemoveAt(0);
+				Talespire.Log.Warning($"DropDownOpening");
+				ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add("New Custom Menu Item!!!");
+				newItem.Click += newVariableToolStripMenuItem_Click;
+			}
+		}
+
+		private void newVariableToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (sender is ToolStripMenuItem toolStripMenuItem)
+			{
+				Talespire.Log.Warning($"Add new variable!");
+				ContextMenuStrip contextMenuStrip = toolStripMenuItem.Owner as ContextMenuStrip;
+				if (contextMenuStrip?.SourceControl is TreeView treeView)
+				{
+					Talespire.Log.Warning($"TreeView found!!! Selected node is {treeView.SelectedNode}");
+				}
+			}
+			else
+				Talespire.Log.Warning($"sender is a {sender?.GetType().Name}!");
 		}
 	}
 }

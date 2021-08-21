@@ -4,7 +4,9 @@ using TaleSpireCore;
 using TaleSpireExplore;
 using System;
 using System.Collections.Generic;
+using Bounce.Unmanaged;
 using Runtime.Scripts;
+using RadialUI;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -19,12 +21,70 @@ namespace TaleSpireExplore
 {
 	public partial class FrmExplorer : Form
 	{
+		string menuGuidPersistentEffect = Guid.NewGuid().ToString();
 		const string STR_SpellTestId = "SpellTest";
 		public FrmExplorer()
 		{
 			Talespire.Log.Debug($"FrmExplorer constructor...");
 			InitializeComponent();
 			RegisterEffects();
+
+			Talespire.Log.Warning($"RadialUI.RadialSubmenu.CreateSubMenuItem...");
+
+			string iconFolder = Talespire.PersistentEffects.Folder + "Assets/";
+			Texture2D texture2D = new Texture2D(32, 32);
+			texture2D.LoadImage(System.IO.File.ReadAllBytes(iconFolder + "Duplicate.png"));
+			
+
+			Sprite icon = Sprite.Create(texture2D, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f));
+
+			//RadialUIPlugin.AddOnRemoveCharacter();
+			RadialUIPlugin.AddOnCharacter(menuGuidPersistentEffect,
+				new MapMenu.ItemArgs
+				{
+					Action = MyDuplicateAction,
+					Title = "Duplicate",
+					CloseMenuOnActivate = true,
+					Icon = icon
+				}, ShouldShowDuplicateMenu);
+
+			// Adds Callbacks to append new mapmenu item
+			
+
+			//RadialSubmenu.EnsureMainMenuItem(menuGuidPersistentEffect, RadialSubmenu.MenuType.character, "Persistent Effect", icon);
+			//RadialSubmenu.CreateSubMenuItem(menuGuidPersistentEffect,
+			//	new MapMenu.ItemArgs()
+			//	{
+			//		CloseMenuOnActivate = true,
+			//		Action = doSomething,
+			//		Scale = 2,
+			//		Title = "My Test Menu Item",
+			//	},
+			//	callback, checker);
+		}
+
+		private void callback(HideVolumeItem arg1, string arg2, MapMenuItem arg3)
+		{
+			Talespire.Log.Warning($"callback: arg1: {arg1}, arg2: {arg2}, arg3: {arg3}");
+		}
+
+		void doSomething(MapMenuItem arg1, object arg2)
+		{
+			Talespire.Log.Warning($"doSomething: arg1: {arg1}, arg2: {arg2}");
+		}
+
+		bool checker()
+		{
+			if ((ModifierKeys & Keys.Shift) != Keys.Shift)
+			{
+				Talespire.Log.Warning($"checker returns true!!!");
+				return true;
+			}
+			else
+			{
+				Talespire.Log.Warning($"checker returns false!!!");
+				return false;
+			}
 		}
 
 		void LogEvent(string message)
@@ -948,7 +1008,7 @@ namespace TaleSpireExplore
 			for (int i = 0; i < lineRulers.Length; i++)
 			{
 				LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
-				
+
 				if (lineRulerIndicator != null)
 				{
 					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
@@ -1395,9 +1455,9 @@ namespace TaleSpireExplore
 			Talespire.Log.ChangeOnly("merkinCreatureBoardAsset.Creature.transform.forward", $"{merkinCreatureBoardAsset.Creature.transform.forward}");
 
 			CreatureBoardAsset cutieCreatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(CutieId);
-			
+
 			Vector3 cutiePosition = cutieCreatureBoardAsset.transform.position;
-			
+
 			float angleBetweenVectors = AngleBetweenVector2(merkinCreatureBoardAsset.Creature.transform.forward, cutiePosition - merkinCreatureBoardAsset.transform.position);
 
 			float rotationDegrees = merkinCreatureBoardAsset.GetRotationDegrees();
@@ -1422,12 +1482,12 @@ namespace TaleSpireExplore
 
 		private void btnSet2_Click(object sender, EventArgs e)
 		{
-			
+
 		}
 
 		private void btnSet3_Click(object sender, EventArgs e)
 		{
-			
+
 		}
 
 		private void btnSkyScraper_Click(object sender, EventArgs e)
@@ -1458,6 +1518,16 @@ namespace TaleSpireExplore
 		private void btnReloadSpellEffects_Click(object sender, EventArgs e)
 		{
 			TaleSpireExplorePlugin.LoadKnownEffects();
+		}
+
+		bool ShouldShowDuplicateMenu(NGuid selectedCharacterId, NGuid contextCharacterId)
+		{
+			return Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId);
+		}
+
+		void MyDuplicateAction(MapMenuItem menuItem, object arg2)
+		{
+			Talespire.Log.Warning($"MyDuplicateAction: {menuItem}, {arg2}");
 		}
 	}
 }

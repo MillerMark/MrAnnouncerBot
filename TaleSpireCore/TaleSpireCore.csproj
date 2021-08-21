@@ -194,6 +194,7 @@
     <Compile Include="Talespire\Core\EnlargeData.cs" />
     <Compile Include="Talespire\Core\MiniRotator.cs" />
     <Compile Include="Talespire\Core\EffectParameters\Core\EffectParameters.cs" />
+    <Compile Include="Talespire\Core\EventArgs\CreatureBoardAssetEventArgs.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />

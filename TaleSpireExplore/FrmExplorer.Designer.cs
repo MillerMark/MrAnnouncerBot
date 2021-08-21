@@ -416,6 +416,7 @@
 			// btnEditPrefabs
 			// 
 			this.btnEditPrefabs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.btnEditPrefabs.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnEditPrefabs.Location = new System.Drawing.Point(578, 533);
 			this.btnEditPrefabs.Name = "btnEditPrefabs";
 			this.btnEditPrefabs.Size = new System.Drawing.Size(135, 56);

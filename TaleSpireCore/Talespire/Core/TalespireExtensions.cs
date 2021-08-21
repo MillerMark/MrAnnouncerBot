@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using LordAshes;
 
 namespace TaleSpireCore
 {
@@ -70,6 +71,11 @@ namespace TaleSpireCore
 			// ![](907E4122717C4D32C3EC6832C50B5A85.png;;13,213,283,490)
 			GameObject _Rotator = creatureAsset.BaseLoader.gameObject?.transform?.parent?.parent?.gameObject;
 			return _Rotator?.FindChild("AssetLoader");
+		}
+
+		public static bool IsPersistentEffect(this CreatureBoardAsset creatureBoardAsset)
+		{
+			return creatureBoardAsset.HasAttachedData(Talespire.PersistentEffects.STR_PersistentEffect);
 		}
 
 		public static GameObject FindChild(this GameObject gameObject, string name, bool includeInactive = false)

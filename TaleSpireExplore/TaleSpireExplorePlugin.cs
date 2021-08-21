@@ -239,6 +239,15 @@ namespace TaleSpireExplore
 			Talespire.Target.On();
 			Talespire.Log.Debug($"  Talespire.Target.Off();");
 			Talespire.Target.Off();
+			Talespire.Minis.MiniSelected += Minis_MiniSelected;
+		}
+
+		private void Minis_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
+		{
+			if (ea.Mini.IsPersistentEffect())
+				Talespire.Log.Warning($"Just selected a mini with a PersistentEffect!!!");
+			else
+				Talespire.Log.Debug($"Just selected mini: {ea.Mini.Creature.Name}");
 		}
 
 		private void CreatureManager_OnLineOfSightUpdated(CreatureGuid arg1, LineOfSightManager.LineOfSightResult arg2)

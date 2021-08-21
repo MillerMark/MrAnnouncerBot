@@ -71,7 +71,13 @@
 			this.btnLocalEulerAngles = new System.Windows.Forms.Button();
 			this.btnShapeRadius = new System.Windows.Forms.Button();
 			this.btnClothBase = new System.Windows.Forms.Button();
+			this.ctxProperties = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.btnJumpToAssetLoader = new System.Windows.Forms.Button();
+			this.UseWithExistingVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newVariableToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.ctxGameObjects.SuspendLayout();
+			this.ctxProperties.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCreateEmpty
@@ -123,9 +129,9 @@
 			this.trvEffectHierarchy.CheckBoxes = true;
 			this.trvEffectHierarchy.ContextMenuStrip = this.ctxGameObjects;
 			this.trvEffectHierarchy.HideSelection = false;
-			this.trvEffectHierarchy.Location = new System.Drawing.Point(12, 133);
+			this.trvEffectHierarchy.Location = new System.Drawing.Point(12, 167);
 			this.trvEffectHierarchy.Name = "trvEffectHierarchy";
-			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 499);
+			this.trvEffectHierarchy.Size = new System.Drawing.Size(269, 465);
 			this.trvEffectHierarchy.TabIndex = 5;
 			this.trvEffectHierarchy.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.trvEffectHierarchy_AfterCheck);
 			this.trvEffectHierarchy.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.trvEffectHierarchy_NodeMouseClick);
@@ -253,6 +259,7 @@
 			// 
 			this.trvProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+			this.trvProperties.ContextMenuStrip = this.ctxProperties;
 			this.trvProperties.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
 			this.trvProperties.HideSelection = false;
 			this.trvProperties.Location = new System.Drawing.Point(287, 53);
@@ -482,13 +489,53 @@
 			// 
 			// btnClothBase
 			// 
-			this.btnClothBase.Location = new System.Drawing.Point(141, 103);
+			this.btnClothBase.Location = new System.Drawing.Point(141, 100);
 			this.btnClothBase.Name = "btnClothBase";
 			this.btnClothBase.Size = new System.Drawing.Size(123, 26);
 			this.btnClothBase.TabIndex = 2;
 			this.btnClothBase.Text = "Jump to Cloth Base";
 			this.btnClothBase.UseVisualStyleBackColor = true;
 			this.btnClothBase.Click += new System.EventHandler(this.btnClothBase_Click);
+			// 
+			// ctxProperties
+			// 
+			this.ctxProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.UseWithExistingVariableToolStripMenuItem,
+            this.newVariableToolStripMenuItem1});
+			this.ctxProperties.Name = "ctxProperties";
+			this.ctxProperties.Size = new System.Drawing.Size(210, 70);
+			// 
+			// btnJumpToAssetLoader
+			// 
+			this.btnJumpToAssetLoader.Location = new System.Drawing.Point(141, 132);
+			this.btnJumpToAssetLoader.Name = "btnJumpToAssetLoader";
+			this.btnJumpToAssetLoader.Size = new System.Drawing.Size(123, 26);
+			this.btnJumpToAssetLoader.TabIndex = 2;
+			this.btnJumpToAssetLoader.Text = "Jump to AssetLoader";
+			this.btnJumpToAssetLoader.UseVisualStyleBackColor = true;
+			this.btnJumpToAssetLoader.Click += new System.EventHandler(this.btnJumpToAssetLoader_Click);
+			// 
+			// UseWithExistingVariableToolStripMenuItem
+			// 
+			this.UseWithExistingVariableToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dummyToolStripMenuItem});
+			this.UseWithExistingVariableToolStripMenuItem.Name = "UseWithExistingVariableToolStripMenuItem";
+			this.UseWithExistingVariableToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+			this.UseWithExistingVariableToolStripMenuItem.Text = "Use With Existing Variable";
+			this.UseWithExistingVariableToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
+			// 
+			// newVariableToolStripMenuItem1
+			// 
+			this.newVariableToolStripMenuItem1.Name = "newVariableToolStripMenuItem1";
+			this.newVariableToolStripMenuItem1.Size = new System.Drawing.Size(220, 22);
+			this.newVariableToolStripMenuItem1.Text = "New Variable...";
+			this.newVariableToolStripMenuItem1.Click += new System.EventHandler(this.newVariableToolStripMenuItem_Click);
+			// 
+			// dummyToolStripMenuItem
+			// 
+			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.dummyToolStripMenuItem.Text = "Dummy";
 			// 
 			// FrmEffectEditor
 			// 
@@ -524,6 +571,7 @@
 			this.Controls.Add(this.tbxJson);
 			this.Controls.Add(this.btnCopyJson);
 			this.Controls.Add(this.btnExploreMini);
+			this.Controls.Add(this.btnJumpToAssetLoader);
 			this.Controls.Add(this.btnClothBase);
 			this.Controls.Add(this.btnTaleSpireCamera);
 			this.Controls.Add(this.btnExploreExisting);
@@ -538,6 +586,7 @@
 			this.Text = "Effect Editor";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmEffectEditor_FormClosing);
 			this.ctxGameObjects.ResumeLayout(false);
+			this.ctxProperties.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -586,5 +635,10 @@
 		private System.Windows.Forms.Button btnLocalEulerAngles;
 		private System.Windows.Forms.Button btnShapeRadius;
 		private System.Windows.Forms.Button btnClothBase;
+		private System.Windows.Forms.ContextMenuStrip ctxProperties;
+		private System.Windows.Forms.Button btnJumpToAssetLoader;
+		private System.Windows.Forms.ToolStripMenuItem UseWithExistingVariableToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem newVariableToolStripMenuItem1;
+		private System.Windows.Forms.ToolStripMenuItem dummyToolStripMenuItem;
 	}
 }

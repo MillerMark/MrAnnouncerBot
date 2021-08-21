@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Bounce.Unmanaged;
+using LordAshes;
 
 namespace TaleSpireCore
 {
@@ -10,6 +11,14 @@ namespace TaleSpireCore
 	{
 		public static class Minis
 		{
+			public static event CreatureBoardAssetEventHandler MiniSelected;
+
+			static CreatureBoardAssetEventArgs creatureBoardAssetEventArgs = new CreatureBoardAssetEventArgs();
+			public static void OnMiniSelected(CreatureBoardAssetEventArgs ea)
+			{
+				MiniSelected?.Invoke(null, ea);
+			}
+
 			const string NameIdSeparator = " - ";
 			static GameObject activeTurnIndicator;
 			public static CharacterPositions GetPositions()
@@ -27,6 +36,29 @@ namespace TaleSpireCore
 				}
 
 				return characterPositions;
+			}
+
+			static Minis()
+			{
+				BoardToolManager.OnSwitchTool += BoardToolManager_OnSwitchTool;
+			}
+
+			static CreatureBoardAsset lastSelectedMini;
+
+			static void OnNewMiniSelected(CreatureBoardAsset selectedMini)
+			{
+				creatureBoardAssetEventArgs.SetMini(selectedMini);
+				OnMiniSelected(creatureBoardAssetEventArgs);
+				lastSelectedMini = selectedMini;
+			}
+
+			private static void BoardToolManager_OnSwitchTool(BoardTool obj)
+			{
+				CreatureBoardAsset selectedMini = GetSelected();
+				if (selectedMini != lastSelectedMini)
+				{
+					OnNewMiniSelected(selectedMini);
+				}
 			}
 
 			public static CreatureBoardAsset GetCreatureBoardAsset(string id)
@@ -107,11 +139,11 @@ namespace TaleSpireCore
 				foreach (CreatureBoardAsset asset in assets)
 					if (LocalClient.SelectedCreatureId.Value == asset.Creature.CreatureId.Value)
 					{
-						Log.Warning($"Selected asset found!");
+						//Log.Warning($"Selected asset found!");
 						return asset;
 					}
 
-				Log.Error($"Selected asset NOT found!");
+				Log.Debug($"Selected asset NOT found for {LocalClient.SelectedCreatureId.Value}");
 				return null;
 			}
 
