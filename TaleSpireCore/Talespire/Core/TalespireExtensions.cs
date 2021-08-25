@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using LordAshes;
+using Newtonsoft.Json;
 
 namespace TaleSpireCore
 {
@@ -43,7 +44,7 @@ namespace TaleSpireCore
 		{
 			List<MonoBehaviour> result = new List<MonoBehaviour>();
 			Component[] components = gameObject.GetComponentsInChildren(typeof(MonoBehaviour));
-			
+
 			foreach (Component component in components)
 				if (component?.GetType().Name == scriptName)
 					if (component is MonoBehaviour monoBehaviour)
@@ -76,6 +77,37 @@ namespace TaleSpireCore
 		public static bool IsPersistentEffect(this CreatureBoardAsset creatureBoardAsset)
 		{
 			return creatureBoardAsset.HasAttachedData(Talespire.PersistentEffects.STR_PersistentEffect);
+		}
+
+		public static PersistentEffect GetPersistentEffect(this CreatureBoardAsset creatureAsset)
+		{
+			Dictionary<string, string> dictionaries = creatureAsset.GetAttachedData();
+
+			if (dictionaries == null)
+				return null;
+
+			if (dictionaries.ContainsKey(Talespire.PersistentEffects.STR_PersistentEffect))
+			{
+				string effectData = dictionaries[Talespire.PersistentEffects.STR_PersistentEffect];
+				try
+				{
+					return JsonConvert.DeserializeObject<PersistentEffect>(effectData);
+				}
+				catch (Exception ex)
+				{
+					return new PersistentEffect() { EffectName = effectData };
+				}
+			}
+
+			return null;
+		}
+
+		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect)
+		{
+			Talespire.Log.Warning($"Saving Persistent Effect....");
+			string newEffectData = JsonConvert.SerializeObject(persistentEffect);
+			Talespire.Log.Debug($"newEffectData: {newEffectData}");
+			StatMessaging.SetInfo(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
 		}
 
 		public static GameObject FindChild(this GameObject gameObject, string name, bool includeInactive = false)

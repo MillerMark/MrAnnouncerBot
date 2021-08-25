@@ -360,6 +360,8 @@ namespace TaleSpireCore
 			private static GameObject AddTarget(Vector3 targetPosition, Transform parent, float scale = 1, WhatSide whatSide = TaleSpireCore.WhatSide.Enemy)
 			{
 				GameObject targetDisk = new GameObject(STR_TargetDisk);
+				if (targetDisk == null)
+					return null;
 
 				GameObject targetDiskPrefab;
 				if (whatSide == TaleSpireCore.WhatSide.Friendly)
@@ -368,6 +370,9 @@ namespace TaleSpireCore
 					targetDiskPrefab = Prefabs.Clone("TargetNeutral");
 				else
 					targetDiskPrefab = Prefabs.Clone("TargetEnemy");
+
+				if (targetDiskPrefab == null)
+					return null;
 
 				targetDiskPrefab.name = STR_TargetDiskPrefab;
 

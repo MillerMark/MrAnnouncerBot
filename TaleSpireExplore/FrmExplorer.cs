@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using Bounce.Unmanaged;
 using Runtime.Scripts;
-using RadialUI;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -21,7 +20,7 @@ namespace TaleSpireExplore
 {
 	public partial class FrmExplorer : Form
 	{
-		string menuGuidPersistentEffect = Guid.NewGuid().ToString();
+		
 		const string STR_SpellTestId = "SpellTest";
 		public FrmExplorer()
 		{
@@ -29,27 +28,14 @@ namespace TaleSpireExplore
 			InitializeComponent();
 			RegisterEffects();
 
-			Talespire.Log.Warning($"RadialUI.RadialSubmenu.CreateSubMenuItem...");
-
-			string iconFolder = Talespire.PersistentEffects.Folder + "Assets/";
-			Texture2D texture2D = new Texture2D(32, 32);
-			texture2D.LoadImage(System.IO.File.ReadAllBytes(iconFolder + "Duplicate.png"));
+			PersistentEffectsManager.Initialize();
 			
-
-			Sprite icon = Sprite.Create(texture2D, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f));
-
 			//RadialUIPlugin.AddOnRemoveCharacter();
-			RadialUIPlugin.AddOnCharacter(menuGuidPersistentEffect,
-				new MapMenu.ItemArgs
-				{
-					Action = MyDuplicateAction,
-					Title = "Duplicate",
-					CloseMenuOnActivate = true,
-					Icon = icon
-				}, ShouldShowDuplicateMenu);
+
+			
 
 			// Adds Callbacks to append new mapmenu item
-			
+
 
 			//RadialSubmenu.EnsureMainMenuItem(menuGuidPersistentEffect, RadialSubmenu.MenuType.character, "Persistent Effect", icon);
 			//RadialSubmenu.CreateSubMenuItem(menuGuidPersistentEffect,
@@ -1518,16 +1504,6 @@ namespace TaleSpireExplore
 		private void btnReloadSpellEffects_Click(object sender, EventArgs e)
 		{
 			TaleSpireExplorePlugin.LoadKnownEffects();
-		}
-
-		bool ShouldShowDuplicateMenu(NGuid selectedCharacterId, NGuid contextCharacterId)
-		{
-			return Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId);
-		}
-
-		void MyDuplicateAction(MapMenuItem menuItem, object arg2)
-		{
-			Talespire.Log.Warning($"MyDuplicateAction: {menuItem}, {arg2}");
 		}
 	}
 }

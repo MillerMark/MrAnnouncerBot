@@ -13,11 +13,13 @@ namespace TaleSpireCore
 	{
 		public static class PersistentEffects
 		{
+			public static event PersistentEffectEventHandler PersistentEffectInitialized;
 			public static readonly string Folder = "TaleSpire_CustomData/PersistentEffects/";
 			static List<string> effectsToInitialize = new List<string>();
 			const string STR_Goat1BoardAssetId = "71a127d8-a437-414d-a845-a39606a8a2fa";
 			const string STR_UninitializedMiniMeshName = "Goat_01(Clone)";
-			const string STR_InitializedMiniMeshName = "EffectOrb";
+			const string STR_EffectOrb = "EffectOrb";
+			const string STR_AttachedNode = "Attached";
 			//const string STR_RichTextSizeModifier = "<size=0>";
 			internal static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
 			public static void Create()
@@ -166,7 +168,13 @@ namespace TaleSpireCore
 
 							goatClone.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
 							goatClone.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
-							MarkMiniAsInitializedEffect(creatureAsset);
+
+							PersistentEffect persistentEffect = new PersistentEffect()
+							{
+								EffectName = "R1.WaterWallSegment1"
+							};
+
+							InitializePersistentEffect(creatureAsset, persistentEffect);
 
 							Material baseGlow = Materials.GetMaterial("Standard (Instance)");
 
@@ -180,7 +188,7 @@ namespace TaleSpireCore
 							if (!StatMessaging.HasSizeZeroMarker(creatureAsset.Creature.Name))
 								CreatureManager.SetCreatureName(creatureAsset.CreatureId, "Effect");
 
-							string defaultNewEffect = "R1.WaterWallSegment1";
+							string defaultNewEffect = JsonConvert.SerializeObject(persistentEffect);
 							if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
 							{
 								Log.Warning($"  Creature has no attached data - Adding {defaultNewEffect}!");
@@ -201,14 +209,21 @@ namespace TaleSpireCore
 					}
 					else
 					{
-						if (assetLoader.FindChild(STR_InitializedMiniMeshName) != null)
+						if (assetLoader.FindChild(STR_EffectOrb) != null)
 						{
 							if (effectsToInitialize.Count > 0)
 								Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
 							if (updatedCreatures.Count > 0)
 								Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
 
-							Log.Warning($"Whoa! We already initialized this? Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
+							Log.Warning($"Already initialized. Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
+
+							PersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+							GameObject effectOrb = GetEffectOrb(creatureAsset);
+							GameObject attachedNode = GetAttachedNode(creatureAsset);
+							persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
+							OnPersistentEffectInitialized(creatureAsset, persistentEffectEventArgs);
+
 							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
 						}
 						else
@@ -221,14 +236,49 @@ namespace TaleSpireCore
 				return false;
 			}
 
-			private static void MarkMiniAsInitializedEffect(CreatureBoardAsset creatureAsset)
+			static void AddAdornments(GameObject adornmentsParent)
+			{
+				GameObject spinLock = Prefabs.Clone("SpinLock");
+				spinLock.name = "SpinLock";
+				spinLock.transform.SetParent(adornmentsParent.transform);
+				spinLock.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+				spinLock.transform.localPosition = new Vector3(0, -0.7f, 0);
+				spinLock.transform.localEulerAngles =		new Vector3(0, 0, 0);
+			}
+
+			public static void OnPersistentEffectInitialized(object sender, PersistentEffectEventArgs ea)
+			{
+				PersistentEffectInitialized?.Invoke(sender, ea);
+			}
+
+			static PersistentEffectEventArgs persistentEffectEventArgs = new PersistentEffectEventArgs();
+
+			private static void InitializePersistentEffect(CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect)
 			{
 				GameObject assetLoader = creatureAsset.GetAssetLoader();
 				if (assetLoader != null)
 				{
-					GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
-					goatClone.name = STR_InitializedMiniMeshName;  // renaming Goat_01(Clone) to EffectOrb to indicate we have added effects and re-meshed the goat!
+					GameObject effectOrb = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+					effectOrb.name = STR_EffectOrb;  // renaming Goat_01(Clone) to EffectOrb to indicate we have added effects and re-meshed the goat!
+					effectOrb.transform.localEulerAngles = new Vector3(0, 0, 0);
+					AddAdornments(effectOrb);
+					GameObject attachedNode = AddChild(assetLoader, STR_AttachedNode);
+					attachedNode.transform.localScale = new Vector3(1, 1, 1);
+					attachedNode.transform.localPosition = new Vector3(0.1f, -0.2f, 0.045f);
+					attachedNode.transform.localEulerAngles = new Vector3(0, 0, 0);
+
+					persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
+					OnPersistentEffectInitialized(creatureAsset, persistentEffectEventArgs);
 				}
+				
+			}
+
+			private static GameObject AddChild(GameObject parent, string nodeName)
+			{
+				GameObject node = new GameObject();
+				node.name = nodeName;
+				node.transform.SetParent(parent.transform);
+				return node;
 			}
 
 			private static bool IsMiniAnUninitializedEffect(CreatureBoardAsset creatureAsset)
@@ -246,16 +296,17 @@ namespace TaleSpireCore
 
 			private static void AttachEffect(CreatureBoardAsset creatureAsset, string defaultNewEffect = "MediumFire")
 			{
-				Dictionary<string, string> dictionaries = creatureAsset.GetAttachedData();
-				if (dictionaries.ContainsKey(STR_PersistentEffect))
+				PersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+
+				if (persistentEffect != null)
 				{
-					Log.Warning($"Adding effect \"{dictionaries[STR_PersistentEffect]}\"...");
-					Spells.AttachEffect(creatureAsset, dictionaries[STR_PersistentEffect], creatureAsset.CreatureId.ToString(), 0, 0, 0);
+					Log.Warning($"Adding effect \"{persistentEffect.EffectName}\"...");
+					Spells.AttachEffect(creatureAsset, persistentEffect.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
 				}
 				else
 				{
 					Log.Warning($"Adding default \"{defaultNewEffect}\"...");
-					Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0);
+					Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
 				}
 			}
 
@@ -270,6 +321,120 @@ namespace TaleSpireCore
 			public static bool IsPersistentEffect(NGuid creatureId)
 			{
 				return IsPersistentEffect(creatureId.ToString());
+			}
+
+			public static bool IsRotationLocked(string creatureId)
+			{
+				Log.Debug($"IsRotationLocked...");
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset == null)
+				{
+					Log.Error($"creatureBoardAsset == null");
+					return false;
+				}
+
+				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				if (persistentEffect == null)
+				{
+					Log.Error($"persistentEffect == null");
+					return false;
+				}
+
+				Log.Debug($"persistentEffect.RotationLocked = {persistentEffect.RotationLocked}");
+
+				return persistentEffect.RotationLocked;
+			}
+			public static bool IsHidden(string creatureId)
+			{
+				Log.Debug($"IsHidden...");
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset == null)
+				{
+					Log.Error($"creatureBoardAsset == null");
+					return false;
+				}
+
+				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				if (persistentEffect == null)
+				{
+					Log.Error($"persistentEffect == null");
+					return false;
+				}
+
+				Log.Debug($"persistentEffect.Hidden = {persistentEffect.Hidden}");
+
+				return persistentEffect.Hidden;
+			}
+
+			public static void SetRotationLocked(string creatureId, bool locked)
+			{
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
+				if (creatureBoardAsset == null)
+					return;
+				SetRotationLocked(creatureBoardAsset, locked);
+			}
+
+			public static void SetRotationLocked(CreatureBoardAsset creatureBoardAsset, bool locked)
+			{
+				Log.Debug($"SetRotationLocked - locked: {locked}");
+				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				if (persistentEffect == null)
+				{
+					Log.Error($"persistentEffect == null");
+					return;
+				}
+
+				persistentEffect.RotationLocked = locked;
+				creatureBoardAsset.SavePersistentEffect(persistentEffect);
+			}
+
+			public static void SetHidden(CreatureBoardAsset creatureBoardAsset, bool hidden)
+			{
+				Log.Debug($"SetHidden - hidden: {hidden}");
+				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				if (persistentEffect == null)
+				{
+					Log.Error($"persistentEffect == null");
+					return;
+				}
+
+				persistentEffect.Hidden = hidden;
+				CreatureManager.SetCreatureExplicitHideState(creatureBoardAsset.Creature.CreatureId, hidden);
+				
+				// Hide or show adornments:
+				GameObject effectOrb = GetEffectOrb(creatureBoardAsset);
+				if (effectOrb != null)
+					foreach (Transform child in effectOrb.transform)
+						child.gameObject.SetActive(!hidden);
+
+				creatureBoardAsset.SavePersistentEffect(persistentEffect);
+			}
+
+			public static GameObject GetEffectOrb(CreatureBoardAsset creatureBoardAsset)
+			{
+				GameObject effectOrb = null;
+				GameObject assetLoader = creatureBoardAsset.GetAssetLoader();
+				if (assetLoader != null)
+					effectOrb = assetLoader.FindChild(STR_EffectOrb, true);
+				return effectOrb;
+			}
+
+			public static GameObject GetAttachedNode(CreatureBoardAsset creatureBoardAsset)
+			{
+				GameObject attachedNode = null;
+				GameObject assetLoader = creatureBoardAsset.GetAssetLoader();
+				if (assetLoader != null)
+					attachedNode = assetLoader.FindChild(STR_AttachedNode, true);
+				return attachedNode;
+			}
+
+			public static bool IsPersistentEffectRotationLocked(NGuid creatureId)
+			{
+				return IsRotationLocked(creatureId.ToString());
+			}
+			public static bool IsPersistentEffectHidden(NGuid creatureId)
+			{
+				return IsHidden(creatureId.ToString());
 			}
 		}
 	}

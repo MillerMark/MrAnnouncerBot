@@ -270,9 +270,19 @@ namespace TaleSpireExplore
 			}
 		}
 
+		private BindingFlags BindingAttr
+		{
+			get
+			{
+				if (chkIncludeNonPublicMembers.Checked)
+					return BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+				return BindingFlags.Public | BindingFlags.Instance;
+			}
+		}
+
 		private void AddFields(List<TreeNode> nodes, Type type, object parentInstance)
 		{
-			FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo[] fieldInfos = type.GetFields(BindingAttr);
 			if (fieldInfos != null)
 				foreach (FieldInfo fieldInfo in fieldInfos)
 				{
@@ -301,7 +311,7 @@ namespace TaleSpireExplore
 			return fieldInfo.IsInitOnly || fieldInfo.Name.StartsWith("m_");
 		}
 
-		static bool WillHaveChildNodes(object instance, string memberName)
+		bool WillHaveChildNodes(object instance, string memberName)
 		{
 			if (instance == null)
 				return false;
@@ -337,9 +347,9 @@ namespace TaleSpireExplore
 			return false;
 		}
 
-		private static bool HasAnyProperties(Type type, object instance, bool checkForChildNodes)
+		private bool HasAnyProperties(Type type, object instance, bool checkForChildNodes)
 		{
-			PropertyInfo[] propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			PropertyInfo[] propertyInfos = type.GetProperties(BindingAttr);
 			if (propertyInfos == null)
 				return false;
 
@@ -350,9 +360,9 @@ namespace TaleSpireExplore
 			return false;
 		}
 
-		private static bool HasAnyFields(Type type)
+		private bool HasAnyFields(Type type)
 		{
-			FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo[] fieldInfos = type.GetFields(BindingAttr);
 			if (fieldInfos == null)
 				return false;
 
@@ -383,7 +393,7 @@ namespace TaleSpireExplore
 
 		private void AddProperties(List<TreeNode> nodes, Type type, object parentInstance)
 		{
-			PropertyInfo[] propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			PropertyInfo[] propertyInfos = type.GetProperties(BindingAttr);
 			if (propertyInfos != null)
 				Talespire.Log.Debug($"AddProperties - count == {propertyInfos.Length}");
 			else
@@ -410,7 +420,7 @@ namespace TaleSpireExplore
 							ParentInstance = parentInstance
 						};
 
-						PropertyInfo enabledProperty = propertyInfo.PropertyType.GetProperty("enabled", BindingFlags.Public | BindingFlags.Instance);
+						PropertyInfo enabledProperty = propertyInfo.PropertyType.GetProperty("enabled", BindingAttr);
 						if (enabledProperty != null)
 						{
 							Talespire.Log.Debug($"Found an enabledProperty.");
@@ -440,7 +450,7 @@ namespace TaleSpireExplore
 				}
 		}
 
-		private static bool CanSkipProperty(PropertyInfo propertyInfo, object instance, bool checkForChildNodes)
+		private bool CanSkipProperty(PropertyInfo propertyInfo, object instance, bool checkForChildNodes)
 		{
 			ParameterInfo[] indexParameters = propertyInfo.GetIndexParameters();
 			if (indexParameters != null && indexParameters.Length > 0)
@@ -1342,6 +1352,12 @@ namespace TaleSpireExplore
 			}
 			else
 				Talespire.Log.Warning($"sender is a {sender?.GetType().Name}!");
+		}
+
+		private void chkIncludeNonPublicMembers_CheckedChanged(object sender, EventArgs e)
+		{
+			if (trvEffectHierarchy.SelectedNode is GameObjectNode gameObjectNode)
+				ShowProperties(gameObjectNode.GameObject);
 		}
 	}
 }

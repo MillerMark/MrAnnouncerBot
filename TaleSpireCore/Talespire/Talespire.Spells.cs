@@ -80,7 +80,7 @@ namespace TaleSpireCore
 				AttachEffect(creatureBoardAsset, effectName, spellId, enlargeTime, lifeTime, shrinkTime);
 			}
 
-			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime)
+			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime, string parentNodeName = null)
 			{
 				GameObject spell = GetEffect(effectName);
 
@@ -91,9 +91,22 @@ namespace TaleSpireCore
 				}
 
 				spell.name = GetAttachedEffectName(spellId);
+
 				GameObject creatureBase = creatureBoardAsset.GetAssetLoader();
-				spell.transform.SetParent(creatureBase.transform);
-				spell.transform.position = creatureBase.transform.position;
+				Transform parentTransform = creatureBase.transform;
+
+				if (parentNodeName != null)
+				{
+					GameObject parentNode = creatureBase.FindChild(parentNodeName, true);
+					if (parentNode != null)
+						parentTransform = parentNode.transform;
+				}
+
+				spell.transform.SetParent(parentTransform);
+				spell.transform.position = parentTransform.position;
+
+				if (parentNodeName != null)
+					spell.transform.localEulerAngles = Vector3.zero;
 
 				EffectParameters.ApplyAfterPositioning(spell);
 

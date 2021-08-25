@@ -182,6 +182,7 @@
     <Compile Include="Talespire\Core\EffectParameters\RotationParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\ScaleParameter.cs" />
     <Compile Include="Talespire\Core\EffectParameters\YOffsetParameter.cs" />
+    <Compile Include="Talespire\Core\EventArgs\PersistentEffectEventArgs.cs" />
     <Compile Include="Talespire\Core\InteractiveTargetingMode.cs" />
     <Compile Include="Talespire\Core\MortalGameObject.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\ProjectileKind.cs" />
@@ -195,6 +196,7 @@
     <Compile Include="Talespire\Core\MiniRotator.cs" />
     <Compile Include="Talespire\Core\EffectParameters\Core\EffectParameters.cs" />
     <Compile Include="Talespire\Core\EventArgs\CreatureBoardAssetEventArgs.cs" />
+    <Compile Include="PersistentEffects\PersistentEffect.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />

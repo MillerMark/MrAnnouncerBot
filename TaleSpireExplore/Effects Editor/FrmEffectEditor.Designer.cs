@@ -49,6 +49,10 @@
 			this.btnTestEffect = new System.Windows.Forms.Button();
 			this.lblPropertyName = new System.Windows.Forms.Label();
 			this.trvProperties = new System.Windows.Forms.TreeView();
+			this.ctxProperties = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.UseWithExistingVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newVariableToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.btnStopAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnStartAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnAttackJanus = new System.Windows.Forms.Button();
@@ -71,11 +75,8 @@
 			this.btnLocalEulerAngles = new System.Windows.Forms.Button();
 			this.btnShapeRadius = new System.Windows.Forms.Button();
 			this.btnClothBase = new System.Windows.Forms.Button();
-			this.ctxProperties = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.btnJumpToAssetLoader = new System.Windows.Forms.Button();
-			this.UseWithExistingVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.newVariableToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.chkIncludeNonPublicMembers = new System.Windows.Forms.CheckBox();
 			this.ctxGameObjects.SuspendLayout();
 			this.ctxProperties.SuspendLayout();
 			this.SuspendLayout();
@@ -177,7 +178,7 @@
 			// 
 			// tbxSearch
 			// 
-			this.tbxSearch.Location = new System.Drawing.Point(320, 29);
+			this.tbxSearch.Location = new System.Drawing.Point(322, 60);
 			this.tbxSearch.Name = "tbxSearch";
 			this.tbxSearch.Size = new System.Drawing.Size(81, 20);
 			this.tbxSearch.TabIndex = 10;
@@ -186,7 +187,7 @@
 			// 
 			// btnFindPrevious
 			// 
-			this.btnFindPrevious.Location = new System.Drawing.Point(407, 28);
+			this.btnFindPrevious.Location = new System.Drawing.Point(409, 59);
 			this.btnFindPrevious.Name = "btnFindPrevious";
 			this.btnFindPrevious.Size = new System.Drawing.Size(30, 23);
 			this.btnFindPrevious.TabIndex = 3;
@@ -197,7 +198,7 @@
 			// 
 			// btnFindNext
 			// 
-			this.btnFindNext.Location = new System.Drawing.Point(443, 28);
+			this.btnFindNext.Location = new System.Drawing.Point(445, 59);
 			this.btnFindNext.Name = "btnFindNext";
 			this.btnFindNext.Size = new System.Drawing.Size(30, 23);
 			this.btnFindNext.TabIndex = 3;
@@ -209,7 +210,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(284, 11);
+			this.label2.Location = new System.Drawing.Point(286, 42);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(57, 13);
 			this.label2.TabIndex = 4;
@@ -262,13 +263,43 @@
 			this.trvProperties.ContextMenuStrip = this.ctxProperties;
 			this.trvProperties.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
 			this.trvProperties.HideSelection = false;
-			this.trvProperties.Location = new System.Drawing.Point(287, 53);
+			this.trvProperties.Location = new System.Drawing.Point(287, 81);
 			this.trvProperties.Name = "trvProperties";
-			this.trvProperties.Size = new System.Drawing.Size(186, 579);
+			this.trvProperties.Size = new System.Drawing.Size(186, 551);
 			this.trvProperties.TabIndex = 9;
 			this.trvProperties.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.trvProperties_BeforeExpand);
 			this.trvProperties.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.trvProperties_DrawNode);
 			this.trvProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.trvProperties_AfterSelect);
+			// 
+			// ctxProperties
+			// 
+			this.ctxProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.UseWithExistingVariableToolStripMenuItem,
+            this.newVariableToolStripMenuItem1});
+			this.ctxProperties.Name = "ctxProperties";
+			this.ctxProperties.Size = new System.Drawing.Size(210, 48);
+			// 
+			// UseWithExistingVariableToolStripMenuItem
+			// 
+			this.UseWithExistingVariableToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dummyToolStripMenuItem});
+			this.UseWithExistingVariableToolStripMenuItem.Name = "UseWithExistingVariableToolStripMenuItem";
+			this.UseWithExistingVariableToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+			this.UseWithExistingVariableToolStripMenuItem.Text = "Use With Existing Variable";
+			this.UseWithExistingVariableToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
+			// 
+			// dummyToolStripMenuItem
+			// 
+			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+			this.dummyToolStripMenuItem.Text = "Dummy";
+			// 
+			// newVariableToolStripMenuItem1
+			// 
+			this.newVariableToolStripMenuItem1.Name = "newVariableToolStripMenuItem1";
+			this.newVariableToolStripMenuItem1.Size = new System.Drawing.Size(209, 22);
+			this.newVariableToolStripMenuItem1.Text = "New Variable...";
+			this.newVariableToolStripMenuItem1.Click += new System.EventHandler(this.newVariableToolStripMenuItem_Click);
 			// 
 			// btnStopAllParticleSystems
 			// 
@@ -449,7 +480,7 @@
 			// label6
 			// 
 			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(284, 32);
+			this.label6.Location = new System.Drawing.Point(286, 63);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(30, 13);
 			this.label6.TabIndex = 16;
@@ -497,14 +528,6 @@
 			this.btnClothBase.UseVisualStyleBackColor = true;
 			this.btnClothBase.Click += new System.EventHandler(this.btnClothBase_Click);
 			// 
-			// ctxProperties
-			// 
-			this.ctxProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.UseWithExistingVariableToolStripMenuItem,
-            this.newVariableToolStripMenuItem1});
-			this.ctxProperties.Name = "ctxProperties";
-			this.ctxProperties.Size = new System.Drawing.Size(210, 70);
-			// 
 			// btnJumpToAssetLoader
 			// 
 			this.btnJumpToAssetLoader.Location = new System.Drawing.Point(141, 132);
@@ -515,33 +538,23 @@
 			this.btnJumpToAssetLoader.UseVisualStyleBackColor = true;
 			this.btnJumpToAssetLoader.Click += new System.EventHandler(this.btnJumpToAssetLoader_Click);
 			// 
-			// UseWithExistingVariableToolStripMenuItem
+			// chkIncludeNonPublicMembers
 			// 
-			this.UseWithExistingVariableToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.dummyToolStripMenuItem});
-			this.UseWithExistingVariableToolStripMenuItem.Name = "UseWithExistingVariableToolStripMenuItem";
-			this.UseWithExistingVariableToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
-			this.UseWithExistingVariableToolStripMenuItem.Text = "Use With Existing Variable";
-			this.UseWithExistingVariableToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
-			// 
-			// newVariableToolStripMenuItem1
-			// 
-			this.newVariableToolStripMenuItem1.Name = "newVariableToolStripMenuItem1";
-			this.newVariableToolStripMenuItem1.Size = new System.Drawing.Size(220, 22);
-			this.newVariableToolStripMenuItem1.Text = "New Variable...";
-			this.newVariableToolStripMenuItem1.Click += new System.EventHandler(this.newVariableToolStripMenuItem_Click);
-			// 
-			// dummyToolStripMenuItem
-			// 
-			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
-			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.dummyToolStripMenuItem.Text = "Dummy";
+			this.chkIncludeNonPublicMembers.AutoSize = true;
+			this.chkIncludeNonPublicMembers.Location = new System.Drawing.Point(289, 12);
+			this.chkIncludeNonPublicMembers.Name = "chkIncludeNonPublicMembers";
+			this.chkIncludeNonPublicMembers.Size = new System.Drawing.Size(161, 17);
+			this.chkIncludeNonPublicMembers.TabIndex = 18;
+			this.chkIncludeNonPublicMembers.Text = "Include Non-public Members";
+			this.chkIncludeNonPublicMembers.UseVisualStyleBackColor = true;
+			this.chkIncludeNonPublicMembers.CheckedChanged += new System.EventHandler(this.chkIncludeNonPublicMembers_CheckedChanged);
 			// 
 			// FrmEffectEditor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1110, 671);
+			this.Controls.Add(this.chkIncludeNonPublicMembers);
 			this.Controls.Add(this.btnLocalEulerAngles);
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.btnSaveEffect);
@@ -640,5 +653,6 @@
 		private System.Windows.Forms.ToolStripMenuItem UseWithExistingVariableToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newVariableToolStripMenuItem1;
 		private System.Windows.Forms.ToolStripMenuItem dummyToolStripMenuItem;
+		private System.Windows.Forms.CheckBox chkIncludeNonPublicMembers;
 	}
 }

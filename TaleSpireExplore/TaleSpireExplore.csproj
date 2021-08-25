@@ -328,6 +328,7 @@
     <Compile Include="KnownEffectsFactory.cs" />
     <Compile Include="ModdingUtils.cs" />
     <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
+    <Compile Include="PersistentEffectsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Effects Editor\CustomNodes\PropertyNode.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
