@@ -324,6 +324,12 @@
     <Compile Include="Effects Editor\FrmSelectItem.Designer.cs">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.Designer.cs">
+      <DependentUpon>FrmPersistentEffectPropertyEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="KnownEffects.cs" />
     <Compile Include="KnownEffectsFactory.cs" />
     <Compile Include="ModdingUtils.cs" />
@@ -401,6 +407,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\FrmSelectItem.resx">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.resx">
+      <DependentUpon>FrmPersistentEffectPropertyEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PersistentEffects\UI\FrmPropertyList.resx">
       <DependentUpon>FrmPropertyList.cs</DependentUpon>
