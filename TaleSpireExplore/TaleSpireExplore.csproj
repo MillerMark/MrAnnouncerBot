@@ -328,7 +328,16 @@
     <Compile Include="KnownEffectsFactory.cs" />
     <Compile Include="ModdingUtils.cs" />
     <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
-    <Compile Include="PersistentEffectsManager.cs" />
+    <Compile Include="PersistentEffects\PersistentEffectsManager.cs" />
+    <Compile Include="PersistentEffects\UI\EffectProperty.cs" />
+    <Compile Include="PersistentEffects\UI\FrmPropertyList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPropertyList.Designer.cs">
+      <DependentUpon>FrmPropertyList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Unmanaged\RECT.cs" />
+    <Compile Include="Unmanaged\Native.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Effects Editor\CustomNodes\PropertyNode.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -392,6 +401,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\FrmSelectItem.resx">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmPropertyList.resx">
+      <DependentUpon>FrmPropertyList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -13,5 +13,10 @@ namespace TaleSpireCore
 			CompositeEffect.Update();
 			PersistentEffects.Update();
 		}
+
+		public static void Initialize()
+		{
+			PersistentEffects.Initialize();
+		}
 	}
 }

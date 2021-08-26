@@ -20,8 +20,39 @@ namespace TaleSpireCore
 			const string STR_UninitializedMiniMeshName = "Goat_01(Clone)";
 			const string STR_EffectOrb = "EffectOrb";
 			const string STR_AttachedNode = "Attached";
+			const string STR_SpinLockIndicator = "SpinLock";
 			//const string STR_RichTextSizeModifier = "<size=0>";
 			internal static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
+
+			public static void Initialize()
+			{
+				BoardToolManager.OnSwitchTool += BoardToolManager_OnSwitchTool;
+			}
+
+			static bool trackingDraggedMiniForRotationLock;
+
+			private static void BoardToolManager_OnSwitchTool(BoardTool obj)
+			{
+				if (obj is CreatureMoveBoardTool)
+				{
+					CreatureBoardAsset selectedCreature = Minis.GetSelected();
+					draggingPersistentEffect = selectedCreature.GetPersistentEffect();
+					if (draggingPersistentEffect != null && draggingPersistentEffect.RotationLocked)
+						trackingDraggedMiniForRotationLock = true;
+				}
+				else
+				{
+					if (draggingPersistentEffect != null && trackingDraggedMiniForRotationLock)
+					{
+						CreatureBoardAsset selectedCreature = Minis.GetSelected();
+						if (selectedCreature != null)
+							selectedCreature.SetRotationDegrees(draggingPersistentEffect.LockedRotation);
+					}
+					draggingPersistentEffect = null;
+					trackingDraggedMiniForRotationLock = false;
+				}
+			}
+
 			public static void Create()
 			{
 				float3 pointerPos = RulerHelpers.GetPointerPos();
@@ -31,6 +62,36 @@ namespace TaleSpireCore
 
 			static List<string> updatedCreatures = new List<string>();
 			static float boardActivationTime;
+
+			public static void SetSpinLockVisible(CreatureBoardAsset creatureAtMenu, bool visible)
+			{
+				GameObject effectOrb = GetEffectOrb(creatureAtMenu);
+				SetOrbIndicatorVisible(effectOrb, visible, STR_SpinLockIndicator);
+			}
+
+			private static void SetOrbIndicatorVisible(GameObject effectOrb, bool visible, string childName)
+			{
+				if (effectOrb == null)
+				{
+					Log.Error($"effectOrb == null");
+					return;
+				}
+
+				GameObject child = effectOrb.FindChild(childName, true);
+				if (child != null)
+				{
+					if (visible)
+						Log.Debug($"Showing {childName}!");
+					else
+						Log.Debug($"Hiding {childName}!");
+
+					child.SetActive(visible);
+				}
+				else
+				{
+					Log.Error($"DID NOT FIND {childName}!!");
+				}
+			}
 
 			static void UpdatePersistentEffect(CreatureBoardAsset creatureAsset, string value)
 			{
@@ -148,6 +209,7 @@ namespace TaleSpireCore
 				}
 			}
 
+			// TODO: Refactor this. Hard to read.
 			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset)
 			{
 				GameObject assetLoader = creatureAsset.GetAssetLoader();
@@ -169,10 +231,12 @@ namespace TaleSpireCore
 							goatClone.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
 							goatClone.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 
-							PersistentEffect persistentEffect = new PersistentEffect()
-							{
-								EffectName = "R1.WaterWallSegment1"
-							};
+							PersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+							if (persistentEffect == null)
+								persistentEffect = new PersistentEffect()
+								{
+									EffectName = "R1.WaterWallSegment1"
+								};
 
 							InitializePersistentEffect(creatureAsset, persistentEffect);
 
@@ -238,8 +302,8 @@ namespace TaleSpireCore
 
 			static void AddAdornments(GameObject adornmentsParent)
 			{
-				GameObject spinLock = Prefabs.Clone("SpinLock");
-				spinLock.name = "SpinLock";
+				GameObject spinLock = Prefabs.Clone(STR_SpinLockIndicator);
+				spinLock.name = STR_SpinLockIndicator;
 				spinLock.transform.SetParent(adornmentsParent.transform);
 				spinLock.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 				spinLock.transform.localPosition = new Vector3(0, -0.7f, 0);
@@ -252,6 +316,7 @@ namespace TaleSpireCore
 			}
 
 			static PersistentEffectEventArgs persistentEffectEventArgs = new PersistentEffectEventArgs();
+			static PersistentEffect draggingPersistentEffect;
 
 			private static void InitializePersistentEffect(CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect)
 			{
@@ -366,14 +431,6 @@ namespace TaleSpireCore
 				return persistentEffect.Hidden;
 			}
 
-			public static void SetRotationLocked(string creatureId, bool locked)
-			{
-				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureId);
-				if (creatureBoardAsset == null)
-					return;
-				SetRotationLocked(creatureBoardAsset, locked);
-			}
-
 			public static void SetRotationLocked(CreatureBoardAsset creatureBoardAsset, bool locked)
 			{
 				Log.Debug($"SetRotationLocked - locked: {locked}");
@@ -384,7 +441,13 @@ namespace TaleSpireCore
 					return;
 				}
 
+				Log.Debug($"SetRotationLocked - IsVisible: {creatureBoardAsset.IsVisible}");
+				SetSpinLockVisible(creatureBoardAsset, locked && creatureBoardAsset.IsVisible);
+
 				persistentEffect.RotationLocked = locked;
+				if (locked)
+					persistentEffect.LockedRotation = creatureBoardAsset.GetRotationDegrees();
+
 				creatureBoardAsset.SavePersistentEffect(persistentEffect);
 			}
 
@@ -403,9 +466,17 @@ namespace TaleSpireCore
 				
 				// Hide or show adornments:
 				GameObject effectOrb = GetEffectOrb(creatureBoardAsset);
-				if (effectOrb != null)
-					foreach (Transform child in effectOrb.transform)
-						child.gameObject.SetActive(!hidden);
+
+				foreach (string key in persistentEffect.Indicators.Keys)
+				{
+					bool indicatorVisible = persistentEffect.Indicators[key];
+					bool shouldBeVisible = !hidden && indicatorVisible;
+					SetOrbIndicatorVisible(effectOrb, shouldBeVisible, key);
+				}
+
+				// STR_SpinLockIndicator -> callback architecture???
+				
+				
 
 				creatureBoardAsset.SavePersistentEffect(persistentEffect);
 			}

@@ -9,6 +9,28 @@ namespace TaleSpireExplore
 {
 	public static class PersistentEffectsManager
 	{
+		public static void LoadMenuMods()
+		{
+			AddCharacterMenu("Duplicate", "Duplicate.png", DuplicateEffectAtMenu);
+			AddCharacterMenu("Properties...", "IconEdit.png", ShowPropertyEditor);
+			AddCharacterMenu("Lock Rotation", "LockRotation.png", LockRotation, ShouldShowLockRotationMenuItem);
+			AddCharacterMenu("Unlock Rotation", "UnlockRotation.png", UnlockRotation, ShouldShowUnlockRotationMenuItem);
+			AddCharacterMenu("Hide Orb", "HideShowOrb.png", HideOrb, ShouldShowHideOrbMenuItem);
+			AddCharacterMenu("Reveal Orb", "HideShowOrb.png", ShowOrb, ShouldShowRevealOrbMenuItem);
+
+			RemoveCharacterMenu("Stats");
+			RemoveCharacterMenu("HP");
+			RemoveCharacterMenu("Status");
+			RemoveCharacterMenu("Enable Torch");
+			RemoveCharacterMenu("Disable Torch");
+			RemoveCharacterMenu("Emotes");
+			RemoveGmMenu("Set Size");
+			RemoveGmMenu("Make Unique");
+			RemoveGmMenu("Player Permission");
+			RemoveCharacterMenu("Hide");
+			RemoveCharacterMenu("Show");
+		}
+
 		static void DuplicateEffectAtMenu(MapMenuItem menuItem, object arg2)
 		{
 			Talespire.Log.Warning($"DuplicateEffectAtMenu: {menuItem}, {arg2}");
@@ -26,30 +48,18 @@ namespace TaleSpireExplore
 			CreatureBoardAsset creatureAtMenu = RadialUI.RadialUIPlugin.CreatureAtMenu;
 			if (creatureAtMenu == null)
 			{
-				Talespire.Log.Error($"creatureAtMenu == null");
+				Talespire.Log.Error($"SetRotationLock - creatureAtMenu == null");
 				return;
 			}
 
 			PersistentEffect persistentEffect = creatureAtMenu.GetPersistentEffect();
 			if (persistentEffect == null)
 			{
-				Talespire.Log.Error($"persistentEffect == null");
+				Talespire.Log.Error($"SetRotationLock - persistentEffect == null");
 				return;
 			}
 
 			Talespire.PersistentEffects.SetRotationLocked(creatureAtMenu, value);
-			SetSpinLockVisible(creatureAtMenu, value);
-		}
-
-		private static void SetSpinLockVisible(CreatureBoardAsset creatureAtMenu, bool visible)
-		{
-			GameObject effectOrb = Talespire.PersistentEffects.GetEffectOrb(creatureAtMenu);
-			if (effectOrb != null)
-			{
-				GameObject spinLock = effectOrb.FindChild("SpinLock", true);
-				if (spinLock != null)
-					spinLock.SetActive(visible);
-			}
 		}
 
 		static void SetHidden(bool value)
@@ -100,28 +110,6 @@ namespace TaleSpireExplore
 			return icon;
 		}
 
-		public static void LoadMenuMods()
-		{
-			AddCharacterMenu("Duplicate", "Duplicate.png", DuplicateEffectAtMenu);
-			AddCharacterMenu("Properties...", "IconEdit.png", ShowPropertyEditor);
-			AddCharacterMenu("Lock Rotation", "LockRotation.png", LockRotation, ShouldShowLockRotationMenuItem);
-			AddCharacterMenu("Unlock Rotation", "UnlockRotation.png", UnlockRotation, ShouldShowUnlockRotationMenuItem);
-			AddCharacterMenu("Hide Orb", "HideShowOrb.png", HideOrb, ShouldShowHideOrbMenuItem);
-			AddCharacterMenu("Reveal Orb", "HideShowOrb.png", ShowOrb, ShouldShowRevealOrbMenuItem);
-		
-			RemoveCharacterMenu("Stats");
-			RemoveCharacterMenu("HP");
-			RemoveCharacterMenu("Status");
-			RemoveCharacterMenu("Enable Torch");
-			RemoveCharacterMenu("Disable Torch");
-			RemoveCharacterMenu("Emotes");
-			RemoveGmMenu("Set Size");
-			RemoveGmMenu("Make Unique");
-			RemoveGmMenu("Player Permission");
-			RemoveCharacterMenu("Hide");
-			RemoveCharacterMenu("Show");
-		}
-
 		private static void RemoveCharacterMenu(string menuText)
 		{
 			RadialUI.RadialUIPlugin.AddOnRemoveCharacter(Guid.NewGuid().ToString(), menuText, IsPersistentEffect);
@@ -154,20 +142,28 @@ namespace TaleSpireExplore
 
 		static bool ShouldShowLockRotationMenuItem(NGuid selectedCharacterId, NGuid contextCharacterId)
 		{
+			if (!Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId))
+				return false;
 			return !Talespire.PersistentEffects.IsPersistentEffectRotationLocked(contextCharacterId);
 		}
 			
 		static bool ShouldShowUnlockRotationMenuItem(NGuid selectedCharacterId, NGuid contextCharacterId)
 		{
+			if (!Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId))
+				return false;
 			return Talespire.PersistentEffects.IsPersistentEffectRotationLocked(contextCharacterId);
 		}
 		static bool ShouldShowHideOrbMenuItem(NGuid selectedCharacterId, NGuid contextCharacterId)
 		{
+			if (!Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId))
+				return false;
 			return !Talespire.PersistentEffects.IsPersistentEffectHidden(contextCharacterId);
 		}
 
 		static bool ShouldShowRevealOrbMenuItem(NGuid selectedCharacterId, NGuid contextCharacterId)
 		{
+			if (!Talespire.PersistentEffects.IsPersistentEffect(contextCharacterId))
+				return false;
 			return Talespire.PersistentEffects.IsPersistentEffectHidden(contextCharacterId);
 		}
 
@@ -196,11 +192,46 @@ namespace TaleSpireExplore
 		{
 			LoadMenuMods();
 			Talespire.PersistentEffects.PersistentEffectInitialized += PersistentEffects_PersistentEffectInitialized;
+			Talespire.Minis.MiniSelected += Minis_MiniSelected;
+		}
+
+		static FrmPropertyList frmPropertyList;
+		static void ShowPersistentEffectUI(CreatureBoardAsset mini)
+		{
+			Talespire.Log.Debug($"ShowPersistentEffectUI...");
+			if (frmPropertyList == null)
+				frmPropertyList = new FrmPropertyList();
+			PersistentEffect persistentEffect = mini.GetPersistentEffect();
+			// TODO: Add all the properties...
+			frmPropertyList.ClearProperties();
+			frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
+			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngle");
+			frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
+			frmPropertyList.Show();
+		}
+
+		static void HidePersistentEffectUI()
+		{
+			if (frmPropertyList != null)
+			{
+				frmPropertyList.Close();
+				frmPropertyList = null;
+			}
+		}
+
+		private static void Minis_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
+		{
+			Talespire.Log.Warning($"Minis_MiniSelected");
+			if (ea.Mini.IsPersistentEffect())
+				ShowPersistentEffectUI(ea.Mini);
+			else
+				HidePersistentEffectUI();
 		}
 
 		private static void PersistentEffects_PersistentEffectInitialized(object sender, PersistentEffectEventArgs ea)
 		{
-			SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationLocked);
+			Talespire.PersistentEffects.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationLocked && ea.CreatureAsset.IsVisible);
+			ea.PersistentEffect.Initialize(ea.CreatureAsset);
 		}
 	}
 }
