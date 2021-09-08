@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(Material))]
 	public class ChangeMaterial : BasePropertyChanger
 	{
 		public ChangeMaterial()

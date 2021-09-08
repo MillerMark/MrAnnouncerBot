@@ -74,9 +74,30 @@ namespace TaleSpireCore
 			return _Rotator?.FindChild("AssetLoader");
 		}
 
+		/// <summary>
+		/// Gets the "Attached" GameObject holding persistent effects, if any on the specified creature.
+		/// </summary>
+		public static GameObject GetAttachedGameObject(this CreatureBoardAsset creatureBoardAsset)
+		{
+			GameObject attachedNode = null;
+			GameObject assetLoader = creatureBoardAsset.GetAssetLoader();
+			if (assetLoader != null)
+				attachedNode = assetLoader.FindChild(Talespire.PersistentEffects.STR_AttachedNode, true);
+			return attachedNode;
+		}
+
 		public static bool IsPersistentEffect(this CreatureBoardAsset creatureBoardAsset)
 		{
 			return creatureBoardAsset.HasAttachedData(Talespire.PersistentEffects.STR_PersistentEffect);
+		}
+
+		public static string GetOnlyCreatureName(this CreatureBoardAsset creatureAsset)
+		{
+			string name = creatureAsset.Creature.name;
+			int sizeIndex = name.IndexOf("<size=0>");
+			if (sizeIndex > 0)
+				return name.Substring(0, sizeIndex);
+			return name;
 		}
 
 		public static PersistentEffect GetPersistentEffect(this CreatureBoardAsset creatureAsset)

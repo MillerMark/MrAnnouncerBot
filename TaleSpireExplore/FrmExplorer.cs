@@ -1395,7 +1395,7 @@ namespace TaleSpireExplore
 		{
 			try
 			{
-				Talespire.PersistentEffects.Create();
+				Talespire.PersistentEffects.Create(cmbPrefabs.Text);
 				Talespire.Log.Debug($"Application.ExecutablePath = {System.Windows.Forms.Application.ExecutablePath}");
 			}
 			catch (Exception ex)
@@ -1505,5 +1505,16 @@ namespace TaleSpireExplore
 		{
 			TaleSpireExplorePlugin.LoadKnownEffects();
 		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			//RadialUI.RadialUIPlugin.RegisterRemoveCharacter("Fly Toggle", callback);
+		}
+
+		//bool callback(string menuText, string miniId, string targetId)
+		//{
+		//	Talespire.Log.Warning($"Callback: {menuText}");
+		//	return (Control.ModifierKeys & Keys.Shift) != Keys.Shift;
+		//}
 	}
 }

@@ -26,10 +26,10 @@ namespace TaleSpireExplore
 			ValueChangedListener = valueChangedListener;
 		}
 
-		public void ValueChanged(object newValue)
+		public void ValueChanged(object newValue, bool committedChange = true)
 		{
 			if (ValueChangedListener != null)
-				ValueChangedListener.ValueHasChanged(this, newValue);
+				ValueChangedListener.ValueHasChanged(this, newValue, committedChange);
 		}
 
 		public Type GetValueType()
@@ -61,14 +61,14 @@ namespace TaleSpireExplore
 			UpdateValue();
 		}
 
-		private void UpdateValue(float multiplier = 1)
+		private void UpdateValue(float multiplier = 1, bool committedChange = true)
 		{
 			if (changingInternally)
 				return;
 			try
 			{
 				if (GetXYZ(out float x, out float y, out float z, multiplier))
-					ValueChanged(new Vector3(x, y, z));
+					ValueChanged(new Vector3(x, y, z), committedChange);
 			}
 			catch (Exception ex)
 			{
@@ -109,7 +109,7 @@ namespace TaleSpireExplore
 		{
 			if (changingInternally)
 				return;
-			UpdateValue(trackBarMultiplier);
+			UpdateValue(trackBarMultiplier, false);
 		}
 
 		private void trkOffset_Leave(object sender, EventArgs e)

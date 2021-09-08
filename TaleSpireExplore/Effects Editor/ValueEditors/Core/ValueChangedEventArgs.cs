@@ -8,9 +8,11 @@ namespace TaleSpireExplore
 	{
 		public IValueEditor Editor { get; set; }
 		public object Value { get; set; }
+		public bool CommittedChange { get; set; }
 
-		public ValueChangedEventArgs(IValueEditor editor, object value)
+		public ValueChangedEventArgs(IValueEditor editor, object value, bool committedChange)
 		{
+			CommittedChange = committedChange;
 			Editor = editor;
 			Value = value;
 		}

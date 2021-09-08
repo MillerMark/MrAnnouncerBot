@@ -6,7 +6,7 @@ namespace TaleSpireCore
 {
 	public class PropertyModDetails
 	{
-		public object instanceToSet;
+		public object instance;
 		public PropertyInfo property;
 		public FieldInfo field;
 		public string attachedPropertyName;
@@ -18,7 +18,7 @@ namespace TaleSpireCore
 
 		public void SetInstance(ref object nextInstance)
 		{
-			instanceToSet = nextInstance;
+			instance = nextInstance;
 			if (property != null)
 				nextInstance = property.GetValue(nextInstance);
 			else if (field != null)
@@ -30,21 +30,21 @@ namespace TaleSpireCore
 		public void SetValue(BasePropertyChanger propertyChanger)
 		{
 			if (property != null)
-				property.SetValue(instanceToSet, propertyChanger.GetValue());
+				property.SetValue(instance, propertyChanger.GetValue());
 			else if (field != null)
-				field.SetValue(instanceToSet, propertyChanger.GetValue());
+				field.SetValue(instance, propertyChanger.GetValue());
 			else
-			{
-				propertyChanger.TrySetProperty(instanceToSet, attachedPropertyName);
-				return;
-			}
+				propertyChanger.TrySetProperty(instance, attachedPropertyName);
+		}
 
-			//	object value = null;
-			//	if (property != null && property.Name.EndsWith("LifeTime"))
-			//		value = property.GetValue(instanceToSet);
-			//	else if (field != null && field.Name.EndsWith("LifeTime"))
-			//		value = field.GetValue(instanceToSet);
-			//	Talespire.Log.Warning($"After setting LifeTime, the set value is \"{value}\".");
+		public object GetValue()
+		{
+			if (property != null)
+				return property.GetValue(instance);
+			else if (field != null)
+				return field.GetValue(instance);
+			
+			return null;
 		}
 
 		public Type GetPropertyType()

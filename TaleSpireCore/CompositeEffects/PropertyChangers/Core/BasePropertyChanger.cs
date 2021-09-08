@@ -37,7 +37,7 @@ namespace TaleSpireCore
 
 		public static float GetFloat(string str)
 		{
-			string trimmedStr = str.Trim();
+			string trimmedStr = str.Trim('(', ')').Trim();
 			if (float.TryParse(trimmedStr, out float result))
 				return result;
 
@@ -45,11 +45,11 @@ namespace TaleSpireCore
 			return 0f;
 		}
 
-		public void ModifyProperty(object instance)
+		public void ModifyProperty(object instance, bool logErrors = false)
 		{
 			try
 			{
-				PropertyModDetails propertyModDetails = GetPropertyModDetails(instance, Name);
+				PropertyModDetails propertyModDetails = GetPropertyModDetails(instance, Name, logErrors);
 
 				if (Name.EndsWith("LifeTime"))
 					Talespire.Log.Debug($"Setting {Name} to {GetValue()} (in {GetType().Name})...");
@@ -126,7 +126,11 @@ namespace TaleSpireCore
 		{
 			bool logDetails = logErrors; // fullPropertyName.EndsWith("LifeTime");
 			PropertyModDetails propertyModDetails = new PropertyModDetails();
-			propertyModDetails.instanceToSet = null;
+			propertyModDetails.instance = null;
+			if (logDetails)
+			{
+				Talespire.Log.Debug($"fullPropertyName: {fullPropertyName}");
+			}
 			string[] split = fullPropertyName.Split('.');
 			object nextInstance = instance;
 			propertyModDetails.property = null;
@@ -201,13 +205,13 @@ namespace TaleSpireCore
 							Talespire.Log.Debug($"field not found. Trying TrySetProperty...");
 						if (IsAttachedProperty(nextInstance, propertyName, out Type propertyType))
 						{
-							propertyModDetails.instanceToSet = nextInstance;
+							propertyModDetails.instance = nextInstance;
 							propertyModDetails.attachedPropertyName = propertyName;
 							propertyModDetails.attachedPropertyType = propertyType;
 							break;
 						}
 
-						propertyModDetails.instanceToSet = null;
+						propertyModDetails.instance = null;
 						if (logDetails)
 							Talespire.Log.Error($"Property/Field \"{propertyName}\" not found in instance!");
 						break;

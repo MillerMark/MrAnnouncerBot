@@ -512,7 +512,6 @@ namespace TaleSpireExplore
 			AddPropertiesToNodes(componentNode.Nodes, componentNode.Type, componentNode.Component);
 		}
 
-		AllValueEditors allValueEditors;
 		void AddValueEditor(UserControl userControl)
 		{
 			if (userControl == null)
@@ -523,19 +522,18 @@ namespace TaleSpireExplore
 
 		void RegisterValueEditors()
 		{
-			allValueEditors = new AllValueEditors();
-			AddValueEditor(allValueEditors.Register(new EdtFloat()));
-			AddValueEditor(allValueEditors.Register(new EdtEnum()));
-			AddValueEditor(allValueEditors.Register(new EdtInt()));
-			AddValueEditor(allValueEditors.Register(new EdtNGuid()));
-			AddValueEditor(allValueEditors.Register(new EdtMaterial()));
-			AddValueEditor(allValueEditors.Register(new EdtMesh()));
-			AddValueEditor(allValueEditors.Register(new EdtBool()));
-			AddValueEditor(allValueEditors.Register(new EdtString()));
-			AddValueEditor(allValueEditors.Register(new EdtColor()));
-			AddValueEditor(allValueEditors.Register(new EdtVector3()));
-			AddValueEditor(allValueEditors.Register(new EdtMinMaxGradient()));
-			allValueEditors.ValueChanged += AllValueEditors_ValueChanged;
+			ValueEditors.Register(STR_EffectEditorKey);
+			Talespire.Log.Warning($"RegisterValueEditors()...");
+			foreach (IValueEditor valueEditor in ValueEditors.GetAll(STR_EffectEditorKey))
+			{
+				if (valueEditor as UserControl == null)
+					Talespire.Log.Error($"valueEditor as UserControl == null");
+				else
+					Talespire.Log.Warning($"Editor for: {valueEditor.GetValueType().Name}");
+				AddValueEditor(valueEditor as UserControl);
+			}
+
+			ValueEditors.ValueChanged += AllValueEditors_ValueChanged;
 		}
 
 		private void trvProperties_AfterSelect(object sender, TreeViewEventArgs e)
@@ -585,7 +583,7 @@ namespace TaleSpireExplore
 				return;
 			}
 
-			activeValueEditor = allValueEditors.Get(type);
+			activeValueEditor = ValueEditors.Get(STR_EffectEditorKey, type);
 			if (activeValueEditor == null)
 			{
 				activeValueEditor = noneEditor;
@@ -613,7 +611,7 @@ namespace TaleSpireExplore
 
 		void ShowMaterialColorEditor(MaterialColorPropertyNode materialColorPropertyNode)
 		{
-			activeValueEditor = allValueEditors.Get(typeof(UnityEngine.Color));
+			activeValueEditor = ValueEditors.Get(STR_EffectEditorKey, typeof(UnityEngine.Color));
 			if (activeValueEditor == null)
 			{
 				activeValueEditor = noneEditor;
@@ -631,7 +629,7 @@ namespace TaleSpireExplore
 		private void HideExistingEditors()
 		{
 			noneEditor.Visible = false;
-			foreach (IValueEditor valueEditor in allValueEditors.Editors.Values)
+			foreach (IValueEditor valueEditor in ValueEditors.GetAll(STR_EffectEditorKey))
 				if (valueEditor is UserControl userControl)
 					userControl.Visible = false;
 		}
@@ -681,6 +679,8 @@ namespace TaleSpireExplore
 
 		private void AllValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
+			if (sender is AllValueEditors allValueEditors && allValueEditors.Key != STR_EffectEditorKey)
+				return;
 			// TODO: Add a property modification to the Composites structure
 			try
 			{
@@ -725,6 +725,7 @@ namespace TaleSpireExplore
 		}
 
 		const string effectEditorTestId = "EffectEditorTest";
+		const string STR_EffectEditorKey = "EffectEditor";
 
 		private void btnTestEffect_Click(object sender, EventArgs e)
 		{
@@ -926,6 +927,7 @@ namespace TaleSpireExplore
 
 		private void FrmEffectEditor_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			ValueEditors.Clean(STR_EffectEditorKey);
 			DeleteEverything();
 		}
 

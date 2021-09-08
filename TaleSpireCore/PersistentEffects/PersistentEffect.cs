@@ -32,6 +32,8 @@ namespace TaleSpireCore
 		public bool Hidden { get; set; }
 		public Dictionary<string, bool> Indicators = new Dictionary<string, bool>();  /* Indicator Name (has to match the GameObject) mapped to its visible state */
 
+		public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+
 		public PersistentEffect()
 		{
 			InitializeIndicators();

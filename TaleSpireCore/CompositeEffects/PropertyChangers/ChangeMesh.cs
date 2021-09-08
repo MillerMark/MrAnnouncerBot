@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(UnityEngine.Mesh))]
 	public class ChangeMesh : BasePropertyChanger
 	{
 		public ChangeMesh()

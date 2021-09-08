@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(bool))]
 	public class ChangeBool : BasePropertyChanger
 	{
 		public ChangeBool()

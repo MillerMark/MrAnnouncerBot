@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(string))]
 	public class ChangeString : BasePropertyChanger
 	{
 		public ChangeString()

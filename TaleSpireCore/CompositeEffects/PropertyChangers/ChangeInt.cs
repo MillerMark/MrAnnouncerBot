@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(int))]
 	public class ChangeInt : BasePropertyChanger
 	{
 		public ChangeInt()

@@ -64,8 +64,8 @@
     <Reference Include="Bouncyrock.TaleSpire.Runtime">
       <HintPath>..\DLLs\Bouncyrock.TaleSpire.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\TaleSpireExplore\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StatMessaging">
       <HintPath>..\StatMessaging\TaleSpireStatMessaging\bin\Debug\StatMessaging.dll</HintPath>
@@ -143,6 +143,8 @@
     <Compile Include="CompositeEffects\PropertyChangers\ChangeNGuid.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\ChangeString.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\PropertyChangerManager.cs" />
+    <Compile Include="CompositeEffects\PropertyChangers\PropertyTypeAttribute.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
     <Compile Include="ConvertUtils.cs" />
     <Compile Include="Decompiles\AssetDb2.cs" />
@@ -197,6 +199,7 @@
     <Compile Include="Talespire\Core\EffectParameters\Core\EffectParameters.cs" />
     <Compile Include="Talespire\Core\EventArgs\CreatureBoardAssetEventArgs.cs" />
     <Compile Include="PersistentEffects\PersistentEffect.cs" />
+    <Compile Include="Talespire\QueuedEffect.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />
     <Compile Include="Talespire\Talespire.Board.cs" />

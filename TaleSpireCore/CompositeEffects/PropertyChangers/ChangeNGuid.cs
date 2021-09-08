@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(NGuid))]
 	public class ChangeNGuid : BasePropertyChanger
 	{
 		public ChangeNGuid()

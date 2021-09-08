@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(Vector3))]
 	public class ChangeVector3 : BasePropertyChanger
 	{
 		public ChangeVector3()
@@ -16,7 +17,7 @@ namespace TaleSpireCore
 
 		protected override object ParseValue()
 		{
-			string[] parts = Value.Split(',');
+			string[] parts = Value.Trim('(', ')').Split(',');
 			float x = 0;
 			float y = 0;
 			float z = 0;

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(UnityEngine.Color))]
 	public class ChangeColor : BasePropertyChanger
 	{
 		public ChangeColor()

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	
 	public class ChangeMinMaxGradient : BasePropertyChanger
 	{
 		public ChangeMinMaxGradient()

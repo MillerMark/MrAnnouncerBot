@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(float))]
 	public class ChangeFloat : BasePropertyChanger
 	{
 		public ChangeFloat()

@@ -33,8 +33,19 @@ namespace TaleSpireExplore
 
 		static void DuplicateEffectAtMenu(MapMenuItem menuItem, object arg2)
 		{
+			if (menuItem != null)
+				Talespire.Log.Warning($"menuItem.gameObject.name = {menuItem.gameObject.name}");
+
+			CreatureBoardAsset creatureAtMenu = RadialUI.RadialUIPlugin.CreatureAtMenu;
+
+			if (creatureAtMenu != null)
+			{
+				PersistentEffect persistentEffect = creatureAtMenu.GetPersistentEffect();
+				Talespire.PersistentEffects.Duplicate(persistentEffect, creatureAtMenu.GetOnlyCreatureName());
+			}
 			Talespire.Log.Warning($"DuplicateEffectAtMenu: {menuItem}, {arg2}");
 			Talespire.Log.Warning($"CreatureAtMenu: {RadialUI.RadialUIPlugin.CreatureAtMenu}");
+			
 		}
 
 		static void ShowPropertyEditor(MapMenuItem menuItem, object arg2)
@@ -199,14 +210,21 @@ namespace TaleSpireExplore
 		static void ShowPersistentEffectUI(CreatureBoardAsset mini)
 		{
 			Talespire.Log.Debug($"ShowPersistentEffectUI...");
-			if (frmPropertyList == null)
-				frmPropertyList = new FrmPropertyList();
-			PersistentEffect persistentEffect = mini.GetPersistentEffect();
-			// TODO: Add all the properties...
+			if (frmPropertyList != null)
+				HidePersistentEffectUI();
+			
+			frmPropertyList = new FrmPropertyList();
+			frmPropertyList.Instance = mini.GetAttachedGameObject();
+			frmPropertyList.Mini = mini;
 			frmPropertyList.ClearProperties();
 			frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
-			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngle");
+			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngles");
 			frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
+
+			PersistentEffect persistentEffect = mini.GetPersistentEffect();
+			// TODO: Use persistentEffect to fill in the rest of the properties we want change.
+
+
 			frmPropertyList.Show();
 		}
 
@@ -214,6 +232,7 @@ namespace TaleSpireExplore
 		{
 			if (frmPropertyList != null)
 			{
+				frmPropertyList.PrepForClose();
 				frmPropertyList.Close();
 				frmPropertyList = null;
 			}
@@ -222,7 +241,7 @@ namespace TaleSpireExplore
 		private static void Minis_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
 		{
 			Talespire.Log.Warning($"Minis_MiniSelected");
-			if (ea.Mini.IsPersistentEffect())
+			if (ea.Mini != null && ea.Mini.IsPersistentEffect())
 				ShowPersistentEffectUI(ea.Mini);
 			else
 				HidePersistentEffectUI();
@@ -232,6 +251,23 @@ namespace TaleSpireExplore
 		{
 			Talespire.PersistentEffects.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationLocked && ea.CreatureAsset.IsVisible);
 			ea.PersistentEffect.Initialize(ea.CreatureAsset);
+			foreach (string propertyPath in ea.PersistentEffect.Properties.Keys)
+			{
+				PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(ea.AttachedNode, propertyPath, true);
+				if (propertyModDetails != null)
+					Talespire.Log.Error($"propertyModDetails != null");
+
+				BasePropertyChanger propertyChanger = PropertyChangerManager.GetPropertyChanger(propertyModDetails.GetPropertyType());
+				propertyChanger.Name = propertyPath;
+				propertyChanger.Value = ea.PersistentEffect.Properties[propertyPath];
+				Talespire.Log.Warning($"Setting {propertyPath} to {propertyChanger.Value}");
+				if (propertyChanger != null)
+				{
+					Talespire.Log.Warning($"propertyModDetails.SetValue(propertyChanger) !!! Hope this works!!!");
+					propertyModDetails.SetValue(propertyChanger);
+				}
+			}
+
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace TaleSpireCore
 {
+	[PropertyType(typeof(Enum))]
 	public class ChangeEnum : ChangeInt
 	{
 		public ChangeEnum()

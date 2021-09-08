@@ -78,23 +78,23 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_CoreSpells\CoreEffects.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Google.Apis, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.45.0\lib\net45\Google.Apis.dll</HintPath>
+    <Reference Include="Google.Apis, Version=1.54.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.54.0\lib\net45\Google.Apis.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.45.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    <Reference Include="Google.Apis.Auth, Version=1.54.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.54.0\lib\net461\Google.Apis.Auth.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.45.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.54.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.54.0\lib\net461\Google.Apis.Auth.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Core, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Core.1.45.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    <Reference Include="Google.Apis.Core, Version=1.54.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Core.1.54.0\lib\net45\Google.Apis.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.PlatformServices, Version=1.45.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.45.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.54.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.54.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Sheets.v4, Version=1.45.0.1930, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Sheets.v4.1.45.0.1930\lib\net45\Google.Apis.Sheets.v4.dll</HintPath>
+    <Reference Include="Google.Apis.Sheets.v4, Version=1.54.0.2371, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Sheets.v4.1.54.0.2371\lib\net45\Google.Apis.Sheets.v4.dll</HintPath>
     </Reference>
     <Reference Include="MagicEffects">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_Magic1\DH_Magic1\MagicEffects.dll</HintPath>
@@ -112,9 +112,8 @@
     <Reference Include="MultiMod.Shared">
       <HintPath>..\DLLs\MultiMod\MultiMod.Shared.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="RadialUI">
       <HintPath>..\RadialMenus\RadialUIPlugin\bin\Debug\RadialUI.dll</HintPath>
@@ -122,6 +121,10 @@
     <Reference Include="RealisticEffects4">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_Realistic4\DH_Realistic4\RealisticEffects4.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="StatMessaging, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\StatMessaging\TaleSpireStatMessaging\bin\Debug\StatMessaging.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -210,6 +213,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Decompiles\Effect.cs" />
     <None Include="Decompiles\EffectManager.cs" />
     <None Include="Decompiles\FactoryItemBehaviour.cs" />
@@ -223,6 +227,7 @@
     <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
+    <Compile Include="Effects Editor\ValueEditors.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
       <SubType>UserControl</SubType>
@@ -342,6 +347,7 @@
     <Compile Include="PersistentEffects\UI\FrmPropertyList.Designer.cs">
       <DependentUpon>FrmPropertyList.cs</DependentUpon>
     </Compile>
+    <Compile Include="PersistentEffects\UI\WindowHelper.cs" />
     <Compile Include="Unmanaged\RECT.cs" />
     <Compile Include="Unmanaged\Native.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -6,6 +6,6 @@ namespace TaleSpireExplore
 {
 	public interface IValueChangedListener
 	{
-		void ValueHasChanged(IValueEditor editor, object value);
+		void ValueHasChanged(IValueEditor editor, object value, bool committedChange = false);
 	}
 }

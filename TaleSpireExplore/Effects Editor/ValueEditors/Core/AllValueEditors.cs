@@ -20,6 +20,7 @@ namespace TaleSpireExplore
 		IValueEditor enumEditor;
 
 		public Dictionary<Type, IValueEditor> Editors { get => editors; }
+		public string Key { get; set; }
 
 		public UserControl Register(IValueEditor valueEditor)
 		{
@@ -49,10 +50,9 @@ namespace TaleSpireExplore
 			return null;
 		}
 
-		public void ValueHasChanged(IValueEditor editor, object value)
+		public void ValueHasChanged(IValueEditor editor, object value, bool committedChange = false)
 		{
-			TaleSpireCore.Talespire.Log.Debug("value changed...");
-			OnValueChanged(this, new ValueChangedEventArgs(editor, value));
+			OnValueChanged(this, new ValueChangedEventArgs(editor, value, committedChange));
 		}
 	}
 }
