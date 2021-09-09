@@ -46,12 +46,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorExtensions.cs" />
+    <Compile Include="CountTotals.cs" />
     <Compile Include="DirectBitmap.cs" />
     <Compile Include="HueSatLight.cs" />
     <Compile Include="ImageCropper.cs" />
     <Compile Include="ImageUtils.cs" />
+    <Compile Include="IntermediateResults.cs" />
     <Compile Include="Margins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StudioCamera.cs" />
+    <Compile Include="VisualProcessingResults.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

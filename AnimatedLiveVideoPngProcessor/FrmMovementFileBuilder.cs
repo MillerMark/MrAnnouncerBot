@@ -25,13 +25,15 @@ namespace AnimatedLiveVideoPngProcessor
 			ImageUtils.GetFilesToAnalyze(fileName, out directoryName, out rootName, out files);
 			
 			
-			Margins baseMargins = CropImages(files, rootName);
+			
 			string movementFileName = System.IO.Path.Combine(directoryName, rootName + ".movement");
 
+			// TODO: Process *.pngs to collect the movement data.
 			// TODO: Do we delete all *.pngs?
+
 			// TODO: Save the movement data...
 			//System.IO.File.WriteAllText(movementFileName, $"Left = {baseMargins.Left}{Environment.NewLine}Top = {baseMargins.Top}");
-			
+
 		}
 
 		private void btnSelectFiles_Click(object sender, EventArgs e)

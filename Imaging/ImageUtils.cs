@@ -311,6 +311,66 @@ namespace Imaging
 			string searchPattern = $"{rootName}*.png";
 			files = System.IO.Directory.GetFiles(directoryName, searchPattern).OrderBy(x => x).ToList();
 		}
+
+		public static VisualProcessingResults GetVisualProcessingResults(string fileName)
+		{
+			VisualProcessingResults results = new VisualProcessingResults();
+			IntermediateResults intermediateResults = new IntermediateResults();
+
+			using (DirectBitmap bitmap = DirectBitmap.FromFile(fileName))
+			{
+				int line = 0;
+				int bitmapWidth = bitmap.Width;
+				int bitmapHeight = bitmap.Height;
+				while (line < bitmapHeight)
+				{
+					ProcessLine(bitmap, line, intermediateResults);
+					line++;
+				}
+			}
+
+			results.Calculate(intermediateResults);
+			return results;
+		}
+
+		static bool AreClose(byte r, byte g)
+		{
+			return Math.Abs(r - g) < 30;
+		}
+
+		private static void ProcessLine(DirectBitmap bitmap, int y, IntermediateResults intermediateResults)
+		{
+			// We have to detect four colors: red, blue, green, yellow (means use profile camera)
+			for (int x = 0; x < bitmap.Width; x++)
+			{
+				System.Drawing.Color pixel = bitmap.GetPixel(x, y);
+				if (pixel.A < 5)
+					continue;
+				if (pixel.A > intermediateResults.GreatestOpacity)
+					intermediateResults.GreatestOpacity = pixel.A;
+
+				if (pixel.R > 0) // Could be red or yellow.
+				{
+					if (pixel.G > 0 && AreClose(pixel.R, pixel.G))
+					{
+						intermediateResults.Yellow.Add(x, y);
+						continue;
+					}
+					intermediateResults.Red.Add(x, y);
+					continue;
+				}
+				if (pixel.G > 0)
+				{
+					intermediateResults.Green.Add(x, y);
+					continue;
+				}
+				if (pixel.B > 0)
+				{
+					intermediateResults.Blue.Add(x, y);
+					continue;
+				}
+			}
+		}
 	}
 }
 

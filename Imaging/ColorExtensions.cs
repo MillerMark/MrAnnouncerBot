@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace Imaging
 {
-  public static class ColorExtensions
+	public static class ColorExtensions
   {
     static void GetKoefs(Color color, out float rKoef, out float gKoef, out float bKoef)
     {
