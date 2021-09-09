@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Windows.Resources;
+using System.Collections.Generic;
 
 namespace Imaging
 {
@@ -291,6 +292,24 @@ namespace Imaging
 			Size imageSize = GetImageSize(file);
 			width = imageSize.Width;
 			height = imageSize.Height;
+		}
+
+		/// <summary>
+		/// Takes a file name (e.g., "Mark002.png"), and returns all files matching ("Mark*.png") 
+		/// as well as the base name and the folder name.
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <param name="directoryName"></param>
+		/// <param name="rootName"></param>
+		/// <param name="files"></param>
+		public static void GetFilesToAnalyze(string fileName, out string directoryName, out string rootName, out List<string> files)
+		{
+			directoryName = System.IO.Path.GetDirectoryName(fileName);
+			string baseFileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+			char[] numbers = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+			rootName = baseFileName.TrimEnd(numbers);
+			string searchPattern = $"{rootName}*.png";
+			files = System.IO.Directory.GetFiles(directoryName, searchPattern).OrderBy(x => x).ToList();
 		}
 	}
 }
