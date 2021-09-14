@@ -1,4 +1,5 @@
 ﻿using Imaging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VisualProcessingTests;
 
 namespace AnimatedLiveVideoPngProcessor
 {
@@ -18,22 +20,14 @@ namespace AnimatedLiveVideoPngProcessor
 			InitializeComponent();
 		}
 
+		List<string> filesToProcess;
+		string movementFileName;
 		void ProcessFiles(string fileName)
 		{
 			string directoryName, rootName;
-			List<string> files;
-			ImageUtils.GetFilesToAnalyze(fileName, out directoryName, out rootName, out files);
-			
-			
-			
-			string movementFileName = System.IO.Path.Combine(directoryName, rootName + ".movement");
+			ImageUtils.GetFilesToAnalyze(fileName, out directoryName, out rootName, out filesToProcess);
 
-			// TODO: Process *.pngs to collect the movement data.
-			// TODO: Do we delete all *.pngs?
-
-			// TODO: Save the movement data...
-			//System.IO.File.WriteAllText(movementFileName, $"Left = {baseMargins.Left}{Environment.NewLine}Top = {baseMargins.Top}");
-
+			movementFileName = System.IO.Path.Combine(directoryName, rootName + ".movement");
 		}
 
 		private void btnSelectFiles_Click(object sender, EventArgs e)
@@ -44,6 +38,40 @@ namespace AnimatedLiveVideoPngProcessor
 				openFileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(openFileDialog.FileName);
 				ProcessFiles(openFileDialog.FileName);
 			}
+		}
+
+		private void btnConvertToMovementFile_Click(object sender, EventArgs e)
+		{
+			if (filesToProcess == null)
+			{
+				MessageBox.Show("Select files first!");
+				return;
+			}
+
+			List<VisualProcessingResults> results = new List<VisualProcessingResults>();
+			const double frameRate = 29.97;  // frames per second
+			const double intervalBetweenFramesSeconds = 1 /* frame */ / frameRate;
+
+			VisualProcessingResults lastProcessImageResults = null;
+			foreach (string file in filesToProcess)
+			{
+				VisualProcessingResults processImageResults = TestImageHelper.ProcessImage(file);
+				
+				if (processImageResults.Matches(lastProcessImageResults))
+					lastProcessImageResults.Duration += intervalBetweenFramesSeconds;
+				else
+				{
+					processImageResults.Duration = intervalBetweenFramesSeconds;
+					results.Add(processImageResults);
+					lastProcessImageResults = processImageResults;
+				}
+			}
+
+			// TODO: Do we delete all *.pngs?
+
+			// Save the movement data...
+			string serializedObject = JsonConvert.SerializeObject(results, Formatting.Indented);
+			System.IO.File.WriteAllText(movementFileName, serializedObject);
 		}
 	}
 }

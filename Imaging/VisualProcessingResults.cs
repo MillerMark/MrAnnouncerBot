@@ -8,16 +8,11 @@ namespace Imaging
 		Point HeadPoint;
 		Point LeftShoulder;
 		Point RightShoulder;
-		public StudioCamera Camera { get; set; } = StudioCamera.Front;
-		/// <summary>
-		/// The horizontal offset of the anchor, in pixels.
-		/// </summary>
-		public double X { get; set; }
 
 		/// <summary>
-		/// The vertical offset of the anchor, in pixels.
+		/// Which camera to use (Front, Right, etc.).
 		/// </summary>
-		public double Y { get; set; }
+		public StudioCamera Camera { get; set; } = StudioCamera.Front;
 
 		/// <summary>
 		/// The scale of the tracked dots, 1 is 100%.
@@ -39,9 +34,30 @@ namespace Imaging
 		/// </summary>
 		public double Opacity { get; set; }
 
+		/// <summary>
+		/// The center anchor point of the actor.
+		/// </summary>
+		public Point Origin { get; set; }
+
+		/// <summary>
+		/// The length of time in seconds this data is valid.
+		/// </summary>
+		public double Duration { get; set; }
+
 		public VisualProcessingResults()
 		{
+		}
 
+		public bool Matches(VisualProcessingResults obj)
+		{
+			if (obj == null)
+				return false;
+			return Flipped == obj.Flipped &&
+				Camera == obj.Camera &&
+				Rotation == obj.Rotation &&
+				Scale == obj.Scale &&
+				Opacity == obj.Opacity &&
+				Origin == obj.Origin;
 		}
 
 		Point GetPoint(CountTotals countTotals)
@@ -56,7 +72,7 @@ namespace Imaging
 
 		public void Calculate(IntermediateResults intermediateResults)
 		{
-			Opacity = intermediateResults.GreatestOpacity;
+			Opacity = intermediateResults.GreatestOpacity / 255.0;
 			if (intermediateResults.Yellow.Count > intermediateResults.Green.Count)
 			{
 				Camera = StudioCamera.Profile;
@@ -66,6 +82,32 @@ namespace Imaging
 				HeadPoint = GetPoint(intermediateResults.Green);
 			RightShoulder = GetPoint(intermediateResults.Red);
 			LeftShoulder = GetPoint(intermediateResults.Blue);
+			Origin = new Point((RightShoulder.X + LeftShoulder.X) / 2, (RightShoulder.Y + LeftShoulder.Y) / 2);
+			CalculateScale();
+			if (Scale == 0)
+			{
+				Opacity = 0;
+				Scale = 1;
+				Rotation = 0;
+			}
+			else
+				CalculateRotation();
+			// TODO: Flipped...
+		}
+
+		private void CalculateScale()
+		{
+			double deltaX = RightShoulder.X - LeftShoulder.X;
+			double deltaY = RightShoulder.Y - LeftShoulder.Y;
+			double distanceBetweenShoulders = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+			Scale = distanceBetweenShoulders / 119.0;
+		}
+
+		private void CalculateRotation()
+		{
+			double deltaX = HeadPoint.X - Origin.X;
+			double deltaY = HeadPoint.Y - Origin.Y;
+			Rotation = Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90;
 		}
 	}
 }

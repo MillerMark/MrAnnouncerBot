@@ -38,6 +38,7 @@ namespace Imaging
 			DirectBitmap directBitmap = new DirectBitmap(image.Width, image.Height);
 			Graphics graphics = Graphics.FromImage(directBitmap.Bitmap);
 			graphics.DrawImage(image, new Point(0, 0));
+			image.Dispose(); // ?Fixes a leak?
 			return directBitmap;
 		}
 

@@ -14,13 +14,21 @@ namespace VisualProcessingTests
 
 		public static VisualProcessingResults ProcessImage(string fileName)
 		{
-			string location = Assembly.GetExecutingAssembly().Location;
-			int indexOfBinDebug = location.IndexOf("bin\\Debug");
-			if (indexOfBinDebug > 0)
+			string fullFileName;
+
+			if (fileName.IndexOf(".png") > 0)
+				fullFileName = fileName;
+			else
 			{
-				location = Path.Combine(location.Substring(0, indexOfBinDebug), "TestPngs");
+				string location = Assembly.GetExecutingAssembly().Location;
+				int indexOfBinDebug = location.IndexOf("bin\\Debug");
+				if (indexOfBinDebug > 0)
+				{
+					location = Path.Combine(location.Substring(0, indexOfBinDebug), "TestPngs");
+				}
+				fullFileName = Path.Combine(location, fileName + ".png");
 			}
-			string fullFileName = Path.Combine(location, fileName + ".png");
+
 			return ImageUtils.GetVisualProcessingResults(fullFileName);
 		}
 	}
