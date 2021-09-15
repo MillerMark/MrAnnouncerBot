@@ -257,12 +257,7 @@ namespace DHDM
 			SceneItem sceneItem = GetSceneItem(sceneName, itemName);
 
 			SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(itemName, sceneName);
-			double startScale;
-			//if (sceneItem.Height == 0)  // Height for video feeds seems to be zero.
-				startScale = sceneItemProperties.Bounds.Height / videoHeight;
-			//else
-			//	startScale = sceneItemProperties.Bounds.Height / sceneItem.Height;
-
+			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
 			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
 				SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
