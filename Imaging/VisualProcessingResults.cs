@@ -70,6 +70,37 @@ namespace Imaging
 			return new Point(x, y);
 		}
 
+		static Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees)
+		{
+			double angleInRadians = angleInDegrees * (Math.PI / 180);
+			double cosTheta = Math.Cos(angleInRadians);
+			double sinTheta = Math.Sin(angleInRadians);
+			return new Point
+			{
+				X =
+							(int)
+							(cosTheta * (pointToRotate.X - centerPoint.X) -
+							sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
+				Y =
+							(int)
+							(sinTheta * (pointToRotate.X - centerPoint.X) +
+							cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
+			};
+		}
+
+		void CalculateFlipped()
+		{
+			// Rotate the red and blue shoulder points around the HeadPoint by -Rotation.
+			// Red and blue will be at essentially the same y position.
+			// Then see if red is right of blue ==> then we are flipped
+			Point right = RightShoulder;  // Red
+			Point left = LeftShoulder;
+			Point rotatedRight = RotatePoint(right, Origin, -Rotation);
+			Point rotatedLeft = RotatePoint(left, Origin, -Rotation);
+			if (rotatedRight.X > rotatedLeft.X)  // Because red (on the left in the original image represents the right shoulder of the actor facing the camera).
+				Flipped = true;
+		}
+
 		public void Calculate(IntermediateResults intermediateResults)
 		{
 			Opacity = intermediateResults.GreatestOpacity / 255.0;
@@ -92,7 +123,9 @@ namespace Imaging
 			}
 			else
 				CalculateRotation();
+
 			// TODO: Flipped...
+			CalculateFlipped();
 		}
 
 		private void CalculateScale()
