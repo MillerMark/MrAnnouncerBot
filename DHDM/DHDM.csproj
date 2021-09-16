@@ -334,8 +334,11 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="LiveVideoAnimation\AllVideoBindings.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
+    <Compile Include="LiveVideoAnimation\VideoAnimationBinding.cs" />
     <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
+    <Compile Include="LiveVideoAnimation\VideoFeedAnimationManager.cs" />
     <Compile Include="Managers\ConditionManager.cs" />
     <Compile Include="Managers\CreatureManager.cs" />
     <Compile Include="Managers\DieRollManager.cs" />
@@ -592,6 +595,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="characterDnDBeyond.json" />
+    <None Include="LiveVideoAnimation\Data\UFO Crash.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

@@ -105,6 +105,7 @@ namespace DHDM
 			{
 				InitializeGame();
 				SpellManager.Initialize(Game);
+				VideoFeedAnimationManager.Initialize();
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//`! !!!                                                                                      !!!
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!

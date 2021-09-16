@@ -50,21 +50,35 @@ namespace DHDM
 		{
 			Render?.Invoke(sender, e);
 		}
+		void Disposing()
+		{
+			Stop();
+			timer.Dispose();
+		}
+
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			timer.Stop();
+			Stop();
 			OnRender(this, this);
-
-			msElapsed = GetElapsedMs();
-			if (GetElapsedMs() < TimeMs)
+			double msElapsed = GetElapsedMs();
+			if (msElapsed < TimeMs)
 				timer.Start();
 			else
 			{
-				//if ( >= TimeMs)
-				//{
-				//	allAnimations.Remove(GetKey());
-				//	// We could remove ourselves from allAnimations and clean up the Render event handler.
-				//}
+				if (msElapsed >= TimeMs)
+				{
+					string key = GetKey();
+					Remove(key);
+				}
+			}
+		}
+
+		private static void Remove(string key)
+		{
+			if (allAnimations.ContainsKey(key))
+			{
+				allAnimations[key].Disposing();
+				allAnimations.Remove(key);
 			}
 		}
 
@@ -108,7 +122,7 @@ namespace DHDM
 
 			if (msElapsed >= TimeMs)
 			{
-				allAnimations.Remove(GetKey());
+				Remove(GetKey());
 				Stop();
 				return TargetScale;
 			}

@@ -13,9 +13,12 @@ namespace DHDM
 	public class VideoFeed
 	{
 		public string sourceName { get; set; }
+		public string sceneName { get; set; }
 		public string videoAnchorHorizontal { get; set; }
 		public string videoAnchorVertical { get; set; }
 		public string videoWidth { get; set; }
 		public string videoHeight { get; set; }
+		public double defaultX { get; set; }
+		public double defaultY { get; set; }
 	}
 }

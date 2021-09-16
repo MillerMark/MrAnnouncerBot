@@ -1,0 +1,1550 @@
+[
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1200, 1054",
+    "Duration": 8.2415749082415477
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.87450980392156863,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.74901960784313726,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.62352941176470589,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.50196078431372548,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.37647058823529411,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.25098039215686274,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.651060380229481,
+    "Flipped": false,
+    "Opacity": 0.12549019607843137,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.0,
+    "Origin": "0, 0",
+    "Duration": 3.6036036036036081
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.085697806951139238,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.12549019607843137,
+    "Origin": "1851, 18",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.085697806951139238,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.25098039215686274,
+    "Origin": "1845, 19",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.37647058823529411,
+    "Origin": "1839, 19",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.50196078431372548,
+    "Origin": "1833, 20",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.62352941176470589,
+    "Origin": "1827, 21",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.74901960784313726,
+    "Origin": "1821, 21",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 0.87450980392156863,
+    "Origin": "1815, 22",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1809, 23",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": -8.1301023541559942,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1803, 23",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.084452736311940252,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1797, 24",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092818159808296316,
+    "Rotation": 8.1301023541559658,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1790, 24",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092818159808296316,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1784, 24",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092436974789915971,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1778, 25",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092436974789915971,
+    "Rotation": 7.1250163489018092,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1771, 25",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092436974789915971,
+    "Rotation": 7.1250163489018092,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1765, 26",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.092818159808296316,
+    "Rotation": 7.1250163489018092,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1759, 26",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.093952436029402939,
+    "Rotation": 6.3401917459099053,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1753, 28",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1011898704100193,
+    "Rotation": 7.1250163489018092,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1746, 30",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1011898704100193,
+    "Rotation": 6.3401917459099053,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1738, 33",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.11052896166357903,
+    "Rotation": 12.528807709151508,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1731, 37",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.10956642697819578,
+    "Rotation": 12.528807709151508,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1725, 40",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.11052896166357903,
+    "Rotation": 12.528807709151508,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1719, 44",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.11211482406828853,
+    "Rotation": 12.528807709151508,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1709, 50",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.11884147582967186,
+    "Rotation": 11.309932474020215,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1701, 57",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12031782406114583,
+    "Rotation": 11.309932474020215,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1692, 63",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12031782406114583,
+    "Rotation": 10.30484646876603,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1683, 70",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12031782406114583,
+    "Rotation": 11.309932474020215,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1683, 70",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12854671042670887,
+    "Rotation": 15.255118703057775,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1674, 81",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12854671042670887,
+    "Rotation": 16.699244233993625,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1665, 91",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.12854671042670887,
+    "Rotation": 15.255118703057775,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1657, 102",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.13550013022350502,
+    "Rotation": 9.4623222080256113,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1649, 113",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.13679681173193031,
+    "Rotation": 9.4623222080256113,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1647, 115",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.13550013022350502,
+    "Rotation": 9.4623222080256113,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1639, 133",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.14384237620692178,
+    "Rotation": 14.036243467926468,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1631, 152",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.14506450841707622,
+    "Rotation": 9.4623222080256113,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1624, 171",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.14506450841707622,
+    "Rotation": 9.4623222080256113,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1617, 190",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.14384237620692178,
+    "Rotation": 8.7461622625552025,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1616, 194",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1521913468594524,
+    "Rotation": 8.1301023541559658,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1611, 229",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1521913468594524,
+    "Rotation": 8.7461622625552025,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1605, 263",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.16054599306338488,
+    "Rotation": 8.1301023541559658,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1599, 298",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.16054599306338488,
+    "Rotation": 7.5946433685914485,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1593, 333",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.16054599306338488,
+    "Rotation": 7.5946433685914485,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1592, 333",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1689054726238805,
+    "Rotation": 4.0856167799748846,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1587, 370",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.1689054726238805,
+    "Rotation": 3.8140748342903521,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1577, 397",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.18506483651718689,
+    "Rotation": -3.5763343749973728,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1563, 399",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.19345990644069475,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1554, 395",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.2023797408200386,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1552, 395",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.21159123213469197,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1540, 391",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.21993701392104875,
+    "Rotation": -8.9726266148963987,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1529, 388",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.23074840702094088,
+    "Rotation": -8.5307656099481335,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1517, 385",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.24063564812229166,
+    "Rotation": -10.7842978675626,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1506, 382",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.24729309192541446,
+    "Rotation": -10.7842978675626,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1507, 382",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.26387089862365687,
+    "Rotation": -7.7651660184253473,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1497, 381",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.26533871266969655,
+    "Rotation": -9.4623222080256255,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1488, 381",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.28185730808820875,
+    "Rotation": -9.4623222080256255,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1478, 380",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.28185730808820875,
+    "Rotation": -9.4623222080256255,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1468, 380",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.29012901683415243,
+    "Rotation": -11.309932474020215,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1459, 381",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.29994232432898738,
+    "Rotation": -9.0902769208223191,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1449, 381",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.30818690455281089,
+    "Rotation": -10.885527054658752,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1437, 383",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.3164398383825669,
+    "Rotation": -10.4914770123316,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1424, 386",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.32470048884641439,
+    "Rotation": -12.528807709151508,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1412, 388",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.32632752670500165,
+    "Rotation": -10.124671655397833,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1399, 391",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.334555113233519,
+    "Rotation": -9.7824070318072813,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1386, 394",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.34279122780455695,
+    "Rotation": -11.689369175439197,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1374, 396",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.351035270154713,
+    "Rotation": -9.4623222080256255,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1361, 399",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.36095347218343748,
+    "Rotation": -10.954062643398331,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1349, 401",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.36754500384250488,
+    "Rotation": -10.619655276155143,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1336, 404",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.37740355584681712,
+    "Rotation": -12.339087278326204,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1324, 406",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.38564013128012659,
+    "Rotation": -11.976132444203358,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1311, 408",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.38737581753331463,
+    "Rotation": -11.633633998940439,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1296, 411",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.40563087012259397,
+    "Rotation": -11.633633998940439,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1281, 412",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.40563087012259397,
+    "Rotation": -13.240519915187207,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1266, 413",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.41381755469731535,
+    "Rotation": -12.875001559612471,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1251, 415",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.43209950024142657,
+    "Rotation": -13.67130713219585,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1236, 417",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.43413752447359627,
+    "Rotation": -13.67130713219585,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1221, 418",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.45042330363890409,
+    "Rotation": -14.743562836470744,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1206, 420",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.45042330363890409,
+    "Rotation": -14.743562836470744,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1191, 422",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.46065445625767215,
+    "Rotation": -14.381394591090611,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1172, 426",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.47692314701387267,
+    "Rotation": -14.036243467926497,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1153, 430",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.47692314701387267,
+    "Rotation": -15.018360631150671,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1135, 434",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.48717758119784016,
+    "Rotation": -16.313852426260567,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1117, 438",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.49529956397618069,
+    "Rotation": -15.018360631150671,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1098, 442",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.50560030105853193,
+    "Rotation": -15.592810939266343,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1080, 447",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.51596912379861348,
+    "Rotation": -14.34933204294714,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1062, 453",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.52182099819361427,
+    "Rotation": -14.931417178137565,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1044, 459",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.52994504287151467,
+    "Rotation": -14.931417178137565,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1029, 461",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.54621848739495793,
+    "Rotation": -13.448615051686517,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1014, 463",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.54621848739495793,
+    "Rotation": -13.448615051686517,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "999, 465",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.55238919090906879,
+    "Rotation": -14.322719978203566,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "985, 467",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.56876542047118372,
+    "Rotation": -12.907408671265841,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "970, 469",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.57696281995871834,
+    "Rotation": -12.652556500557978,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "955, 471",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.57696281995871834,
+    "Rotation": -12.652556500557978,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "940, 473",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.58516606247239278,
+    "Rotation": -12.407418527400736,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "926, 475",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60158912030572909,
+    "Rotation": -11.944177188446346,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "911, 478",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60158912030572909,
+    "Rotation": -11.093723011557856,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "907, 483",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59988464865797475,
+    "Rotation": -10.885527054658752,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "898, 487",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59988464865797475,
+    "Rotation": -10.885527054658752,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "888, 490",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59988464865797475,
+    "Rotation": -10.885527054658752,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "879, 493",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59829336172529624,
+    "Rotation": -10.007979801441351,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "869, 495",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60510037066872913,
+    "Rotation": -9.8193006387578947,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "859, 499",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59681616485931777,
+    "Rotation": -9.8193006387578947,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "850, 502",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.59681616485931777,
+    "Rotation": -9.63753811293094,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "840, 505",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60375680493062378,
+    "Rotation": -8.7461622625552167,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "830, 507",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60375680493062378,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "812, 509",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60375680493062378,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "809, 514",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60252745446196143,
+    "Rotation": -8.5836214801139334,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "807, 520",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60252745446196143,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "804, 520",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60375680493062378,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "801, 519",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60375680493062378,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "799, 518",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.6120624448615174,
+    "Rotation": -8.7461622625552167,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "798, 518",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60252745446196143,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "799, 520",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61084980992894944,
+    "Rotation": -7.5238204386386371,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "801, 522",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61084980992894944,
+    "Rotation": -7.5238204386386371,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "803, 523",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60975058600577259,
+    "Rotation": -7.6668042618141925,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "805, 524",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60876538743780961,
+    "Rotation": -6.4588163787186659,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "807, 526",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60876538743780961,
+    "Rotation": -6.4588163787186659,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "809, 527",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60789476861871683,
+    "Rotation": -6.4588163787186659,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "811, 528",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60876538743780961,
+    "Rotation": -5.38931175997341,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "813, 530",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60789476861871683,
+    "Rotation": -5.38931175997341,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "815, 531",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60713922246011565,
+    "Rotation": -4.2363947990588429,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "818, 533",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.60713922246011565,
+    "Rotation": -4.3160275198656279,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "821, 534",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.605975004279662,
+    "Rotation": -3.2397002961021286,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "824, 535",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61436560424989051,
+    "Rotation": -2.1610794882263775,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "827, 536",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61396317504564135,
+    "Rotation": -2.1610794882263775,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "830, 537",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61396317504564135,
+    "Rotation": -1.0809241866606953,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 538",
+    "Duration": 0.066733400066733409
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61396317504564135,
+    "Rotation": -2.1610794882263775,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 538",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61436560424989051,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 539",
+    "Duration": 0.13346680013346682
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.605975004279662,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61436560424989051,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61436560424989051,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.30030030030030036
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.61396317504564135,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.40040040040040054
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62235954491716039,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.16683350016683352
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62235954491716039,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 539",
+    "Duration": 0.13346680013346682
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "834, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.63075610100151958,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 539",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.63114782287816462,
+    "Rotation": -2.0825652797308862,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.63075610100151958,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 539",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62235954491716039,
+    "Rotation": -2.1210963966614571,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 539",
+    "Duration": 0.10010010010010012
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62235954491716039,
+    "Rotation": -3.1798301198642491,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 539",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "833, 540",
+    "Duration": 2.7694361027694372
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.90196078431372551,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.8,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.70196078431372544,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.6,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.50196078431372548,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.4,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.29803921568627451,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.2,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 0.62275654835794636,
+    "Rotation": -3.122130462115706,
+    "Flipped": false,
+    "Opacity": 0.098039215686274508,
+    "Origin": "833, 540",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.0,
+    "Origin": "0, 0",
+    "Duration": 2.3023023023023015
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.0784313725490196,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.15294117647058825,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.23137254901960785,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.30588235294117649,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.3843137254901961,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.46274509803921571,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.53725490196078429,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.615686274509804,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.69411764705882351,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.7686274509803922,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.84705882352941175,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 0.92156862745098034,
+    "Origin": "1200, 1054",
+    "Duration": 0.033366700033366704
+  },
+  {
+    "Camera": 0,
+    "Scale": 1.0,
+    "Rotation": 0.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1200, 1054",
+    "Duration": 4.1374708041374753
+  }
+]
