@@ -55,8 +55,17 @@ namespace DHDM
 			timer.Stop();
 			OnRender(this, this);
 
+			msElapsed = GetElapsedMs();
 			if (GetElapsedMs() < TimeMs)
 				timer.Start();
+			else
+			{
+				//if ( >= TimeMs)
+				//{
+				//	allAnimations.Remove(GetKey());
+				//	// We could remove ourselves from allAnimations and clean up the Render event handler.
+				//}
+			}
 		}
 
 		public string ItemName { get; }

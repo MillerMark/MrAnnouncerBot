@@ -334,6 +334,8 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
+    <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
     <Compile Include="Managers\ConditionManager.cs" />
     <Compile Include="Managers\CreatureManager.cs" />
     <Compile Include="Managers\DieRollManager.cs" />

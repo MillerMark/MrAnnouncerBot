@@ -260,7 +260,7 @@ namespace DHDM
 			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
 			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
-				SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
+				 SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
 				liveFeedAnimation.Render += LiveFeedAnimation_Render;
 		}

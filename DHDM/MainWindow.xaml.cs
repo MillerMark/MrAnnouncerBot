@@ -292,6 +292,7 @@ namespace DHDM
 		void RegisterSpreadsheetIDs()
 		{
 			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			GoogleSheets.RegisterSpreadsheetID("Live Video Animation", "1_axdPNFXyWqGkdwGtLkmqHWdgTFLq4nMbacKHa0b5mQ");
 			GoogleSheets.RegisterSpreadsheetID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
 			GoogleSheets.RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
 			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
