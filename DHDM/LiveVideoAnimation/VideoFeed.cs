@@ -12,6 +12,7 @@ namespace DHDM
 	[TabName("VideoFeeds")]
 	public class VideoFeed
 	{
+		[Indexer]
 		public string sourceName { get; set; }
 		public string sceneName { get; set; }
 		public string videoAnchorHorizontal { get; set; }

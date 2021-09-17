@@ -105,7 +105,7 @@ namespace DHDM
 			{
 				InitializeGame();
 				SpellManager.Initialize(Game);
-				VideoFeedAnimationManager.Initialize();
+				VideoFeedAnimationManager.Initialize(obsManager);
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//`! !!!                                                                                      !!!
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
@@ -165,7 +165,7 @@ namespace DHDM
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
 			DieRollManager.Initialize(game);
-			viewerManager = new ViewerManager(this);
+			viewerManager = new ViewerManager(this, obsManager);
 			obsManager.Initialize(game, this);
 			dmMoodManager = new DmMoodManager(obsManager);
 			contestManager = new ContestManager(obsManager);

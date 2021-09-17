@@ -14,7 +14,12 @@ namespace DHDM
 			allVideoFeeds = GoogleSheets.Get<VideoFeed>();
 		}
 
-		public static List<VideoFeed> AllFeeds
+    public static VideoFeed Get(string sourceName)
+    {
+      return AllFeeds.FirstOrDefault(x => x.sourceName == sourceName);
+    }
+
+    public static List<VideoFeed> AllFeeds
 		{
 			get
 			{

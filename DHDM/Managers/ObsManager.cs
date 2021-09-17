@@ -9,19 +9,10 @@ using OBSWebsocketDotNet.Types;
 
 namespace DHDM
 {
-	public class SourceVisibilityTimer: System.Timers.Timer
-	{
-		
-		public SourceVisibilityTimer()
-		{
-			
-		}
-		public SetObsSourceVisibilityEventArgs ea { get; set; }
-	}
 	public class ObsManager : IObsManager
 	{
-		public static event EventHandler<string> SceneChanged;
-		public static event EventHandler<OutputState> StateChanged;
+		public event EventHandler<string> SceneChanged;
+		public event EventHandler<OutputState> StateChanged;
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DispatcherTimer sceneReturnTimer;
 		PlateManager plateManager;
@@ -53,12 +44,12 @@ namespace DHDM
 			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
 		}
 
-		public static void OnStateChanged(object sender, OutputState state)
+		public void OnStateChanged(object sender, OutputState state)
 		{
 			StateChanged?.Invoke(sender, state);
 		}
 
-		public static void OnSceneChanged(object sender, string sceneName)
+		public void OnSceneChanged(object sender, string sceneName)
 		{
 			SceneChanged?.Invoke(sender, sceneName);
 		}
@@ -195,17 +186,20 @@ namespace DHDM
 			}
 		}
 
-		public void Connect()
+    bool hookedEvents;
+
+    public void Connect()
 		{
 			if (obsWebsocket.IsConnected)
 				return;
 			try
 			{
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
-				obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
-				obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
-			}
-			catch (AuthFailureException)
+        obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
+        obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
+        hookedEvents = true;
+      }
+      catch (AuthFailureException)
 			{
 				Console.WriteLine("Authentication failed.");
 			}
@@ -258,20 +252,20 @@ namespace DHDM
 
 			SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(itemName, sceneName);
 			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
-			LiveFeedAnimation liveFeedAnimation = new LiveFeedAnimation(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
+			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
 				 SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
 				liveFeedAnimation.Render += LiveFeedAnimation_Render;
 		}
 
-		private void LiveFeedAnimation_Render(object sender, LiveFeedAnimation e)
+		private void LiveFeedAnimation_Render(object sender, LiveFeedScaler e)
 		{
 			float scale = (float)e.GetTargetScale();
 			SizeItem(e, scale);
 		}
 
-		private void SizeItem(LiveFeedAnimation e, float scale)
+		private void SizeItem(LiveFeedScaler e, float scale)
 		{
 			double anchorLeft = e.PlayerX;
 			double anchorTop = 1080;

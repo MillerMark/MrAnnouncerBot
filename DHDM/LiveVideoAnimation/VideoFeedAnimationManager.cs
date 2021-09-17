@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using OBSWebsocketDotNet.Types;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
+using Imaging;
 
 namespace DHDM
 {
@@ -18,7 +22,16 @@ namespace DHDM
 		{
 			// TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
 		}
-		static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding)
+    static void LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
+    {
+      if (!File.Exists(movementFile))
+        return;
+      string movementInstructions = File.ReadAllText(movementFile);
+      List<LiveFeedFrame> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedFrame>>(movementInstructions);
+      SceneItem sceneItem = ObsManager.GetSceneItem(videoFeed.sceneName, binding.SourceName);
+    }
+
+    static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding)
 		{
 			if (existingAnimationIsRunning)
 			{
@@ -27,13 +40,10 @@ namespace DHDM
 
 			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string movementFile = Path.Combine(location, "LiveVideoAnimation\\Data", binding.MovementFileName + ".movement");
-			if (File.Exists(movementFile))
-			{
-				// TODO: Load up the movement file, and get the animation going!
-				// We are close!!!
-			}
+      VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
+      LoadLiveAnimation(movementFile, binding, videoFeed);
 
-			// TODO: Track which video feed we are running in case we can an abort while we are running.
+			// TODO: Track which video feed we are running in case we abort while we are running.
 
 			existingAnimationIsRunning = true;
 		}
@@ -46,9 +56,11 @@ namespace DHDM
 				StartLiveAnimation(sceneName, binding);
 		}
 
-		public static void Initialize()
-		{
-			ObsManager.SceneChanged += ObsManager_SceneChanged;
+		public static void Initialize(ObsManager obsManager)
+    {
+      ObsManager = obsManager;
+      ObsManager.SceneChanged += ObsManager_SceneChanged;
 		}
-	}
+    public static ObsManager ObsManager { get; set; }
+  }
 }

@@ -352,10 +352,11 @@
     <Compile Include="LIFX\LifxSetting.cs" />
     <Compile Include="LIFX\LightSettingDto.cs" />
     <Compile Include="LiveFeedAnimation.cs" />
-    <Compile Include="Managers\ObsManager.cs">
+    <Compile Include="Managers\ObsManager.cs" />
+    <Compile Include="Managers\SavedTargets.cs" />
+    <Compile Include="Managers\SourceVisibilityTimer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Managers\SavedTargets.cs" />
     <Compile Include="PlayerStats\PlayerStatManagerDto.cs" />
     <Compile Include="RedemptionEventsDto.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />

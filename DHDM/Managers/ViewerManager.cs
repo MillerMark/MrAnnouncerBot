@@ -19,11 +19,11 @@ namespace DHDM
 		object usersSeenSinceLastStreamlootsMessageLockObject = new object();
 		List<string> usersSeenSinceLastStreamlootsMessage = new List<string>();
 
-		public ViewerManager(IDungeonMasterApp dungeonMasterApp)
-		{
-			this.dungeonMasterApp = dungeonMasterApp;
-			ObsManager.SceneChanged += ObsManager_SceneChanged;
-			ObsManager.StateChanged += ObsManager_StateChanged;
+		public ViewerManager(IDungeonMasterApp dungeonMasterApp, ObsManager obsManager)
+    {
+      this.dungeonMasterApp = dungeonMasterApp;
+			obsManager.SceneChanged += ObsManager_SceneChanged;
+			obsManager.StateChanged += ObsManager_StateChanged;
 			messageTimer = new Timer();
 			messageTimer.Interval = TimeSpan.FromSeconds(90).TotalMilliseconds;
 			messageTimer.Elapsed += MessageTimer_Elapsed;
@@ -286,5 +286,5 @@ namespace DHDM
 			else
 				NormalGreeting(viewer.UserName);
 		}
-	}
+  }
 }

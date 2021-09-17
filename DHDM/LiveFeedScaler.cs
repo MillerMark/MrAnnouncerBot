@@ -5,17 +5,26 @@ using OBSWebsocketDotNet.Types;
 
 namespace DHDM
 {
-	public class LiveFeedAnimation
+	public class LiveFeedScaler
 	{
 		Timer timer;
-		static Dictionary<string, LiveFeedAnimation> allAnimations = new Dictionary<string, LiveFeedAnimation>();
+		static Dictionary<string, LiveFeedScaler> allAnimations = new Dictionary<string, LiveFeedScaler>();
 		DateTime startTime;
-		public event EventHandler<LiveFeedAnimation> Render;
-		public LiveFeedAnimation()
+		public event EventHandler<LiveFeedScaler> Render;
+		public LiveFeedScaler()
 		{
 		}
 
-		public LiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double startScale, double targetScale, double timeMs)
+		public LiveFeedScaler(string itemName, 
+    string sceneName, 
+    double playerX, 
+    double videoAnchorHorizontal, 
+    double videoAnchorVertical, 
+    double videoWidth, 
+    double videoHeight, 
+    double startScale, 
+    double targetScale, 
+    double timeMs)
 		{
 			VideoHeight = videoHeight;
 			VideoWidth = videoWidth;
@@ -46,7 +55,7 @@ namespace DHDM
 			return $"{SceneName}.{ItemName}";
 		}
 
-		void OnRender(object sender, LiveFeedAnimation e)
+		void OnRender(object sender, LiveFeedScaler e)
 		{
 			Render?.Invoke(sender, e);
 		}

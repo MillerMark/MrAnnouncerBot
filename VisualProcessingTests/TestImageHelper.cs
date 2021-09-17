@@ -12,7 +12,7 @@ namespace VisualProcessingTests
 		{
 		}
 
-		public static VisualProcessingResults ProcessImage(string fileName)
+		public static LiveFeedFrame ProcessImage(string fileName)
 		{
 			string fullFileName;
 

@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace Imaging
 {
-	public class VisualProcessingResults
+	public class LiveFeedFrame
 	{
 		Point HeadPoint;
 		Point LeftShoulder;
@@ -44,11 +44,11 @@ namespace Imaging
 		/// </summary>
 		public double Duration { get; set; }
 
-		public VisualProcessingResults()
+		public LiveFeedFrame()
 		{
 		}
 
-		public bool Matches(VisualProcessingResults obj)
+		public bool Matches(LiveFeedFrame obj)
 		{
 			if (obj == null)
 				return false;

@@ -56,7 +56,7 @@
     <Compile Include="Margins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioCamera.cs" />
-    <Compile Include="VisualProcessingResults.cs" />
+    <Compile Include="LiveFeedFrame.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
