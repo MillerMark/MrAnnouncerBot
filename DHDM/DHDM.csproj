@@ -321,6 +321,7 @@
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="AllKnownCards.cs" />
     <Compile Include="AllViewers.cs" />
+    <Compile Include="BaseLiveFeedAnimator.cs" />
     <Compile Include="CardEvents\CardEvent.cs" />
     <Compile Include="CardEvents\CardEventManager.cs" />
     <Compile Include="CardEvents\CardEventQueue.cs" />
@@ -334,6 +335,7 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="LiveVideoAnimation\LiveFeedAnimator.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoBindings.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
     <Compile Include="LiveVideoAnimation\VideoAnimationBinding.cs" />
@@ -351,7 +353,7 @@
     <Compile Include="LIFX\LifxService.cs" />
     <Compile Include="LIFX\LifxSetting.cs" />
     <Compile Include="LIFX\LightSettingDto.cs" />
-    <Compile Include="LiveFeedAnimation.cs" />
+    <Compile Include="LiveVideoAnimation\LiveFeedScaler.cs" />
     <Compile Include="Managers\ObsManager.cs" />
     <Compile Include="Managers\SavedTargets.cs" />
     <Compile Include="Managers\SourceVisibilityTimer.cs">

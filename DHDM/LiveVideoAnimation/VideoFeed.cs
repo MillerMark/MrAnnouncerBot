@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 
 namespace DHDM
 {
-
-	[SheetName("Live Video Animation")]
+  [SheetName("Live Video Animation")]
 	[TabName("VideoFeeds")]
 	public class VideoFeed
 	{
 		[Indexer]
 		public string sourceName { get; set; }
 		public string sceneName { get; set; }
-		public string videoAnchorHorizontal { get; set; }
-		public string videoAnchorVertical { get; set; }
-		public string videoWidth { get; set; }
-		public string videoHeight { get; set; }
+		public double videoAnchorHorizontal { get; set; }
+		public double videoAnchorVertical { get; set; }
+		public double videoWidth { get; set; }
+		public double videoHeight { get; set; }
 		public double defaultX { get; set; }
 		public double defaultY { get; set; }
 	}

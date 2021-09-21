@@ -12,23 +12,33 @@ namespace DHDM
 	public static class VideoFeedAnimationManager
 	{
 		static bool existingAnimationIsRunning;
+    static LiveFeedAnimator liveFeedAnimator;
 
-		static VideoFeedAnimationManager()
+    static VideoFeedAnimationManager()
 		{
 			
 		}
 
 		static void StopExistingAnimation()
 		{
-			// TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
-		}
+			existingAnimationIsRunning = false;
+      // TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
+    }
     static void LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
     {
       if (!File.Exists(movementFile))
         return;
       string movementInstructions = File.ReadAllText(movementFile);
       List<LiveFeedFrame> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedFrame>>(movementInstructions);
-      SceneItem sceneItem = ObsManager.GetSceneItem(videoFeed.sceneName, binding.SourceName);
+      liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
+      liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+			liveFeedAnimator.Start();
+		}
+
+    private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
+    {
+      if (sender == liveFeedAnimator && liveFeedAnimator != null)
+        liveFeedAnimator = null;
     }
 
     static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding)

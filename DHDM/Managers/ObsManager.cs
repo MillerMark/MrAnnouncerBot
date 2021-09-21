@@ -4,12 +4,24 @@ using System.Linq;
 using System.Windows.Threading;
 using DndCore;
 using BotCore;
+using Newtonsoft.Json.Linq;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 
 namespace DHDM
 {
-	public class ObsManager : IObsManager
+  public class ImageMask
+  {
+    public long color { get; set; }
+    public string image_path { get; set; }
+    public int opacity { get; set; }
+    public bool stretch { get; set; }
+    public ImageMask()
+    {
+      
+    }
+  }
+  public class ObsManager : IObsManager
 	{
 		public event EventHandler<string> SceneChanged;
 		public event EventHandler<OutputState> StateChanged;
@@ -39,8 +51,13 @@ namespace DHDM
 		public SceneItem GetSceneItem(string sceneName, string itemName)
 		{
 			if (sceneList == null)
+      {
+        if (!obsWebsocket.IsConnected)
+          return null;
 				sceneList = obsWebsocket.GetSceneList();
-			OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
+      }
+
+      OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
 			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
 		}
 
@@ -254,7 +271,7 @@ namespace DHDM
 			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
 			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
-				 SizeItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
+				 SizeAndPositionItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
 				liveFeedAnimation.Render += LiveFeedAnimation_Render;
 		}
@@ -262,20 +279,36 @@ namespace DHDM
 		private void LiveFeedAnimation_Render(object sender, LiveFeedScaler e)
 		{
 			float scale = (float)e.GetTargetScale();
-			SizeItem(e, scale);
+			SizeAndPositionItem(e, scale);
 		}
 
-		private void SizeItem(LiveFeedScaler e, float scale)
+    public void SizeAndPositionItem(BaseLiveFeedAnimator e, float scale, double opacity = 1)
 		{
-			double anchorLeft = e.PlayerX;
-			double anchorTop = 1080;
+			double screenAnchorLeft = e.ScreenAnchorLeft;
+			double screenAnchorTop = e.ScreenAnchorTop;
 
-			double newLeft = anchorLeft - e.VideoAnchorHorizontal * Math.Abs(e.VideoWidth) * scale;
-			double newTop = anchorTop - e.VideoAnchorVertical * e.VideoHeight * scale;
-			//Console.WriteLine($"scale = {scale}");
+			double newLeft = screenAnchorLeft - e.VideoAnchorHorizontal * Math.Abs(e.VideoWidth) * scale;
+			double newTop = screenAnchorTop - e.VideoAnchorVertical * e.VideoHeight * scale;
+      //Console.WriteLine($"scale = {scale}");
 
-			SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
-			sceneItemProperties.Bounds = new SceneItemBoundsInfo()
+      // TODO: Locking up here. Seems as if it's definitely a threading issue.
+      SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
+			sceneItemProperties.Visible = opacity > 0;
+			if (sceneItemProperties.Visible)
+      {
+        //
+        const string ImageMaskFilter = "Image Mask/Blend";
+        FilterSettings sourceFilterInfo = obsWebsocket.GetSourceFilterInfo(e.ItemName, ImageMaskFilter);
+        JObject settings = sourceFilterInfo.Settings;
+        int newOpacity = (int)(opacity * 100);
+        ImageMask imageMask = settings.ToObject<ImageMask>();
+				if (imageMask.opacity != newOpacity)
+        {
+					imageMask.opacity = newOpacity;
+          obsWebsocket.SetSourceFilterSettings(e.ItemName, ImageMaskFilter, JObject.FromObject(imageMask));
+				}
+      }
+      sceneItemProperties.Bounds = new SceneItemBoundsInfo()
 			{
 				Height = e.VideoHeight * scale,
 				Width = Math.Abs(e.VideoWidth) * scale,

@@ -105,7 +105,6 @@ namespace DHDM
 			{
 				InitializeGame();
 				SpellManager.Initialize(Game);
-				VideoFeedAnimationManager.Initialize(obsManager);
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//`! !!!                                                                                      !!!
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
@@ -169,6 +168,7 @@ namespace DHDM
 			obsManager.Initialize(game, this);
 			dmMoodManager = new DmMoodManager(obsManager);
 			contestManager = new ContestManager(obsManager);
+			VideoFeedAnimationManager.Initialize(obsManager);
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
