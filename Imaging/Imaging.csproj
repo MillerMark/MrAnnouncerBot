@@ -54,6 +54,7 @@
     <Compile Include="ImageUtils.cs" />
     <Compile Include="IntermediateResults.cs" />
     <Compile Include="Margins.cs" />
+    <Compile Include="Math2D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioCamera.cs" />
     <Compile Include="LiveFeedFrame.cs" />

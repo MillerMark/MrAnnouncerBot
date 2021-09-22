@@ -7,21 +7,23 @@ using BotCore;
 using Newtonsoft.Json.Linq;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
+using Imaging;
+using System.Drawing;
 
 namespace DHDM
 {
-  public class ImageMask
-  {
-    public long color { get; set; }
-    public string image_path { get; set; }
-    public int opacity { get; set; }
-    public bool stretch { get; set; }
-    public ImageMask()
-    {
-      
-    }
-  }
-  public class ObsManager : IObsManager
+	public class ImageMask
+	{
+		public long color { get; set; }
+		public string image_path { get; set; }
+		public int opacity { get; set; }
+		public bool stretch { get; set; }
+		public ImageMask()
+		{
+
+		}
+	}
+	public class ObsManager : IObsManager
 	{
 		public event EventHandler<string> SceneChanged;
 		public event EventHandler<OutputState> StateChanged;
@@ -51,13 +53,13 @@ namespace DHDM
 		public SceneItem GetSceneItem(string sceneName, string itemName)
 		{
 			if (sceneList == null)
-      {
-        if (!obsWebsocket.IsConnected)
-          return null;
+			{
+				if (!obsWebsocket.IsConnected)
+					return null;
 				sceneList = obsWebsocket.GetSceneList();
-      }
+			}
 
-      OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
+			OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
 			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
 		}
 
@@ -203,20 +205,20 @@ namespace DHDM
 			}
 		}
 
-    bool hookedEvents;
+		bool hookedEvents;
 
-    public void Connect()
+		public void Connect()
 		{
 			if (obsWebsocket.IsConnected)
 				return;
 			try
 			{
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
-        obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
-        obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
-        hookedEvents = true;
-      }
-      catch (AuthFailureException)
+				obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
+				obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
+				hookedEvents = true;
+			}
+			catch (AuthFailureException)
 			{
 				Console.WriteLine("Authentication failed.");
 			}
@@ -271,7 +273,7 @@ namespace DHDM
 			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
 			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
-				 SizeAndPositionItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
+				SizeAndPositionItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
 				liveFeedAnimation.Render += LiveFeedAnimation_Render;
 		}
@@ -282,44 +284,76 @@ namespace DHDM
 			SizeAndPositionItem(e, scale);
 		}
 
-    public void SizeAndPositionItem(BaseLiveFeedAnimator e, float scale, double opacity = 1)
+		public void SizeAndPositionItem(BaseLiveFeedAnimator e, float scale, double opacity = 1, double rotation = 0)
 		{
 			double screenAnchorLeft = e.ScreenAnchorLeft;
 			double screenAnchorTop = e.ScreenAnchorTop;
 
 			double newLeft = screenAnchorLeft - e.VideoAnchorHorizontal * Math.Abs(e.VideoWidth) * scale;
 			double newTop = screenAnchorTop - e.VideoAnchorVertical * e.VideoHeight * scale;
-      //Console.WriteLine($"scale = {scale}");
+			//Console.WriteLine($"scale = {scale}");
 
-      // TODO: Locking up here. Seems as if it's definitely a threading issue.
-      SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
-			sceneItemProperties.Visible = opacity > 0;
-			if (sceneItemProperties.Visible)
-      {
-        //
-        const string ImageMaskFilter = "Image Mask/Blend";
-        FilterSettings sourceFilterInfo = obsWebsocket.GetSourceFilterInfo(e.ItemName, ImageMaskFilter);
-        JObject settings = sourceFilterInfo.Settings;
-        int newOpacity = (int)(opacity * 100);
-        ImageMask imageMask = settings.ToObject<ImageMask>();
-				if (imageMask.opacity != newOpacity)
-        {
-					imageMask.opacity = newOpacity;
-          obsWebsocket.SetSourceFilterSettings(e.ItemName, ImageMaskFilter, JObject.FromObject(imageMask));
-				}
-      }
-      sceneItemProperties.Bounds = new SceneItemBoundsInfo()
+			// TODO: Locking up here. Seems as if it's definitely a threading issue.
+			try
 			{
-				Height = e.VideoHeight * scale,
-				Width = Math.Abs(e.VideoWidth) * scale,
-				Alignnment = sceneItemProperties.Bounds.Alignnment,
-				Type = sceneItemProperties.Bounds.Type
-			};
+				SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
+				sceneItemProperties.Visible = opacity > 0;
+				if (sceneItemProperties.Visible)
+				{
+					// TODO: Consider optimizing this to only change when the new value is different from the last one set. Confidence should be high (e.g., time between sets should be short, and everything else should match).
+					const string ImageMaskFilter = "Image Mask/Blend";
+					FilterSettings sourceFilterInfo = obsWebsocket.GetSourceFilterInfo(e.ItemName, ImageMaskFilter);
+					JObject settings = sourceFilterInfo.Settings;
+					int newOpacity = (int)(opacity * 100);
+					ImageMask imageMask = settings.ToObject<ImageMask>();
+					if (imageMask.opacity != newOpacity)
+					{
+						imageMask.opacity = newOpacity;
+						obsWebsocket.SetSourceFilterSettings(e.ItemName, ImageMaskFilter, JObject.FromObject(imageMask));
+					}
+				}
+				if (rotation != 0)
+				{
+					sceneItemProperties.Rotation = rotation;
 
-			sceneItemProperties.Position = new SceneItemPositionInfo() { X = newLeft, Y = newTop, 
-				Alignment = sceneItemProperties.Position.Alignment };
+					// This will rotate around the top left.
+					// ![](342CE4E3D8508B3F1D4B944701C25E97.png)
 
-			obsWebsocket.SetSceneItemProperties(sceneItemProperties, e.SceneName);
+					// But we also need to rotate the upper left anchor by that amount..
+					// ![](50D76BD4D4A4D1EF91B34011CF9EA1D7.png)
+
+					// screenAnchorLeft and screenAnchorTop are the red point.
+					// newLeft and newTop are the original yellow anchor point in the upper left.
+
+					// TODO: Sacrificing precision for bonus laziness gained. May want to fix this later. 5 years later says Lasamat. 21 Sept 2021. We WIN if we fix in less than 5 years.
+					Point upperLeft = new Point((int)newLeft, (int)newTop);
+					Point centerPoint = new Point((int)screenAnchorLeft, (int)screenAnchorTop);
+
+					Point newUpperLeft = Math2D.RotatePoint(upperLeft, centerPoint, rotation);
+					newLeft = newUpperLeft.X;
+					newTop = newUpperLeft.Y;
+				}
+				sceneItemProperties.Bounds = new SceneItemBoundsInfo()
+				{
+					Height = e.VideoHeight * scale,
+					Width = Math.Abs(e.VideoWidth) * scale,
+					Alignnment = sceneItemProperties.Bounds.Alignnment,
+					Type = sceneItemProperties.Bounds.Type
+				};
+
+				sceneItemProperties.Position = new SceneItemPositionInfo()
+				{
+					X = newLeft,
+					Y = newTop,
+					Alignment = sceneItemProperties.Position.Alignment
+				};
+
+				obsWebsocket.SetSceneItemProperties(sceneItemProperties, e.SceneName);
+			}
+			catch (Exception ex)
+			{
+				
+			}
 		}
 
 		public void AnimateLiveFeed(string sourceName, string sceneName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs, int playerIndex)

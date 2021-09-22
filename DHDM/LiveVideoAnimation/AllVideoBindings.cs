@@ -19,6 +19,11 @@ namespace DHDM
 			return AllBindings.FirstOrDefault(x => x.SceneName == sceneName);
 		}
 
+		public static void Invalidate()
+		{
+			allVideoBindings = null;
+		}
+
 		public static List<VideoAnimationBinding> AllBindings
 		{
 			get

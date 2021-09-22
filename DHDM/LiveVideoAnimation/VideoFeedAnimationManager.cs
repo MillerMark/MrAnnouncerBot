@@ -12,46 +12,47 @@ namespace DHDM
 	public static class VideoFeedAnimationManager
 	{
 		static bool existingAnimationIsRunning;
-    static LiveFeedAnimator liveFeedAnimator;
+		static LiveFeedAnimator liveFeedAnimator;
 
-    static VideoFeedAnimationManager()
+		static VideoFeedAnimationManager()
 		{
-			
+
 		}
 
 		static void StopExistingAnimation()
 		{
+			if (!existingAnimationIsRunning)
+				return;
+
 			existingAnimationIsRunning = false;
-      // TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
-    }
-    static void LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
-    {
-      if (!File.Exists(movementFile))
-        return;
-      string movementInstructions = File.ReadAllText(movementFile);
-      List<LiveFeedFrame> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedFrame>>(movementInstructions);
-      liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
-      liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+			// TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
+			if (liveFeedAnimator != null)
+				liveFeedAnimator.StopSoon();
+		}
+
+		static void LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
+		{
+			if (!File.Exists(movementFile))
+				return;
+			string movementInstructions = File.ReadAllText(movementFile);
+			List<LiveFeedFrame> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedFrame>>(movementInstructions);
+			liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
+			liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
 			liveFeedAnimator.Start();
 		}
 
-    private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
-    {
-      if (sender == liveFeedAnimator && liveFeedAnimator != null)
-        liveFeedAnimator = null;
-    }
-
-    static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding)
+		private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
 		{
-			if (existingAnimationIsRunning)
-			{
-				StopExistingAnimation();
-			}
+			if (sender == liveFeedAnimator && liveFeedAnimator != null)
+				liveFeedAnimator = null;
+		}
 
+		static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding)
+		{
 			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string movementFile = Path.Combine(location, "LiveVideoAnimation\\Data", binding.MovementFileName + ".movement");
-      VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
-      LoadLiveAnimation(movementFile, binding, videoFeed);
+			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
+			LoadLiveAnimation(movementFile, binding, videoFeed);
 
 			// TODO: Track which video feed we are running in case we abort while we are running.
 
@@ -60,6 +61,8 @@ namespace DHDM
 
 		private static void ObsManager_SceneChanged(object sender, string sceneName)
 		{
+			StopExistingAnimation();
+
 			VideoAnimationBinding binding = AllVideoBindings.Get(sceneName);
 
 			if (binding != null)
@@ -67,10 +70,10 @@ namespace DHDM
 		}
 
 		public static void Initialize(ObsManager obsManager)
-    {
-      ObsManager = obsManager;
-      ObsManager.SceneChanged += ObsManager_SceneChanged;
+		{
+			ObsManager = obsManager;
+			ObsManager.SceneChanged += ObsManager_SceneChanged;
 		}
-    public static ObsManager ObsManager { get; set; }
-  }
+		public static ObsManager ObsManager { get; set; }
+	}
 }

@@ -1231,6 +1231,26 @@
 						</ListBox>
 					</StackPanel>
 				</TabItem>
+				<TabItem Header="Reload" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="54">
+					<StackPanel Orientation="Vertical" >
+						<Button x:Name="btnReloadPlayers" MaxWidth="90" Margin="8" Click="btnReloadPlayers_Click" >
+							Reload Players
+						</Button>
+						<Button x:Name="btnReloadVideoBindings" MaxWidth="140" Margin="8" Click="btnReloadVideoBindings_Click" >
+							Reload Video Bindings
+						</Button>
+						<Button x:Name="btnReloadVideoFeeds" MaxWidth="140" Margin="8" Click="btnReloadVideoFeeds_Click" >
+							Reload Video Feeds
+						</Button>
+						<Button x:Name="btnReloadSpells2" MaxWidth="90" Margin="8" Click="btnReloadSpells2_Click" >
+							Reload Spells
+						</Button>
+						<Button x:Name="btnReloadNPCs" MaxWidth="90" Margin="8" Click="btnReloadNPCs_Click" >
+							Reload NPCs
+						</Button>
+					</StackPanel>
+					
+				</TabItem>
 			</TabControl>
 		</StackPanel>
 	</Grid>

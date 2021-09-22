@@ -13,8 +13,10 @@ namespace DHDM
     Timer timer;
     DateTime startTime;
     TimeSpan totalDrawTimeSoFar;
+		bool allDone;
+		bool needToStopNow;
 
-    public LiveFeedAnimator(double videoAnchorHorizontal,
+		public LiveFeedAnimator(double videoAnchorHorizontal,
       double videoAnchorVertical,
       double videoWidth,
       double videoHeight,
@@ -39,6 +41,9 @@ namespace DHDM
 
     private void AdvanceFrame()
     {
+      if (needToStopNow)
+        frameIndex = LiveFeedFrames.Count - 1;
+
       LiveFeedFrame liveFeedFrame = LiveFeedFrames[frameIndex];
       if (liveFeedFrame == null)
       {
@@ -46,10 +51,11 @@ namespace DHDM
         return;
       }
 
-      RenderActiveFrame(liveFeedFrame);
-      SetNextTimer(liveFeedFrame);
+			RenderActiveFrame(liveFeedFrame);
+			SetNextTimer(liveFeedFrame);
+			
       frameIndex++;
-      if (frameIndex >= LiveFeedFrames.Count)
+      if (frameIndex >= LiveFeedFrames.Count || needToStopNow)
         Stop();
     }
 
@@ -57,22 +63,24 @@ namespace DHDM
     {
       ScreenAnchorLeft = liveFeedFrame.Origin.X;
       ScreenAnchorTop = liveFeedFrame.Origin.Y;
-      VideoFeedAnimationManager.ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity);
+      VideoFeedAnimationManager.ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation);
     }
 
     void SetNextTimer(LiveFeedFrame liveFeedFrame)
-    {
-      DateTime now = DateTime.Now;
-      totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration);
-      DateTime nextFrameDrawTime = startTime + totalDrawTimeSoFar;
-      if (nextFrameDrawTime <= now)
-        timer.Interval = 1;  // Render the next frame ASAP.
-      else
-        timer.Interval = (nextFrameDrawTime - now).TotalMilliseconds;
-      timer.Start();
-    }
+		{
+			if (allDone)
+				return;
+			DateTime now = DateTime.Now;
+			totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration);
+			DateTime nextFrameDrawTime = startTime + totalDrawTimeSoFar;
+			if (nextFrameDrawTime <= now)
+				timer.Interval = 1;  // Render the next frame ASAP.
+			else
+				timer.Interval = (nextFrameDrawTime - now).TotalMilliseconds;
+			timer.Start();
+		}
 
-    public List<LiveFeedFrame> LiveFeedFrames { get; set; }
+		public List<LiveFeedFrame> LiveFeedFrames { get; set; }
 
     void OnAnimationComplete(object sender, EventArgs e)
     {
@@ -95,11 +103,25 @@ namespace DHDM
       timer.Start();  // Start ASAP.
     }
 
-    public void Stop()
-    {
-      timer.Stop();
+		public void Stop()
+		{
+      allDone = true;
+			timer.Stop();
       Finished();
       // TODO: Restore the feed and stop any timers. Abort! Abort! Abort!
     }
-  }
+
+		public void Reset()
+		{
+      frameIndex = 0;
+		}
+
+		public void StopSoon()
+		{
+			timer.Stop();
+      timer.Interval = 1;
+      needToStopNow = true;
+			timer.Start();
+    }
+	}
 }

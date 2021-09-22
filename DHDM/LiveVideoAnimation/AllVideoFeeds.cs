@@ -19,7 +19,12 @@ namespace DHDM
       return AllFeeds.FirstOrDefault(x => x.sourceName == sourceName);
     }
 
-    public static List<VideoFeed> AllFeeds
+		public static void Invalidate()
+		{
+			allVideoFeeds = null;
+		}
+
+		public static List<VideoFeed> AllFeeds
 		{
 			get
 			{

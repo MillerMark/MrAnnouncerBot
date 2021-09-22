@@ -482,7 +482,7 @@ namespace DHDM
 			if (result > 0)
 				ea.Ammunition = filteredAmmunition[result - 1];
 		}
-		
+
 		private void HookEvents()
 		{
 			DeltaTargetFunction.RequestPropertyChange += DeltaTargetFunction_RequestPropertyChange;
@@ -3025,7 +3025,7 @@ namespace DHDM
 			UpdatePlayerPositions();
 
 			DndCore.ValidationResult validationResult = castedSpell.GetValidation(player, castedSpell.Target);
-			
+
 			if (validationResult.ValidationAction == ValidationAction.Stop)
 			{
 				ReportValidation(player, validationResult);
@@ -4033,7 +4033,7 @@ namespace DHDM
 		{
 			if (!dynamicThrottling)
 				return;
-			
+
 			if (!DieRollManager.LastRollIsOlderThan(3))
 				return;
 
@@ -5586,7 +5586,7 @@ namespace DHDM
 		{
 			if (CreatureManager.ShouldUpdateInGameStats)
 				CreatureManager.UpdateInGameStatsIfNecessary();
-			
+
 			if (ActivePlayer == null)
 				return;
 
@@ -11634,6 +11634,31 @@ namespace DHDM
 			Targeting.SetDamageSide(DndUtils.ToDamageSide(direction));
 			if (game.LastCastedSpell != null)
 				TaleSpireClient.SetDamageSide(game.LastCastedSpell.ID, direction);
+		}
+
+		private void btnReloadPlayers_Click(object sender, RoutedEventArgs e)
+		{
+			AllPlayers.Invalidate();
+		}
+
+		private void btnReloadVideoBindings_Click(object sender, RoutedEventArgs e)
+		{
+			AllVideoBindings.Invalidate();
+		}
+
+		private void btnReloadVideoFeeds_Click(object sender, RoutedEventArgs e)
+		{
+			AllVideoFeeds.Invalidate();
+		}
+
+		private void btnReloadSpells2_Click(object sender, RoutedEventArgs e)
+		{
+			AllSpells.Invalidate();
+		}
+
+		private void btnReloadNPCs_Click(object sender, RoutedEventArgs e)
+		{
+			AllInGameCreatures.Invalidate();
 		}
 	}
 }
