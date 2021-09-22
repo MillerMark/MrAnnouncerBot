@@ -19,7 +19,7 @@ namespace DHDM
 
 		public void QueueEvent(QueueEffectEventArgs ea, IObsManager obsManager, IDungeonMasterApp iDungeonMasterApp)
 		{
-			CardEvent cardEvent = CardEvent.Create(ea.CardEventName, ea.CardUserName, ea.Args, obsManager, iDungeonMasterApp);
+			CardEvent cardEvent = CardEvent.Create(ea.CardEventName, ea.CardUserName, ea.Args, iDungeonMasterApp);
 			if (cardEvent == null)
 			{
 				System.Diagnostics.Debugger.Break();

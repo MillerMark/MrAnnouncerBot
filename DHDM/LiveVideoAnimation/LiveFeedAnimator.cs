@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Imaging;
 using System.Timers;
 using OBSWebsocketDotNet.Types;
+using ObsControl;
 
 namespace DHDM
 {
@@ -63,7 +64,7 @@ namespace DHDM
     {
       ScreenAnchorLeft = liveFeedFrame.Origin.X;
       ScreenAnchorTop = liveFeedFrame.Origin.Y;
-      VideoFeedAnimationManager.ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation);
+      ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation);
     }
 
     void SetNextTimer(LiveFeedFrame liveFeedFrame)
@@ -92,12 +93,12 @@ namespace DHDM
       OnAnimationComplete(this, EventArgs.Empty);
     }
 
-    public void Start()
+    public void Start(DateTime startTime)
     {
       if (LiveFeedFrames.Count == 0)  // Nothing to animate.
         return;
       frameIndex = 0;
-      startTime = DateTime.Now - TimeSpan.FromSeconds(0.25);  // Sync adjust.
+			this.startTime = startTime - TimeSpan.FromSeconds(0.25);  // Sync adjust.
       totalDrawTimeSoFar = TimeSpan.Zero;
       timer.Interval = 1;
       timer.Start();  // Start ASAP.

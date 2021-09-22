@@ -1,13 +1,13 @@
+using CommonCore;
 using System;
-using System.Drawing;
 
 namespace Imaging
 {
 	public class LiveFeedFrame
 	{
-		Point HeadPoint;
-		Point LeftShoulder;
-		Point RightShoulder;
+		Point2d HeadPoint;
+		Point2d LeftShoulder;
+		Point2d RightShoulder;
 
 		/// <summary>
 		/// Which camera to use (Front, Right, etc.).
@@ -37,7 +37,7 @@ namespace Imaging
 		/// <summary>
 		/// The center anchor point of the actor.
 		/// </summary>
-		public Point Origin { get; set; }
+		public Point2d Origin { get; set; }
 
 		/// <summary>
 		/// The length of time in seconds this data is valid.
@@ -60,14 +60,14 @@ namespace Imaging
 				Origin == obj.Origin;
 		}
 
-		Point GetPoint(CountTotals countTotals)
+		Point2d GetPoint(CountTotals countTotals)
 		{
 			if (countTotals.Count == 0)
-				return Point.Empty;
+				return Point2d.Empty;
 
 			int x = countTotals.XTotal / countTotals.Count;
 			int y = countTotals.YTotal / countTotals.Count;
-			return new Point(x, y);
+			return new Point2d(x, y);
 		}
 
 		void CalculateFlipped()
@@ -75,10 +75,10 @@ namespace Imaging
 			// Rotate the red and blue shoulder points around the HeadPoint by -Rotation.
 			// Red and blue will be at essentially the same y position.
 			// Then see if red is right of blue ==> then we are flipped
-			Point right = RightShoulder;  // Red
-			Point left = LeftShoulder;
-			Point rotatedRight = Math2D.RotatePoint(right, Origin, -Rotation);
-			Point rotatedLeft = Math2D.RotatePoint(left, Origin, -Rotation);
+			Point2d right = RightShoulder;  // Red
+			Point2d left = LeftShoulder;
+			Point2d rotatedRight = Math2D.RotatePoint(right, Origin, -Rotation);
+			Point2d rotatedLeft = Math2D.RotatePoint(left, Origin, -Rotation);
 			if (rotatedRight.X > rotatedLeft.X)  // Because red (on the left in the original image represents the right shoulder of the actor facing the camera).
 				Flipped = true;
 		}
@@ -95,7 +95,7 @@ namespace Imaging
 				HeadPoint = GetPoint(intermediateResults.Green);
 			RightShoulder = GetPoint(intermediateResults.Red);
 			LeftShoulder = GetPoint(intermediateResults.Blue);
-			Origin = new Point((RightShoulder.X + LeftShoulder.X) / 2, (RightShoulder.Y + LeftShoulder.Y) / 2);
+			Origin = new Point2d((RightShoulder.X + LeftShoulder.X) / 2, (RightShoulder.Y + LeftShoulder.Y) / 2);
 			CalculateScale();
 			if (Scale == 0)
 			{

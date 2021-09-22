@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using DndCore;
+using ObsControl;
 
 namespace DHDM
 {
@@ -15,15 +16,11 @@ namespace DHDM
 		// TODO: Delete ActiveSection.
 		public ContestSection ActiveSection { get; set; } = ContestSection.Top;
 
-		public ContestManager()
+		public ContestManager(DndObsManager obsManager)
 		{
+			dndObsManager = obsManager;
 			InitializeWidths();
 			AddSourceNames();
-		}
-
-		public ContestManager(ObsManager obsManager): this()
-		{
-			ObsManager = obsManager;
 		}
 
 		Dictionary<Skills, int> sceneWidths = new Dictionary<Skills, int>();
@@ -83,8 +80,6 @@ namespace DHDM
 			AddSceneWidth(Skills.randomShit, 986);
 		}
 
-		public ObsManager ObsManager { get; }
-
 		public void Invalidate()
 		{
 
@@ -102,6 +97,8 @@ namespace DHDM
 			set => contestDto = value;
 		}
 		
+		public DndObsManager dndObsManager { get; set; }
+
 		public void AddNpc()
 		{
 			decimal value = DigitManager.GetValue("contest");
@@ -167,13 +164,13 @@ namespace DHDM
 			if (active)
 				return;
 			HideAllSources();
-			ObsManager.SetSourceVisibility("DH.ContestIntro", SCENE_Contest, true, 5 * 33.3 / 1000);
-			ObsManager.SetSourceVisibility("DH.ContestIntro", SCENE_Contest, false, 10);
-			ObsManager.SetSourceVisibility("ContestLoop", SCENE_Contest, true, 4);
+			DndObsManager.SetSourceVisibility("DH.ContestIntro", SCENE_Contest, true, 5 * 33.3 / 1000);
+			DndObsManager.SetSourceVisibility("DH.ContestIntro", SCENE_Contest, false, 10);
+			DndObsManager.SetSourceVisibility("ContestLoop", SCENE_Contest, true, 4);
 
 			//ObsManager.SetSourceVisibility("ContestLoop", SCENE_Contest, false, 15);    // For diagnostics.
 
-			ObsManager.PlayScene(SCENE_Contest);
+			dndObsManager.PlayScene(SCENE_Contest);
 			HubtasticBaseStation.PlaySound("Contest/Contest[6]");
 			
 			active = true;
@@ -232,7 +229,7 @@ namespace DHDM
 
 			HideAllSourcesBySceneName(sceneName);
 			HubtasticBaseStation.PlaySound($"Contest/{GetSkillName(skill)}[3]");
-			ObsManager.SetSourceVisibility(GetSourceName(skill), sceneName, true, delaySeconds);
+			DndObsManager.SetSourceVisibility(GetSourceName(skill), sceneName, true, delaySeconds);
 			Update();
 		}
 

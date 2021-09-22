@@ -43,6 +43,7 @@ using System.Text.RegularExpressions;
 using LeapTools;
 using TwitchLib.PubSub;
 using System.ComponentModel;
+using ObsControl;
 
 namespace DHDM
 {
@@ -67,7 +68,7 @@ namespace DHDM
 		const string STR_RepeatSpell = "[Again]";
 
 
-		private readonly ObsManager obsManager = new ObsManager();
+		private readonly DndObsManager obsManager = new DndObsManager();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
 		TwitchClient dhClient;
@@ -164,11 +165,11 @@ namespace DHDM
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
 			DieRollManager.Initialize(game);
-			viewerManager = new ViewerManager(this, obsManager);
+			viewerManager = new ViewerManager(this);
 			obsManager.Initialize(game, this);
-			dmMoodManager = new DmMoodManager(obsManager);
+			dmMoodManager = new DmMoodManager();
 			contestManager = new ContestManager(obsManager);
-			VideoFeedAnimationManager.Initialize(obsManager);
+			VideoFeedAnimationManager.Initialize();
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
@@ -195,7 +196,6 @@ namespace DHDM
 
 			dmChatBot.DungeonMasterApp = this;
 			commandParsers.Add(dmChatBot);
-			ConnectToObs();
 			HookEvents();
 
 			SetupSpellsChangedFileWatcher();
@@ -556,7 +556,7 @@ namespace DHDM
 				timer.Start();
 				return;
 			}
-			obsManager.SetFilterVisibility(ea.SourceName, ea.FilterName, ea.FilterEnabled);
+			ObsManager.SetFilterVisibility(ea.SourceName, ea.FilterName, ea.FilterEnabled);
 		}
 
 		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -564,7 +564,7 @@ namespace DHDM
 			if (sender is SceneTimer sceneTimer)
 			{
 				sceneTimer.Stop();
-				obsManager.SetFilterVisibility(sceneTimer.ea.SourceName, sceneTimer.ea.FilterName, sceneTimer.ea.FilterEnabled);
+				ObsManager.SetFilterVisibility(sceneTimer.ea.SourceName, sceneTimer.ea.FilterName, sceneTimer.ea.FilterEnabled);
 			}
 		}
 
@@ -623,7 +623,7 @@ namespace DHDM
 
 		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
 		{
-			obsManager.SetSourceVisibility(ea);
+			DndObsManager.SetSourceVisibility(ea);
 		}
 
 		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
@@ -1444,7 +1444,7 @@ namespace DHDM
 					BackToPlayersIn(10);
 				}
 				else
-					PlayScene(ObsManager.STR_PlayerScene);
+					PlayScene(DndObsManager.STR_PlayerScene);
 			}
 		}
 
@@ -1597,11 +1597,6 @@ namespace DHDM
 		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
 		{
 			MessageBox.Show(ea.Ex.Message, "Unhandled Exception");
-		}
-
-		private void ConnectToObs()
-		{
-			obsManager.Connect();
 		}
 
 		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
@@ -5619,7 +5614,7 @@ namespace DHDM
 			switchBackToPlayersTimer.Stop();
 			SafeInvoke(() =>
 			{
-				PlayScene(ObsManager.STR_PlayerScene);
+				PlayScene(DndObsManager.STR_PlayerScene);
 			});
 		}
 
@@ -10048,7 +10043,7 @@ namespace DHDM
 		{
 			spellToCastOnRoll = null;
 			obsManager.PlayScene($"DH.Skill.{skillCheck}");
-			PlaySceneAfter(ObsManager.STR_PlayerScene, 14000);
+			PlaySceneAfter(DndObsManager.STR_PlayerScene, 14000);
 			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
@@ -10094,7 +10089,7 @@ namespace DHDM
 		{
 			spellToCastOnRoll = null;
 			obsManager.PlayScene($"DH.Save.{savingThrow}");
-			PlaySceneAfter(ObsManager.STR_PlayerScene, 12000);
+			PlaySceneAfter(DndObsManager.STR_PlayerScene, 12000);
 			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
@@ -11184,7 +11179,7 @@ namespace DHDM
 
 		public void ShowFilter(string sourceName, string filterName, bool visible)
 		{
-			obsManager.SetFilterVisibility(sourceName, filterName, visible);
+			ObsManager.SetFilterVisibility(sourceName, filterName, visible);
 		}
 
 		private void AnimateLiveFeed_RequestLiveFeedResize(object sender, LiveFeedEventArgs ea)

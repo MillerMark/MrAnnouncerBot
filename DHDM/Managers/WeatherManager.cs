@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using DndCore;
 using GoogleHelper;
 using OBSWebsocketDotNet;
+using ObsControl;
 
 namespace DHDM
 {
@@ -22,12 +23,10 @@ namespace DHDM
 		List<string> allFrontItems = new List<string>();
 
 		List<WeatherSceneSettingsDto> weatherSettings;
-		OBSWebsocket obsWebsocket;
-
-		public WeatherManager(OBSWebsocket obsWebsocket, DndGame game)
+		
+		public WeatherManager(DndGame game)
 		{
 			Game = game;
-			this.obsWebsocket = obsWebsocket;
 		}
 
 		void LoadAllKnownItems()
@@ -105,7 +104,7 @@ namespace DHDM
 				return;
 			try
 			{
-				obsWebsocket.SetSourceRender(sourceName, visible, sceneName);
+				ObsManager.SetSourceRender(sourceName, visible, sceneName);
 			}
 			catch (Exception ex)
 			{

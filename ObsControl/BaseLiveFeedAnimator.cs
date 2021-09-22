@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DHDM
+namespace ObsControl
 {
   public class BaseLiveFeedAnimator
   {

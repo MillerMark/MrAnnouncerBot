@@ -11,7 +11,6 @@ namespace DHDM
 		public string UserName { get; set; }
 		public object[] Args { get; set; }
 		public bool IsDone { get; set; }
-		public IObsManager ObsManager { get; set; }
 		public IDungeonMasterApp DungeonMasterApp { get; set; }
 		public virtual void ConditionRoll(DiceRoll diceRoll)
 		{
@@ -29,7 +28,7 @@ namespace DHDM
 		
 		public abstract void Activate();
 
-		public static CardEvent Create(string cardEventName, string cardUserName, object[] args, IObsManager obsManager, IDungeonMasterApp iDungeonMasterApp)
+		public static CardEvent Create(string cardEventName, string cardUserName, object[] args, IDungeonMasterApp iDungeonMasterApp)
 		{
 			// TODO: Create an instance of the correct CardEvent descendant.
 			// TODO: Consider an elegant architecture.
@@ -43,7 +42,6 @@ namespace DHDM
 			if (result != null)
 			{
 				result.UserName = cardUserName;
-				result.ObsManager = obsManager;
 				result.DungeonMasterApp = iDungeonMasterApp;
 			}
 			return result;

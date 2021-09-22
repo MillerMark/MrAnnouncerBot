@@ -1,5 +1,6 @@
 ﻿//#define profiling
 using DndCore;
+using ObsControl;
 using System;
 using System.Linq;
 using System.Timers;
@@ -107,13 +108,7 @@ namespace DHDM
 
 		private void ShowStampedeMediaSource(string mediaSource, bool visible)
 		{
-			ObsManager.SetSourceVisibility(new SetObsSourceVisibilityEventArgs()
-			{
-				DelaySeconds = 0,
-				SceneName = Scene_Stampedes,
-				SourceName = mediaSource,
-				Visible = visible
-			});
+			ObsManager.SetSourceVisibility(Scene_Stampedes, mediaSource, visible);
 		}
 
 		public string CardName { get; set; }

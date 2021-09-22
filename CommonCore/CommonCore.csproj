@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A514DE46-AA88-471B-81A8-2C387DC629F7}</ProjectGuid>
+    <ProjectGuid>{0BB2DC67-E76B-4BAA-8CDD-1C311351514D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Imaging</RootNamespace>
-    <AssemblyName>Imaging</AssemblyName>
+    <RootNamespace>CommonCore</RootNamespace>
+    <AssemblyName>CommonCore</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,38 +31,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CameraDetails.cs" />
-    <Compile Include="ColorExtensions.cs" />
-    <Compile Include="CountTotals.cs" />
-    <Compile Include="DirectBitmap.cs" />
-    <Compile Include="HueSatLight.cs" />
-    <Compile Include="ImageCropper.cs" />
-    <Compile Include="ImageUtils.cs" />
-    <Compile Include="IntermediateResults.cs" />
-    <Compile Include="Margins.cs" />
+    <Compile Include="Math2D.cs" />
+    <Compile Include="Point2d.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StudioCamera.cs" />
-    <Compile Include="LiveFeedFrame.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CommonCore\CommonCore.csproj">
-      <Project>{0bb2dc67-e76b-4baa-8cdd-1c311351514d}</Project>
-      <Name>CommonCore</Name>
-    </ProjectReference>
+    <Compile Include="StrExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

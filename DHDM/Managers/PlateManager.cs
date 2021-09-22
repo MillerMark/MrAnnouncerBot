@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using GoogleHelper;
 using System.Linq;
+using ObsControl;
 
 namespace DHDM
 {
@@ -24,18 +25,13 @@ namespace DHDM
 		const string TheVoid_Rainbow = "TheVoid_Rainbow.mov";
 		const string TopMonitor = "TopMonitor";
 		const string BothComputers = "CR.BothComputers";
-		OBSWebsocket obsWebsocket;
+		
 		List<string> voidItems;
 		List<string> allBackgroundItems;
 
 		public PlateManager()
 		{
 			InitializeSceneLists();
-		}
-
-		public PlateManager(OBSWebsocket obsWebsocket): this()
-		{
-			this.obsWebsocket = obsWebsocket;
 		}
 
 		void InitializeSceneLists()
@@ -75,7 +71,7 @@ namespace DHDM
 		{
 			try
 			{
-				obsWebsocket.SetSourceRender(sourceName, visible, sceneName);
+				ObsManager.SetSourceRender(sourceName, visible, sceneName);
 			}
 			catch (Exception ex)
 			{

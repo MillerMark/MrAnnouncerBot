@@ -4,6 +4,7 @@ using System.Linq;
 using System.Timers;
 using System.Collections.Generic;
 using OBSWebsocketDotNet.Types;
+using ObsControl;
 
 namespace DHDM
 {
@@ -19,11 +20,11 @@ namespace DHDM
 		object usersSeenSinceLastStreamlootsMessageLockObject = new object();
 		List<string> usersSeenSinceLastStreamlootsMessage = new List<string>();
 
-		public ViewerManager(IDungeonMasterApp dungeonMasterApp, ObsManager obsManager)
+		public ViewerManager(IDungeonMasterApp dungeonMasterApp)
     {
       this.dungeonMasterApp = dungeonMasterApp;
-			obsManager.SceneChanged += ObsManager_SceneChanged;
-			obsManager.StateChanged += ObsManager_StateChanged;
+			ObsManager.SceneChanged += ObsManager_SceneChanged;
+			ObsManager.StateChanged += ObsManager_StateChanged;
 			messageTimer = new Timer();
 			messageTimer.Interval = TimeSpan.FromSeconds(90).TotalMilliseconds;
 			messageTimer.Elapsed += MessageTimer_Elapsed;

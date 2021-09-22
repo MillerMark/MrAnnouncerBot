@@ -2,6 +2,7 @@
 using System.Timers;
 using System.Collections.Generic;
 using OBSWebsocketDotNet.Types;
+using ObsControl;
 
 namespace DHDM
 {

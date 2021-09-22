@@ -14,7 +14,6 @@
     <Compile Include="..\BotCoreNet\BotCommand.cs" Link="BotCommand.cs" />
     <Compile Include="..\BotCoreNet\BotCommands.cs" Link="BotCommands.cs" />
     <Compile Include="..\BotCoreNet\MySecureString.cs" Link="MySecureString.cs" />
-    <Compile Include="..\BotCoreNet\ObsHelper.cs" Link="ObsHelper.cs" />
     <Compile Include="..\BotCoreNet\Twitch.cs" Link="Twitch.cs" />
     <Compile Include="..\BotCoreNet\Twitch\Chatters.cs" Link="Twitch\Chatters.cs" />
     <Compile Include="..\BotCoreNet\Twitch\LiveShowData.cs" Link="Twitch\LiveShowData.cs" />

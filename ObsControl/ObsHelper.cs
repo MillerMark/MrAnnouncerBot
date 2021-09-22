@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ObsControl
+namespace BotCore
 {
 	public static class ObsHelper
 	{
