@@ -1,7 +1,9 @@
+using Newtonsoft.Json;
 using System;
 
 namespace CommonCore
 {
+	[JsonConverter(typeof(Point2dConverter))]
 	public struct Point2d
 	{
 		public double X { get; set; }
