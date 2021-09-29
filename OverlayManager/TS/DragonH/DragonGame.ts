@@ -85,7 +85,7 @@ class ScaledPlane {
 
 	}
 }
-	
+
 class Hand2d {
 	Speed: number;
 	PalmDirection: VectorCompassDirection;
@@ -393,6 +393,23 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.dndTimeStr = timeStrs[0];
 		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
 		this.updateClockFromDto(dto);
+	}
+
+	staticImageLoaded: boolean;
+
+	showImage(fileName: string) {
+		this.staticImage = null;
+
+		if (!fileName) {
+			return;
+		}
+
+		const image: CanvasImageSource = new Image();
+		image.src = "GameDev/Assets/" + fileName;
+		this.staticImage = null;
+		image.onload = () => {
+			this.staticImage = image;
+		}
 	}
 
 	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080, speedOverride = 6): TextEffect {
@@ -887,9 +904,18 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		this.backLayerEffects.updatePositions(nowMs);
+		//
 		this.backLayerEffects.draw(context, nowMs);
 		this.allWindupEffects.updatePositions(nowMs);
 		this.allWindupEffects.draw(context, nowMs);
+		this.drawStaticImage(context);
+	}
+
+	staticImage: CanvasImageSource;
+	drawStaticImage(context: CanvasRenderingContext2D) {
+		if (!this.staticImage)
+			return;
+		context.drawImage(this.staticImage, 0, 0);
 	}
 
 	activePlayerX = -1;
@@ -1299,7 +1325,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	private destroyAllFireballs() {
 		this.destroyAllSprites(this.handHeldFireball);
-		
+
 	}
 
 	private destroyAllSparks() {

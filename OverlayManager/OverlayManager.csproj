@@ -104,14 +104,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0-preview.18572.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0-preview.18572.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0-preview.18572.1" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.1.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.2.0-beta3" />
     <PackageReference Include="TwitchLib" Version="3.1.1" />

@@ -317,5 +317,15 @@ namespace DHDM
 			validationIssueDto.FloatText = floatText;
 			HubConnection.InvokeAsync("ShowValidationIssue", JsonConvert.SerializeObject(validationIssueDto));
 		}
+
+		public static void ShowImageFront(string fileName)
+		{
+			HubConnection.InvokeAsync("ShowImageFront", fileName);
+		}
+
+		public static void ShowImageBack(string fileName)
+		{
+			HubConnection.InvokeAsync("ShowImageBack", fileName);
+		}
 	}
 }

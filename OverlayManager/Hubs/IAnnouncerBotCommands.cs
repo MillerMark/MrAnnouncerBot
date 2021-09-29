@@ -49,6 +49,8 @@ namespace OverlayManager.Hubs
 		Task RollDice(string diceRollData);
 		Task ClearDice(string diceGroup);
 		Task SetPlayerData(string playerData);
+		Task ShowImageFront(string fileName);
+		Task ShowImageBack(string fileName);
 		Task SendScrollLayerCommand(string commandData);
 		Task ExecuteSoundCommand(string commandData);
 		Task ShowValidationIssue(string commandData);

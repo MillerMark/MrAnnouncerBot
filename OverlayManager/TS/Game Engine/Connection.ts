@@ -8,6 +8,7 @@ function addWindup(windupData: string): void {
 		activeBackGame.addWindupFromStr(windupData);
 	}
 }
+
 function castSpell(spellData: string): void {
 	if (activeFrontGame instanceof DragonGame) {
 		activeFrontGame.castSpell(spellData);
@@ -86,6 +87,18 @@ function playSound(soundFileName: string) {
 let bigPlayerData = "";
 
 const bigDataPortionToken = "portion: ";
+
+function showImageFront(fileName: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.showImage(fileName);
+	}
+}
+
+function showImageBack(fileName: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.showImage(fileName);
+	}
+}
 
 function initializePlayerData(playerData: string) {
 	if (playerData.startsWith(bigDataPortionToken)) {
@@ -387,6 +400,8 @@ function connectToSignalR(signalR) {
 		connection.on("CardCommand", cardCommand);
 		connection.on("ContestCommand", contestCommand);
 		connection.on("SetPlayerData", initializePlayerData);
+		connection.on("ShowImageFront", showImageFront);
+		connection.on("ShowImageBack", showImageBack);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
 		PartBackgroundLoader.initialize();

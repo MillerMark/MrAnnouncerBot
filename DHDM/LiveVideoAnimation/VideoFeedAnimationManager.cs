@@ -12,12 +12,15 @@ namespace DHDM
 {
 	public static class VideoFeedAnimationManager
 	{
+		const string STR_AnimationEditor = "Animation Editor";
 		static bool existingAnimationIsRunning;
 		static LiveFeedAnimator liveFeedAnimator;
+		static System.Timers.Timer animationEditorTimer = new System.Timers.Timer();
 
 		static VideoFeedAnimationManager()
 		{
-
+			animationEditorTimer.Interval = 1;
+			animationEditorTimer.Elapsed += AnimationEditorTimer_Elapsed;
 		}
 
 		static void StopExistingAnimation()
@@ -69,13 +72,33 @@ namespace DHDM
 
 			if (binding != null)
 				StartLiveAnimation(sceneName, binding, startTime);
+
+			if (sceneName == STR_AnimationEditor)
+			{
+				animationEditorTimer.Start();
+			}
+			else
+			{
+				HubtasticBaseStation.ShowImageFront(null);
+				HubtasticBaseStation.ShowImageBack(null);
+			}
+		}
+
+		private static void AnimationEditorTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			animationEditorTimer.Stop();
+			SceneItem sceneItem = ObsManager.GetSceneItem(STR_AnimationEditor, "AnimationEditor_Front");
+
+			// image_source
+			HubtasticBaseStation.ShowImageFront(@"Editor/FrontTest.png");
+			HubtasticBaseStation.ShowImageBack(@"Editor/BackTest.png");
+
+			SceneItemProperties sceneItemProperties = ObsManager.GetSceneItemProperties("AnimationEditor_Front", STR_AnimationEditor);
 		}
 
 		public static void Initialize()
 		{
 			ObsManager.SceneChanged += ObsManager_SceneChanged;
 		}
-
-		
 	}
 }

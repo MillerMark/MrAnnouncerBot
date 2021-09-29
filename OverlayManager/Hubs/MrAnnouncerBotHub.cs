@@ -153,6 +153,14 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.SetPlayerData(playerData);
 		}
+		public void ShowImageFront(string fileName)
+		{
+			coderushedHub.Clients.All.ShowImageFront(fileName);
+		}
+		public void ShowImageBack(string fileName)
+		{
+			coderushedHub.Clients.All.ShowImageBack(fileName);
+		}
 		public void SendScrollLayerCommand(string commandData)
 		{
 			coderushedHub.Clients.All.SendScrollLayerCommand(commandData);
