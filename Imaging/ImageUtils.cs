@@ -312,9 +312,9 @@ namespace Imaging
 			files = System.IO.Directory.GetFiles(directoryName, searchPattern).OrderBy(x => x).ToList();
 		}
 
-		public static LiveFeedFrame GetVisualProcessingResults(string fileName)
+		public static LiveFeedSequence GetVisualProcessingResults(string fileName)
 		{
-			LiveFeedFrame results = new LiveFeedFrame();
+			LiveFeedSequence results = new LiveFeedSequence();
 			IntermediateResults intermediateResults = new IntermediateResults();
 
 			using (DirectBitmap bitmap = DirectBitmap.FromFile(fileName))

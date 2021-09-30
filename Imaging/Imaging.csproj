@@ -53,10 +53,11 @@
     <Compile Include="ImageCropper.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="IntermediateResults.cs" />
+    <Compile Include="LiveFeedData.cs" />
     <Compile Include="Margins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioCamera.cs" />
-    <Compile Include="LiveFeedFrame.cs" />
+    <Compile Include="LiveFeedSequence.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonCore\CommonCore.csproj">

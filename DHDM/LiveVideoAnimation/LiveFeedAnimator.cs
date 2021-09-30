@@ -23,12 +23,12 @@ namespace DHDM
       double videoHeight,
       string sceneName,
       string itemName,
-      List<LiveFeedFrame> liveFeedFrames) : base(videoAnchorHorizontal, 
+      List<LiveFeedSequence> liveFeedFrames) : base(videoAnchorHorizontal, 
                             videoAnchorVertical, 
                             videoWidth, 
                             videoHeight, sceneName, itemName)
     {
-      LiveFeedFrames = liveFeedFrames;
+      LiveFeedSequences = liveFeedFrames;
       timer = new Timer();
       timer.Elapsed += Timer_Elapsed;
       // TODO: Figure out ScreenAnchorLeft and ScreenAnchorTop
@@ -43,9 +43,9 @@ namespace DHDM
     private void AdvanceFrame()
     {
       if (needToStopNow)
-        frameIndex = LiveFeedFrames.Count - 1;
+        frameIndex = LiveFeedSequences.Count - 1;
 
-      LiveFeedFrame liveFeedFrame = LiveFeedFrames[frameIndex];
+      LiveFeedSequence liveFeedFrame = LiveFeedSequences[frameIndex];
       if (liveFeedFrame == null)
       {
         Stop();
@@ -56,18 +56,18 @@ namespace DHDM
 			SetNextTimer(liveFeedFrame);
 			
       frameIndex++;
-      if (frameIndex >= LiveFeedFrames.Count || needToStopNow)
+      if (frameIndex >= LiveFeedSequences.Count || needToStopNow)
         Stop();
     }
 
-    void RenderActiveFrame(LiveFeedFrame liveFeedFrame)
+    void RenderActiveFrame(LiveFeedSequence liveFeedFrame)
     {
       ScreenAnchorLeft = liveFeedFrame.Origin.X;
       ScreenAnchorTop = liveFeedFrame.Origin.Y;
       ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation);
     }
 
-    void SetNextTimer(LiveFeedFrame liveFeedFrame)
+    void SetNextTimer(LiveFeedSequence liveFeedFrame)
 		{
 			if (allDone)
 				return;
@@ -81,7 +81,7 @@ namespace DHDM
 			timer.Start();
 		}
 
-		public List<LiveFeedFrame> LiveFeedFrames { get; set; }
+		public List<LiveFeedSequence> LiveFeedSequences { get; set; }
 
     void OnAnimationComplete(object sender, EventArgs e)
     {
@@ -95,7 +95,7 @@ namespace DHDM
 
     public void Start(DateTime startTime)
     {
-      if (LiveFeedFrames.Count == 0)  // Nothing to animate.
+      if (LiveFeedSequences.Count == 0)  // Nothing to animate.
         return;
       frameIndex = 0;
 			this.startTime = startTime - TimeSpan.FromSeconds(0.25);  // Sync adjust.

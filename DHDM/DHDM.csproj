@@ -334,14 +334,17 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
-    <Compile Include="OBS\DndObsManager.cs" />
-    <Compile Include="OBS\IObsManager.cs" />
-    <Compile Include="LiveVideoAnimation\LiveFeedAnimator.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoBindings.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
+    <Compile Include="LiveVideoAnimation\LiveFeedAnimator.cs" />
+    <Compile Include="LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml.cs">
+      <DependentUpon>FrmLiveAnimationEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LiveVideoAnimation\VideoAnimationBinding.cs" />
-    <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
     <Compile Include="LiveVideoAnimation\VideoAnimationManager.cs" />
+    <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
+    <Compile Include="OBS\DndObsManager.cs" />
+    <Compile Include="OBS\IObsManager.cs" />
     <Compile Include="Managers\ConditionManager.cs" />
     <Compile Include="Managers\CreatureManager.cs" />
     <Compile Include="Managers\DieRollManager.cs" />
@@ -549,6 +552,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\AttackList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -597,6 +604,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="characterDnDBeyond.json" />
+    <None Include="LiveVideoAnimation\Data\Drone Failure.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LiveVideoAnimation\Data\UFO Crash.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

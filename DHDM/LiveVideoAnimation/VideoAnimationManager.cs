@@ -16,6 +16,7 @@ namespace DHDM
 		static bool existingAnimationIsRunning;
 		static LiveFeedAnimator liveFeedAnimator;
 		static System.Timers.Timer animationEditorTimer = new System.Timers.Timer();
+		static FrmLiveAnimationEditor frmLiveAnimationEditor;
 
 		static VideoAnimationManager()
 		{
@@ -34,15 +35,14 @@ namespace DHDM
 				liveFeedAnimator.StopSoon();
 		}
 
-		static void LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed, DateTime startTime)
+		public static LiveFeedAnimator LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
 		{
 			if (!File.Exists(movementFile))
-				return;
+				return null;
 			string movementInstructions = File.ReadAllText(movementFile);
-			List<LiveFeedFrame> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedFrame>>(movementInstructions);
+			List<LiveFeedSequence> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedSequence>>(movementInstructions);
 			liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
-			liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
-			liveFeedAnimator.Start(startTime);
+			return liveFeedAnimator;
 		}
 
 		private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
@@ -53,14 +53,21 @@ namespace DHDM
 
 		static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding, DateTime startTime)
 		{
-			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			string movementFile = Path.Combine(location, "LiveVideoAnimation\\Data", binding.MovementFileName + ".movement");
+			string movementFile = GetFullPathToMovementFile(binding.MovementFileName);
 			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
-			LoadLiveAnimation(movementFile, binding, videoFeed, startTime);
+			LiveFeedAnimator loadLiveAnimation = LoadLiveAnimation(movementFile, binding, videoFeed);
+			liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+			liveFeedAnimator.Start(startTime);
 
 			// TODO: Track which video feed we are running in case we abort while we are running.
 
 			existingAnimationIsRunning = true;
+		}
+
+		public static string GetFullPathToMovementFile(string movementFileName)
+		{
+			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			return Path.Combine(location, "LiveVideoAnimation\\Data", movementFileName + ".movement");
 		}
 
 		private static void ObsManager_SceneChanged(object sender, string sceneName)
@@ -88,14 +95,26 @@ namespace DHDM
 		{
 			animationEditorTimer.Stop();
 
+			System.Windows.Application.Current.Dispatcher.Invoke(() => 
+			{
+				if (frmLiveAnimationEditor == null)
+					frmLiveAnimationEditor = new FrmLiveAnimationEditor();
+
+				frmLiveAnimationEditor.Show();
+			});
+
 			// image_source
-			HubtasticBaseStation.ShowImageFront(@"Editor/FrontTest.png");
-			HubtasticBaseStation.ShowImageBack(@"Editor/BackTest.png");
+			//HubtasticBaseStation.ShowImageFront(@"Editor/FrontTest.png");
+			//HubtasticBaseStation.ShowImageBack(@"Editor/BackTest.png");
 		}
 
 		public static void Initialize()
 		{
 			ObsManager.SceneChanged += ObsManager_SceneChanged;
+		}
+		public static void ClosingEditor()
+		{
+			frmLiveAnimationEditor = null;
 		}
 	}
 }
