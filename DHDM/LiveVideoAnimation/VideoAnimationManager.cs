@@ -10,14 +10,14 @@ using ObsControl;
 
 namespace DHDM
 {
-	public static class VideoFeedAnimationManager
+	public static class VideoAnimationManager
 	{
 		const string STR_AnimationEditor = "Animation Editor";
 		static bool existingAnimationIsRunning;
 		static LiveFeedAnimator liveFeedAnimator;
 		static System.Timers.Timer animationEditorTimer = new System.Timers.Timer();
 
-		static VideoFeedAnimationManager()
+		static VideoAnimationManager()
 		{
 			animationEditorTimer.Interval = 1;
 			animationEditorTimer.Elapsed += AnimationEditorTimer_Elapsed;
@@ -87,13 +87,10 @@ namespace DHDM
 		private static void AnimationEditorTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
 		{
 			animationEditorTimer.Stop();
-			SceneItem sceneItem = ObsManager.GetSceneItem(STR_AnimationEditor, "AnimationEditor_Front");
 
 			// image_source
 			HubtasticBaseStation.ShowImageFront(@"Editor/FrontTest.png");
 			HubtasticBaseStation.ShowImageBack(@"Editor/BackTest.png");
-
-			SceneItemProperties sceneItemProperties = ObsManager.GetSceneItemProperties("AnimationEditor_Front", STR_AnimationEditor);
 		}
 
 		public static void Initialize()

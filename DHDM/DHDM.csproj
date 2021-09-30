@@ -341,7 +341,7 @@
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
     <Compile Include="LiveVideoAnimation\VideoAnimationBinding.cs" />
     <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
-    <Compile Include="LiveVideoAnimation\VideoFeedAnimationManager.cs" />
+    <Compile Include="LiveVideoAnimation\VideoAnimationManager.cs" />
     <Compile Include="Managers\ConditionManager.cs" />
     <Compile Include="Managers\CreatureManager.cs" />
     <Compile Include="Managers\DieRollManager.cs" />
@@ -353,7 +353,7 @@
     <Compile Include="LIFX\LifxService.cs" />
     <Compile Include="LIFX\LifxSetting.cs" />
     <Compile Include="LIFX\LightSettingDto.cs" />
-    <Compile Include="LiveVideoAnimation\LiveFeedScaler.cs" />
+    <Compile Include="OBS\LiveFeedScaler.cs" />
     <Compile Include="Managers\SavedTargets.cs" />
     <Compile Include="Managers\SourceVisibilityTimer.cs">
       <SubType>Component</SubType>
