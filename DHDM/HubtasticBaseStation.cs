@@ -327,5 +327,15 @@ namespace DHDM
 		{
 			HubConnection.InvokeAsync("ShowImageBack", fileName);
 		}
+
+		public static void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount)
+		{
+			HubConnection.InvokeAsync("PreloadImageFront", fileName, startIndex, stopIndex, digitCount);
+		}
+
+		public static void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount)
+		{
+			HubConnection.InvokeAsync("PreloadImageBack", fileName, startIndex, stopIndex, digitCount);
+		}
 	}
 }

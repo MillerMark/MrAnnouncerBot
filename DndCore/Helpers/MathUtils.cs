@@ -18,6 +18,7 @@ namespace DndCore
 				return result;
 			return defaultValue;
 		}
+
 		public static int GetInt(string str, int defaultValue = 0)
 		{
 			if (!string.IsNullOrEmpty(str) && int.TryParse(str, out int result))

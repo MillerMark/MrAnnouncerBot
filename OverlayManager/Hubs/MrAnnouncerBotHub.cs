@@ -157,10 +157,22 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.ShowImageFront(fileName);
 		}
+
 		public void ShowImageBack(string fileName)
 		{
 			coderushedHub.Clients.All.ShowImageBack(fileName);
 		}
+
+		public void PreloadImageFront(string baseFileName, int indexStart, int indexStop, int digitCount)
+		{
+			coderushedHub.Clients.All.PreloadImageFront(baseFileName, indexStart, indexStop, digitCount);
+		}
+
+		public void PreloadImageBack(string baseFileName, int indexStart, int indexStop, int digitCount)
+		{
+			coderushedHub.Clients.All.PreloadImageBack(baseFileName, indexStart, indexStop, digitCount);
+		}
+
 		public void SendScrollLayerCommand(string commandData)
 		{
 			coderushedHub.Clients.All.SendScrollLayerCommand(commandData);

@@ -100,6 +100,18 @@ function showImageBack(fileName: string) {
 	}
 }
 
+function preloadImageFront(baseFileName: string, startIndex: number, stopIndex: number, digitCount: number) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.preloadImage(baseFileName, startIndex, stopIndex, digitCount);
+	}
+}
+
+function preloadImageBack(baseFileName: string, startIndex: number, stopIndex: number, digitCount: number) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.preloadImage(baseFileName, startIndex, stopIndex, digitCount);
+	}
+}
+
 function initializePlayerData(playerData: string) {
 	if (playerData.startsWith(bigDataPortionToken)) {
 		bigPlayerData += playerData.substr(bigDataPortionToken.length);
@@ -402,6 +414,8 @@ function connectToSignalR(signalR) {
 		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("ShowImageFront", showImageFront);
 		connection.on("ShowImageBack", showImageBack);
+		connection.on("PreloadImageFront", preloadImageFront);
+		connection.on("PreloadImageBack", preloadImageBack);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
 		PartBackgroundLoader.initialize();

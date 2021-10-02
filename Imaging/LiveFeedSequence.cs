@@ -95,9 +95,9 @@ namespace Imaging
 			Rotation = Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90;
 		}
 
-		public LiveFeedData Clone()
+		public LiveFeedEdit CreateLiveFeedEdit()
 		{
-			return new LiveFeedData()
+			return new LiveFeedEdit()
 			{
 				Camera = this.Camera,
 				Flipped = this.Flipped,

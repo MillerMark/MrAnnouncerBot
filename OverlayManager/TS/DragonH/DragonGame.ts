@@ -1,4 +1,29 @@
-﻿enum VectorCompassDirection {
+﻿class PreloadedImage {
+	image: CanvasImageSource;
+	timeLastUsed: Date;
+
+	justRequested() {
+		this.timeLastUsed = new Date();
+	}
+
+	constructor(fileName: string) {
+		this.justRequested();
+		this.image = null;
+
+		if (!fileName) {
+			return;
+		}
+
+		const image: CanvasImageSource = new Image();
+		image.src = DragonGame.assetsFolder + fileName;
+		image.onload = () => {
+			this.image = image;
+			console.log(`Just preloaded ${fileName}...`);
+		}
+	}
+}
+
+enum VectorCompassDirection {
 	None,
 	Up,
 	Down,
@@ -397,6 +422,45 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	staticImageLoaded: boolean;
 
+	preloadedImages: Map<string, PreloadedImage> = new Map();
+	staticImage: CanvasImageSource;
+
+	drawStaticImage(context: CanvasRenderingContext2D) {
+		if (!this.staticImage)
+			return;
+		context.drawImage(this.staticImage, 0, 0);
+	}
+
+	getAnimationEditorFileName(baseFileName: string, index: number, digitCount: number): string {
+		let digitStr: string = index.toString();
+
+		while (digitStr.length < digitCount)
+			digitStr = "0" + digitStr;
+
+		return baseFileName + digitStr + ".png";
+	}
+
+	preloadImage(baseFileName: string, startIndex: number, stopIndex: number, digitCount: number) {
+		if (!baseFileName) {
+			// Passing in null. That means clean up (unload) all preloaded images.
+			this.preloadedImages = new Map();
+			return;
+		}
+
+		for (let i = startIndex; i <= stopIndex; i++) {
+			const fileName: string = this.getAnimationEditorFileName(baseFileName, i, digitCount);
+			if (this.preloadedImages.has(fileName)) {
+				this.preloadedImages.get(fileName).justRequested();
+			}
+			else {
+				const preloadedImage: PreloadedImage = new PreloadedImage(fileName);
+				this.preloadedImages.set(fileName, preloadedImage);
+			}
+		}
+	}
+
+	static readonly assetsFolder: string = "GameDev/Assets/";
+
 	showImage(fileName: string) {
 		this.staticImage = null;
 
@@ -404,8 +468,17 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 		}
 
+		if (this.preloadedImages.has(fileName)) {
+			const preloadedImage: CanvasImageSource = this.preloadedImages.get(fileName).image;
+			if (preloadedImage) {
+				console.log(`Found preloaded image - "${fileName} - using that!"`);
+				this.staticImage = preloadedImage;
+				return;
+			}
+		}
+
 		const image: CanvasImageSource = new Image();
-		image.src = "GameDev/Assets/" + fileName;
+		image.src = DragonGame.assetsFolder + fileName;
 		this.staticImage = null;
 		image.onload = () => {
 			this.staticImage = image;
@@ -909,13 +982,6 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.allWindupEffects.updatePositions(nowMs);
 		this.allWindupEffects.draw(context, nowMs);
 		this.drawStaticImage(context);
-	}
-
-	staticImage: CanvasImageSource;
-	drawStaticImage(context: CanvasRenderingContext2D) {
-		if (!this.staticImage)
-			return;
-		context.drawImage(this.staticImage, 0, 0);
 	}
 
 	activePlayerX = -1;

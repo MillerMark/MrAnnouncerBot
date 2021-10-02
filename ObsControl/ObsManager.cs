@@ -126,7 +126,7 @@ namespace ObsControl
 						obsWebsocket.SetSourceFilterSettings(e.ItemName, ImageMaskFilter, JObject.FromObject(imageMask));
 					}
 				}
-				if (rotation != 0)
+				if (rotation != sceneItemProperties.Rotation)
 				{
 					sceneItemProperties.Rotation = rotation;
 
@@ -138,10 +138,6 @@ namespace ObsControl
 
 					// screenAnchorLeft and screenAnchorTop are the red point.
 					// newLeft and newTop are the original yellow anchor point in the upper left.
-
-					
-					// TODO: Sacrificing precision for bonus laziness gained. May want to fix this later. 5 years later says Lasamat. 21 Sept 2021. We WIN if we fix in less than 5 years.
-					// We just won. Tell Lasamat we fixed in 24 hours, suckahs!!!!
 
 					Point2d upperLeft = new Point2d(newLeft, newTop);
 					Point2d centerPoint = new Point2d(screenAnchorLeft, screenAnchorTop);

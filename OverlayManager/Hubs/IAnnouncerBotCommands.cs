@@ -54,6 +54,7 @@ namespace OverlayManager.Hubs
 		Task SendScrollLayerCommand(string commandData);
 		Task ExecuteSoundCommand(string commandData);
 		Task ShowValidationIssue(string commandData);
-
+		Task PreloadImageBack(string baseFileName, int indexStart, int indexStop, int digitCount);
+		Task PreloadImageFront(string baseFileName, int indexStart, int indexStop, int digitCount);
 	}
 }

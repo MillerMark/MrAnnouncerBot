@@ -4,11 +4,56 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Live Animation Editor" Height="450" Width="800" Closed="Window_Closed">
 	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+		</Grid.RowDefinitions>
 		<Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
-		<StackPanel Orientation="Horizontal" Height="80">
+		<StackPanel Orientation="Vertical" Grid.Row="1" Margin="8" >
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="X:" Width="47" Height="Auto" Margin="4, 1, 4, 4" />
+				<TextBox x:Name="tbxDeltaX" Width="80" TextChanged="tbxDeltaX_TextChanged">
+					0
+				</TextBox>
+				<Slider x:Name="sldDeltaX" Width="200" Margin="10, 0, 0, 0" Minimum="-300" Maximum="300" ValueChanged="sldDeltaX_ValueChanged"></Slider>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Y:" Width="47" Height="Auto" Margin="4, 1, 4, 4" />
+				<TextBox x:Name="tbxDeltaY" Width="80" TextChanged="tbxDeltaY_TextChanged">
+					0
+				</TextBox>
+				<Slider x:Name="sldDeltaY" Width="200" Margin="10, 0, 0, 0" Minimum="-300" Maximum="300" ValueChanged="sldDeltaY_ValueChanged"></Slider>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Rotation:" Width="47" Height="Auto" Margin="4, 1, 4, 4" />
+				<TextBox x:Name="tbxDeltaRotation" Width="80" TextChanged="tbxDeltaRotation_TextChanged">
+					0 
+				</TextBox>
+				<Slider x:Name="sldDeltaRotation" Width="200" Margin="10, 0, 0, 0" Minimum="0" Maximum="360" ValueChanged="sldDeltaRotation_ValueChanged"></Slider>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Scale:" Width="47" Height="Auto" Margin="4, 1, 4, 4" />
+				<TextBox x:Name="tbxDeltaScale" Width="80" TextChanged="tbxDeltaScale_TextChanged">
+					1
+				</TextBox>
+				<Slider x:Name="sldDeltaScale" Value="1" Width="200" Margin="10, 0, 0, 0" Minimum="0.05" Maximum="4" ValueChanged="sldDeltaScale_ValueChanged"></Slider>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Opacity:" Width="47" Height="Auto" Margin="4, 1, 4, 4" />
+				<TextBox x:Name="tbxDeltaOpacity" Width="80" TextChanged="tbxDeltaOpacity_TextChanged">
+					1
+				</TextBox>
+				<Slider x:Name="sldDeltaOpacity" Width="200" Margin="10, 0, 0, 0" Value="1" Minimum="0" Maximum="1" ValueChanged="sldDeltaOpacity_ValueChanged"></Slider>
+			</StackPanel>
+		</StackPanel>
+		<StackPanel Grid.Row="2" Orientation="Horizontal" Height="80">
 			<Button x:Name="btnJumpToPreviousDelta" Click="btnJumpToPreviousDelta_Click" Margin="20, 0, 15, 0">
 				<Viewbox Width="80" IsHitTestVisible="False">
 					<Canvas Width="659" Height="639">
