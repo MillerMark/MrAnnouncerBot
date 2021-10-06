@@ -40,6 +40,8 @@ namespace DHDM
 		string[] frontFiles;
 		int frameIndex;
 		bool settingInternally;
+		const double frameRate = 29.97;  // fps
+		const double secondsPerFrame = 1 / frameRate;
 		LiveFeedAnimator liveFeedAnimator;
 		int digitCount;
 		void LoadAnimation(string selectedPath)
@@ -47,6 +49,15 @@ namespace DHDM
 			string movementFileName = System.IO.Path.GetFileName(selectedPath);
 			LoadAllFrames(movementFileName);
 			LoadAllImages(selectedPath);
+			
+			relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
+			relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
+			if (digitCount == 0)
+			{
+				int lastIndex = backFiles.Length - 1;
+				digitCount = lastIndex.ToString().Length;
+			}
+
 			UpdateUI();
 			frameIndex = 0;
 			DrawActiveFrame();
@@ -103,15 +114,9 @@ namespace DHDM
 			liveFeedAnimator.ScreenAnchorLeft = liveFeedEdit.GetX();
 			liveFeedAnimator.ScreenAnchorTop = liveFeedEdit.GetY();
 
-			float scale = (float)liveFeedEdit.Scale;
-			double opacity = liveFeedEdit.Opacity;
-			double rotation = liveFeedEdit.Rotation;
-			if (liveFeedEdit.RotationOverride.HasValue)
-				rotation = liveFeedEdit.RotationOverride.Value;
-			if (liveFeedEdit.ScaleOverride.HasValue)
-				scale = (float)liveFeedEdit.ScaleOverride.Value;
-			if (liveFeedEdit.OpacityOverride.HasValue)
-				opacity = liveFeedEdit.OpacityOverride.Value;
+			double rotation = liveFeedEdit.GetRotation();
+			double scale = liveFeedEdit.GetScale();
+			double opacity = liveFeedEdit.GetOpacity();
 
 			ObsControl.ObsManager.SizeAndPositionItem(liveFeedAnimator, scale, opacity, rotation);
 		}
@@ -130,13 +135,13 @@ namespace DHDM
 					liveFeedEdit.DeltaY = (int)value;
 					break;
 				case Attribute.Scale:
-					liveFeedEdit.ScaleOverride = value;
+					liveFeedEdit.DeltaScale = value;
 					break;
 				case Attribute.Rotation:
-					liveFeedEdit.RotationOverride = value;
+					liveFeedEdit.DeltaRotation = value;
 					break;
 				case Attribute.Opacity:
-					liveFeedEdit.OpacityOverride = value;
+					liveFeedEdit.DeltaOpacity = value;
 					break;
 			}
 			DrawActiveFrame();
@@ -156,19 +161,22 @@ namespace DHDM
 
 		private void LoadAllFrames(string movementFileName)
 		{
-			VideoAnimationBinding binding = AllVideoBindings.Get(movementFileName);
-			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
-			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
-			liveFeedAnimator = VideoAnimationManager.LoadLiveAnimation(fullPathToMovementFile, binding, videoFeed);
+			liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
 			allFrames = new List<LiveFeedEdit>();
 			foreach (LiveFeedSequence liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
 			{
-				const double frameRate = 29.97;  // fps
-				const double secondsPerFrame = 1 / frameRate;
 				int frameCount = (int)(liveFeedSequence.Duration / secondsPerFrame);
 				for (int i = 0; i < frameCount; i++)
 					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit());
 			}
+		}
+
+		private LiveFeedAnimator GetLiveFeedAnimator(string movementFileName)
+		{
+			VideoAnimationBinding binding = AllVideoBindings.Get(movementFileName);
+			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
+			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
+			return VideoAnimationManager.LoadLiveAnimation(fullPathToMovementFile, binding, videoFeed);
 		}
 
 		private void btnLoadAnimation_Click(object sender, RoutedEventArgs e)
@@ -203,15 +211,6 @@ namespace DHDM
 			int lastIndex = backFiles.Length - 1;
 			int endFrame = Math.Min(lastIndex, frameIndex + extraFramesCount);
 
-			// TODO: Calculate these once on animation load.
-			string relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
-			string relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
-
-			if (digitCount == 0)
-			{
-				digitCount = lastIndex.ToString().Length;
-			}
-
 			HubtasticBaseStation.PreloadImageBack(relativePathBack, startFrame, endFrame, digitCount);
 			HubtasticBaseStation.PreloadImageFront(relativePathFront, startFrame, endFrame, digitCount);
 		}
@@ -224,6 +223,36 @@ namespace DHDM
 			string directoryName = System.IO.Path.GetDirectoryName(relativePath);
 			
 			return System.IO.Path.Combine(directoryName, baseFileName);
+		}
+
+		void UpdateFrameUI()
+		{
+			if (frameIndex < 0)
+				return;
+			if (frameIndex > allFrames.Count - 1)
+				return;
+
+			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
+
+			changingInternally = true;
+			try
+			{
+				//tbxDeltaOpacity.Text = liveFeedEdit.Opacity;
+				tbxDeltaX.Text = liveFeedEdit.DeltaX.ToString();
+				tbxDeltaY.Text = liveFeedEdit.DeltaY.ToString();
+				sldDeltaX.Value = liveFeedEdit.DeltaX;
+				sldDeltaY.Value = liveFeedEdit.DeltaY;
+				tbxDeltaRotation.Text = liveFeedEdit.DeltaRotation.ToString();
+				sldDeltaRotation.Value = liveFeedEdit.DeltaRotation;
+				tbxDeltaScale.Text = liveFeedEdit.DeltaScale.ToString();
+				sldDeltaScale.Value = liveFeedEdit.DeltaScale;
+				tbxDeltaOpacity.Text = liveFeedEdit.DeltaOpacity.ToString();
+				sldDeltaOpacity.Value = liveFeedEdit.DeltaOpacity;
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		public int FrameIndex
@@ -244,6 +273,7 @@ namespace DHDM
 				DrawActiveFrame();
 				UpdateCurrentFrameNumber();
 				PreloadAroundActiveFrame(10);
+				UpdateFrameUI();
 			}
 		}
 		
@@ -282,6 +312,8 @@ namespace DHDM
 
 		bool changingInternally;
 		bool initializing;
+		string relativePathFront;
+		string relativePathBack;
 		public enum Attribute
 		{
 			X,
@@ -365,6 +397,59 @@ namespace DHDM
 			if (changingInternally || initializing)
 				return;
 			textBox.Text = slider.Value.ToString();
+		}
+
+		void SaveAllFrames(string movementFileName)
+		{
+			LiveFeedAnimator newLiveFeedAnimator = GetLiveFeedAnimator(movementFileName);
+			newLiveFeedAnimator.LiveFeedSequences.Clear();
+			bool firstTime = true;
+			
+			LiveFeedSequence lastLiveFeedSequence = null;
+			foreach (LiveFeedEdit liveFeedEdit in allFrames)
+			{
+				LiveFeedSequence liveFeedSequence = new LiveFeedSequence()
+				{
+					Camera = liveFeedEdit.Camera,
+					Rotation = liveFeedEdit.GetRotation(),
+					Scale = liveFeedEdit.GetScale(),
+					Opacity = liveFeedEdit.GetOpacity(),
+					Origin = new CommonCore.Point2d(liveFeedEdit.GetX(), liveFeedEdit.GetY()),
+					Flipped = liveFeedEdit.Flipped,
+					Duration = secondsPerFrame
+				};
+				if (firstTime)
+				{
+					firstTime = false;
+				}
+				else
+				{
+					if (lastLiveFeedSequence.Matches(liveFeedSequence))  // Compress movement...
+					{
+						lastLiveFeedSequence.Duration += secondsPerFrame;
+						continue;
+					}
+				}
+				newLiveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
+				lastLiveFeedSequence = liveFeedSequence;
+			}
+
+			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
+
+			string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(newLiveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
+			System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
+		}
+
+		private void btnSaveAnimation_Click(object sender, RoutedEventArgs e)
+		{
+			if (backFiles.Length == 0)
+				return;
+
+			string backFileName = backFiles[0];
+			string selectedPath = System.IO.Path.GetDirectoryName(backFileName);
+
+			string movementFileName = System.IO.Path.GetFileName(selectedPath);
+			SaveAllFrames(movementFileName);
 		}
 	}
 }

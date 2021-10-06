@@ -48,14 +48,14 @@ namespace AnimatedLiveVideoPngProcessor
 				return;
 			}
 
-			List<LiveFeedFrame> results = new List<LiveFeedFrame>();
+			List<LiveFeedSequence> results = new List<LiveFeedSequence>();
 			const double frameRate = 29.97;  // frames per second
 			const double intervalBetweenFramesSeconds = 1 /* frame */ / frameRate;
 
-			LiveFeedFrame lastProcessImageResults = null;
+			LiveFeedSequence lastProcessImageResults = null;
 			foreach (string file in filesToProcess)
 			{
-				LiveFeedFrame processImageResults = TestImageHelper.ProcessImage(file);
+				LiveFeedSequence processImageResults = TestImageHelper.ProcessImage(file);
 				
 				if (processImageResults.Matches(lastProcessImageResults))
 					lastProcessImageResults.Duration += intervalBetweenFramesSeconds;

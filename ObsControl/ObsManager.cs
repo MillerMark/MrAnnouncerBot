@@ -100,7 +100,7 @@ namespace ObsControl
 			OnSceneChanged(sender, newSceneName);
 		}
 
-		public static void SizeAndPositionItem(BaseLiveFeedAnimator e, float scale, double opacity = 1, double rotation = 0)
+		public static void SizeAndPositionItem(BaseLiveFeedAnimator e, double scale, double opacity = 1, double rotation = 0)
 		{
 			double screenAnchorLeft = e.ScreenAnchorLeft;
 			double screenAnchorTop = e.ScreenAnchorTop;

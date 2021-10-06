@@ -58,6 +58,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonCore\CommonCore.csproj">
+      <Project>{0BB2DC67-E76B-4BAA-8CDD-1C311351514D}</Project>
+      <Name>CommonCore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Imaging\Imaging.csproj">
       <Project>{A514DE46-AA88-471B-81A8-2C387DC629F7}</Project>
       <Name>Imaging</Name>

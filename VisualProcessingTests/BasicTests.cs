@@ -7,7 +7,7 @@ namespace VisualProcessingTests
 	[TestClass]
 	public class BasicTests
 	{
-		private const double RotationTolerance = 2; // degrees
+		private const double RotationTolerance = 2; // 2 degrees
 		private const double OpacityTolerance = 0.01; // 1%
 		private const double ScaleTolerance = 0.03; // 3%
 																									// ![](85A57DE6CCF3D489D8B5327808D66AAC.png;;31,0,226,166)
@@ -15,7 +15,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void TestOrigin()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("Origin");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("Origin");
 			Assert.AreEqual(0, results.Rotation, RotationTolerance);
 			Assert.AreEqual(1201, results.Origin.X, 10);
 			Assert.AreEqual(1054, results.Origin.Y, 10);
@@ -30,7 +30,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void TestOrigin42PercentOpacity()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("Origin - 42% opacity");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("Origin - 42% opacity");
 			Assert.AreEqual(0, results.Rotation, RotationTolerance);
 			Assert.AreEqual(1201, results.Origin.X, 10);
 			Assert.AreEqual(1054, results.Origin.Y, 10);
@@ -44,7 +44,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void Test45()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("45");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("45");
 			Assert.AreEqual(45, results.Rotation, RotationTolerance);
 			Assert.AreEqual(0.45, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.45, results.Scale, 0.45 * ScaleTolerance);
@@ -57,7 +57,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void Test45Left()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("45 Left 55 Scale 65 Opacity");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("45 Left 55 Scale 65 Opacity");
 			Assert.AreEqual(76, results.Origin.X, 5);
 			Assert.AreEqual(65, results.Origin.Y, 5);
 			Assert.AreEqual(-45, results.Rotation, RotationTolerance);
@@ -72,7 +72,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void Test180()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("180 Rotation 200 Scale 79 Opacity");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("180 Rotation 200 Scale 79 Opacity");
 			Assert.AreEqual(180, results.Rotation, RotationTolerance);
 			Assert.AreEqual(220, results.Origin.X, 5);
 			Assert.AreEqual(48, results.Origin.Y, 5);
@@ -86,7 +86,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void Test37Flipped()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("37Flipped");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("37Flipped");
 			Assert.AreEqual(37, results.Rotation, 3);
 			Assert.AreEqual(40, results.Origin.X, 3);
 			Assert.AreEqual(70, results.Origin.Y, 3);
@@ -100,7 +100,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void Test53Flipped()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("53Flipped");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("53Flipped");
 			Assert.AreEqual(-53, results.Rotation, 3);
 			Assert.AreEqual(61, results.Origin.X, 3);
 			Assert.AreEqual(54, results.Origin.Y, 3);
@@ -114,7 +114,7 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void TestSideCamera90()
 		{
-			LiveFeedFrame results = TestImageHelper.ProcessImage("SideCamera90");
+			LiveFeedSequence results = TestImageHelper.ProcessImage("SideCamera90");
 			Assert.AreEqual(90, results.Rotation, 3);
 			Assert.AreEqual(23, results.Origin.X, 3);
 			Assert.AreEqual(85, results.Origin.Y, 3);
