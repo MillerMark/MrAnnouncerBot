@@ -19,12 +19,18 @@
 		<Button x:Name="btnSaveAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="153, 0, 0, 0" Click="btnSaveAnimation_Click">
 			Save
 		</Button>
-		<StackPanel Orientation="Vertical" Grid.Row="1" Margin="8" >
+		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="44" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" >
+			
+		</Slider>
+		<StackPanel Orientation="Vertical" Grid.Row="2" Margin="8" >
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="X:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
 				<TextBox x:Name="tbxDeltaX" Width="80" TextChanged="tbxDeltaX_TextChanged">
 					0
 				</TextBox>
+				<Button x:Name="btnCopyDeltaXForward" Click="btnCopyDeltaXForward_Click">
+					>>
+				</Button>
 				<Slider x:Name="sldDeltaX" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaX_ValueChanged"></Slider>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
@@ -32,6 +38,9 @@
 				<TextBox x:Name="tbxDeltaY" Width="80" TextChanged="tbxDeltaY_TextChanged">
 					0
 				</TextBox>
+				<Button x:Name="btnCopyDeltaYForward" Click="btnCopyDeltaYForward_Click">
+					>>
+				</Button>
 				<Slider x:Name="sldDeltaY" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaY_ValueChanged"></Slider>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
@@ -39,6 +48,9 @@
 				<TextBox x:Name="tbxDeltaRotation" Width="80" TextChanged="tbxDeltaRotation_TextChanged">
 					0 
 				</TextBox>
+				<Button x:Name="btnCopyDeltaRotationForward" Click="btnCopyDeltaRotationForward_Click">
+					>>
+				</Button>
 				<Slider x:Name="sldDeltaRotation" Width="400" Margin="10, 0, 0, 0" Minimum="-45" Maximum="45" ValueChanged="sldDeltaRotation_ValueChanged"></Slider>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
@@ -46,6 +58,9 @@
 				<TextBox x:Name="tbxDeltaScale" Width="80" TextChanged="tbxDeltaScale_TextChanged">
 					1
 				</TextBox>
+				<Button x:Name="btnCopyDeltaScaleForward" Click="btnCopyDeltaScaleForward_Click">
+					>>
+				</Button>
 				<Slider x:Name="sldDeltaScale" Value="1" Width="400" Margin="10, 0, 0, 0" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaScale_ValueChanged"></Slider>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
@@ -53,10 +68,13 @@
 				<TextBox x:Name="tbxDeltaOpacity" Width="80" TextChanged="tbxDeltaOpacity_TextChanged">
 					1
 				</TextBox>
+				<Button x:Name="btnCopyDeltaOpacityForward" Click="btnCopyDeltaOpacityForward_Click">
+					>>
+				</Button>
 				<Slider x:Name="sldDeltaOpacity" Width="400" Margin="10, 0, 0, 0" Value="1" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaOpacity_ValueChanged"></Slider>
 			</StackPanel>
 		</StackPanel>
-		<StackPanel Grid.Row="2" Orientation="Horizontal" Height="80">
+		<StackPanel Grid.Row="3" Orientation="Horizontal" Height="80">
 			<Button x:Name="btnJumpToPreviousDelta" Click="btnJumpToPreviousDelta_Click" Margin="20, 0, 15, 0">
 				<Viewbox Width="80" IsHitTestVisible="False">
 					<Canvas Width="659" Height="639">

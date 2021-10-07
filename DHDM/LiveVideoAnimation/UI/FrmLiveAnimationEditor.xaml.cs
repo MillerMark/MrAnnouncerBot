@@ -57,7 +57,7 @@ namespace DHDM
 				int lastIndex = backFiles.Length - 1;
 				digitCount = lastIndex.ToString().Length;
 			}
-
+			sldFrameIndex.Maximum = backFiles.Length - 1;
 			UpdateUI();
 			frameIndex = 0;
 			DrawActiveFrame();
@@ -109,8 +109,13 @@ namespace DHDM
 
 			HubtasticBaseStation.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
 			HubtasticBaseStation.ShowImageFront(GetRelativePath(frontFiles[frameIndex]));
-			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
-			
+
+			LiveFeedEdit liveFeedEdit;
+			if (frameIndex >= allFrames.Count)
+				liveFeedEdit = allFrames.Last();
+			else
+				liveFeedEdit = allFrames[frameIndex];
+
 			liveFeedAnimator.ScreenAnchorLeft = liveFeedEdit.GetX();
 			liveFeedAnimator.ScreenAnchorTop = liveFeedEdit.GetY();
 
@@ -123,7 +128,7 @@ namespace DHDM
 
 		void Change(Attribute attribute, double value)
 		{
-			if (initializing || allFrames == null)
+			if (initializing || allFrames == null || frameIndex >= allFrames.Count)
 				return;
 			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
 			switch (attribute)
@@ -191,12 +196,39 @@ namespace DHDM
 
 		private void btnJumpToPreviousDelta_Click(object sender, RoutedEventArgs e)
 		{
+			LiveFeedEdit currentFrame = allFrames[frameIndex];
 
+			int indexToStopAt = frameIndex - 1;
+			while (indexToStopAt > 0)
+			{
+				if (!FramesAreClose(currentFrame, allFrames[indexToStopAt]))
+					break;
+				indexToStopAt--;
+			}
+			FrameIndex = indexToStopAt;
 		}
 
 		private void btnJumpToNextDelta_Click(object sender, RoutedEventArgs e)
 		{
+			LiveFeedEdit currentFrame = allFrames[frameIndex];
 
+			int indexToStopAt = frameIndex + 1;
+			while (indexToStopAt < allFrames.Count)
+			{
+				if (!FramesAreClose(currentFrame, allFrames[indexToStopAt]))
+					break;
+				indexToStopAt++;
+			}
+			FrameIndex = indexToStopAt;
+		}
+
+		private static bool FramesAreClose(LiveFeedEdit currentFrame, LiveFeedEdit frame)
+		{
+			return AreClose(frame.Origin.X, currentFrame.Origin.X, 1) &&
+													AreClose(frame.Origin.Y, currentFrame.Origin.Y, 1) &&
+													AreClose(frame.Rotation, currentFrame.Rotation, 0.1) &&
+													AreClose(currentFrame.Scale, frame.Scale, 0.01) &&
+													AreClose(frame.Opacity, currentFrame.Opacity, 0.01);
 		}
 
 		private void btnPreviousFrame_Click(object sender, RoutedEventArgs e)
@@ -207,6 +239,8 @@ namespace DHDM
 
 		void PreloadAroundActiveFrame(int extraFramesCount)
 		{
+			if (backFiles == null)
+				return;
 			int startFrame = Math.Max(0, frameIndex - extraFramesCount);
 			int lastIndex = backFiles.Length - 1;
 			int endFrame = Math.Min(lastIndex, frameIndex + extraFramesCount);
@@ -227,6 +261,8 @@ namespace DHDM
 
 		void UpdateFrameUI()
 		{
+			if (allFrames == null)
+				return;
 			if (frameIndex < 0)
 				return;
 			if (frameIndex > allFrames.Count - 1)
@@ -450,6 +486,110 @@ namespace DHDM
 
 			string movementFileName = System.IO.Path.GetFileName(selectedPath);
 			SaveAllFrames(movementFileName);
+		}
+
+		private void btnCopyDeltaXForward_Click(object sender, RoutedEventArgs e)
+		{
+			CopyForward(Attribute.X);
+		}
+
+		private void btnCopyDeltaYForward_Click(object sender, RoutedEventArgs e)
+		{
+			CopyForward(Attribute.Y);
+		}
+
+		private void btnCopyDeltaRotationForward_Click(object sender, RoutedEventArgs e)
+		{
+			CopyForward(Attribute.Rotation);
+		}
+
+		private void btnCopyDeltaScaleForward_Click(object sender, RoutedEventArgs e)
+		{
+			CopyForward(Attribute.Scale);
+		}
+
+		private void btnCopyDeltaOpacityForward_Click(object sender, RoutedEventArgs e)
+		{
+			CopyForward(Attribute.Opacity);
+		}
+
+		void CopyForward(Attribute attribute)
+		{
+			if (frameIndex < 0)
+				return;
+			if (frameIndex >= allFrames.Count)
+				return;
+
+			LiveFeedEdit currentFrame = allFrames[frameIndex];
+			
+			int indexToChange = frameIndex + 1;
+			while (indexToChange < allFrames.Count)
+			{
+				LiveFeedEdit frame = allFrames[indexToChange];
+				switch (attribute)
+				{
+					case Attribute.X:
+						if (AreClose(frame.Origin.X, currentFrame.Origin.X, 1))
+						{
+							frame.DeltaX = currentFrame.DeltaX;
+							break;
+						}
+						else
+							return;
+					case Attribute.Y:
+						if (AreClose(frame.Origin.Y, currentFrame.Origin.Y, 1))
+						{
+							frame.DeltaY = currentFrame.DeltaY;
+							break;
+						}
+						else
+							return;
+					case Attribute.Rotation:
+						if (AreClose(frame.Rotation, currentFrame.Rotation, 0.1))
+						{
+							frame.DeltaRotation = currentFrame.DeltaRotation;
+							break;
+						}
+						else
+							return;
+					case Attribute.Scale:
+						if (AreClose(currentFrame.Scale, frame.Scale, 0.01))
+						{
+							frame.DeltaScale = currentFrame.DeltaScale;
+							break;
+						}
+						else
+							return;
+					case Attribute.Opacity:
+						if (AreClose(frame.Opacity, currentFrame.Opacity, 0.01))
+						{
+							frame.DeltaOpacity = currentFrame.DeltaOpacity;
+							break;
+						}
+						else
+							return;
+				}
+				indexToChange++;
+			}
+		}
+
+		private static bool AreClose(double currentValue, double compareValue, double wiggleRoom = 0)
+		{
+			return Math.Abs(compareValue - currentValue) <= wiggleRoom;
+		}
+		
+		private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			FrameIndex = (int)sldFrameIndex.Value;
+			changingInternally = true;
+			try
+			{
+				tbxFrameNumber.Text = FrameIndex.ToString();
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 	}
 }

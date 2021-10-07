@@ -9,7 +9,7 @@ namespace Imaging
 		/// Which camera to use (Front, Right, etc.).
 		/// </summary>
 		public StudioCamera Camera { get; set; } = StudioCamera.Front;
-
+		
 		/// <summary>
 		/// The scale of the tracked dots, 1 is 100%.
 		/// </summary>

@@ -86,6 +86,8 @@ namespace DHDM
 			}
 			else
 			{
+				HubtasticBaseStation.PreloadImageBack(null, 0, 0, 0);
+				HubtasticBaseStation.PreloadImageFront(null, 0, 0, 0);
 				HubtasticBaseStation.ShowImageFront(null);
 				HubtasticBaseStation.ShowImageBack(null);
 			}
