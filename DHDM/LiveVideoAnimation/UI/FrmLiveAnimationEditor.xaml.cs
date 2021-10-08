@@ -62,6 +62,7 @@ namespace DHDM
 			frameIndex = 0;
 			DrawActiveFrame();
 			ClearEditorValues();
+			UpdateFrameUI();
 		}
 		void ClearEditorValues()
 		{
@@ -170,7 +171,7 @@ namespace DHDM
 			allFrames = new List<LiveFeedEdit>();
 			foreach (LiveFeedSequence liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
 			{
-				int frameCount = (int)(liveFeedSequence.Duration / secondsPerFrame);
+				int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
 				for (int i = 0; i < frameCount; i++)
 					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit());
 			}
@@ -261,11 +262,7 @@ namespace DHDM
 
 		void UpdateFrameUI()
 		{
-			if (allFrames == null)
-				return;
-			if (frameIndex < 0)
-				return;
-			if (frameIndex > allFrames.Count - 1)
+			if (FramesAreNotGood())
 				return;
 
 			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
@@ -284,11 +281,37 @@ namespace DHDM
 				sldDeltaScale.Value = liveFeedEdit.DeltaScale;
 				tbxDeltaOpacity.Text = liveFeedEdit.DeltaOpacity.ToString();
 				sldDeltaOpacity.Value = liveFeedEdit.DeltaOpacity;
+				UpdateValuePreviews(liveFeedEdit);
 			}
 			finally
 			{
 				changingInternally = false;
 			}
+		}
+
+		private bool FramesAreNotGood()
+		{
+			return allFrames == null || frameIndex < 0 || frameIndex > allFrames.Count - 1;
+		}
+
+		private void UpdateValuePreviews(LiveFeedEdit liveFeedEdit = null)
+		{
+			if (liveFeedEdit == null)
+			{
+				if (FramesAreNotGood())
+					return;
+				liveFeedEdit = allFrames[frameIndex];
+			}
+			tbCurrentX.Text = liveFeedEdit.Origin.X.ToString();
+			tbNewX.Text = liveFeedEdit.GetX().ToString();
+			tbCurrentY.Text = liveFeedEdit.Origin.Y.ToString();
+			tbNewY.Text = liveFeedEdit.GetY().ToString();
+			tbCurrentOpacity.Text = liveFeedEdit.Opacity.ToString();
+			tbNewOpacity.Text = liveFeedEdit.GetOpacity().ToString();
+			tbCurrentRotation.Text = liveFeedEdit.Rotation.ToString();
+			tbNewRotation.Text = liveFeedEdit.GetRotation().ToString();
+			tbCurrentScale.Text = liveFeedEdit.Scale.ToString();
+			tbNewScale.Text = liveFeedEdit.GetScale().ToString();
 		}
 
 		public int FrameIndex
@@ -420,6 +443,7 @@ namespace DHDM
 				{
 					Change(attribute, value);
 					slider.Value = value;
+					UpdateValuePreviews();
 				}
 			}
 			finally
@@ -433,14 +457,17 @@ namespace DHDM
 			if (changingInternally || initializing)
 				return;
 			textBox.Text = slider.Value.ToString();
+			UpdateValuePreviews();
 		}
 
 		void SaveAllFrames(string movementFileName)
 		{
+			if (movementFileName == null)
+				return;
 			LiveFeedAnimator newLiveFeedAnimator = GetLiveFeedAnimator(movementFileName);
 			newLiveFeedAnimator.LiveFeedSequences.Clear();
 			bool firstTime = true;
-			
+
 			LiveFeedSequence lastLiveFeedSequence = null;
 			foreach (LiveFeedEdit liveFeedEdit in allFrames)
 			{
@@ -476,16 +503,32 @@ namespace DHDM
 			System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
 		}
 
+		private void btnReloadAnimation_Click(object sender, RoutedEventArgs e)
+		{
+			string movementFileName = GetMovementFileNameFromBackFiles();
+			if (movementFileName == null)
+				return;
+			LoadAllFrames(movementFileName);
+			DrawActiveFrame();
+		}
+
 		private void btnSaveAnimation_Click(object sender, RoutedEventArgs e)
 		{
 			if (backFiles.Length == 0)
 				return;
+			string movementFileName = GetMovementFileNameFromBackFiles();
+			SaveAllFrames(movementFileName);
+		}
 
+		private string GetMovementFileNameFromBackFiles()
+		{
+			if (FramesAreNotGood())
+				return null;
 			string backFileName = backFiles[0];
 			string selectedPath = System.IO.Path.GetDirectoryName(backFileName);
 
 			string movementFileName = System.IO.Path.GetFileName(selectedPath);
-			SaveAllFrames(movementFileName);
+			return movementFileName;
 		}
 
 		private void btnCopyDeltaXForward_Click(object sender, RoutedEventArgs e)
