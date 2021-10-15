@@ -607,6 +607,9 @@
     <None Include="LiveVideoAnimation\Data\Drone Failure.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="LiveVideoAnimation\Data\RaceScreen.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LiveVideoAnimation\Data\UFO Crash.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

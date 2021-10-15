@@ -50,8 +50,11 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FractionPositioningTests.cs" />
+    <Compile Include="NewTests.cs" />
+    <Compile Include="RotationTests.cs" />
     <Compile Include="TestImageHelper.cs" />
-    <Compile Include="BasicTests.cs" />
+    <Compile Include="OldTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

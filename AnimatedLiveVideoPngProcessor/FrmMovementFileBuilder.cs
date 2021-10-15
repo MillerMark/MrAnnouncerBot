@@ -49,7 +49,7 @@ namespace AnimatedLiveVideoPngProcessor
 			}
 
 			List<LiveFeedSequence> results = new List<LiveFeedSequence>();
-			const double frameRate = 29.97;  // frames per second
+			const double frameRate = 30;  // 30 frames per second
 			const double intervalBetweenFramesSeconds = 1 /* frame */ / frameRate;
 
 			LiveFeedSequence lastProcessImageResults = null;

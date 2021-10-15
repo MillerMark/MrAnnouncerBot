@@ -40,7 +40,7 @@ namespace DHDM
 		string[] frontFiles;
 		int frameIndex;
 		bool settingInternally;
-		const double frameRate = 29.97;  // fps
+		const double frameRate = 30;  // fps
 		const double secondsPerFrame = 1 / frameRate;
 		LiveFeedAnimator liveFeedAnimator;
 		int digitCount;
@@ -169,11 +169,19 @@ namespace DHDM
 		{
 			liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
 			allFrames = new List<LiveFeedEdit>();
+			//double time = 0;
 			foreach (LiveFeedSequence liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
 			{
 				int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
 				for (int i = 0; i < frameCount; i++)
+				{
 					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit());
+					//time += secondsPerFrame;
+					//if (time >= 23.7666)
+					//{
+					//	LiveFeedEdit liveFeedEdit = allFrames[allFrames.Count - 1];
+					//}
+				}
 			}
 		}
 

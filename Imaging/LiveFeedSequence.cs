@@ -5,6 +5,10 @@ namespace Imaging
 {
 	public class LiveFeedSequence : LiveFeedData
 	{
+		//const double OldTrackerDistanceBetweenRedAndBlue = 119.0;
+		const double TrackerDistanceBetweenRedAndBlue = 476;
+		//const double DBL_HorizontalAdjust = 0.56274509803916;
+		//const double DBL_VerticalAdjust = 0.45686274509808;
 		Point2d HeadPoint;
 		Point2d LeftShoulder;
 		Point2d RightShoulder;
@@ -35,9 +39,13 @@ namespace Imaging
 			if (countTotals.Count == 0)
 				return Point2d.Empty;
 
-			int x = countTotals.XTotal / countTotals.Count;
-			int y = countTotals.YTotal / countTotals.Count;
-			return new Point2d(x, y);
+			//double x = countTotals.GetRoughX();
+			//double y = countTotals.GetRoughY();
+			//return new Point2d(x, y);
+
+			return new Point2d(countTotals.WeightedCenterX() + 0.5, countTotals.WeightedCenterY() + 0.5);
+
+			//return new Point2d(countTotals.CenterX + DBL_HorizontalAdjust, countTotals.CenterY + DBL_VerticalAdjust);
 		}
 
 		void CalculateFlipped()
@@ -65,7 +73,9 @@ namespace Imaging
 				HeadPoint = GetPoint(intermediateResults.Green);
 			RightShoulder = GetPoint(intermediateResults.Red);
 			LeftShoulder = GetPoint(intermediateResults.Blue);
-			Origin = new Point2d((RightShoulder.X + LeftShoulder.X) / 2, (RightShoulder.Y + LeftShoulder.Y) / 2);
+			double x = Math.Round((RightShoulder.X + LeftShoulder.X) / 2, 1);
+			double y = Math.Round((RightShoulder.Y + LeftShoulder.Y) / 2, 1);
+			Origin = new Point2d(x, y);
 			CalculateScale();
 			if (Scale == 0)
 			{
@@ -76,7 +86,6 @@ namespace Imaging
 			else
 				CalculateRotation();
 
-			// TODO: Flipped...
 			CalculateFlipped();
 		}
 
@@ -85,14 +94,14 @@ namespace Imaging
 			double deltaX = RightShoulder.X - LeftShoulder.X;
 			double deltaY = RightShoulder.Y - LeftShoulder.Y;
 			double distanceBetweenShoulders = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
-			Scale = distanceBetweenShoulders / 119.0;
+			Scale = Math.Round(distanceBetweenShoulders / TrackerDistanceBetweenRedAndBlue, 3);
 		}
 
 		private void CalculateRotation()
 		{
 			double deltaX = HeadPoint.X - Origin.X;
 			double deltaY = HeadPoint.Y - Origin.Y;
-			Rotation = Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90;
+			Rotation = Math.Round(Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90, 1);
 		}
 
 		public LiveFeedEdit CreateLiveFeedEdit()

@@ -11,7 +11,7 @@ namespace Imaging
 		public StudioCamera Camera { get; set; } = StudioCamera.Front;
 		
 		/// <summary>
-		/// The scale of the tracked dots, 1 is 100%.
+		/// The scale of the tracked dots, 1 == 100%.
 		/// </summary>
 		public double Scale { get; set; }
 

@@ -327,8 +327,9 @@ namespace Imaging
 					ProcessLine(bitmap, line, intermediateResults);
 					line++;
 				}
+				intermediateResults.FindCircleCenters(bitmap);
 			}
-
+			
 			results.Calculate(intermediateResults);
 			return results;
 		}
@@ -344,8 +345,8 @@ namespace Imaging
 			for (int x = 0; x < bitmap.Width; x++)
 			{
 				System.Drawing.Color pixel = bitmap.GetPixel(x, y);
-				if (pixel.A < 5)
-					continue;
+				//if (pixel.A < 5)
+				//	continue;
 				if (pixel.A > intermediateResults.GreatestOpacity)
 					intermediateResults.GreatestOpacity = pixel.A;
 
@@ -353,24 +354,25 @@ namespace Imaging
 				{
 					if (pixel.G > 0 && AreClose(pixel.R, pixel.G))
 					{
-						intermediateResults.Yellow.Add(x, y);
+						intermediateResults.Yellow.Add(x, y, pixel.A);
 						continue;
 					}
-					intermediateResults.Red.Add(x, y);
+					intermediateResults.Red.Add(x, y, pixel.A);
 					continue;
 				}
 				if (pixel.G > 0)
 				{
-					intermediateResults.Green.Add(x, y);
+					intermediateResults.Green.Add(x, y, pixel.A);
 					continue;
 				}
 				if (pixel.B > 0)
 				{
-					intermediateResults.Blue.Add(x, y);
+					intermediateResults.Blue.Add(x, y, pixel.A);
 					continue;
 				}
 			}
 		}
+		
 	}
 }
 
