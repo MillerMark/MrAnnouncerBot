@@ -327,7 +327,7 @@ namespace Imaging
 					ProcessLine(bitmap, line, intermediateResults);
 					line++;
 				}
-				intermediateResults.FindCircleCenters(bitmap);
+				//intermediateResults.FindCircleCenters(bitmap);
 			}
 			
 			results.Calculate(intermediateResults);

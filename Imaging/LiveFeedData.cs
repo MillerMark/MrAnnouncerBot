@@ -6,6 +6,16 @@ namespace Imaging
 	public class LiveFeedData
 	{
 		/// <summary>
+		/// The frame index (in the live video) that this LiveFeedData instance represents.
+		/// </summary>
+		public int FrameIndex { get; set; }
+
+		/// <summary>
+		/// The number of frames having this value.
+		/// </summary>
+		public int FrameCount { get; set; } = 1;
+
+		/// <summary>
 		/// Which camera to use (Front, Right, etc.).
 		/// </summary>
 		public StudioCamera Camera { get; set; } = StudioCamera.Front;

@@ -5,10 +5,7 @@ namespace Imaging
 {
 	public class LiveFeedSequence : LiveFeedData
 	{
-		//const double OldTrackerDistanceBetweenRedAndBlue = 119.0;
 		const double TrackerDistanceBetweenRedAndBlue = 476;
-		//const double DBL_HorizontalAdjust = 0.56274509803916;
-		//const double DBL_VerticalAdjust = 0.45686274509808;
 		Point2d HeadPoint;
 		Point2d LeftShoulder;
 		Point2d RightShoulder;
@@ -39,13 +36,7 @@ namespace Imaging
 			if (countTotals.Count == 0)
 				return Point2d.Empty;
 
-			//double x = countTotals.GetRoughX();
-			//double y = countTotals.GetRoughY();
-			//return new Point2d(x, y);
-
 			return new Point2d(countTotals.WeightedCenterX() + 0.5, countTotals.WeightedCenterY() + 0.5);
-
-			//return new Point2d(countTotals.CenterX + DBL_HorizontalAdjust, countTotals.CenterY + DBL_VerticalAdjust);
 		}
 
 		void CalculateFlipped()
@@ -104,7 +95,7 @@ namespace Imaging
 			Rotation = Math.Round(Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90, 1);
 		}
 
-		public LiveFeedEdit CreateLiveFeedEdit()
+		public LiveFeedEdit CreateLiveFeedEdit(int frameIndex)
 		{
 			return new LiveFeedEdit()
 			{
@@ -113,7 +104,8 @@ namespace Imaging
 				Opacity = this.Opacity,
 				Origin = this.Origin,
 				Rotation = this.Rotation,
-				Scale = this.Scale
+				Scale = this.Scale,
+				FrameIndex = frameIndex
 			};
 		}
 	}

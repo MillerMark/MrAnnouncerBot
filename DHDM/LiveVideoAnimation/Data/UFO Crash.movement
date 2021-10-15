@@ -1,96 +1,118 @@
 [
   {
     "Duration": 8.8333333333333126,
+    "FrameIndex": 0,
+    "FrameCount": 265,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 265,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.92549019607843142,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 266,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.82745098039215681,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 267,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.72549019607843135,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 268,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.62745098039215685,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 269,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.52549019607843139,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 270,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.42745098039215684,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 271,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.32549019607843138,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 272,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.22745098039215686,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 273,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.12549019607843137,
-    "Origin": "1202, 1057.7"
+    "Origin": "1201.9, 1058"
   },
   {
     "Duration": 4.56666666666666,
+    "FrameIndex": 274,
+    "FrameCount": 137,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
@@ -100,6 +122,8 @@
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 411,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 8.8,
@@ -109,6 +133,8 @@
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 412,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 9.9,
@@ -118,33 +144,41 @@
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 413,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 10.9,
     "Flipped": false,
     "Opacity": 0.396078431372549,
-    "Origin": "1715.4, 55.7"
+    "Origin": "1715.3, 55.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 414,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 12.0,
     "Flipped": false,
     "Opacity": 0.6470588235294118,
-    "Origin": "1708.8, 57.8"
+    "Origin": "1708.7, 57.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 415,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
-    "Rotation": 10.2,
+    "Rotation": 10.1,
     "Flipped": false,
     "Opacity": 0.89803921568627454,
-    "Origin": "1697, 60.2"
+    "Origin": "1697, 60.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 416,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 8.5,
@@ -154,1095 +188,1339 @@
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 417,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 8.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1685.6, 68.4"
+    "Origin": "1685.5, 68.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 418,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
-    "Rotation": 8.7,
+    "Rotation": 8.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1684.4, 71"
+    "Origin": "1684.3, 71.1"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 419,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 9.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1675, 82.3"
+    "Origin": "1675, 82.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 420,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
     "Rotation": 9.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1665.6, 93.6"
+    "Origin": "1665.5, 93.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 421,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.139,
-    "Rotation": 9.8,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1656.2, 104.9"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.139,
-    "Rotation": 10.0,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1651.3, 112.7"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.144,
-    "Rotation": 10.0,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1649.7, 113.7"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.153,
-    "Rotation": 10.1,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1641.1, 136.5"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.163,
-    "Rotation": 10.0,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1632.6, 159.4"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.172,
-    "Rotation": 10.0,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1624.1, 182.3"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.176,
-    "Rotation": 10.0,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1620.5, 192.2"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.18,
     "Rotation": 9.9,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1617.2, 211.8"
+    "Origin": "1656.1, 105"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 422,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.186,
+    "Scale": 0.139,
+    "Rotation": 10.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1651.2, 112.8"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 423,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.144,
+    "Rotation": 10.1,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1649.6, 113.7"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 424,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.153,
+    "Rotation": 10.0,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1642.5, 132.6"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 425,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.163,
+    "Rotation": 10.1,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1634.7, 153"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 426,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.172,
+    "Rotation": 10.1,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1627, 173.4"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 427,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.176,
+    "Rotation": 10.1,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1619.9, 193.7"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 428,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.179,
+    "Rotation": 9.9,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1620.3, 193.6"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 429,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.185,
     "Rotation": 9.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1611.5, 246.2"
+    "Origin": "1612.9, 224.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 430,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.192,
-    "Rotation": 9.4,
+    "Scale": 0.191,
+    "Rotation": 9.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1605.9, 280.4"
+    "Origin": "1608.1, 258.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 431,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.199,
+    "Scale": 0.196,
+    "Rotation": 9.3,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1602, 295.7"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 432,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.202,
     "Rotation": 9.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1600.1, 314.8"
+    "Origin": "1595, 330.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 433,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.205,
+    "Scale": 0.202,
     "Rotation": 9.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1596.4, 334.4"
+    "Origin": "1594.5, 331"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 434,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.211,
-    "Rotation": 8.8,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1594.7, 353"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.218,
+    "Scale": 0.215,
     "Rotation": 5.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1586.8, 388.5"
+    "Origin": "1586.2, 388.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 435,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.223,
-    "Rotation": -1.1,
+    "Rotation": -1.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1574.6, 404.4"
+    "Origin": "1578.5, 404.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 436,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.228,
-    "Rotation": -4.2,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1560.1, 403.3"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.231,
     "Rotation": -4.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1554.7, 401.8"
+    "Origin": "1565, 405.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 437,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.237,
-    "Rotation": -4.7,
+    "Rotation": -4.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1549.5, 400.2"
+    "Origin": "1554.6, 401.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 438,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.247,
-    "Rotation": -5.6,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "1540.1, 397.2"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.258,
+    "Scale": 0.237,
     "Rotation": -6.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1530.8, 394.3"
+    "Origin": "1554.2, 400.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 439,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.269,
-    "Rotation": -7.7,
+    "Scale": 0.247,
+    "Rotation": -8.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1521.5, 391.3"
+    "Origin": "1543.3, 397.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 440,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.28,
-    "Rotation": -8.7,
+    "Scale": 0.257,
+    "Rotation": -10.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1512.1, 388.4"
+    "Origin": "1532.2, 394.1"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 441,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.29,
-    "Rotation": -9.7,
+    "Scale": 0.265,
+    "Rotation": -11.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1502.7, 385.6"
+    "Origin": "1521.1, 390.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 442,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.301,
-    "Rotation": -10.7,
+    "Scale": 0.271,
+    "Rotation": -12.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1493.2, 382.8"
+    "Origin": "1510.1, 387.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 443,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.31,
-    "Rotation": -11.2,
+    "Scale": 0.271,
+    "Rotation": -13.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1481.6, 379.9"
+    "Origin": "1509.6, 388"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 444,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.317,
-    "Rotation": -11.2,
+    "Scale": 0.295,
+    "Rotation": -13.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1467.8, 378.2"
+    "Origin": "1498.3, 388.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 445,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.297,
+    "Rotation": -12.1,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1483.9, 382.9"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 446,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.313,
+    "Rotation": -13.8,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "1472.2, 383"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 447,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.32,
-    "Rotation": -11.2,
+    "Rotation": -12.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1461.6, 377.8"
+    "Origin": "1461.4, 377.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 448,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.328,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1454.3, 379.7"
+    "Origin": "1464.2, 379.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 449,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.342,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1441, 383.1"
+    "Origin": "1448.2, 383.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 450,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.356,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1427.8, 386.5"
+    "Origin": "1432.1, 386.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 451,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.37,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1414.6, 389.9"
+    "Origin": "1415.9, 390"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 452,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.376,
+    "Scale": 0.377,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1408.7, 391.4"
+    "Origin": "1407.2, 391.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 453,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.381,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1400.1, 392.8"
+    "Origin": "1408.7, 392.1"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 454,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.389,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1384.4, 395.2"
+    "Origin": "1390.5, 394.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 455,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.397,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1368.8, 397.6"
+    "Origin": "1372.3, 397.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 456,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.405,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1353.1, 400.1"
+    "Origin": "1354.1, 399.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 457,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.409,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1346, 401.1"
+    "Origin": "1346.6, 404.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 458,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.415,
-    "Rotation": -11.9,
+    "Rotation": -11.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1336.4, 403.3"
+    "Origin": "1345.5, 406.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 459,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.425,
     "Rotation": -13.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1318.7, 407.4"
+    "Origin": "1327.6, 409.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 460,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.435,
     "Rotation": -14.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1301, 411.4"
+    "Origin": "1309.3, 412"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 461,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.446,
     "Rotation": -15.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1283.3, 415.4"
+    "Origin": "1291.1, 414.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 462,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.45,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1275.1, 417.3"
+    "Origin": "1271.7, 419.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 463,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.455,
+    "Scale": 0.456,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1264, 416.6"
+    "Origin": "1272.6, 422.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 464,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.465,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1243.2, 415.1"
+    "Origin": "1248.5, 423"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 465,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.475,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1222.4, 413.7"
+    "Origin": "1233.3, 423.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 466,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.484,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1201.6, 412.2"
+    "Origin": "1212.9, 422.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 467,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.489,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1192, 411.6"
+    "Origin": "1193.9, 421.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 468,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.493,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1180.4, 415.3"
+    "Origin": "1189.9, 422.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 469,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.503,
-    "Rotation": -16.0,
+    "Scale": 0.502,
+    "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1158.6, 422.2"
+    "Origin": "1172.7, 430.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 470,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.511,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1137, 429"
+    "Origin": "1154.3, 438"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 471,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.52,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1115.3, 435.9"
+    "Origin": "1134.6, 444"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 472,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.525,
     "Rotation": -16.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1105, 439.2"
+    "Origin": "1111, 444.1"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 473,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.529,
     "Rotation": -15.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1095.3, 441.5"
+    "Origin": "1106, 444"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 474,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.537,
     "Rotation": -15.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1076.8, 445.8"
+    "Origin": "1086, 449.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 475,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.545,
     "Rotation": -14.4,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1058.5, 450"
+    "Origin": "1065.1, 454.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 476,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.553,
     "Rotation": -13.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1040, 454.3"
+    "Origin": "1042.2, 456"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 477,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.557,
     "Rotation": -13.4,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1029.3, 457.4"
+    "Origin": "1029.2, 457.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 478,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.565,
     "Rotation": -13.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1027, 459.9"
+    "Origin": "1026.9, 459.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 479,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.581,
     "Rotation": -13.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1007.9, 466.8"
+    "Origin": "1007.8, 466.8"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 480,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.597,
+    "Scale": 0.596,
     "Rotation": -14.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "988.7, 473.7"
+    "Origin": "988.6, 473.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 481,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.612,
     "Rotation": -14.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "969.4, 480.3"
+    "Origin": "969.3, 480.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 482,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.619,
-    "Rotation": -14.4,
+    "Scale": 0.62,
+    "Rotation": -14.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "958, 484.6"
+    "Origin": "958.1, 484.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 483,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.625,
-    "Rotation": -14.1,
+    "Scale": 0.626,
+    "Rotation": -14.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "958.3, 485.2"
+    "Origin": "958.3, 485.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 484,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.637,
-    "Rotation": -13.9,
+    "Scale": 0.638,
+    "Rotation": -13.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "942.3, 489.3"
+    "Origin": "941.8, 489.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 485,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.65,
-    "Rotation": -13.2,
+    "Rotation": -13.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "925.5, 493.2"
+    "Origin": "925.1, 493.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 486,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.661,
-    "Rotation": -12.4,
+    "Scale": 0.663,
+    "Rotation": -12.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "908.1, 497"
+    "Origin": "908.4, 497.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 487,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.668,
+    "Scale": 0.669,
     "Rotation": -12.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "894.3, 500"
+    "Origin": "894.3, 500.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 488,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.67,
+    "Scale": 0.671,
     "Rotation": -12.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "892.6, 500"
+    "Origin": "892.3, 500.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 489,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.676,
-    "Rotation": -12.1,
+    "Rotation": -11.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "877.1, 502.5"
+    "Origin": "876.7, 503"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 490,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.683,
+    "Scale": 0.682,
     "Rotation": -11.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "861.8, 504.5"
+    "Origin": "861.1, 505.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 491,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.686,
+    "Scale": 0.687,
     "Rotation": -11.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "845.8, 507.2"
+    "Origin": "845.6, 507.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 492,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.689,
     "Rotation": -11.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "836.1, 509.5"
+    "Origin": "835.9, 510.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 493,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.694,
-    "Rotation": -10.7,
+    "Scale": 0.693,
+    "Rotation": -10.9,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "834.8, 510.5"
+    "Origin": "835.3, 511.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 494,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.702,
-    "Rotation": -10.5,
+    "Scale": 0.699,
+    "Rotation": -10.4,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "829.8, 514.5"
+    "Origin": "829.9, 515.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 495,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.705,
-    "Rotation": -9.9,
+    "Scale": 0.706,
+    "Rotation": -10.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "824.3, 518.5"
+    "Origin": "824.6, 519.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 496,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.713,
     "Rotation": -9.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "819.3, 523"
+    "Origin": "819.2, 523.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 497,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
     "Rotation": -9.4,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "814.6, 524.7"
+    "Origin": "814.5, 525.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 498,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -9.3,
+    "Scale": 0.716,
+    "Rotation": -9.2,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "815.1, 524.7"
+    "Origin": "814.9, 525.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 499,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -8.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "812.1, 524.7"
+    "Origin": "811.8, 525.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 500,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
-    "Rotation": -8.4,
+    "Rotation": -8.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "809.1, 524.7"
+    "Origin": "808.7, 525.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 501,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -8.0,
+    "Scale": 0.716,
+    "Rotation": -7.9,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "805.6, 525"
+    "Origin": "805.6, 525.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 502,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
+    "Rotation": -7.7,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "804, 525.7"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 503,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.716,
     "Rotation": -7.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "804.1, 525"
+    "Origin": "804.5, 525.4"
   },
   {
     "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -7.6,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "804.8, 524.5"
-  },
-  {
-    "Duration": 0.033333333333333333,
+    "FrameIndex": 504,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -7.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "806.6, 525.7"
+    "Origin": "806.7, 526.5"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 505,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
-    "Rotation": -7.1,
+    "Rotation": -7.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "810.8, 526.7"
+    "Origin": "810.3, 527.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 506,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -6.8,
+    "Scale": 0.716,
+    "Rotation": -6.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "814.1, 527.8"
+    "Origin": "813.9, 528.7"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 507,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
+    "Scale": 0.716,
     "Rotation": -6.5,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "816.1, 528.3"
+    "Origin": "815.8, 529.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 508,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -6.3,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "816.1, 529"
+    "Origin": "816.4, 529.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 509,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
+    "Scale": 0.716,
     "Rotation": -5.8,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "817.8, 530.5"
+    "Origin": "817.6, 531"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 510,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
     "Rotation": -5.4,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "819.1, 531.7"
+    "Origin": "818.9, 532.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 511,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
     "Rotation": -4.9,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "820.1, 532.5"
+    "Origin": "820.1, 533.5"
   },
   {
     "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -3.8,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "820.8, 533.1"
-  },
-  {
-    "Duration": 0.033333333333333333,
+    "FrameIndex": 512,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
-    "Rotation": -4.1,
+    "Rotation": -3.9,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "821.6, 533.5"
+    "Origin": "820.9, 534.1"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 513,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -3.5,
+    "Scale": 0.716,
+    "Rotation": -4.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "822.8, 534"
+    "Origin": "821.5, 534.4"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 514,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.716,
+    "Rotation": -3.6,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "822.9, 535"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 515,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -3.1,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "824.3, 534.7"
+    "Origin": "824.3, 535.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 516,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
     "Rotation": -2.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "825.6, 535.5"
+    "Origin": "825.6, 536.3"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 517,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
+    "Scale": 0.716,
     "Rotation": -1.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "826.6, 535.8"
+    "Origin": "826.5, 536.6"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 518,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
     "Rotation": -1.7,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "827.1, 535.8"
+    "Origin": "826.9, 536.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 519,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.715,
+    "Scale": 0.716,
+    "Rotation": -1.7,
+    "Flipped": false,
+    "Opacity": 1.0,
+    "Origin": "827.9, 537.6"
+  },
+  {
+    "Duration": 0.033333333333333333,
+    "FrameIndex": 520,
+    "FrameCount": 1,
+    "Camera": 0,
+    "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "828.1, 536.8"
+    "Origin": "828.9, 538.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 521,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
-    "Rotation": -1.5,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "828.8, 537.2"
-  },
-  {
-    "Duration": 0.033333333333333333,
-    "Camera": 0,
-    "Scale": 0.716,
-    "Rotation": -1.5,
-    "Flipped": false,
-    "Opacity": 1.0,
-    "Origin": "829.8, 538.2"
+    "Origin": "829.8, 538.8"
   },
   {
     "Duration": 4.4333333333333274,
+    "FrameIndex": 522,
+    "FrameCount": 133,
     "Camera": 0,
-    "Scale": 0.719,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "830.1, 538.3"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 655,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.719,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.97647058823529409,
-    "Origin": "830.1, 538.3"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 656,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.719,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.90980392156862744,
-    "Origin": "830.1, 538.6"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 657,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.719,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.84313725490196079,
-    "Origin": "830.1, 538.6"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 658,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.719,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.77647058823529413,
-    "Origin": "830.1, 538.6"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 659,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.718,
-    "Rotation": -1.5,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.70980392156862748,
-    "Origin": "830.3, 538.6"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 660,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.718,
-    "Rotation": -1.8,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.64313725490196083,
-    "Origin": "830.3, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 661,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
-    "Rotation": -1.8,
+    "Scale": 0.716,
+    "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.57647058823529407,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 662,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 0.717,
+    "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.50980392156862742,
-    "Origin": "830.7, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 663,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.44313725490196076,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 664,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.37647058823529411,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 665,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.30980392156862746,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 666,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.24313725490196078,
-    "Origin": "830.4, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 667,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.17647058823529413,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 668,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.10980392156862745,
-    "Origin": "830.5, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 669,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 0.716,
     "Rotation": -1.6,
     "Flipped": false,
     "Opacity": 0.043137254901960784,
-    "Origin": "830.4, 539"
+    "Origin": "830.3, 539.2"
   },
   {
     "Duration": 1.4666666666666679,
+    "FrameIndex": 670,
+    "FrameCount": 44,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
@@ -1252,254 +1530,299 @@
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 714,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.011764705882352941,
-    "Origin": "1201.9, 1057.8"
+    "Origin": "1202, 1058"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 715,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.050980392156862744,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 716,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.086274509803921567,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 717,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.12549019607843137,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 718,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.16470588235294117,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 719,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.20392156862745098,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 720,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.24313725490196078,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 721,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.27843137254901962,
-    "Origin": "1202, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 722,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 1.001,
+    "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.31764705882352939,
-    "Origin": "1202.1, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 723,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 1.001,
+    "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.35686274509803922,
-    "Origin": "1202.1, 1057.7"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 724,
+    "FrameCount": 1,
     "Camera": 0,
-    "Scale": 1.001,
+    "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.396078431372549,
-    "Origin": "1202.1, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 725,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.43529411764705883,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 726,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.47058823529411764,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 727,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.50980392156862742,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 728,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.5490196078431373,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 729,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.58823529411764708,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 730,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.62745098039215685,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 731,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.66274509803921566,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 732,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.70196078431372544,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 733,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.74117647058823533,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 734,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.7803921568627451,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 735,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.81960784313725488,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 736,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.85490196078431369,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 737,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.89411764705882357,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 738,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.93333333333333335,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 0.033333333333333333,
+    "FrameIndex": 739,
+    "FrameCount": 1,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 0.97254901960784312,
-    "Origin": "1202.3, 1057.4"
+    "Origin": "1202, 1057.9"
   },
   {
     "Duration": 3.9999999999999956,
+    "FrameIndex": 740,
+    "FrameCount": 120,
     "Camera": 0,
     "Scale": 1.0,
     "Rotation": 0.0,
     "Flipped": false,
     "Opacity": 1.0,
-    "Origin": "1202.3, 1057.4"
-  },
-  {
-    "Duration": 3.3333333333333313,
-    "Camera": 0,
-    "Scale": 1.0,
-    "Rotation": 0.0,
-    "Flipped": false,
-    "Opacity": 0.0,
-    "Origin": "0, 0"
+    "Origin": "1202, 1057.9"
   }
 ]

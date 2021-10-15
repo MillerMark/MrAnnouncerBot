@@ -98,7 +98,8 @@ namespace DHDM
       if (LiveFeedSequences.Count == 0)  // Nothing to animate.
         return;
       frameIndex = 0;
-			this.startTime = startTime - TimeSpan.FromSeconds(0.25);  // Sync adjust.
+
+      this.startTime = startTime - TimeSpan.FromSeconds(0.25);   // Sync adjust.
       totalDrawTimeSoFar = TimeSpan.Zero;
       timer.Interval = 1;
       timer.Start();  // Start ASAP.

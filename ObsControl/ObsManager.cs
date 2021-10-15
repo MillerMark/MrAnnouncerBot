@@ -126,26 +126,26 @@ namespace ObsControl
 						obsWebsocket.SetSourceFilterSettings(e.ItemName, ImageMaskFilter, JObject.FromObject(imageMask));
 					}
 				}
-				if (rotation != sceneItemProperties.Rotation)
-				{
-					sceneItemProperties.Rotation = rotation;
+				//if (rotation != sceneItemProperties.Rotation)
+				//{
+				sceneItemProperties.Rotation = rotation;
 
-					// This will rotate around the top left.
-					// ![](342CE4E3D8508B3F1D4B944701C25E97.png)
+				// This will rotate around the top left.
+				// ![](342CE4E3D8508B3F1D4B944701C25E97.png)
 
-					// But we also need to rotate the upper left anchor by that amount..
-					// ![](50D76BD4D4A4D1EF91B34011CF9EA1D7.png)
+				// But we also need to rotate the upper left anchor by that amount..
+				// ![](50D76BD4D4A4D1EF91B34011CF9EA1D7.png)
 
-					// screenAnchorLeft and screenAnchorTop are the red point.
-					// newLeft and newTop are the original yellow anchor point in the upper left.
+				// screenAnchorLeft and screenAnchorTop are the red point.
+				// newLeft and newTop are the original yellow anchor point in the upper left.
 
-					Point2d upperLeft = new Point2d(newLeft, newTop);
-					Point2d centerPoint = new Point2d(screenAnchorLeft, screenAnchorTop);
+				Point2d upperLeft = new Point2d(newLeft, newTop);
+				Point2d centerPoint = new Point2d(screenAnchorLeft, screenAnchorTop);
 
-					Point2d newUpperLeft = Math2D.RotatePoint(upperLeft, centerPoint, rotation);
-					newLeft = newUpperLeft.X;
-					newTop = newUpperLeft.Y;
-				}
+				Point2d newUpperLeft = Math2D.RotatePoint(upperLeft, centerPoint, rotation);
+				newLeft = newUpperLeft.X;
+				newTop = newUpperLeft.Y;
+				
 				sceneItemProperties.Bounds = new SceneItemBoundsInfo()
 				{
 					Height = e.VideoHeight * scale,

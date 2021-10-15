@@ -48,6 +48,7 @@ namespace VisualProcessingTests
 
 		[DataTestMethod]
 		[DataRow("777Opacity", 777.7, 777.7, 77.7, 0.777, 0.077)]
+		[DataRow("333Opacity", 333.3, 333.3, 33.3, 0.333, 0.333)]
 		public void TestTrackerImageWithOpacity(string fileName, double expectedX, double expectedY, double expectedRotation = 0, double expectedScale = 1, double expectedOpacity = 1)
 		{
 			LiveFeedSequence results = TestImageHelper.ProcessImage(fileName);

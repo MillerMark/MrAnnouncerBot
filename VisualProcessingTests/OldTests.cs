@@ -22,7 +22,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(1201, results.Origin.X, 10);
 			Assert.AreEqual(1054, results.Origin.Y, 10);
 			Assert.AreEqual(1, results.Opacity, OpacityTolerance);
-			Assert.AreEqual(1/4, results.Scale, ScaleTolerance);
+			Assert.AreEqual(0.25, results.Scale, ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
 			Assert.AreEqual(StudioCamera.Front, results.Camera);
 		}
@@ -36,7 +36,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0, results.Rotation, RotationTolerance);
 			Assert.AreEqual(1201, results.Origin.X, 10);
 			Assert.AreEqual(1054, results.Origin.Y, 10);
-			Assert.AreEqual(1/4, results.Scale, ScaleTolerance);
+			Assert.AreEqual(0.25, results.Scale, ScaleTolerance);
 			Assert.AreEqual(0.42, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(false, results.Flipped);
 			Assert.AreEqual(StudioCamera.Front, results.Camera);
@@ -79,7 +79,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(220, results.Origin.X, 5);
 			Assert.AreEqual(48, results.Origin.Y, 5);
 			Assert.AreEqual(0.79, results.Opacity, OpacityTolerance);
-			Assert.AreEqual(1/2, results.Scale, 2 * ScaleTolerance);
+			Assert.AreEqual(0.5, results.Scale, 2 * ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
 			Assert.AreEqual(StudioCamera.Front, results.Camera);
 		}

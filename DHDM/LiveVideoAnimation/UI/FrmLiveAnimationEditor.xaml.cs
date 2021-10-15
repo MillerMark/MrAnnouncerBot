@@ -118,6 +118,7 @@ namespace DHDM
 				liveFeedEdit = allFrames[frameIndex];
 
 			liveFeedAnimator.ScreenAnchorLeft = liveFeedEdit.GetX();
+
 			liveFeedAnimator.ScreenAnchorTop = liveFeedEdit.GetY();
 
 			double rotation = liveFeedEdit.GetRotation();
@@ -169,13 +170,15 @@ namespace DHDM
 		{
 			liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
 			allFrames = new List<LiveFeedEdit>();
+			int frameIndex = 0;
 			//double time = 0;
 			foreach (LiveFeedSequence liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
 			{
 				int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
 				for (int i = 0; i < frameCount; i++)
 				{
-					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit());
+					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
+					frameIndex++;
 					//time += secondsPerFrame;
 					//if (time >= 23.7666)
 					//{
@@ -268,6 +271,19 @@ namespace DHDM
 			return System.IO.Path.Combine(directoryName, baseFileName);
 		}
 
+		string FormatFrameIndex(int frameIndex)
+		{
+			int seconds = frameIndex / 30;
+			int frames = frameIndex % 30;
+			return $"{seconds:00}:{frames:00}";
+		}
+
+		void UpdateFrameIndex(LiveFeedEdit liveFeedEdit)
+		{
+			tbFrameIndexFromMovementFile.Text = FormatFrameIndex(liveFeedEdit.FrameIndex);
+			tbFrameIndexFromMemory.Text = FormatFrameIndex(FrameIndex);
+		}
+
 		void UpdateFrameUI()
 		{
 			if (FramesAreNotGood())
@@ -278,6 +294,7 @@ namespace DHDM
 			changingInternally = true;
 			try
 			{
+				UpdateFrameIndex(liveFeedEdit);
 				//tbxDeltaOpacity.Text = liveFeedEdit.Opacity;
 				tbxDeltaX.Text = liveFeedEdit.DeltaX.ToString();
 				tbxDeltaY.Text = liveFeedEdit.DeltaY.ToString();

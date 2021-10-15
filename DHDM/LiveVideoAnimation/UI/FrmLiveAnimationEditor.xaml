@@ -27,6 +27,10 @@
 		</Slider>
 		<StackPanel Orientation="Vertical" Grid.Row="2" Margin="8" >
 			<StackPanel Orientation="Horizontal">
+				<TextBlock x:Name="tbFrameIndexFromMovementFile" Text="00:00" Width="Auto" Height="Auto" FontSize="22"/>
+				<TextBlock x:Name="tbFrameIndexFromMemory" Text="00:00" Width="Auto" Height="Auto" FontSize="22" Foreground="DarkRed" Margin="20, 0, 0, 0"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="620, 0, 0, 0"/>
 				<TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
 			</StackPanel>
