@@ -610,6 +610,9 @@
     <None Include="LiveVideoAnimation\Data\RaceScreen.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="LiveVideoAnimation\Data\TimeSyncSmooth.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LiveVideoAnimation\Data\TimeSync.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

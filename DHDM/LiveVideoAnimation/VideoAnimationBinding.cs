@@ -11,5 +11,8 @@ namespace DHDM
 		public string SceneName { get; set; }
 		public string MovementFileName { get; set; }
 		public string SourceName { get; set; }
+		public double StartTimeOffset { get; set; } = 0;
+		public double TimeStretchFactor { get; set; } = 1;
 	}
+
 }

@@ -42,6 +42,8 @@ namespace DHDM
 			string movementInstructions = File.ReadAllText(movementFile);
 			List<LiveFeedSequence> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedSequence>>(movementInstructions);
 			liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
+			liveFeedAnimator.StartTimeOffset = binding.StartTimeOffset;
+			liveFeedAnimator.TimeStretchFactor = binding.TimeStretchFactor;
 			return liveFeedAnimator;
 		}
 

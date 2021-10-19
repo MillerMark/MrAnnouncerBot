@@ -45,18 +45,21 @@ namespace DHDM
       if (needToStopNow)
         frameIndex = LiveFeedSequences.Count - 1;
 
-      LiveFeedSequence liveFeedFrame = LiveFeedSequences[frameIndex];
-      if (liveFeedFrame == null)
-      {
-        Stop();
-        return;
-      }
+			if (frameIndex < LiveFeedSequences.Count)
+			{
+				LiveFeedSequence liveFeedFrame = LiveFeedSequences[frameIndex];
+				if (liveFeedFrame == null)
+				{
+					Stop();
+					return;
+				}
 
-			RenderActiveFrame(liveFeedFrame);
-			SetNextTimer(liveFeedFrame);
-			
-      frameIndex++;
-      if (frameIndex >= LiveFeedSequences.Count || needToStopNow)
+				RenderActiveFrame(liveFeedFrame);
+				SetNextTimer(liveFeedFrame);
+
+				frameIndex++;
+			}
+			if (frameIndex >= LiveFeedSequences.Count || needToStopNow)
         Stop();
     }
 
@@ -69,10 +72,10 @@ namespace DHDM
 
     void SetNextTimer(LiveFeedSequence liveFeedFrame)
 		{
-			if (allDone)
+      if (allDone)
 				return;
 			DateTime now = DateTime.Now;
-			totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration);
+			totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration * TimeStretchFactor);
 			DateTime nextFrameDrawTime = startTime + totalDrawTimeSoFar;
 			if (nextFrameDrawTime <= now)
 				timer.Interval = 1;  // Render the next frame ASAP.
@@ -82,8 +85,10 @@ namespace DHDM
 		}
 
 		public List<LiveFeedSequence> LiveFeedSequences { get; set; }
-
-    void OnAnimationComplete(object sender, EventArgs e)
+    public double StartTimeOffset { get; set; } = 0;
+    public double TimeStretchFactor { get; set; } = 1;
+    
+		void OnAnimationComplete(object sender, EventArgs e)
     {
       AnimationComplete?.Invoke(sender, e);
     }
@@ -99,7 +104,14 @@ namespace DHDM
         return;
       frameIndex = 0;
 
-      this.startTime = startTime - TimeSpan.FromSeconds(0.25);   // Sync adjust.
+      this.startTime = startTime;
+
+      // Sync offset start time if the video settings say so.
+      if (StartTimeOffset < 0)     
+        this.startTime -= TimeSpan.FromSeconds(-StartTimeOffset);
+			else if (StartTimeOffset > 0)
+        this.startTime += TimeSpan.FromSeconds(StartTimeOffset);
+
       totalDrawTimeSoFar = TimeSpan.Zero;
       timer.Interval = 1;
       timer.Start();  // Start ASAP.

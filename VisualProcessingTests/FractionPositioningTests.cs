@@ -8,7 +8,7 @@ namespace VisualProcessingTests
 	public class FractionPositioningTests
 	{
 		private const double PositionalTolerance = 0.105;  // Almost 1/10th of a pixel!!!
-		private const double OpacityTolerance = 0.015;
+		private const double OpacityTolerance = 0.002;
 		private TestContext testContextInstance;
 
 		/// <summary>
