@@ -154,13 +154,25 @@ namespace DHDM
 			return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers + horizontalNudge;
 		}
 
+		VideoFeed[] GetVideoFeeds(string sceneName, string itemName, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight)
+		{
+			VideoFeed[] result = new VideoFeed[4];
+			result[0] = new VideoFeed() { sceneName = sceneName, sourceName = itemName,
+				videoAnchorHorizontal = videoAnchorHorizontal,
+				videoAnchorVertical = videoAnchorVertical,
+				videoWidth = videoWidth,
+				videoHeight = videoHeight
+			};
+			return result;
+		}
 		void StartLiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs)
 		{
 			SceneItem sceneItem = ObsManager.GetSceneItem(sceneName, itemName);
 
 			SceneItemProperties sceneItemProperties = ObsManager.GetSceneItemProperties(itemName, sceneName);
 			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
-			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(itemName, sceneName, playerX, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, startScale, targetScale, timeMs);
+			VideoFeed[] videoFeeds = GetVideoFeeds(sceneName, itemName, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight);
+			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(videoFeeds, playerX, startScale, targetScale, timeMs);
 			if (!sceneItem.Render)
 				ObsManager.SizeAndPositionItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else

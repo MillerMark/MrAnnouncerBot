@@ -2,7 +2,7 @@ using System;
 
 namespace Imaging
 {
-	public class LiveFeedEdit : LiveFeedData
+	public class ObsTransformEdit : BaseObsTransform
 	{
 		public double DeltaX { get; set; }
 		public double DeltaY { get; set; }
@@ -10,7 +10,7 @@ namespace Imaging
 		public double DeltaScale { get; set; } = 1;
 		public double DeltaOpacity { get; set; } = 1;
 
-		public LiveFeedEdit()
+		public ObsTransformEdit()
 		{
 
 		}

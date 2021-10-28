@@ -39,7 +39,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(960, results.Origin.X, 2);
 			Assert.AreEqual(540, results.Origin.Y, 2);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 	}
 }

@@ -53,12 +53,11 @@
     <Compile Include="ImageCropper.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="IntermediateResults.cs" />
-    <Compile Include="LiveFeedData.cs" />
-    <Compile Include="LiveFeedEdit.cs" />
+    <Compile Include="BaseObsTransform.cs" />
+    <Compile Include="ObsTransformEdit.cs" />
     <Compile Include="Margins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StudioCamera.cs" />
-    <Compile Include="LiveFeedSequence.cs" />
+    <Compile Include="ObsTransform.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonCore\CommonCore.csproj">

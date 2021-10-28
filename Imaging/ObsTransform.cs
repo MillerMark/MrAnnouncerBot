@@ -3,7 +3,7 @@ using System;
 
 namespace Imaging
 {
-	public class LiveFeedSequence : LiveFeedData
+	public class ObsTransform : BaseObsTransform
 	{
 		const double TrackerDistanceBetweenRedAndBlue = 476;
 		Point2d HeadPoint;
@@ -15,11 +15,11 @@ namespace Imaging
 		/// </summary>
 		public double Duration { get; set; }
 
-		public LiveFeedSequence()
+		public ObsTransform()
 		{
 		}
 
-		public bool Matches(LiveFeedSequence obj)
+		public bool Matches(ObsTransform obj)
 		{
 			if (obj == null)
 				return false;
@@ -57,7 +57,7 @@ namespace Imaging
 			Opacity = intermediateResults.GreatestOpacity / 255.0;
 			if (intermediateResults.Yellow.Count > intermediateResults.Green.Count)
 			{
-				Camera = StudioCamera.Profile;
+				Camera = 0;
 				HeadPoint = GetPoint(intermediateResults.Yellow);
 			}
 			else
@@ -95,9 +95,9 @@ namespace Imaging
 			Rotation = Math.Round(Math.Atan2(deltaY, deltaX) * 180.0 / Math.PI + 90, 1);
 		}
 
-		public LiveFeedEdit CreateLiveFeedEdit(int frameIndex)
+		public ObsTransformEdit CreateLiveFeedEdit(int frameIndex)
 		{
-			return new LiveFeedEdit()
+			return new ObsTransformEdit()
 			{
 				Camera = this.Camera,
 				Flipped = this.Flipped,

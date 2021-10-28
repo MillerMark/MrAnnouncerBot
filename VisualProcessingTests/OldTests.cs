@@ -24,7 +24,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(1, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.25, results.Scale, ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 		// ![](Origin42Opacity;;1121,921,1296,1079)
@@ -39,7 +39,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.25, results.Scale, ScaleTolerance);
 			Assert.AreEqual(0.42, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 		// ![](45)
@@ -51,7 +51,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.45, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.45/4, results.Scale, 0.45 * ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 
@@ -66,7 +66,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.65, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.55/4, results.Scale, 0.55 * ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 
@@ -81,7 +81,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.79, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.5, results.Scale, 2 * ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 		// ![](37Flipped)
@@ -95,7 +95,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.37, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.37/4, results.Scale, 0.37 * ScaleTolerance);
 			Assert.AreEqual(true, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 		// ![](53Flipped)
@@ -109,7 +109,7 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.53, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.53/4, results.Scale, 0.53 * ScaleTolerance);
 			Assert.AreEqual(true, results.Flipped);
-			Assert.AreEqual(StudioCamera.Front, results.Camera);
+			Assert.AreEqual(0, results.Camera);
 		}
 
 		// ![](SideCamera90)
@@ -123,7 +123,8 @@ namespace VisualProcessingTests
 			Assert.AreEqual(0.9, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(0.9/4, results.Scale, 0.9 * ScaleTolerance);
 			Assert.AreEqual(false, results.Flipped);
-			Assert.AreEqual(StudioCamera.Profile, results.Camera);
+			Assert.AreEqual(1, results.Camera);
 		}
+		
 	}
 }

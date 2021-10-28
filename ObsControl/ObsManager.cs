@@ -100,8 +100,15 @@ namespace ObsControl
 			OnSceneChanged(sender, newSceneName);
 		}
 
-		public static void SizeAndPositionItem(BaseLiveFeedAnimator e, double scale, double opacity = 1, double rotation = 0)
+		public static void SizeAndPositionItem(BaseLiveFeedAnimator e, double scale, double opacity = 1, double rotation = 0, bool flipped = false)
 		{
+			if (e.HasLastCamera())
+			{
+				// TODO: Hide that sourceItem...
+				SetSourceVisibility(e.LastSceneName, e.LastItemName, false);
+				e.ClearLastCamera();
+			}
+
 			double screenAnchorLeft = e.ScreenAnchorLeft;
 			double screenAnchorTop = e.ScreenAnchorTop;
 
@@ -112,6 +119,7 @@ namespace ObsControl
 			{
 				SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
 				sceneItemProperties.Visible = opacity > 0;
+
 				if (sceneItemProperties.Visible)
 				{
 					// TODO: Consider optimizing this to only change when the new value is different from the last one set. Confidence should be high (e.g., time between sets should be short, and everything else should match).
@@ -162,6 +170,18 @@ namespace ObsControl
 				};
 
 				obsWebsocket.SetSceneItemProperties(sceneItemProperties, e.SceneName);
+
+				float flipMultiplier = 1;
+				if (e.VideoWidth < 0)
+					flipMultiplier = -1;
+
+				if (flipped)
+				{
+					flipMultiplier *= -1;
+				}
+
+				obsWebsocket.SetSceneItemTransform(e.ItemName, (float)rotation, flipMultiplier * (float)scale, (float)scale, e.SceneName);
+
 			}
 			catch (Exception ex)
 			{

@@ -74,6 +74,7 @@
     <Compile Include="ObsHelper.cs" />
     <Compile Include="ObsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VideoFeed.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -91,6 +92,10 @@
     <ProjectReference Include="..\DndCore\DndCore.csproj">
       <Project>{A953618E-82D1-4837-A568-5BB75CC6BCC0}</Project>
       <Name>DndCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj">
+      <Project>{25115c30-e684-4018-a8c5-f8a39697e080}</Project>
+      <Name>GoogleHelper</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

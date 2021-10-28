@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DHDM
+namespace ObsControl
 {
   [SheetName("Live Video Animation")]
 	[TabName("VideoFeeds")]

@@ -312,9 +312,9 @@ namespace Imaging
 			files = System.IO.Directory.GetFiles(directoryName, searchPattern).OrderBy(x => x).ToList();
 		}
 
-		public static LiveFeedSequence GetVisualProcessingResults(string fileName)
+		public static ObsTransform GetVisualProcessingResults(string fileName)
 		{
-			LiveFeedSequence results = new LiveFeedSequence();
+			ObsTransform results = new ObsTransform();
 			IntermediateResults intermediateResults = new IntermediateResults();
 
 			using (DirectBitmap bitmap = DirectBitmap.FromFile(fileName))
@@ -322,9 +322,12 @@ namespace Imaging
 				int line = 0;
 				int bitmapWidth = bitmap.Width;
 				int bitmapHeight = bitmap.Height;
+				int xOffset = -(bitmapWidth - 1920) / 2;
+				int yOffset = -(bitmapHeight - 1080) / 2;
+
 				while (line < bitmapHeight)
 				{
-					ProcessLine(bitmap, line, intermediateResults);
+					ProcessLine(bitmap, line, intermediateResults, xOffset, yOffset);
 					line++;
 				}
 				//intermediateResults.FindCircleCenters(bitmap);
@@ -339,7 +342,7 @@ namespace Imaging
 			return Math.Abs(r - g) < 30;
 		}
 
-		private static void ProcessLine(DirectBitmap bitmap, int y, IntermediateResults intermediateResults)
+		private static void ProcessLine(DirectBitmap bitmap, int y, IntermediateResults intermediateResults, int xOffset, int yOffset)
 		{
 			// We have to detect four colors: red, blue, green, yellow (means use profile camera)
 			for (int x = 0; x < bitmap.Width; x++)
@@ -354,20 +357,20 @@ namespace Imaging
 				{
 					if (pixel.G > 0 && AreClose(pixel.R, pixel.G))
 					{
-						intermediateResults.Yellow.Add(x, y, pixel.A);
+						intermediateResults.Yellow.Add(x + xOffset, y + yOffset, pixel.A);
 						continue;
 					}
-					intermediateResults.Red.Add(x, y, pixel.A);
+					intermediateResults.Red.Add(x + xOffset, y + yOffset, pixel.A);
 					continue;
 				}
 				if (pixel.G > 0)
 				{
-					intermediateResults.Green.Add(x, y, pixel.A);
+					intermediateResults.Green.Add(x + xOffset, y + yOffset, pixel.A);
 					continue;
 				}
 				if (pixel.B > 0)
 				{
-					intermediateResults.Blue.Add(x, y, pixel.A);
+					intermediateResults.Blue.Add(x + xOffset, y + yOffset, pixel.A);
 					continue;
 				}
 			}

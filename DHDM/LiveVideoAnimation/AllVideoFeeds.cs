@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using GoogleHelper;
+using ObsControl;
 
 namespace DHDM
 {
@@ -22,6 +23,17 @@ namespace DHDM
 		public static void Invalidate()
 		{
 			allVideoFeeds = null;
+		}
+
+		public static VideoFeed[] GetAll(VideoAnimationBinding videoAnimationBinding)
+		{
+			VideoFeed[] result = new VideoFeed[4];
+			result[0] = Get(videoAnimationBinding.Camera1);
+			result[1] = Get(videoAnimationBinding.Camera2);
+			result[2] = Get(videoAnimationBinding.Camera3);
+			result[3] = Get(videoAnimationBinding.Camera4);
+
+			return result;
 		}
 
 		public static List<VideoFeed> AllFeeds

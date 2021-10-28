@@ -17,16 +17,7 @@ namespace DHDM
 		bool allDone;
 		bool needToStopNow;
 
-		public LiveFeedAnimator(double videoAnchorHorizontal,
-      double videoAnchorVertical,
-      double videoWidth,
-      double videoHeight,
-      string sceneName,
-      string itemName,
-      List<LiveFeedSequence> liveFeedFrames) : base(videoAnchorHorizontal, 
-                            videoAnchorVertical, 
-                            videoWidth, 
-                            videoHeight, sceneName, itemName)
+		public LiveFeedAnimator(VideoFeed[] videoFeeds, List<ObsTransform> liveFeedFrames) : base(videoFeeds)
     {
       LiveFeedSequences = liveFeedFrames;
       timer = new Timer();
@@ -47,7 +38,7 @@ namespace DHDM
 
 			if (frameIndex < LiveFeedSequences.Count)
 			{
-				LiveFeedSequence liveFeedFrame = LiveFeedSequences[frameIndex];
+				ObsTransform liveFeedFrame = LiveFeedSequences[frameIndex];
 				if (liveFeedFrame == null)
 				{
 					Stop();
@@ -63,19 +54,21 @@ namespace DHDM
         Stop();
     }
 
-    void RenderActiveFrame(LiveFeedSequence liveFeedFrame)
+    void RenderActiveFrame(ObsTransform liveFeedFrame)
     {
       ScreenAnchorLeft = liveFeedFrame.Origin.X;
       ScreenAnchorTop = liveFeedFrame.Origin.Y;
-      ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation);
+      SetCamera(liveFeedFrame.Camera);
+      ObsManager.SizeAndPositionItem(this, (float)liveFeedFrame.Scale, liveFeedFrame.Opacity, liveFeedFrame.Rotation, liveFeedFrame.Flipped);
     }
 
-    void SetNextTimer(LiveFeedSequence liveFeedFrame)
+    void SetNextTimer(ObsTransform liveFeedFrame)
 		{
       if (allDone)
 				return;
 			DateTime now = DateTime.Now;
-			totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration * TimeStretchFactor);
+      //totalDrawTimeSoFar += TimeSpan.FromSeconds(liveFeedFrame.Duration * TimeStretchFactor); FAILS!
+      totalDrawTimeSoFar += TimeSpan.FromTicks((long)(10_000_000 * liveFeedFrame.Duration * TimeStretchFactor));  // WORKS!!!
 			DateTime nextFrameDrawTime = startTime + totalDrawTimeSoFar;
 			if (nextFrameDrawTime <= now)
 				timer.Interval = 1;  // Render the next frame ASAP.
@@ -84,7 +77,7 @@ namespace DHDM
 			timer.Start();
 		}
 
-		public List<LiveFeedSequence> LiveFeedSequences { get; set; }
+		public List<ObsTransform> LiveFeedSequences { get; set; }
     public double StartTimeOffset { get; set; } = 0;
     public double TimeStretchFactor { get; set; } = 1;
     

@@ -47,6 +47,7 @@ namespace TaleSpireCore
 
 			static void OnNewMiniSelected(CreatureBoardAsset selectedMini)
 			{
+				miniSelected = true;
 				creatureBoardAssetEventArgs.SetMini(selectedMini);
 				OnMiniSelected(creatureBoardAssetEventArgs);
 				lastSelectedMini = selectedMini;
@@ -587,6 +588,7 @@ namespace TaleSpireCore
 			}
 
 			const string STR_Ghost = "Talespire.Core.Ghost.Mini";
+			static bool miniSelected;
 			static GameObject GetGhost(Transform parent, GameObject mini)
 			{
 				GameObject ghost = parent.GetChild(STR_Ghost, true);

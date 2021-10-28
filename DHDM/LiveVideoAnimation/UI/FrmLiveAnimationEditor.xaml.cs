@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Imaging;
+using ObsControl;
 
 namespace DHDM
 {
@@ -35,7 +36,7 @@ namespace DHDM
 		}
 
 		
-		List<LiveFeedEdit> allFrames;
+		List<ObsTransformEdit> allFrames;
 		string[] backFiles;
 		string[] frontFiles;
 		int frameIndex;
@@ -111,7 +112,7 @@ namespace DHDM
 			HubtasticBaseStation.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
 			HubtasticBaseStation.ShowImageFront(GetRelativePath(frontFiles[frameIndex]));
 
-			LiveFeedEdit liveFeedEdit;
+			ObsTransformEdit liveFeedEdit;
 			if (frameIndex >= allFrames.Count)
 				liveFeedEdit = allFrames.Last();
 			else
@@ -125,14 +126,15 @@ namespace DHDM
 			double scale = liveFeedEdit.GetScale();
 			double opacity = liveFeedEdit.GetOpacity();
 
-			ObsControl.ObsManager.SizeAndPositionItem(liveFeedAnimator, scale, opacity, rotation);
+			liveFeedAnimator.SetCamera(liveFeedEdit.Camera);
+			ObsControl.ObsManager.SizeAndPositionItem(liveFeedAnimator, scale, opacity, rotation, liveFeedEdit.Flipped);
 		}
 
 		void Change(Attribute attribute, double value)
 		{
 			if (initializing || allFrames == null || frameIndex >= allFrames.Count)
 				return;
-			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
+			ObsTransformEdit liveFeedEdit = allFrames[frameIndex];
 			switch (attribute)
 			{
 				case Attribute.X:
@@ -166,34 +168,12 @@ namespace DHDM
 			frontFiles = System.IO.Directory.GetFiles(selectedPath, "front*.png");
 		}
 
-		private void LoadAllFrames(string movementFileName)
+		private List<LiveFeedAnimator> GetLiveFeedAnimator(string movementFileName)
 		{
-			liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
-			allFrames = new List<LiveFeedEdit>();
-			int frameIndex = 0;
-			//double time = 0;
-			foreach (LiveFeedSequence liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
-			{
-				int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
-				for (int i = 0; i < frameCount; i++)
-				{
-					allFrames.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
-					frameIndex++;
-					//time += secondsPerFrame;
-					//if (time >= 23.7666)
-					//{
-					//	LiveFeedEdit liveFeedEdit = allFrames[allFrames.Count - 1];
-					//}
-				}
-			}
-		}
-
-		private LiveFeedAnimator GetLiveFeedAnimator(string movementFileName)
-		{
-			VideoAnimationBinding binding = AllVideoBindings.Get(movementFileName);
+			VideoAnimationBinding binding = AllVideoBindings.GetAll(movementFileName).FirstOrDefault();
 			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
-			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
-			return VideoAnimationManager.LoadLiveAnimation(fullPathToMovementFile, binding, videoFeed);
+			VideoFeed[] videoFeeds = AllVideoFeeds.GetAll(binding);
+			return VideoAnimationManager.LoadLiveAnimation(fullPathToMovementFile, binding, videoFeeds);
 		}
 
 		private void btnLoadAnimation_Click(object sender, RoutedEventArgs e)
@@ -208,7 +188,7 @@ namespace DHDM
 
 		private void btnJumpToPreviousDelta_Click(object sender, RoutedEventArgs e)
 		{
-			LiveFeedEdit currentFrame = allFrames[frameIndex];
+			ObsTransformEdit currentFrame = allFrames[frameIndex];
 
 			int indexToStopAt = frameIndex - 1;
 			while (indexToStopAt > 0)
@@ -222,7 +202,7 @@ namespace DHDM
 
 		private void btnJumpToNextDelta_Click(object sender, RoutedEventArgs e)
 		{
-			LiveFeedEdit currentFrame = allFrames[frameIndex];
+			ObsTransformEdit currentFrame = allFrames[frameIndex];
 
 			int indexToStopAt = frameIndex + 1;
 			while (indexToStopAt < allFrames.Count)
@@ -234,7 +214,7 @@ namespace DHDM
 			FrameIndex = indexToStopAt;
 		}
 
-		private static bool FramesAreClose(LiveFeedEdit currentFrame, LiveFeedEdit frame)
+		private static bool FramesAreClose(ObsTransformEdit currentFrame, ObsTransformEdit frame)
 		{
 			return AreClose(frame.Origin.X, currentFrame.Origin.X, 1) &&
 													AreClose(frame.Origin.Y, currentFrame.Origin.Y, 1) &&
@@ -278,7 +258,7 @@ namespace DHDM
 			return $"{seconds:00}:{frames:00}";
 		}
 
-		void UpdateFrameIndex(LiveFeedEdit liveFeedEdit)
+		void UpdateFrameIndex(ObsTransformEdit liveFeedEdit)
 		{
 			tbFrameIndexFromMovementFile.Text = FormatFrameIndex(liveFeedEdit.FrameIndex);
 			tbFrameIndexFromMemory.Text = FormatFrameIndex(FrameIndex);
@@ -289,7 +269,7 @@ namespace DHDM
 			if (FramesAreNotGood())
 				return;
 
-			LiveFeedEdit liveFeedEdit = allFrames[frameIndex];
+			ObsTransformEdit liveFeedEdit = allFrames[frameIndex];
 
 			changingInternally = true;
 			try
@@ -319,7 +299,7 @@ namespace DHDM
 			return allFrames == null || frameIndex < 0 || frameIndex > allFrames.Count - 1;
 		}
 
-		private void UpdateValuePreviews(LiveFeedEdit liveFeedEdit = null)
+		private void UpdateValuePreviews(ObsTransformEdit liveFeedEdit = null)
 		{
 			if (liveFeedEdit == null)
 			{
@@ -485,49 +465,6 @@ namespace DHDM
 			UpdateValuePreviews();
 		}
 
-		void SaveAllFrames(string movementFileName)
-		{
-			if (movementFileName == null)
-				return;
-			LiveFeedAnimator newLiveFeedAnimator = GetLiveFeedAnimator(movementFileName);
-			newLiveFeedAnimator.LiveFeedSequences.Clear();
-			bool firstTime = true;
-
-			LiveFeedSequence lastLiveFeedSequence = null;
-			foreach (LiveFeedEdit liveFeedEdit in allFrames)
-			{
-				LiveFeedSequence liveFeedSequence = new LiveFeedSequence()
-				{
-					Camera = liveFeedEdit.Camera,
-					Rotation = liveFeedEdit.GetRotation(),
-					Scale = liveFeedEdit.GetScale(),
-					Opacity = liveFeedEdit.GetOpacity(),
-					Origin = new CommonCore.Point2d(liveFeedEdit.GetX(), liveFeedEdit.GetY()),
-					Flipped = liveFeedEdit.Flipped,
-					Duration = secondsPerFrame
-				};
-				if (firstTime)
-				{
-					firstTime = false;
-				}
-				else
-				{
-					if (lastLiveFeedSequence.Matches(liveFeedSequence))  // Compress movement...
-					{
-						lastLiveFeedSequence.Duration += secondsPerFrame;
-						continue;
-					}
-				}
-				newLiveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
-				lastLiveFeedSequence = liveFeedSequence;
-			}
-
-			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
-
-			string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(newLiveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
-			System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
-		}
-
 		private void btnReloadAnimation_Click(object sender, RoutedEventArgs e)
 		{
 			string movementFileName = GetMovementFileNameFromBackFiles();
@@ -588,12 +525,12 @@ namespace DHDM
 			if (frameIndex >= allFrames.Count)
 				return;
 
-			LiveFeedEdit currentFrame = allFrames[frameIndex];
+			ObsTransformEdit currentFrame = allFrames[frameIndex];
 			
 			int indexToChange = frameIndex + 1;
 			while (indexToChange < allFrames.Count)
 			{
-				LiveFeedEdit frame = allFrames[indexToChange];
+				ObsTransformEdit frame = allFrames[indexToChange];
 				switch (attribute)
 				{
 					case Attribute.X:
@@ -658,6 +595,75 @@ namespace DHDM
 			{
 				changingInternally = false;
 			}
+		}
+
+		void SaveAllFrames(string movementFileName)
+		{
+			if (movementFileName == null)
+				return;
+			List<LiveFeedAnimator> liveFeedAnimators = GetLiveFeedAnimator(movementFileName);
+			foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
+				liveFeedAnimator.LiveFeedSequences.Clear();
+
+			bool firstTime = true;
+
+			ObsTransform lastLiveFeedSequence = null;
+			foreach (ObsTransformEdit liveFeedEdit in allFrames)
+			{
+				ObsTransform liveFeedSequence = new ObsTransform()
+				{
+					Camera = liveFeedEdit.Camera,
+					Rotation = liveFeedEdit.GetRotation(),
+					Scale = liveFeedEdit.GetScale(),
+					Opacity = liveFeedEdit.GetOpacity(),
+					Origin = new CommonCore.Point2d(liveFeedEdit.GetX(), liveFeedEdit.GetY()),
+					Flipped = liveFeedEdit.Flipped,
+					Duration = secondsPerFrame
+				};
+				if (firstTime)
+				{
+					firstTime = false;
+				}
+				else
+				{
+					if (lastLiveFeedSequence.Matches(liveFeedSequence))  // Compress movement...
+					{
+						lastLiveFeedSequence.Duration += secondsPerFrame;
+						continue;
+					}
+				}
+				foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
+					liveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
+
+				lastLiveFeedSequence = liveFeedSequence;
+			}
+
+
+			// TODO: This is likely to be problematic.
+			// Save for each file we have.
+			foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
+			{
+				string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
+				string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
+				System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
+			}
+		}
+
+		// TODO: Fix this.
+		private void LoadAllFrames(string movementFileName)
+		{
+			//liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
+			//allFrames = new List<ObsTransformEdit>();
+			//int frameIndex = 0;
+			//foreach (ObsTransform liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
+			//{
+			//	int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
+			//	for (int i = 0; i < frameCount; i++)
+			//	{
+			//		allFrames.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
+			//		frameIndex++;
+			//	}
+			//}
 		}
 	}
 }

@@ -3,7 +3,7 @@ using CommonCore;
 
 namespace Imaging
 {
-	public class LiveFeedData
+	public class BaseObsTransform
 	{
 		/// <summary>
 		/// The frame index (in the live video) that this LiveFeedData instance represents.
@@ -16,9 +16,10 @@ namespace Imaging
 		public int FrameCount { get; set; } = 1;
 
 		/// <summary>
-		/// Which camera to use (Front, Right, etc.).
+		/// Which camera to use (defined in the Live Video Animation spreadsheet on the Bindings tab).
+		/// https://docs.google.com/spreadsheets/d/1_axdPNFXyWqGkdwGtLkmqHWdgTFLq4nMbacKHa0b5mQ/edit#gid=1648735653
 		/// </summary>
-		public StudioCamera Camera { get; set; } = StudioCamera.Front;
+		public int Camera { get; set; }
 		
 		/// <summary>
 		/// The scale of the tracked dots, 1 == 100%.
@@ -45,7 +46,7 @@ namespace Imaging
 		/// </summary>
 		public Point2d Origin { get; set; }
 
-		public LiveFeedData()
+		public BaseObsTransform()
 		{
 
 		}

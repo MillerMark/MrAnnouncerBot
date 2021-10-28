@@ -13,16 +13,11 @@ namespace DHDM
 		DateTime startTime;
 		public event EventHandler<LiveFeedScaler> Render;
 
-		public LiveFeedScaler(string itemName, 
-    string sceneName, 
-    double playerX, 
-    double videoAnchorHorizontal, 
-    double videoAnchorVertical, 
-    double videoWidth, 
-    double videoHeight, 
+		public LiveFeedScaler(VideoFeed[] videoFeeds,
+		double playerX, 
     double startScale, 
     double targetScale, 
-    double timeMs): base(videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight, sceneName, itemName)
+    double timeMs): base(videoFeeds)
 		{
 			ScreenAnchorLeft = playerX;
 			ScreenAnchorTop = 1080;
@@ -30,7 +25,6 @@ namespace DHDM
 			timer = new Timer();
 			timer.Interval = 40;
 			timer.Elapsed += Timer_Elapsed;
-			ItemName = itemName;
 			
 			TargetScale = targetScale;
 			TimeMs = timeMs;

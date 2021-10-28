@@ -342,7 +342,6 @@
     </Compile>
     <Compile Include="LiveVideoAnimation\VideoAnimationBinding.cs" />
     <Compile Include="LiveVideoAnimation\VideoAnimationManager.cs" />
-    <Compile Include="LiveVideoAnimation\VideoFeed.cs" />
     <Compile Include="OBS\DndObsManager.cs" />
     <Compile Include="OBS\IObsManager.cs" />
     <Compile Include="Managers\ConditionManager.cs" />
@@ -604,7 +603,13 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="characterDnDBeyond.json" />
+    <None Include="LiveVideoAnimation\Data\CodingGorilla.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LiveVideoAnimation\Data\Drone Failure.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="LiveVideoAnimation\Data\RaceMark.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="LiveVideoAnimation\Data\RaceScreen.movement">

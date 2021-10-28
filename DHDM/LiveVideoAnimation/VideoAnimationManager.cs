@@ -14,7 +14,7 @@ namespace DHDM
 	{
 		const string STR_AnimationEditor = "Animation Editor";
 		static bool existingAnimationIsRunning;
-		static LiveFeedAnimator liveFeedAnimator;
+		static List<LiveFeedAnimator> liveFeedAnimators;
 		static System.Timers.Timer animationEditorTimer = new System.Timers.Timer();
 		static FrmLiveAnimationEditor frmLiveAnimationEditor;
 
@@ -31,35 +31,45 @@ namespace DHDM
 
 			existingAnimationIsRunning = false;
 			// TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
-			if (liveFeedAnimator != null)
-				liveFeedAnimator.StopSoon();
+			if (liveFeedAnimators != null)
+				foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
+					liveFeedAnimator.StopSoon();
 		}
 
-		public static LiveFeedAnimator LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed videoFeed)
+		public static List<LiveFeedAnimator> LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed[] videoFeeds)
 		{
 			if (!File.Exists(movementFile))
 				return null;
 			string movementInstructions = File.ReadAllText(movementFile);
-			List<LiveFeedSequence> liveFeedFrames = JsonConvert.DeserializeObject<List<LiveFeedSequence>>(movementInstructions);
-			liveFeedAnimator = new LiveFeedAnimator(videoFeed.videoAnchorHorizontal, videoFeed.videoAnchorVertical, videoFeed.videoWidth, videoFeed.videoHeight, videoFeed.sceneName, videoFeed.sourceName, liveFeedFrames);
+			List<ObsTransform> liveFeedFrames = JsonConvert.DeserializeObject<List<ObsTransform>>(movementInstructions);
+			liveFeedAnimators = new List<LiveFeedAnimator>();
+			LiveFeedAnimator liveFeedAnimator = new LiveFeedAnimator(videoFeeds, liveFeedFrames);
+			liveFeedAnimators.Add(liveFeedAnimator);
 			liveFeedAnimator.StartTimeOffset = binding.StartTimeOffset;
 			liveFeedAnimator.TimeStretchFactor = binding.TimeStretchFactor;
-			return liveFeedAnimator;
+			return liveFeedAnimators;
 		}
 
 		private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
 		{
-			if (sender == liveFeedAnimator && liveFeedAnimator != null)
-				liveFeedAnimator = null;
+			if (sender == liveFeedAnimators && liveFeedAnimators != null)
+				liveFeedAnimators = null;
 		}
 
-		static void StartLiveAnimation(string sceneName, VideoAnimationBinding binding, DateTime startTime)
+		static void StartLiveAnimation(string sceneName, List<VideoAnimationBinding> bindings, DateTime startTime)
 		{
-			string movementFile = GetFullPathToMovementFile(binding.MovementFileName);
-			VideoFeed videoFeed = AllVideoFeeds.Get(binding.SourceName);
-			LiveFeedAnimator loadLiveAnimation = LoadLiveAnimation(movementFile, binding, videoFeed);
-			liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
-			liveFeedAnimator.Start(startTime);
+			foreach (VideoAnimationBinding videoAnimationBinding in bindings)
+			{
+				string movementFile = GetFullPathToMovementFile(videoAnimationBinding.MovementFileName);
+				VideoFeed[] videoFeeds = AllVideoFeeds.GetAll(videoAnimationBinding);
+
+				List<LiveFeedAnimator> LiveFeedAnimators = LoadLiveAnimation(movementFile, videoAnimationBinding, videoFeeds);
+				foreach (LiveFeedAnimator liveFeedAnimator in LiveFeedAnimators)
+				{
+					liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+					liveFeedAnimator.Start(startTime);
+				}
+			}
 
 			// TODO: Track which video feed we are running in case we abort while we are running.
 
@@ -77,10 +87,10 @@ namespace DHDM
 			DateTime startTime = DateTime.Now;
 			StopExistingAnimation();
 
-			VideoAnimationBinding binding = AllVideoBindings.Get(sceneName);
+			List<VideoAnimationBinding> bindings = AllVideoBindings.GetAll(sceneName);
 
-			if (binding != null)
-				StartLiveAnimation(sceneName, binding, startTime);
+			if (bindings != null)
+				StartLiveAnimation(sceneName, bindings, startTime);
 
 			if (sceneName == STR_AnimationEditor)
 			{

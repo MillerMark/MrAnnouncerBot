@@ -14,9 +14,9 @@ namespace DHDM
 			allVideoBindings = GoogleSheets.Get<VideoAnimationBinding>();
 		}
 
-		public static VideoAnimationBinding Get(string sceneName)
+		public static List<VideoAnimationBinding> GetAll(string sceneName)
 		{
-			return AllBindings.FirstOrDefault(x => x.SceneName == sceneName);
+			return AllBindings.FindAll(x => x.SceneName == sceneName);
 		}
 
 		public static void Invalidate()

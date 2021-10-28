@@ -4,36 +4,64 @@ namespace ObsControl
 {
   public class BaseLiveFeedAnimator
   {
-    public double VideoAnchorHorizontal { get; private set; }
-    public double VideoAnchorVertical { get; private set; }
-    public double VideoWidth { get; set; }
-    public double VideoHeight { get; set; }
+    public double VideoAnchorHorizontal => videoFeeds[camera].videoAnchorHorizontal;
+		public double VideoAnchorVertical => videoFeeds[camera].videoAnchorVertical;
+		public double VideoWidth => videoFeeds[camera].videoWidth;
+		public double VideoHeight => videoFeeds[camera].videoHeight;
+		public string ItemName => videoFeeds[camera].sourceName;
+		public string LastItemName => videoFeeds[lastCamera].sourceName;
+		public string LastSceneName => videoFeeds[lastCamera].sceneName;
+		public string SceneName => videoFeeds[camera].sceneName;
 
-    /// <summary>
-    /// The left point on the screen around which the video will rotate, scale, etc.
-    /// </summary>
-    public double ScreenAnchorLeft { get; set; }
+		/// <summary>
+		/// The left point on the screen around which the video will rotate, scale, etc.
+		/// </summary>
+		public double ScreenAnchorLeft { get; set; }
 
     /// <summary>
     /// The top point on the screen around which the video will rotate, scale, etc.
     /// </summary>
     public double ScreenAnchorTop { get; set; }
 
-    public string SceneName { get; set; }
-
-    public BaseLiveFeedAnimator(double videoAnchorHorizontal,
-    double videoAnchorVertical,
-    double videoWidth,
-    double videoHeight, string sceneName, string itemName)
+    
+    
+    public BaseLiveFeedAnimator(VideoFeed[] videoFeeds)
     {
-      SceneName = sceneName;
-      ItemName = itemName;
-      VideoHeight = videoHeight;
-      VideoWidth = videoWidth;
-      VideoAnchorHorizontal = videoAnchorHorizontal;
-      VideoAnchorVertical = videoAnchorVertical;
+			this.videoFeeds = videoFeeds;
     }
 
-    public string ItemName { get; set; }
-  }
+    int camera;
+		int lastCamera = -1;
+		readonly VideoFeed[] videoFeeds;
+
+		public int Camera
+		{
+			get
+			{
+				return camera;
+			}
+			private set
+			{
+				if (camera == value)
+					return;
+        lastCamera = camera;
+				camera = value;
+			}
+		}
+
+		public void SetCamera(int camera)
+		{
+			Camera = camera;
+		}
+
+		public bool HasLastCamera()
+		{
+			return lastCamera >= 0;
+		}
+
+		public void ClearLastCamera()
+		{
+			lastCamera = -1;
+		}
+	}
 }
