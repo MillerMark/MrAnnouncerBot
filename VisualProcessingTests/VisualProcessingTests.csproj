@@ -53,6 +53,7 @@
     <Compile Include="FractionPositioningTests.cs" />
     <Compile Include="NewTests.cs" />
     <Compile Include="RotationTests.cs" />
+    <Compile Include="TestCameras.cs" />
     <Compile Include="TestImageHelper.cs" />
     <Compile Include="OldTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -37,7 +37,7 @@ namespace VisualProcessingTests
 		[DataRow("LeftDegrees1.5", -1.5)]
 		public void TestRotation(string imageName, double expectedRotation)
 		{
-			LiveFeedSequence results = TestImageHelper.ProcessImage(imageName);
+			ObsTransform results = TestImageHelper.ProcessImage(imageName);
 			Assert.AreEqual(expectedRotation, results.Rotation, RotationTolerance);
 		}
 	}

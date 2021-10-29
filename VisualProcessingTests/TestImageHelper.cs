@@ -12,7 +12,7 @@ namespace VisualProcessingTests
 		{
 		}
 
-		public static LiveFeedSequence ProcessImage(string fileName)
+		public static ObsTransform ProcessImage(string fileName)
 		{
 			string fullFileName;
 

@@ -10,6 +10,12 @@ namespace Imaging
 		Point2d LeftShoulder;
 		Point2d RightShoulder;
 
+		private const int INT_Camera0Green = 0;
+		private const int INT_Camera1Yellow = 1;
+		private const int INT_Camera2Cyan = 2;
+		private const int INT_Camera3Magenta = 3;
+
+
 		/// <summary>
 		/// The length of time in seconds this data is valid.
 		/// </summary>
@@ -52,16 +58,78 @@ namespace Imaging
 				Flipped = true;
 		}
 
+		void SetCameraAndHeadPoint(IntermediateResults intermediateResults)
+		{
+			int greenCount = intermediateResults.Green.Count;
+			int yellowCount = intermediateResults.Yellow.Count;
+			int cyanCount = intermediateResults.Cyan.Count;
+			int magentaCount = intermediateResults.Magenta.Count;
+
+			if (greenCount > yellowCount)
+			{
+				if (greenCount > cyanCount)
+				{
+					if (greenCount > magentaCount)
+					{
+						Camera = INT_Camera0Green;
+						HeadPoint = GetPoint(intermediateResults.Green);
+					}
+					else
+					{
+						Camera = INT_Camera3Magenta;
+						HeadPoint = GetPoint(intermediateResults.Magenta);
+					}
+				}
+				else // cyanCount is greater than or equal to green.
+				{
+					if (cyanCount > magentaCount)
+					{
+						Camera = INT_Camera2Cyan;
+						HeadPoint = GetPoint(intermediateResults.Cyan);
+					}
+					else
+					{
+						Camera = INT_Camera3Magenta;
+						HeadPoint = GetPoint(intermediateResults.Magenta);
+					}
+				}
+			}
+			else  // yellow is greater than or equal to green.
+			{
+				if (yellowCount > cyanCount)
+				{
+					if (yellowCount > magentaCount)
+					{
+						Camera = INT_Camera1Yellow;
+						HeadPoint = GetPoint(intermediateResults.Yellow);
+					}
+					else
+					{
+						Camera = INT_Camera3Magenta;
+						HeadPoint = GetPoint(intermediateResults.Magenta);
+					}
+				}
+				else // cyanCount is greater than or equal to yellow.
+				{
+					if (cyanCount > magentaCount)
+					{
+						Camera = INT_Camera2Cyan;
+						HeadPoint = GetPoint(intermediateResults.Cyan);
+					}
+					else
+					{
+						Camera = INT_Camera3Magenta;
+						HeadPoint = GetPoint(intermediateResults.Magenta);
+					}
+				}
+			}
+		}
+
 		public void Calculate(IntermediateResults intermediateResults)
 		{
 			Opacity = intermediateResults.GreatestOpacity / 255.0;
-			if (intermediateResults.Yellow.Count > intermediateResults.Green.Count)
-			{
-				Camera = 0;
-				HeadPoint = GetPoint(intermediateResults.Yellow);
-			}
-			else
-				HeadPoint = GetPoint(intermediateResults.Green);
+			SetCameraAndHeadPoint(intermediateResults);
+			
 			RightShoulder = GetPoint(intermediateResults.Red);
 			LeftShoulder = GetPoint(intermediateResults.Blue);
 			double x = Math.Round((RightShoulder.X + LeftShoulder.X) / 2, 1);

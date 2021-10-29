@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace VisualProcessingTests
 {
+
 	[TestClass]
 	public class NewTests
 	{
@@ -32,12 +33,25 @@ namespace VisualProcessingTests
 		[TestMethod]
 		public void TestScreenTrackerOrigin()
 		{
-			LiveFeedSequence results = TestImageHelper.ProcessImage("ScreenTrackerOrigin");
+			ObsTransform results = TestImageHelper.ProcessImage("ScreenTrackerOrigin");
 			Assert.AreEqual(0, results.Rotation, RotationTolerance);
 			Assert.AreEqual(1, results.Opacity, OpacityTolerance);
 			Assert.AreEqual(1, results.Scale, 0.45 * ScaleTolerance);
 			Assert.AreEqual(960, results.Origin.X, 2);
 			Assert.AreEqual(540, results.Origin.Y, 2);
+			Assert.AreEqual(false, results.Flipped);
+			Assert.AreEqual(0, results.Camera);
+		}
+
+		[TestMethod]
+		public void Test500pxMargins()
+		{
+			ObsTransform results = TestImageHelper.ProcessImage("CodingGorilla");
+			Assert.AreEqual(0, results.Rotation, RotationTolerance);
+			Assert.AreEqual(1, results.Opacity, OpacityTolerance);
+			Assert.AreEqual(1, results.Scale, 0.45 * ScaleTolerance);
+			Assert.AreEqual(960, results.Origin.X, 1102);
+			Assert.AreEqual(540, results.Origin.Y, 1058);
 			Assert.AreEqual(false, results.Flipped);
 			Assert.AreEqual(0, results.Camera);
 		}

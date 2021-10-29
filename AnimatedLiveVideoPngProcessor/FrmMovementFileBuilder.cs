@@ -48,15 +48,15 @@ namespace AnimatedLiveVideoPngProcessor
 				return;
 			}
 
-			List<LiveFeedSequence> results = new List<LiveFeedSequence>();
+			List<ObsTransform> results = new List<ObsTransform>();
 			const double frameRate = 30;  // 30 frames per second
 			const double intervalBetweenFramesSeconds = 1 /* frame */ / frameRate;
-			//! Time sync bug could also be here.
-			LiveFeedSequence lastProcessImageResults = null;
+			
+			ObsTransform lastProcessImageResults = null;
 			int frameIndex = 0;
 			foreach (string file in filesToProcess)
 			{
-				LiveFeedSequence processImageResults = TestImageHelper.ProcessImage(file);
+				ObsTransform processImageResults = TestImageHelper.ProcessImage(file);
 				processImageResults.FrameIndex = frameIndex;
 				frameIndex++;
 

@@ -322,8 +322,8 @@ namespace Imaging
 				int line = 0;
 				int bitmapWidth = bitmap.Width;
 				int bitmapHeight = bitmap.Height;
-				int xOffset = -(bitmapWidth - 1920) / 2;
-				int yOffset = -(bitmapHeight - 1080) / 2;
+				int xOffset = bitmapWidth > 1920 ? -(bitmapWidth - 1920) / 2 : 0;
+				int yOffset = bitmapHeight > 1080 ? -(bitmapHeight - 1080) / 2 : 0;
 
 				while (line < bitmapHeight)
 				{
@@ -353,11 +353,16 @@ namespace Imaging
 				if (pixel.A > intermediateResults.GreatestOpacity)
 					intermediateResults.GreatestOpacity = pixel.A;
 
-				if (pixel.R > 0) // Could be red or yellow.
+				if (pixel.R > 0) // Could be red or yellow or magenta.
 				{
 					if (pixel.G > 0 && AreClose(pixel.R, pixel.G))
 					{
 						intermediateResults.Yellow.Add(x + xOffset, y + yOffset, pixel.A);
+						continue;
+					}
+					else if (pixel.B > 0 && AreClose(pixel.R, pixel.B))
+					{
+						intermediateResults.Magenta.Add(x + xOffset, y + yOffset, pixel.A);
 						continue;
 					}
 					intermediateResults.Red.Add(x + xOffset, y + yOffset, pixel.A);
@@ -365,6 +370,11 @@ namespace Imaging
 				}
 				if (pixel.G > 0)
 				{
+					if (pixel.B > 0 && AreClose(pixel.G, pixel.B))
+					{
+						intermediateResults.Cyan.Add(x + xOffset, y + yOffset, pixel.A);
+						continue;
+					}
 					intermediateResults.Green.Add(x + xOffset, y + yOffset, pixel.A);
 					continue;
 				}

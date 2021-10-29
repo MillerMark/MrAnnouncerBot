@@ -39,7 +39,7 @@ namespace VisualProcessingTests
 		[DataRow("444", 444.4, 444.4, 44.4, 0.444)]
 		public void TestTrackerImage(string fileName, double expectedX, double expectedY, double expectedRotation = 0, double expectedScale = 1)
 		{
-			LiveFeedSequence results = TestImageHelper.ProcessImage(fileName);
+			ObsTransform results = TestImageHelper.ProcessImage(fileName);
 			Assert.AreEqual(expectedX, results.Origin.X, PositionalTolerance);
 			Assert.AreEqual(expectedY, results.Origin.Y, PositionalTolerance);
 			Assert.AreEqual(expectedRotation, results.Rotation);
@@ -51,7 +51,7 @@ namespace VisualProcessingTests
 		[DataRow("333Opacity", 333.3, 333.3, 33.3, 0.333, 0.333)]
 		public void TestTrackerImageWithOpacity(string fileName, double expectedX, double expectedY, double expectedRotation = 0, double expectedScale = 1, double expectedOpacity = 1)
 		{
-			LiveFeedSequence results = TestImageHelper.ProcessImage(fileName);
+			ObsTransform results = TestImageHelper.ProcessImage(fileName);
 			Assert.AreEqual(expectedX, results.Origin.X, PositionalTolerance);
 			Assert.AreEqual(expectedY, results.Origin.Y, PositionalTolerance);
 			Assert.AreEqual(expectedRotation, results.Rotation);
