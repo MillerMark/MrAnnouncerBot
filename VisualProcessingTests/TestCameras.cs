@@ -25,7 +25,7 @@ namespace VisualProcessingTests
 			}
 		}
 
-		// ![](Camera1Right90;;;0.01091,0.01091)
+		//` ![](Camera1Right90;;;0.01236,0.01236)
 
 		[TestMethod]
 		public void TestCamera1Right90()
