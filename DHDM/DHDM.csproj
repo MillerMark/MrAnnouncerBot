@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SuperDebugg</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -334,9 +334,13 @@
     <Compile Include="Contests\ContestManager.cs" />
     <Compile Include="Contests\ContestSection.cs" />
     <Compile Include="CreatureHelper.cs" />
+    <Compile Include="FrmPickScene.xaml.cs">
+      <DependentUpon>FrmPickScene.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LiveVideoAnimation\AllVideoBindings.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
     <Compile Include="LiveVideoAnimation\LiveFeedAnimator.cs" />
+    <Compile Include="LiveVideoAnimation\UI\AnimatorWithTransforms.cs" />
     <Compile Include="LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml.cs">
       <DependentUpon>FrmLiveAnimationEditor.xaml</DependentUpon>
     </Compile>
@@ -544,6 +548,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FrmMonsterPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrmPickScene.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -24,6 +24,11 @@ namespace DHDM
 			allVideoBindings = null;
 		}
 
+		public static VideoAnimationBinding Get(string movementFileName)
+		{
+			return AllBindings.FirstOrDefault(x => x.MovementFileName == movementFileName);
+		}
+
 		public static List<VideoAnimationBinding> AllBindings
 		{
 			get

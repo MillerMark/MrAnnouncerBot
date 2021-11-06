@@ -36,18 +36,16 @@ namespace DHDM
 					liveFeedAnimator.StopSoon();
 		}
 
-		public static List<LiveFeedAnimator> LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed[] videoFeeds)
+		public static LiveFeedAnimator LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed[] videoFeeds)
 		{
 			if (!File.Exists(movementFile))
 				return null;
 			string movementInstructions = File.ReadAllText(movementFile);
 			List<ObsTransform> liveFeedFrames = JsonConvert.DeserializeObject<List<ObsTransform>>(movementInstructions);
-			liveFeedAnimators = new List<LiveFeedAnimator>();
 			LiveFeedAnimator liveFeedAnimator = new LiveFeedAnimator(videoFeeds, liveFeedFrames);
-			liveFeedAnimators.Add(liveFeedAnimator);
 			liveFeedAnimator.StartTimeOffset = binding.StartTimeOffset;
 			liveFeedAnimator.TimeStretchFactor = binding.TimeStretchFactor;
-			return liveFeedAnimators;
+			return liveFeedAnimator;
 		}
 
 		private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
@@ -63,12 +61,9 @@ namespace DHDM
 				string movementFile = GetFullPathToMovementFile(videoAnimationBinding.MovementFileName);
 				VideoFeed[] videoFeeds = AllVideoFeeds.GetAll(videoAnimationBinding);
 
-				List<LiveFeedAnimator> LiveFeedAnimators = LoadLiveAnimation(movementFile, videoAnimationBinding, videoFeeds);
-				foreach (LiveFeedAnimator liveFeedAnimator in LiveFeedAnimators)
-				{
-					liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
-					liveFeedAnimator.Start(startTime);
-				}
+				LiveFeedAnimator liveFeedAnimator = LoadLiveAnimation(movementFile, videoAnimationBinding, videoFeeds);
+				liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+				liveFeedAnimator.Start(startTime);
 			}
 
 			// TODO: Track which video feed we are running in case we abort while we are running.

@@ -35,22 +35,37 @@ namespace DHDM
 			}
 		}
 
-		
-		List<ObsTransformEdit> allFrames;
+
+		List<ObsTransformEdit> allFrames
+		{
+			get
+			{
+				return ActiveMovement.ObsTransformEdits;
+			}
+		}
+
 		string[] backFiles;
 		string[] frontFiles;
 		int frameIndex;
 		bool settingInternally;
 		const double frameRate = 30;  // fps
 		const double secondsPerFrame = 1 / frameRate;
-		LiveFeedAnimator liveFeedAnimator;
+		const string STR_EditorPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\Editor";
+		List<AnimatorWithTransforms> liveFeedAnimators;
+		AnimatorWithTransforms ActiveMovement;
 		int digitCount;
-		void LoadAnimation(string selectedPath)
+		void LoadAnimation()
 		{
-			string movementFileName = System.IO.Path.GetFileName(selectedPath);
-			LoadAllFrames(movementFileName);
-			LoadAllImages(selectedPath);
-			
+			spSourceRadioButtons.Children.Clear();
+			ActiveMovementFileName = null;
+			List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
+			if (allBindings.Count == 0)
+				return;
+			CreateRadioButtons(allBindings);
+
+			LoadAllFrames(allBindings);
+			LoadAllImages(System.IO.Path.Combine(STR_EditorPath, SelectedSceneName));
+
 			relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
 			relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
 			if (digitCount == 0)
@@ -65,6 +80,44 @@ namespace DHDM
 			ClearEditorValues();
 			UpdateFrameUI();
 		}
+
+		private void CreateRadioButtons(List<VideoAnimationBinding> allBindings)
+		{
+			if (allBindings.Count >= 2)
+			{
+				spSourceRadioButtons.Visibility = Visibility.Visible;
+				foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
+				{
+					System.Windows.Controls.RadioButton radioButton = new System.Windows.Controls.RadioButton();
+					radioButton.Content = videoAnimationBinding.MovementFileName;
+					radioButton.Click += RadioButton_Click;
+					if (ActiveMovementFileName == null)
+					{
+						ActiveMovementFileName = videoAnimationBinding.MovementFileName;
+						radioButton.IsChecked = true;
+					}
+
+					spSourceRadioButtons.Children.Add(radioButton);
+				}
+			}
+			else
+			{
+				spSourceRadioButtons.Visibility = Visibility.Collapsed;
+				ActiveMovementFileName = allBindings[0].MovementFileName;
+			}
+		}
+
+		private void RadioButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is System.Windows.Controls.RadioButton radioButton)
+			{
+				ActiveMovementFileName = radioButton.Content as string;
+				ActiveMovement = liveFeedAnimators.FirstOrDefault(x => x.MovementFileName == ActiveMovementFileName);
+				ClearEditorValues();
+				UpdateFrameUI();
+			}
+		}
+
 		void ClearEditorValues()
 		{
 			initializing = true;
@@ -112,22 +165,31 @@ namespace DHDM
 			HubtasticBaseStation.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
 			HubtasticBaseStation.ShowImageFront(GetRelativePath(frontFiles[frameIndex]));
 
+			foreach (AnimatorWithTransforms animatorWithTransform in liveFeedAnimators)
+			{
+				DrawFrameSource(animatorWithTransform);
+			}
+
+		}
+
+		private void DrawFrameSource(AnimatorWithTransforms animatorWithTransform)
+		{
 			ObsTransformEdit liveFeedEdit;
-			if (frameIndex >= allFrames.Count)
-				liveFeedEdit = allFrames.Last();
+			if (frameIndex >= animatorWithTransform.ObsTransformEdits.Count)
+				liveFeedEdit = animatorWithTransform.ObsTransformEdits.Last();
 			else
-				liveFeedEdit = allFrames[frameIndex];
+				liveFeedEdit = animatorWithTransform.ObsTransformEdits[frameIndex];
 
-			liveFeedAnimator.ScreenAnchorLeft = liveFeedEdit.GetX();
+			animatorWithTransform.LiveFeedAnimator.ScreenAnchorLeft = liveFeedEdit.GetX();
 
-			liveFeedAnimator.ScreenAnchorTop = liveFeedEdit.GetY();
+			animatorWithTransform.LiveFeedAnimator.ScreenAnchorTop = liveFeedEdit.GetY();
 
 			double rotation = liveFeedEdit.GetRotation();
 			double scale = liveFeedEdit.GetScale();
 			double opacity = liveFeedEdit.GetOpacity();
 
-			liveFeedAnimator.SetCamera(liveFeedEdit.Camera);
-			ObsControl.ObsManager.SizeAndPositionItem(liveFeedAnimator, scale, opacity, rotation, liveFeedEdit.Flipped);
+			animatorWithTransform.LiveFeedAnimator.SetCamera(liveFeedEdit.Camera);
+			ObsControl.ObsManager.SizeAndPositionItem(animatorWithTransform.LiveFeedAnimator, scale, opacity, rotation, liveFeedEdit.Flipped);
 		}
 
 		void Change(Attribute attribute, double value)
@@ -168,9 +230,9 @@ namespace DHDM
 			frontFiles = System.IO.Directory.GetFiles(selectedPath, "front*.png");
 		}
 
-		private List<LiveFeedAnimator> GetLiveFeedAnimator(string movementFileName)
+		private LiveFeedAnimator GetLiveFeedAnimator(string movementFileName)
 		{
-			VideoAnimationBinding binding = AllVideoBindings.GetAll(movementFileName).FirstOrDefault();
+			VideoAnimationBinding binding = AllVideoBindings.Get(movementFileName);
 			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
 			VideoFeed[] videoFeeds = AllVideoFeeds.GetAll(binding);
 			return VideoAnimationManager.LoadLiveAnimation(fullPathToMovementFile, binding, videoFeeds);
@@ -178,40 +240,21 @@ namespace DHDM
 
 		private void btnLoadAnimation_Click(object sender, RoutedEventArgs e)
 		{
-			FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-			folderBrowserDialog.SelectedPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\Editor";
-			if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+			List<string> allLiveAnimationScenes = AllVideoBindings.AllBindings.Select(x => x.SceneName).Distinct().ToList();
+			FrmPickScene frmPickScene = new FrmPickScene(allLiveAnimationScenes);
+			if (frmPickScene.ShowDialog() == true)
 			{
-				LoadAnimation(folderBrowserDialog.SelectedPath);
+				SelectedSceneName = frmPickScene.SelectedScene;
+				PngPath = System.IO.Path.Combine(STR_EditorPath, SelectedSceneName);
+				LoadAnimation();
 			}
-		}
 
-		private void btnJumpToPreviousDelta_Click(object sender, RoutedEventArgs e)
-		{
-			ObsTransformEdit currentFrame = allFrames[frameIndex];
-
-			int indexToStopAt = frameIndex - 1;
-			while (indexToStopAt > 0)
-			{
-				if (!FramesAreClose(currentFrame, allFrames[indexToStopAt]))
-					break;
-				indexToStopAt--;
-			}
-			FrameIndex = indexToStopAt;
-		}
-
-		private void btnJumpToNextDelta_Click(object sender, RoutedEventArgs e)
-		{
-			ObsTransformEdit currentFrame = allFrames[frameIndex];
-
-			int indexToStopAt = frameIndex + 1;
-			while (indexToStopAt < allFrames.Count)
-			{
-				if (!FramesAreClose(currentFrame, allFrames[indexToStopAt]))
-					break;
-				indexToStopAt++;
-			}
-			FrameIndex = indexToStopAt;
+			//FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+			//folderBrowserDialog.SelectedPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\Editor";
+			//if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+			//{
+			//	LoadAnimation(folderBrowserDialog.SelectedPath);
+			//}
 		}
 
 		private static bool FramesAreClose(ObsTransformEdit currentFrame, ObsTransformEdit frame)
@@ -247,7 +290,7 @@ namespace DHDM
 			string relativePath = GetRelativePath(fileName);
 			string baseFileName = System.IO.Path.GetFileNameWithoutExtension(relativePath).TrimEnd(digits);
 			string directoryName = System.IO.Path.GetDirectoryName(relativePath);
-			
+
 			return System.IO.Path.Combine(directoryName, baseFileName);
 		}
 
@@ -340,7 +383,10 @@ namespace DHDM
 				UpdateFrameUI();
 			}
 		}
-		
+		public string SelectedSceneName { get; set; }
+		public string PngPath { get; set; }
+		public string ActiveMovementFileName { get; set; }
+
 
 		private void btnNextFrame_Click(object sender, RoutedEventArgs e)
 		{
@@ -386,7 +432,7 @@ namespace DHDM
 			Rotation,
 			Opacity
 		}
-		
+
 		private void tbxDeltaX_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			TextChanged(Attribute.X, tbxDeltaX, sldDeltaX);
@@ -467,10 +513,8 @@ namespace DHDM
 
 		private void btnReloadAnimation_Click(object sender, RoutedEventArgs e)
 		{
-			string movementFileName = GetMovementFileNameFromBackFiles();
-			if (movementFileName == null)
-				return;
-			LoadAllFrames(movementFileName);
+			List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
+			LoadAllFrames(allBindings);
 			DrawActiveFrame();
 		}
 
@@ -478,19 +522,14 @@ namespace DHDM
 		{
 			if (backFiles.Length == 0)
 				return;
-			string movementFileName = GetMovementFileNameFromBackFiles();
-			SaveAllFrames(movementFileName);
+			SaveAllFrames();
 		}
 
-		private string GetMovementFileNameFromBackFiles()
+		private string GetMovementFileName()
 		{
 			if (FramesAreNotGood())
 				return null;
-			string backFileName = backFiles[0];
-			string selectedPath = System.IO.Path.GetDirectoryName(backFileName);
-
-			string movementFileName = System.IO.Path.GetFileName(selectedPath);
-			return movementFileName;
+			return ActiveMovementFileName;
 		}
 
 		private void btnCopyDeltaXForward_Click(object sender, RoutedEventArgs e)
@@ -526,7 +565,7 @@ namespace DHDM
 				return;
 
 			ObsTransformEdit currentFrame = allFrames[frameIndex];
-			
+
 			int indexToChange = frameIndex + 1;
 			while (indexToChange < allFrames.Count)
 			{
@@ -582,7 +621,7 @@ namespace DHDM
 		{
 			return Math.Abs(compareValue - currentValue) <= wiggleRoom;
 		}
-		
+
 		private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
 			FrameIndex = (int)sldFrameIndex.Value;
@@ -597,13 +636,18 @@ namespace DHDM
 			}
 		}
 
-		void SaveAllFrames(string movementFileName)
+		void SaveAllFrames()
 		{
-			if (movementFileName == null)
+			if (ActiveMovementFileName == null)
 				return;
-			List<LiveFeedAnimator> liveFeedAnimators = GetLiveFeedAnimator(movementFileName);
-			foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
-				liveFeedAnimator.LiveFeedSequences.Clear();
+			foreach (AnimatorWithTransforms animatorWithTransforms in liveFeedAnimators)
+				SaveFrames(animatorWithTransforms.MovementFileName);
+		}
+
+		private void SaveFrames(string movementFileName)
+		{
+			LiveFeedAnimator liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
+			liveFeedAnimator.LiveFeedSequences.Clear();
 
 			bool firstTime = true;
 
@@ -632,38 +676,39 @@ namespace DHDM
 						continue;
 					}
 				}
-				foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
-					liveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
+				liveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
 
 				lastLiveFeedSequence = liveFeedSequence;
 			}
 
-
-			// TODO: This is likely to be problematic.
-			// Save for each file we have.
-			foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
-			{
-				string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
-				string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
-				System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
-			}
+			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
+			string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
+			System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
 		}
 
-		// TODO: Fix this.
-		private void LoadAllFrames(string movementFileName)
+		private void LoadAllFrames(List<VideoAnimationBinding> allBindings)
 		{
-			//liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
-			//allFrames = new List<ObsTransformEdit>();
-			//int frameIndex = 0;
-			//foreach (ObsTransform liveFeedSequence in liveFeedAnimator.LiveFeedSequences)
-			//{
-			//	int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
-			//	for (int i = 0; i < frameCount; i++)
-			//	{
-			//		allFrames.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
-			//		frameIndex++;
-			//	}
-			//}
+			liveFeedAnimators = new List<AnimatorWithTransforms>();
+			ActiveMovement = null;
+			foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
+			{
+				AnimatorWithTransforms animatorWithTransforms = new AnimatorWithTransforms();
+				animatorWithTransforms.MovementFileName = videoAnimationBinding.MovementFileName;
+				animatorWithTransforms.LiveFeedAnimator = GetLiveFeedAnimator(videoAnimationBinding.MovementFileName);
+				if (ActiveMovement == null)
+					ActiveMovement = animatorWithTransforms;
+				animatorWithTransforms.ObsTransformEdits = new List<ObsTransformEdit>();
+				int frameIndex = 0;
+				foreach (ObsTransform liveFeedSequence in animatorWithTransforms.LiveFeedAnimator.LiveFeedSequences)
+				{
+					int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
+					for (int i = 0; i < frameCount; i++)
+					{
+						animatorWithTransforms.ObsTransformEdits.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
+						frameIndex++;
+					}
+				}
+			}
 		}
 	}
 }
