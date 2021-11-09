@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DHDM"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Live Animation Editor" Height="450" Width="822.667" Closed="Window_Closed">
+        Title="Live Animation Editor" Height="450" Width="1163" Closed="Window_Closed">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"></RowDefinition>
@@ -99,7 +99,7 @@
 			</StackPanel>
 		</StackPanel>
 		<StackPanel Grid.Row="3" Orientation="Horizontal" Height="80">
-			
+            <local:FrmColorPicker x:Name="leftLight" Margin="0, 0, 20, 0" ColorChanged="leftLight_ColorChanged"></local:FrmColorPicker>
 			<Button x:Name="btnPreviousFrame" Click="btnPreviousFrame_Click" Margin="0, 0, 15, 0">
 				<Viewbox Width="80" IsHitTestVisible="False">
 					<Canvas Width="408" Height="573">
@@ -120,6 +120,7 @@
 					</Canvas>
 				</Viewbox>
 			</Button>
+            <local:FrmColorPicker x:Name="rightLight" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
 		</StackPanel>
 	</Grid>
 </Window>

@@ -710,5 +710,15 @@ namespace DHDM
 				}
 			}
 		}
+
+		private async void leftLight_ColorChanged(object sender, RoutedEventArgs e)
+		{
+			await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
+		}
+
+		private async void rightLight_ColorChanged(object sender, RoutedEventArgs e)
+		{
+			await BluetoothLights.Right.SetAsync((int)rightLight.Hue, (int)rightLight.Saturation, (int)rightLight.Lightness);
+		}
 	}
 }
