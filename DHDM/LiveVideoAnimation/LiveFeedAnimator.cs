@@ -16,8 +16,9 @@ namespace DHDM
     TimeSpan totalDrawTimeSoFar;
 		bool allDone;
 		bool needToStopNow;
+		public LightingSequence LightingSequence { get; set;}
 
-		public LiveFeedAnimator(VideoFeed[] videoFeeds, List<ObsTransform> liveFeedFrames) : base(videoFeeds)
+	public LiveFeedAnimator(VideoFeed[] videoFeeds, List<ObsTransform> liveFeedFrames) : base(videoFeeds)
     {
       LiveFeedSequences = liveFeedFrames;
       timer = new Timer();

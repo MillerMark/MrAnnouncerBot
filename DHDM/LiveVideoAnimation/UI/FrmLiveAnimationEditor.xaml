@@ -14,6 +14,8 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
 		<Button x:Name="btnSaveAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="153, 0, 0, 0" Click="btnSaveAnimation_Click">
@@ -22,13 +24,13 @@
 		<Button x:Name="btnReloadAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="306, 0, 0, 0" Click="btnReloadAnimation_Click">
 			Reload
 		</Button>
-		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="44" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" >
+		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="22" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" >
 			
 		</Slider>
-        <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal">
+        <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Grid.Row="2" Height="25"  >
         	
         </StackPanel>
-		<StackPanel Orientation="Vertical" Grid.Row="2" Margin="8" >
+		<StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
 			<StackPanel Orientation="Horizontal">
 				<TextBlock x:Name="tbFrameIndexFromMovementFile" Text="00:00" Width="Auto" Height="Auto" FontSize="22"/>
 				<TextBlock x:Name="tbFrameIndexFromMemory" Text="00:00" Width="Auto" Height="Auto" FontSize="22" Foreground="DarkRed" Margin="20, 0, 0, 0"/>
@@ -98,7 +100,7 @@
 				<TextBlock x:Name="tbNewOpacity" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
 			</StackPanel>
 		</StackPanel>
-		<StackPanel Grid.Row="3" Orientation="Horizontal" Height="80">
+		<StackPanel Grid.Row="4" Orientation="Horizontal" Height="80">
             <local:FrmColorPicker x:Name="leftLight" Margin="0, 0, 20, 0" ColorChanged="leftLight_ColorChanged"></local:FrmColorPicker>
 			<Button x:Name="btnPreviousFrame" Click="btnPreviousFrame_Click" Margin="0, 0, 15, 0">
 				<Viewbox Width="80" IsHitTestVisible="False">
@@ -122,5 +124,10 @@
 			</Button>
             <local:FrmColorPicker x:Name="rightLight" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
 		</StackPanel>
+        <StackPanel x:Name="spButtons" Orientation="Horizontal" Grid.Row="5" Margin="4" >
+            <Button x:Name="btnCopyLightsForward" Width="136" Height="30" Click="btnCopyLightsForward_Click">
+         		Copy Lights Forward >>
+         </Button>
+        </StackPanel>
 	</Grid>
 </Window>

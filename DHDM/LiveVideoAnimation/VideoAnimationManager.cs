@@ -73,8 +73,18 @@ namespace DHDM
 
 		public static string GetFullPathToMovementFile(string movementFileName)
 		{
+			return GetFullPathToDataFile(movementFileName, ".movement");
+		}
+
+		public static string GetFullPathToLightsFile(string lightsFileName)
+		{
+			return GetFullPathToDataFile(lightsFileName, ".lights");
+		}
+
+		private static string GetFullPathToDataFile(string movementFileName, string extension)
+		{
 			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			return Path.Combine(location, "LiveVideoAnimation\\Data", movementFileName + ".movement");
+			return Path.Combine(location, "LiveVideoAnimation\\Data", movementFileName + extension);
 		}
 
 		private static void ObsManager_SceneChanged(object sender, string sceneName)

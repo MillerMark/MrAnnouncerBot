@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Imaging;
 using ObsControl;
+using InTheHand.Bluetooth;
+using System.Security.Policy;
 
 namespace DHDM
 {
@@ -35,8 +37,10 @@ namespace DHDM
 			}
 		}
 
+		public LightingSequence LightingSequence { get; set;}
 
-		List<ObsTransformEdit> allFrames
+
+	List<ObsTransformEdit> allFrames
 		{
 			get
 			{
@@ -89,6 +93,7 @@ namespace DHDM
 				foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
 				{
 					System.Windows.Controls.RadioButton radioButton = new System.Windows.Controls.RadioButton();
+					radioButton.Margin = new Thickness(15, 0, 0, 0);
 					radioButton.Content = videoAnimationBinding.MovementFileName;
 					radioButton.Click += RadioButton_Click;
 					if (ActiveMovementFileName == null)
@@ -329,6 +334,13 @@ namespace DHDM
 				sldDeltaScale.Value = liveFeedEdit.DeltaScale;
 				tbxDeltaOpacity.Text = liveFeedEdit.DeltaOpacity.ToString();
 				sldDeltaOpacity.Value = liveFeedEdit.DeltaOpacity;
+				foreach (Light light in LightingSequence.Lights)
+				{
+					if (frameIndex < light.SequenceData.Count)
+					{
+						SetLightColor(light.ID, light.SequenceData[frameIndex]);
+					}
+				}
 				UpdateValuePreviews(liveFeedEdit);
 			}
 			finally
@@ -424,6 +436,7 @@ namespace DHDM
 		bool initializing;
 		string relativePathFront;
 		string relativePathBack;
+		bool settingColorInternally;
 		public enum Attribute
 		{
 			X,
@@ -644,9 +657,19 @@ namespace DHDM
 				SaveFrames(animatorWithTransforms.MovementFileName);
 		}
 
+		bool HasAnyLightingChanges(LightingSequence lightingSequence)
+		{
+			foreach (Light light in lightingSequence.Lights)
+				foreach (LightSequenceData lightSequenceData in light.SequenceData)
+					if (lightSequenceData.Lightness > 0)
+						return true;
+			return false;
+		}
+
 		private void SaveFrames(string movementFileName)
 		{
 			LiveFeedAnimator liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
+			
 			liveFeedAnimator.LiveFeedSequences.Clear();
 
 			bool firstTime = true;
@@ -680,16 +703,61 @@ namespace DHDM
 
 				lastLiveFeedSequence = liveFeedSequence;
 			}
-
+			
+			// Only saves for the active movement file. So if I make changes to two different movement files in
+			// the same edit session, I need to save twice - use the radio buttons to decide what I'm saving.
 			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
-			string serializedObject = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
-			System.IO.File.WriteAllText(fullPathToMovementFile, serializedObject);
+			string serializedTransforms = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
+			System.IO.File.WriteAllText(fullPathToMovementFile, serializedTransforms);
+
+			string fullPathToLightingFile = VideoAnimationManager.GetFullPathToLightsFile(SelectedSceneName);
+			if (HasAnyLightingChanges(LightingSequence))
+			{
+				// TODO: Compress the data. Repeated light data needs to be compressed.
+				string serializedLights = Newtonsoft.Json.JsonConvert.SerializeObject(LightingSequence, Newtonsoft.Json.Formatting.Indented);
+				System.IO.File.WriteAllText(fullPathToLightingFile, serializedLights);
+			}
+			else
+			{
+				System.Diagnostics.Debugger.Break();
+				// TODO: Delete the file!!!
+			}
+
+		}
+
+		LightingSequence LoadLightingSequence(string sceneName, int totalFrameCount)
+		{
+			string fullPathToLightsFile = VideoAnimationManager.GetFullPathToLightsFile(sceneName);
+			if (System.IO.File.Exists(fullPathToLightsFile))
+			{
+				System.Diagnostics.Debugger.Break();
+				// TODO: Load lights.
+				return null;
+			}
+			else
+			{
+				LightingSequence lightingSequence = new LightingSequence();
+				lightingSequence.Lights.Add(NewLight(BluetoothLights.Left_ID, totalFrameCount));
+				lightingSequence.Lights.Add(NewLight(BluetoothLights.Right_ID, totalFrameCount));
+				return lightingSequence;
+			}
+		}
+
+		private static Light NewLight(string lightId, int totalFrameCount)
+		{
+			Light light = new Light() { ID = lightId };
+			for (int i = 0; i < totalFrameCount; i++)
+				light.SequenceData.Add(new LightSequenceData());
+			return light;
 		}
 
 		private void LoadAllFrames(List<VideoAnimationBinding> allBindings)
 		{
 			liveFeedAnimators = new List<AnimatorWithTransforms>();
 			ActiveMovement = null;
+
+			int totalFrameCount = 0;
+
 			foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
 			{
 				AnimatorWithTransforms animatorWithTransforms = new AnimatorWithTransforms();
@@ -708,17 +776,90 @@ namespace DHDM
 						frameIndex++;
 					}
 				}
+				if (totalFrameCount == 0)
+					totalFrameCount = frameIndex;
+
+				liveFeedAnimators.Add(animatorWithTransforms);
 			}
+
+			LightingSequence = LoadLightingSequence(allBindings.FirstOrDefault().SceneName, totalFrameCount);
+		}
+
+		Light GetLightFromId(string id)
+		{
+			return LightingSequence.Lights.Find(x => x.ID == id);
 		}
 
 		private async void leftLight_ColorChanged(object sender, RoutedEventArgs e)
 		{
+			if (changingInternally || settingColorInternally)
+				return;
 			await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
+			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight);
+		}
+
+		private void SetLightFrame(Light light, FrmColorPicker colorPicker)
+		{
+			SetLightFrame(light, colorPicker, FrameIndex);
+		}
+
+		private static void SetLightFrame(Light light, FrmColorPicker colorPicker, int frameIndex)
+		{
+			while (frameIndex >= light.SequenceData.Count)
+				light.SequenceData.Add(new LightSequenceData());
+			light.SequenceData[frameIndex].Hue = (int)colorPicker.Hue;
+			light.SequenceData[frameIndex].Saturation = (int)colorPicker.Saturation;
+			light.SequenceData[frameIndex].Lightness = (int)colorPicker.Lightness;
 		}
 
 		private async void rightLight_ColorChanged(object sender, RoutedEventArgs e)
 		{
+			if (changingInternally || settingColorInternally)
+				return;
 			await BluetoothLights.Right.SetAsync((int)rightLight.Hue, (int)rightLight.Saturation, (int)rightLight.Lightness);
+			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight);
+		}
+
+		async void SetLightColor(string iD, LightSequenceData lightSequenceData)
+		{
+			if (changingInternally)
+				return;
+			if (iD == BluetoothLights.Left_ID)
+			{
+				await BluetoothLights.Left.SetAsync(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+				SetColorPicker(lightSequenceData, leftLight);
+			}
+			else if (iD == BluetoothLights.Right_ID)
+			{
+				await BluetoothLights.Right.SetAsync(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+				SetColorPicker(lightSequenceData, rightLight);
+			}
+			else
+				System.Diagnostics.Debugger.Break();  // What Light is this?
+		}
+
+		private void SetColorPicker(LightSequenceData lightSequenceData, FrmColorPicker colorPicker)
+		{
+			settingColorInternally = true;
+			try
+			{
+				colorPicker.Hue = (int)lightSequenceData.Hue;
+				colorPicker.Saturation = (int)lightSequenceData.Saturation;
+				colorPicker.Lightness = (int)lightSequenceData.Lightness;
+			}
+			finally
+			{
+				settingColorInternally = false;
+			}
+		}
+
+		private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
+		{
+			if (FrameIndex >= backFiles.Length - 1)
+				return;
+			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
+			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
+			FrameIndex++;
 		}
 	}
 }

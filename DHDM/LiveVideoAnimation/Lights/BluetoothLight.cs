@@ -27,10 +27,10 @@ namespace DHDM
 
 		async Task GetAllDevices()
 		{
-			RequestDeviceOptions ro = new RequestDeviceOptions();
-			ro.AcceptAllDevices = true;
+			RequestDeviceOptions requestDeviceOptions = new RequestDeviceOptions();
+			requestDeviceOptions.AcceptAllDevices = true;
 			// Seems to help get the devices when we start and cannot find them.
-			IReadOnlyCollection<BluetoothDevice> scannedDevices = await Bluetooth.ScanForDevicesAsync(ro);
+			IReadOnlyCollection<BluetoothDevice> scannedDevices = await Bluetooth.ScanForDevicesAsync(requestDeviceOptions);
 		}
 
 		async Task Send(byte[] byteArray)
