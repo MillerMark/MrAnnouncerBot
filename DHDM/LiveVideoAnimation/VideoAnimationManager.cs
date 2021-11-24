@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Imaging;
 using ObsControl;
+using Windows.UI.Composition.Scenes;
 
 namespace DHDM
 {
@@ -33,7 +34,7 @@ namespace DHDM
 			// TODO: Restore defaultX, defaultY, videoWidth and videoHeight.
 			if (liveFeedAnimators != null)
 				foreach (LiveFeedAnimator liveFeedAnimator in liveFeedAnimators)
-					liveFeedAnimator.StopSoon();
+					liveFeedAnimator.FrameAnimator.StopSoon();
 		}
 
 		public static LiveFeedAnimator LoadLiveAnimation(string movementFile, VideoAnimationBinding binding, VideoFeed[] videoFeeds)
@@ -43,30 +44,57 @@ namespace DHDM
 			string movementInstructions = File.ReadAllText(movementFile);
 			List<ObsTransform> liveFeedFrames = JsonConvert.DeserializeObject<List<ObsTransform>>(movementInstructions);
 			LiveFeedAnimator liveFeedAnimator = new LiveFeedAnimator(videoFeeds, liveFeedFrames);
-			liveFeedAnimator.StartTimeOffset = binding.StartTimeOffset;
-			liveFeedAnimator.TimeStretchFactor = binding.TimeStretchFactor;
+			liveFeedAnimator.FrameAnimator.StartTimeOffset = binding.StartTimeOffset;
+			liveFeedAnimator.FrameAnimator.TimeStretchFactor = binding.TimeStretchFactor;
+
 			return liveFeedAnimator;
 		}
 
 		private static void LiveFeedAnimator_AnimationComplete(object sender, EventArgs e)
 		{
-			if (sender == liveFeedAnimators && liveFeedAnimators != null)
-				liveFeedAnimators = null;
+			if (sender is LiveFeedAnimator liveFeedAnimator)
+			{
+				liveFeedAnimator.FrameAnimator.AnimationComplete -= LiveFeedAnimator_AnimationComplete;
+				if (liveFeedAnimators != null)
+					liveFeedAnimators.Remove(liveFeedAnimator);
+			}
+		}
+
+		static void CleanUpLiveFeedAnimators()
+		{
+			if (liveFeedAnimators == null || liveFeedAnimators.Count == 0)
+				return;
+
+			List<LiveFeedAnimator> copiedLiveFeedAnimators = new List<LiveFeedAnimator>(liveFeedAnimators);
+
+			foreach (LiveFeedAnimator liveFeedAnimator in copiedLiveFeedAnimators)
+				liveFeedAnimator.FrameAnimator.Stop();
 		}
 
 		static void StartLiveAnimation(string sceneName, List<VideoAnimationBinding> bindings, DateTime startTime)
 		{
+			CleanUpLiveFeedAnimators();
+			liveFeedAnimators = new List<LiveFeedAnimator>();
 			foreach (VideoAnimationBinding videoAnimationBinding in bindings)
 			{
 				string movementFile = GetFullPathToMovementFile(videoAnimationBinding.MovementFileName);
 				VideoFeed[] videoFeeds = AllVideoFeeds.GetAll(videoAnimationBinding);
 
 				LiveFeedAnimator liveFeedAnimator = LoadLiveAnimation(movementFile, videoAnimationBinding, videoFeeds);
-				liveFeedAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
-				liveFeedAnimator.Start(startTime);
+				liveFeedAnimator.FrameAnimator.AnimationComplete += LiveFeedAnimator_AnimationComplete;
+				liveFeedAnimator.FrameAnimator.Start(startTime);
+				liveFeedAnimators.Add(liveFeedAnimator);
 			}
 
 			// TODO: Track which video feed we are running in case we abort while we are running.
+
+			string fullPathToLightsFile = VideoAnimationManager.GetFullPathToLightsFile(sceneName);
+			if (System.IO.File.Exists(fullPathToLightsFile))
+			{
+				string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
+				LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
+				// TODO: We need a LightAnimator that is a lot like a LiveFeedAnimator
+			}
 
 			existingAnimationIsRunning = true;
 		}
@@ -84,7 +112,14 @@ namespace DHDM
 		private static string GetFullPathToDataFile(string movementFileName, string extension)
 		{
 			string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			return Path.Combine(location, "LiveVideoAnimation\\Data", movementFileName + extension);
+			try
+			{
+				return Path.Combine(location, "LiveVideoAnimation\\Data", movementFileName + extension);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		private static void ObsManager_SceneChanged(object sender, string sceneName)
@@ -114,7 +149,7 @@ namespace DHDM
 		{
 			animationEditorTimer.Stop();
 
-			System.Windows.Application.Current.Dispatcher.Invoke(() => 
+			System.Windows.Application.Current.Dispatcher.Invoke(() =>
 			{
 				if (frmLiveAnimationEditor == null)
 					frmLiveAnimationEditor = new FrmLiveAnimationEditor();

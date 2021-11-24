@@ -93,12 +93,14 @@
     </Compile>
     <Compile Include="LiveVideoAnimation\AllVideoBindings.cs" />
     <Compile Include="LiveVideoAnimation\AllVideoFeeds.cs" />
+    <Compile Include="LiveVideoAnimation\FrameAnimator.cs" />
     <Compile Include="LiveVideoAnimation\Lights\BluetoothLight.cs" />
     <Compile Include="LiveVideoAnimation\Lights\BluetoothLights.cs" />
     <Compile Include="LiveVideoAnimation\Lights\FrmColorPicker.xaml.cs">
       <DependentUpon>FrmColorPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="LiveVideoAnimation\LiveFeedAnimator.cs" />
+    <Compile Include="Events\RenderFrameEventArgs.cs" />
     <Compile Include="LiveVideoAnimation\UI\AnimatorWithTransforms.cs" />
     <Compile Include="LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml.cs">
       <DependentUpon>FrmLiveAnimationEditor.xaml</DependentUpon>

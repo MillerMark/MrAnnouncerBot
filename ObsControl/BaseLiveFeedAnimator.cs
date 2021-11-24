@@ -2,9 +2,9 @@
 
 namespace ObsControl
 {
-  public class BaseLiveFeedAnimator
-  {
-    public double VideoAnchorHorizontal => videoFeeds[camera].videoAnchorHorizontal;
+	public class BaseLiveFeedAnimator
+	{
+		public double VideoAnchorHorizontal => videoFeeds[camera].videoAnchorHorizontal;
 		public double VideoAnchorVertical => videoFeeds[camera].videoAnchorVertical;
 		public double VideoWidth => videoFeeds[camera].videoWidth;
 		public double VideoHeight => videoFeeds[camera].videoHeight;
@@ -18,19 +18,19 @@ namespace ObsControl
 		/// </summary>
 		public double ScreenAnchorLeft { get; set; }
 
-    /// <summary>
-    /// The top point on the screen around which the video will rotate, scale, etc.
-    /// </summary>
-    public double ScreenAnchorTop { get; set; }
+		/// <summary>
+		/// The top point on the screen around which the video will rotate, scale, etc.
+		/// </summary>
+		public double ScreenAnchorTop { get; set; }
 
-    
-    
-    public BaseLiveFeedAnimator(VideoFeed[] videoFeeds)
-    {
+
+
+		public BaseLiveFeedAnimator(VideoFeed[] videoFeeds)
+		{
 			this.videoFeeds = videoFeeds;
-    }
+		}
 
-    int camera;
+		int camera;
 		int lastCamera = -1;
 		readonly VideoFeed[] videoFeeds;
 
@@ -44,7 +44,7 @@ namespace ObsControl
 			{
 				if (camera == value)
 					return;
-        lastCamera = camera;
+				lastCamera = camera;
 				camera = value;
 			}
 		}
