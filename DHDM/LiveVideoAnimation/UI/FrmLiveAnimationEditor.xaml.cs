@@ -16,6 +16,7 @@ using Imaging;
 using ObsControl;
 using InTheHand.Bluetooth;
 using System.Security.Policy;
+using Newtonsoft.Json;
 
 namespace DHDM
 {
@@ -334,18 +335,23 @@ namespace DHDM
 				sldDeltaScale.Value = liveFeedEdit.DeltaScale;
 				tbxDeltaOpacity.Text = liveFeedEdit.DeltaOpacity.ToString();
 				sldDeltaOpacity.Value = liveFeedEdit.DeltaOpacity;
-				foreach (Light light in LightingSequence.Lights)
-				{
-					if (frameIndex < light.SequenceData.Count)
-					{
-						SetLightColor(light.ID, light.SequenceData[frameIndex]);
-					}
-				}
+				UpdateLights();
 				UpdateValuePreviews(liveFeedEdit);
 			}
 			finally
 			{
 				changingInternally = false;
+			}
+		}
+
+		private void UpdateLights()
+		{
+			foreach (Light light in LightingSequence.Lights)
+			{
+				if (frameIndex < light.SequenceData.Count)
+				{
+					SetLightColor(light.ID, light.SequenceData[frameIndex]);
+				}
 			}
 		}
 
@@ -437,6 +443,7 @@ namespace DHDM
 		string relativePathFront;
 		string relativePathBack;
 		bool settingColorInternally;
+		bool dragStarted;
 		public enum Attribute
 		{
 			X,
@@ -713,8 +720,8 @@ namespace DHDM
 			string fullPathToLightingFile = VideoAnimationManager.GetFullPathToLightsFile(SelectedSceneName);
 			if (HasAnyLightingChanges(LightingSequence))
 			{
-				// TODO: Compress the data. Repeated light data needs to be compressed.
-				string serializedLights = Newtonsoft.Json.JsonConvert.SerializeObject(LightingSequence, Newtonsoft.Json.Formatting.Indented);
+				LightingSequence compressedLightingSequence = LightingSequence.Compress();
+				string serializedLights = Newtonsoft.Json.JsonConvert.SerializeObject(compressedLightingSequence, Newtonsoft.Json.Formatting.Indented);
 				System.IO.File.WriteAllText(fullPathToLightingFile, serializedLights);
 			}
 			else
@@ -730,9 +737,10 @@ namespace DHDM
 			string fullPathToLightsFile = VideoAnimationManager.GetFullPathToLightsFile(sceneName);
 			if (System.IO.File.Exists(fullPathToLightsFile))
 			{
-				System.Diagnostics.Debugger.Break();
+				string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
+				LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
 				// TODO: Load lights.
-				return null;
+				return lightingSequence.Decompress();
 			}
 			else
 			{
@@ -822,7 +830,7 @@ namespace DHDM
 
 		async void SetLightColor(string iD, LightSequenceData lightSequenceData)
 		{
-			if (changingInternally)
+			if (settingColorInternally || dragStarted)
 				return;
 			if (iD == BluetoothLights.Left_ID)
 			{
@@ -860,6 +868,17 @@ namespace DHDM
 			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
 			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
 			FrameIndex++;
+		}
+
+		private void sldFrameIndex_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+		{
+			dragStarted = true;
+		}
+
+		private void sldFrameIndex_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			dragStarted = false;
+			UpdateLights();
 		}
 	}
 }

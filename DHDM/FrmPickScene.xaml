@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
         mc:Ignorable="d"
-        Title="Pick Scene" Height="310" Width="262">
+        Title="Pick Scene" Height="330" Width="262">
     <Grid x:Name="Grid1" Height="Auto" Width="Auto">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

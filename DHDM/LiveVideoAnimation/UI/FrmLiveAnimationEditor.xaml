@@ -24,7 +24,9 @@
 		<Button x:Name="btnReloadAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="306, 0, 0, 0" Click="btnReloadAnimation_Click">
 			Reload
 		</Button>
-		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="22" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" >
+		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="22" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" 
+                Thumb.DragStarted="sldFrameIndex_DragStarted" Thumb.DragCompleted="sldFrameIndex_DragCompleted"
+                >
 			
 		</Slider>
         <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Grid.Row="2" Height="25"  >
