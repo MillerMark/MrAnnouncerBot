@@ -46,19 +46,25 @@
 			this.checkBox2 = new System.Windows.Forms.CheckBox();
 			this.checkBox3 = new System.Windows.Forms.CheckBox();
 			this.checkBox4 = new System.Windows.Forms.CheckBox();
-			this.button1 = new System.Windows.Forms.Button();
-			this.button2 = new System.Windows.Forms.Button();
-			this.button3 = new System.Windows.Forms.Button();
-			this.button4 = new System.Windows.Forms.Button();
-			this.button5 = new System.Windows.Forms.Button();
-			this.button6 = new System.Windows.Forms.Button();
-			this.button7 = new System.Windows.Forms.Button();
-			this.button8 = new System.Windows.Forms.Button();
-			this.button9 = new System.Windows.Forms.Button();
+			this.btn90x = new System.Windows.Forms.Button();
+			this.btn90y = new System.Windows.Forms.Button();
+			this.btn90z = new System.Windows.Forms.Button();
+			this.btnY270 = new System.Windows.Forms.Button();
+			this.btnY90 = new System.Windows.Forms.Button();
+			this.btnX270 = new System.Windows.Forms.Button();
+			this.btnX90 = new System.Windows.Forms.Button();
+			this.btnZ270 = new System.Windows.Forms.Button();
+			this.btnZ90 = new System.Windows.Forms.Button();
 			this.label5 = new System.Windows.Forms.Label();
+			this.panel1 = new System.Windows.Forms.Panel();
+			this.rbScale = new System.Windows.Forms.RadioButton();
+			this.label6 = new System.Windows.Forms.Label();
+			this.rbRotate = new System.Windows.Forms.RadioButton();
+			this.rbTranslate = new System.Windows.Forms.RadioButton();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetX)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetY)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetZ)).BeginInit();
+			this.panel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -277,122 +283,122 @@
 			this.checkBox4.UseVisualStyleBackColor = true;
 			this.checkBox4.Visible = false;
 			// 
-			// button1
+			// btn90x
 			// 
-			this.button1.BackColor = System.Drawing.Color.Black;
-			this.button1.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button1.Location = new System.Drawing.Point(7, 65);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(55, 23);
-			this.button1.TabIndex = 3;
-			this.button1.Text = "90, 0, 0";
-			this.button1.UseVisualStyleBackColor = false;
-			this.button1.Click += new System.EventHandler(this.btnPreset_Click);
+			this.btn90x.BackColor = System.Drawing.Color.Black;
+			this.btn90x.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btn90x.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btn90x.Location = new System.Drawing.Point(7, 65);
+			this.btn90x.Name = "btn90x";
+			this.btn90x.Size = new System.Drawing.Size(55, 23);
+			this.btn90x.TabIndex = 3;
+			this.btn90x.Text = "90, 0, 0";
+			this.btn90x.UseVisualStyleBackColor = false;
+			this.btn90x.Click += new System.EventHandler(this.btnPreset_Click);
 			// 
-			// button2
+			// btn90y
 			// 
-			this.button2.BackColor = System.Drawing.Color.Black;
-			this.button2.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button2.Location = new System.Drawing.Point(68, 65);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(55, 23);
-			this.button2.TabIndex = 3;
-			this.button2.Text = "0, 90, 0";
-			this.button2.UseVisualStyleBackColor = false;
-			this.button2.Click += new System.EventHandler(this.btnPreset_Click);
+			this.btn90y.BackColor = System.Drawing.Color.Black;
+			this.btn90y.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btn90y.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btn90y.Location = new System.Drawing.Point(68, 65);
+			this.btn90y.Name = "btn90y";
+			this.btn90y.Size = new System.Drawing.Size(55, 23);
+			this.btn90y.TabIndex = 3;
+			this.btn90y.Text = "0, 90, 0";
+			this.btn90y.UseVisualStyleBackColor = false;
+			this.btn90y.Click += new System.EventHandler(this.btnPreset_Click);
 			// 
-			// button3
+			// btn90z
 			// 
-			this.button3.BackColor = System.Drawing.Color.Black;
-			this.button3.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button3.Location = new System.Drawing.Point(129, 65);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(55, 23);
-			this.button3.TabIndex = 3;
-			this.button3.Text = "0, 0, 90";
-			this.button3.UseVisualStyleBackColor = false;
-			this.button3.Click += new System.EventHandler(this.btnPreset_Click);
+			this.btn90z.BackColor = System.Drawing.Color.Black;
+			this.btn90z.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btn90z.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btn90z.Location = new System.Drawing.Point(129, 65);
+			this.btn90z.Name = "btn90z";
+			this.btn90z.Size = new System.Drawing.Size(55, 23);
+			this.btn90z.TabIndex = 3;
+			this.btn90z.Text = "0, 0, 90";
+			this.btn90z.UseVisualStyleBackColor = false;
+			this.btn90z.Click += new System.EventHandler(this.btnPreset_Click);
 			// 
-			// button4
+			// btnY270
 			// 
-			this.button4.BackColor = System.Drawing.Color.Black;
-			this.button4.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button4.Location = new System.Drawing.Point(206, 87);
-			this.button4.Name = "button4";
-			this.button4.Size = new System.Drawing.Size(49, 23);
-			this.button4.TabIndex = 3;
-			this.button4.Text = "-90";
-			this.button4.UseVisualStyleBackColor = false;
-			this.button4.Click += new System.EventHandler(this.changeY_Click);
+			this.btnY270.BackColor = System.Drawing.Color.Black;
+			this.btnY270.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnY270.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnY270.Location = new System.Drawing.Point(206, 87);
+			this.btnY270.Name = "btnY270";
+			this.btnY270.Size = new System.Drawing.Size(49, 23);
+			this.btnY270.TabIndex = 3;
+			this.btnY270.Text = "-90";
+			this.btnY270.UseVisualStyleBackColor = false;
+			this.btnY270.Click += new System.EventHandler(this.changeY_Click);
 			// 
-			// button5
+			// btnY90
 			// 
-			this.button5.BackColor = System.Drawing.Color.Black;
-			this.button5.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button5.Location = new System.Drawing.Point(206, 116);
-			this.button5.Name = "button5";
-			this.button5.Size = new System.Drawing.Size(49, 23);
-			this.button5.TabIndex = 3;
-			this.button5.Text = "+90";
-			this.button5.UseVisualStyleBackColor = false;
-			this.button5.Click += new System.EventHandler(this.changeY_Click);
+			this.btnY90.BackColor = System.Drawing.Color.Black;
+			this.btnY90.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnY90.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnY90.Location = new System.Drawing.Point(206, 116);
+			this.btnY90.Name = "btnY90";
+			this.btnY90.Size = new System.Drawing.Size(49, 23);
+			this.btnY90.TabIndex = 3;
+			this.btnY90.Text = "+90";
+			this.btnY90.UseVisualStyleBackColor = false;
+			this.btnY90.Click += new System.EventHandler(this.changeY_Click);
 			// 
-			// button6
+			// btnX270
 			// 
-			this.button6.BackColor = System.Drawing.Color.Black;
-			this.button6.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button6.Location = new System.Drawing.Point(15, 187);
-			this.button6.Name = "button6";
-			this.button6.Size = new System.Drawing.Size(49, 23);
-			this.button6.TabIndex = 3;
-			this.button6.Text = "-90";
-			this.button6.UseVisualStyleBackColor = false;
-			this.button6.Click += new System.EventHandler(this.changeX_Click);
+			this.btnX270.BackColor = System.Drawing.Color.Black;
+			this.btnX270.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnX270.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnX270.Location = new System.Drawing.Point(15, 187);
+			this.btnX270.Name = "btnX270";
+			this.btnX270.Size = new System.Drawing.Size(49, 23);
+			this.btnX270.TabIndex = 3;
+			this.btnX270.Text = "-90";
+			this.btnX270.UseVisualStyleBackColor = false;
+			this.btnX270.Click += new System.EventHandler(this.changeX_Click);
 			// 
-			// button7
+			// btnX90
 			// 
-			this.button7.BackColor = System.Drawing.Color.Black;
-			this.button7.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button7.Location = new System.Drawing.Point(15, 216);
-			this.button7.Name = "button7";
-			this.button7.Size = new System.Drawing.Size(49, 23);
-			this.button7.TabIndex = 3;
-			this.button7.Text = "+90";
-			this.button7.UseVisualStyleBackColor = false;
-			this.button7.Click += new System.EventHandler(this.changeX_Click);
+			this.btnX90.BackColor = System.Drawing.Color.Black;
+			this.btnX90.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnX90.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnX90.Location = new System.Drawing.Point(15, 216);
+			this.btnX90.Name = "btnX90";
+			this.btnX90.Size = new System.Drawing.Size(49, 23);
+			this.btnX90.TabIndex = 3;
+			this.btnX90.Text = "+90";
+			this.btnX90.UseVisualStyleBackColor = false;
+			this.btnX90.Click += new System.EventHandler(this.changeX_Click);
 			// 
-			// button8
+			// btnZ270
 			// 
-			this.button8.BackColor = System.Drawing.Color.Black;
-			this.button8.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button8.Location = new System.Drawing.Point(206, 290);
-			this.button8.Name = "button8";
-			this.button8.Size = new System.Drawing.Size(49, 23);
-			this.button8.TabIndex = 3;
-			this.button8.Text = "-90";
-			this.button8.UseVisualStyleBackColor = false;
-			this.button8.Click += new System.EventHandler(this.changeZ_Click);
+			this.btnZ270.BackColor = System.Drawing.Color.Black;
+			this.btnZ270.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnZ270.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnZ270.Location = new System.Drawing.Point(206, 290);
+			this.btnZ270.Name = "btnZ270";
+			this.btnZ270.Size = new System.Drawing.Size(49, 23);
+			this.btnZ270.TabIndex = 3;
+			this.btnZ270.Text = "-90";
+			this.btnZ270.UseVisualStyleBackColor = false;
+			this.btnZ270.Click += new System.EventHandler(this.changeZ_Click);
 			// 
-			// button9
+			// btnZ90
 			// 
-			this.button9.BackColor = System.Drawing.Color.Black;
-			this.button9.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-			this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button9.Location = new System.Drawing.Point(206, 319);
-			this.button9.Name = "button9";
-			this.button9.Size = new System.Drawing.Size(49, 23);
-			this.button9.TabIndex = 3;
-			this.button9.Text = "+90";
-			this.button9.UseVisualStyleBackColor = false;
-			this.button9.Click += new System.EventHandler(this.changeZ_Click);
+			this.btnZ90.BackColor = System.Drawing.Color.Black;
+			this.btnZ90.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnZ90.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnZ90.Location = new System.Drawing.Point(206, 319);
+			this.btnZ90.Name = "btnZ90";
+			this.btnZ90.Size = new System.Drawing.Size(49, 23);
+			this.btnZ90.TabIndex = 3;
+			this.btnZ90.Text = "+90";
+			this.btnZ90.UseVisualStyleBackColor = false;
+			this.btnZ90.Click += new System.EventHandler(this.changeZ_Click);
 			// 
 			// label5
 			// 
@@ -403,11 +409,67 @@
 			this.label5.TabIndex = 7;
 			this.label5.Text = "Slider Multiplier:";
 			// 
+			// panel1
+			// 
+			this.panel1.Controls.Add(this.rbScale);
+			this.panel1.Controls.Add(this.label6);
+			this.panel1.Controls.Add(this.rbRotate);
+			this.panel1.Controls.Add(this.rbTranslate);
+			this.panel1.Location = new System.Drawing.Point(3, 444);
+			this.panel1.Name = "panel1";
+			this.panel1.Size = new System.Drawing.Size(274, 24);
+			this.panel1.TabIndex = 12;
+			// 
+			// rbScale
+			// 
+			this.rbScale.AutoSize = true;
+			this.rbScale.Location = new System.Drawing.Point(196, 2);
+			this.rbScale.Name = "rbScale";
+			this.rbScale.Size = new System.Drawing.Size(52, 17);
+			this.rbScale.TabIndex = 15;
+			this.rbScale.Text = "Scale";
+			this.rbScale.UseVisualStyleBackColor = true;
+			this.rbScale.CheckedChanged += new System.EventHandler(this.rbScale_CheckedChanged);
+			// 
+			// label6
+			// 
+			this.label6.AutoSize = true;
+			this.label6.Location = new System.Drawing.Point(6, 4);
+			this.label6.Name = "label6";
+			this.label6.Size = new System.Drawing.Size(33, 13);
+			this.label6.TabIndex = 14;
+			this.label6.Text = "Style:";
+			// 
+			// rbRotate
+			// 
+			this.rbRotate.AutoSize = true;
+			this.rbRotate.Location = new System.Drawing.Point(127, 2);
+			this.rbRotate.Name = "rbRotate";
+			this.rbRotate.Size = new System.Drawing.Size(57, 17);
+			this.rbRotate.TabIndex = 13;
+			this.rbRotate.Text = "Rotate";
+			this.rbRotate.UseVisualStyleBackColor = true;
+			this.rbRotate.CheckedChanged += new System.EventHandler(this.rbRotate_CheckedChanged);
+			// 
+			// rbTranslate
+			// 
+			this.rbTranslate.AutoSize = true;
+			this.rbTranslate.Checked = true;
+			this.rbTranslate.Location = new System.Drawing.Point(48, 2);
+			this.rbTranslate.Name = "rbTranslate";
+			this.rbTranslate.Size = new System.Drawing.Size(69, 17);
+			this.rbTranslate.TabIndex = 12;
+			this.rbTranslate.TabStop = true;
+			this.rbTranslate.Text = "Translate";
+			this.rbTranslate.UseVisualStyleBackColor = true;
+			this.rbTranslate.CheckedChanged += new System.EventHandler(this.rbTranslate_CheckedChanged);
+			// 
 			// EdtVector3
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.Black;
+			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.checkBox4);
 			this.Controls.Add(this.checkBox3);
@@ -418,15 +480,15 @@
 			this.Controls.Add(this.btnAllTwos);
 			this.Controls.Add(this.btnAllHalves);
 			this.Controls.Add(this.btnAllOnes);
-			this.Controls.Add(this.button9);
-			this.Controls.Add(this.button8);
-			this.Controls.Add(this.button7);
-			this.Controls.Add(this.button6);
-			this.Controls.Add(this.button5);
-			this.Controls.Add(this.button4);
-			this.Controls.Add(this.button3);
-			this.Controls.Add(this.button2);
-			this.Controls.Add(this.button1);
+			this.Controls.Add(this.btnZ90);
+			this.Controls.Add(this.btnZ270);
+			this.Controls.Add(this.btnX90);
+			this.Controls.Add(this.btnX270);
+			this.Controls.Add(this.btnY90);
+			this.Controls.Add(this.btnY270);
+			this.Controls.Add(this.btn90z);
+			this.Controls.Add(this.btn90y);
+			this.Controls.Add(this.btn90x);
 			this.Controls.Add(this.btnAllZeros);
 			this.Controls.Add(this.trkOffsetY);
 			this.Controls.Add(this.trkOffsetZ);
@@ -438,10 +500,12 @@
 			this.Controls.Add(this.trkOffsetX);
 			this.ForeColor = System.Drawing.Color.White;
 			this.Name = "EdtVector3";
-			this.Size = new System.Drawing.Size(330, 445);
+			this.Size = new System.Drawing.Size(330, 470);
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetX)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetY)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetZ)).EndInit();
+			this.panel1.ResumeLayout(false);
+			this.panel1.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -467,15 +531,20 @@
 		private System.Windows.Forms.CheckBox checkBox2;
 		private System.Windows.Forms.CheckBox checkBox3;
 		private System.Windows.Forms.CheckBox checkBox4;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.Button button4;
-		private System.Windows.Forms.Button button5;
-		private System.Windows.Forms.Button button6;
-		private System.Windows.Forms.Button button7;
-		private System.Windows.Forms.Button button8;
-		private System.Windows.Forms.Button button9;
+		private System.Windows.Forms.Button btn90x;
+		private System.Windows.Forms.Button btn90y;
+		private System.Windows.Forms.Button btn90z;
+		private System.Windows.Forms.Button btnY270;
+		private System.Windows.Forms.Button btnY90;
+		private System.Windows.Forms.Button btnX270;
+		private System.Windows.Forms.Button btnX90;
+		private System.Windows.Forms.Button btnZ270;
+		private System.Windows.Forms.Button btnZ90;
 		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.RadioButton rbScale;
+		private System.Windows.Forms.Label label6;
+		private System.Windows.Forms.RadioButton rbRotate;
+		private System.Windows.Forms.RadioButton rbTranslate;
 	}
 }

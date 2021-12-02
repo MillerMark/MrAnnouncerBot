@@ -590,7 +590,10 @@ namespace TaleSpireExplore
 				Talespire.Log.Debug($"(no valueEditor yet for {type.FullName})");
 			}
 			else
-				Talespire.Log.Debug($"valueEditor found for {type.FullName}!");
+			{
+				Talespire.Log.Debug($"valueEditor EditingProperty \"{propertyNode.PropertyName}\" - {type.FullName}!");
+				activeValueEditor.EditingProperty(propertyNode.PropertyName);
+			}
 
 			if (activeValueEditor is UserControl userControl)
 				userControl.Visible = true;

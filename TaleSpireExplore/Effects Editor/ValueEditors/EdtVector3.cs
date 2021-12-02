@@ -14,9 +14,17 @@ namespace TaleSpireExplore
 {
 	public partial class EdtVector3 : UserControl, IValueEditor
 	{
+		List<string> rotateNames = new List<string>();
+		List<string> scaleNames = new List<string>();
 		public EdtVector3()
 		{
 			InitializeComponent();
+
+			rotateNames.Add("rotate");
+			rotateNames.Add("rotation");
+			rotateNames.Add("angle");
+
+			scaleNames.Add("scale");
 		}
 
 		public IValueChangedListener ValueChangedListener { get; set; }
@@ -190,6 +198,92 @@ namespace TaleSpireExplore
 			float amountToChange = GetAmountToChange(sender);
 			if (GetXYZ(out float x, out float y, out float z))
 				tbxVector3.Text = $"{x}, {y}, {z + amountToChange}";
+		}
+
+		private void rbTranslate_CheckedChanged(object sender, EventArgs e)
+		{
+			if (rbTranslate.Checked)
+			{
+				btnAllZeros.Visible = true;
+				btnAllHalves.Visible = false;
+				btnAllOnes.Visible = true;
+				btnAllTwos.Visible = true;
+				btn90x.Visible = false;
+				btn90y.Visible = false;
+				btn90z.Visible = false;
+				btnX270.Visible = false;
+				btnY270.Visible = false;
+				btnZ270.Visible = false;
+				btnX90.Visible = false;
+				btnY90.Visible = false;
+				btnZ90.Visible = false;
+			}
+		}
+
+		private void rbRotate_CheckedChanged(object sender, EventArgs e)
+		{
+			if (rbRotate.Checked)
+			{
+				btnAllZeros.Visible = true;
+				btnAllHalves.Visible = false;
+				btnAllOnes.Visible = false;
+				btnAllTwos.Visible = false;
+				btn90x.Visible = true;
+				btn90y.Visible = true;
+				btn90z.Visible = true;
+				btnX270.Visible = true;
+				btnY270.Visible = true;
+				btnZ270.Visible = true;
+				btnX90.Visible = true;
+				btnY90.Visible = true;
+				btnZ90.Visible = true;
+			}
+		}
+
+
+		private void rbScale_CheckedChanged(object sender, EventArgs e)
+		{
+			if (rbScale.Checked)
+			{
+				btnAllZeros.Visible = false;
+				btnAllHalves.Visible = true;
+				btnAllOnes.Visible = true;
+				btnAllTwos.Visible = true;
+				btn90x.Visible = false;
+				btn90y.Visible = false;
+				btn90z.Visible = false;
+				btnX270.Visible = false;
+				btnY270.Visible = false;
+				btnZ270.Visible = false;
+				btnX90.Visible = false;
+				btnY90.Visible = false;
+				btnZ90.Visible = false;
+			}
+		}
+
+		bool HasMatch(List<string> names, string lowerCaseName)
+		{
+			return names.Any(x => lowerCaseName.Contains(x));
+		}
+
+		public void EditingProperty(string name)
+		{
+			string lowerCaseName = name.ToLower();
+			if (HasMatch(rotateNames, lowerCaseName))
+			{
+				rbRotate.Checked = true;
+				rbRotate_CheckedChanged(null, null);
+			}
+			else if (HasMatch(scaleNames, lowerCaseName))
+			{
+				rbScale.Checked = true;
+				rbScale_CheckedChanged(null, null);
+			}
+			else
+			{
+				rbTranslate.Checked = true;
+				rbTranslate_CheckedChanged(null, null);
+			}
 		}
 	}
 }

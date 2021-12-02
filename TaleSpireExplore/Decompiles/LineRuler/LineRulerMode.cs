@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TaleSpireExploreDecompiles
 {
-	public class LineRulerIndicator : RulerIndicator
+	public class LineRulerMode : RulerIndicator
 	{
 		// Fields
 		[SerializeField]

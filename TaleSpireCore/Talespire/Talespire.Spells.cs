@@ -579,22 +579,22 @@ namespace TaleSpireCore
 			{
 				List<Vector3> handles = null;
 
-				List<LineRulerIndicator> allLineRulers = Rulers.GetAllLineRulers();
+				List<LineRulerMode> allLineRulers = Rulers.GetAllLineRulers();
 				if (!allLineRulers.Any())
 				{
 					Log.Error($"BuildWall: No line rulers!!!");
 					return;
 				}
 
-				LineRulerIndicator lineRulerIndicator = allLineRulers.First();
+				LineRulerMode LineRulerMode = allLineRulers.First();
 
-				if (lineRulerIndicator == null)
+				if (LineRulerMode == null)
 				{
-					Log.Error($"lineRulerIndicator == null");
+					Log.Error($"LineRulerMode == null");
 					return;
 				}
 
-				handles = lineRulerIndicator.GetPositions();
+				handles = LineRulerMode.GetPositions();
 
 				if (handles == null)
 				{

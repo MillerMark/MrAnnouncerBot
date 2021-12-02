@@ -129,7 +129,7 @@ namespace TaleSpireExplore
 			BoardToolManager.OnSwitchTool += BoardToolManager_OnSwitchTool;
 			BuildingBoardTool.OnBuildHistoryChange += BuildingBoardTool_OnBuildHistoryChange;
 			RulerBoardTool.OnCloseRulers += RulerBoardTool_OnCloseRulers;
-			RulerBoardTool.OnRulerIndicatorChange += RulerBoardTool_OnRulerIndicatorChange;
+			RulerBoardTool.OnRulerModeChange += RulerBoardTool_OnRulerModeChange;
 			CameraController.OnCutBoxChange += CameraController_OnCutBoxChange;
 			CampaignSessionManager.OnPlayerInfoUpdated += CampaignSessionManager_OnPlayerInfoUpdated;
 			CampaignSessionManager.OnEnteringBuildSceneForCampaign += CampaignSessionManager_OnEnteringBuildSceneForCampaign;
@@ -198,7 +198,7 @@ namespace TaleSpireExplore
 			BoardToolManager.OnSwitchTool -= BoardToolManager_OnSwitchTool;
 			BuildingBoardTool.OnBuildHistoryChange -= BuildingBoardTool_OnBuildHistoryChange;
 			RulerBoardTool.OnCloseRulers -= RulerBoardTool_OnCloseRulers;
-			RulerBoardTool.OnRulerIndicatorChange -= RulerBoardTool_OnRulerIndicatorChange;
+			RulerBoardTool.OnRulerModeChange -= RulerBoardTool_OnRulerModeChange;
 			CameraController.OnCutBoxChange -= CameraController_OnCutBoxChange;
 			CampaignSessionManager.OnPlayerInfoUpdated -= CampaignSessionManager_OnPlayerInfoUpdated;
 			CampaignSessionManager.OnEnteringBuildSceneForCampaign -= CampaignSessionManager_OnEnteringBuildSceneForCampaign;
@@ -444,9 +444,9 @@ namespace TaleSpireExplore
 			LogEvent($"CameraController.OnCutBoxChange(obj: {obj})");
 		}
 
-		private void RulerBoardTool_OnRulerIndicatorChange(int obj)
+		private void RulerBoardTool_OnRulerModeChange(int obj)
 		{
-			LogEvent($"RulerBoardTool.OnRulerIndicatorChange(obj: {obj})");
+			LogEvent($"RulerBoardTool.OnRulerModeChange(obj: {obj})");
 		}
 
 		private void RulerBoardTool_OnCloseRulers()
@@ -608,9 +608,9 @@ namespace TaleSpireExplore
 		}
 		private void btnLoadClasses_Click(object sender, EventArgs e)
 		{
-			LoadCreatures();
+			//LoadCreatures();
 			//LoadResources();
-			//SendBouncyApiToScratch()
+			SendBouncyApiToScratch();
 		}
 
 		void SendBouncyApiToScratch()
@@ -977,27 +977,27 @@ namespace TaleSpireExplore
 
 		private void btnGetRuler_Click(object sender, EventArgs e)
 		{
-			UnityEngine.Object[] lineRulers = Talespire.Components.GetAll<LineRulerIndicator>();
+			UnityEngine.Object[] lineRulers = Talespire.Components.GetAll<LineRulerMode>();
 
 			if (lineRulers == null)
 			{
-				tbxScratch.Text += $"No LineRulerIndicators found.\n";
+				tbxScratch.Text += $"No LineRulerModes found.\n";
 				return;
 			}
 
 
-			tbxScratch.Text += $"{lineRulers.Length} LineRulerIndicators found!\n";
+			tbxScratch.Text += $"{lineRulers.Length} LineRulerModes found!\n";
 
 			for (int j = 0; j < 11; j++)
 				Talespire.Instances.Delete($"RulerFlames{j}");
 
 			for (int i = 0; i < lineRulers.Length; i++)
 			{
-				LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
+				LineRulerMode LineRulerMode = lineRulers[i] as LineRulerMode;
 
-				if (lineRulerIndicator != null)
+				if (LineRulerMode != null)
 				{
-					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
+					List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(LineRulerMode, "_handles");
 					if (_handles != null)
 					{
 						tbxScratch.Text += $"{_handles.Count} _handles found!\n";

@@ -66,5 +66,10 @@ namespace TaleSpireExplore
 			if (int.TryParse(tbxValue.Text.Trim(), out int result))
 				ValueChanged(result);
 		}
+
+		public void EditingProperty(string name)
+		{
+			// TODO: Change any editing style options in this editor based on name heuristics.
+		}
 	}
 }

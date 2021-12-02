@@ -220,7 +220,7 @@
     <None Include="Decompiles\VisualEffect.cs" />
     <Compile Include="Decompiles\LineRuler\BezierPath.cs" />
     <Compile Include="Decompiles\LineRuler\LineIndicator.cs" />
-    <Compile Include="Decompiles\LineRuler\LineRulerIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\LineRulerMode.cs" />
     <Compile Include="Decompiles\LineRuler\RulerBoardTool.cs" />
     <Compile Include="Decompiles\LineRuler\RulerIndicator.cs" />
     <Compile Include="Decompiles\LineRuler\Ruler.cs" />

@@ -21,14 +21,14 @@ namespace TaleSpireCore
 			return new VectorDto(vector.x, vector.y, vector.z);
 		}
 
-		public static List<Transform> GetHandles(this LineRulerIndicator lineRulerIndicator)
+		public static List<Transform> GetHandles(this LineRulerMode LineRulerMode)
 		{
-			return ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
+			return ReflectionHelper.GetNonPublicField<List<Transform>>(LineRulerMode, "_handles");
 		}
 
-		public static List<Vector3> GetPositions(this LineRulerIndicator lineRulerIndicator)
+		public static List<Vector3> GetPositions(this LineRulerMode LineRulerMode)
 		{
-			return lineRulerIndicator.GetHandles()?.ConvertAll(x => x.position);
+			return LineRulerMode.GetHandles()?.ConvertAll(x => x.position);
 		}
 
 		public static MonoBehaviour GetScript(this GameObject gameObject, string scriptName)

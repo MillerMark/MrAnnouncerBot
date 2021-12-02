@@ -10,5 +10,6 @@ namespace TaleSpireExplore
 		Type GetValueType();
 		void Initialize(IValueChangedListener valueChangedListener);
 		BasePropertyChanger GetPropertyChanger();
+		void EditingProperty(string name);
 	}
 }

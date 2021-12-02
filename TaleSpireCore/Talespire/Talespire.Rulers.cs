@@ -11,25 +11,25 @@ namespace TaleSpireCore
 
 			public static int GetLineRulerCount()
 			{
-				List<LineRulerIndicator> allLineRulers = GetAllLineRulers();
+				List<LineRulerMode> allLineRulers = GetAllLineRulers();
 				if (allLineRulers == null)
 					return 0;
 				return allLineRulers.Count;
 			}
 
-			public static List<LineRulerIndicator> GetAllLineRulers()
+			public static List<LineRulerMode> GetAllLineRulers()
 			{
-				return Components.GetAll<LineRulerIndicator>().Cast<LineRulerIndicator>().ToList();
+				return Components.GetAll<LineRulerMode>().Cast<LineRulerMode>().ToList();
 			}
 
 			/* 
 				for (int i = 0; i < lineRulers.Length; i++)
 				{
-					LineRulerIndicator lineRulerIndicator = lineRulers[i] as LineRulerIndicator;
+					LineRulerMode LineRulerMode = lineRulers[i] as LineRulerMode;
 
-					if (lineRulerIndicator != null)
+					if (LineRulerMode != null)
 					{
-						List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(lineRulerIndicator, "_handles");
+						List<Transform> _handles = ReflectionHelper.GetNonPublicField<List<Transform>>(LineRulerMode, "_handles");
 						if (_handles != null)
 						{
 							tbxScratch.Text += $"{_handles.Count} _handles found!\n";

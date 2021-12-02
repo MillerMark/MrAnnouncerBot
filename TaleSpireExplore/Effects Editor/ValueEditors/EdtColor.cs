@@ -181,5 +181,10 @@ namespace TaleSpireExplore
 		{
 			ColorChanged();
 		}
+
+		public void EditingProperty(string name)
+		{
+			// TODO: Change any editing style options in this editor based on name heuristics.
+		}
 	}
 }
