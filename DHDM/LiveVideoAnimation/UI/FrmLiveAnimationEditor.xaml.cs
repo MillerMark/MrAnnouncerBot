@@ -45,7 +45,7 @@ namespace DHDM
 		{
 			get
 			{
-				return ActiveMovement.ObsTransformEdits;
+				return ActiveMovement?.ObsTransformEdits;
 			}
 		}
 
@@ -69,6 +69,7 @@ namespace DHDM
 			CreateRadioButtons(allBindings);
 
 			LoadAllFrames(allBindings);
+			// TODO: Abort load if path not found.
 			LoadAllImages(System.IO.Path.Combine(STR_EditorPath, SelectedSceneName));
 
 			relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
@@ -232,6 +233,8 @@ namespace DHDM
 
 		void LoadAllImages(string selectedPath)
 		{
+			if (!System.IO.Directory.Exists(selectedPath))
+				return;
 			backFiles = System.IO.Directory.GetFiles(selectedPath, "back*.png");
 			frontFiles = System.IO.Directory.GetFiles(selectedPath, "front*.png");
 		}
@@ -540,7 +543,7 @@ namespace DHDM
 
 		private void btnSaveAnimation_Click(object sender, RoutedEventArgs e)
 		{
-			if (backFiles.Length == 0)
+			if (backFiles == null || backFiles.Length == 0)
 				return;
 			SaveAllFrames();
 		}
@@ -662,6 +665,8 @@ namespace DHDM
 				return;
 			foreach (AnimatorWithTransforms animatorWithTransforms in liveFeedAnimators)
 				SaveFrames(animatorWithTransforms.MovementFileName);
+
+			SaveLightingData();
 		}
 
 		bool HasAnyLightingChanges(LightingSequence lightingSequence)
@@ -676,7 +681,7 @@ namespace DHDM
 		private void SaveFrames(string movementFileName)
 		{
 			LiveFeedAnimator liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
-			
+
 			liveFeedAnimator.LiveFeedSequences.Clear();
 
 			bool firstTime = true;
@@ -710,13 +715,16 @@ namespace DHDM
 
 				lastLiveFeedSequence = liveFeedSequence;
 			}
-			
+
 			// Only saves for the active movement file. So if I make changes to two different movement files in
 			// the same edit session, I need to save twice - use the radio buttons to decide what I'm saving.
 			string fullPathToMovementFile = VideoAnimationManager.GetFullPathToMovementFile(movementFileName);
 			string serializedTransforms = Newtonsoft.Json.JsonConvert.SerializeObject(liveFeedAnimator.LiveFeedSequences, Newtonsoft.Json.Formatting.Indented);
 			System.IO.File.WriteAllText(fullPathToMovementFile, serializedTransforms);
+		}
 
+		private void SaveLightingData()
+		{
 			string fullPathToLightingFile = VideoAnimationManager.GetFullPathToLightsFile(SelectedSceneName);
 			if (HasAnyLightingChanges(LightingSequence))
 			{
@@ -729,7 +737,6 @@ namespace DHDM
 				System.Diagnostics.Debugger.Break();
 				// TODO: Delete the file!!!
 			}
-
 		}
 
 		LightingSequence LoadLightingSequence(string sceneName, int totalFrameCount)
@@ -795,6 +802,8 @@ namespace DHDM
 
 		Light GetLightFromId(string id)
 		{
+			if (LightingSequence == null)
+				return null;
 			return LightingSequence.Lights.Find(x => x.ID == id);
 		}
 
@@ -813,6 +822,8 @@ namespace DHDM
 
 		private static void SetLightFrame(Light light, FrmColorPicker colorPicker, int frameIndex)
 		{
+			if (light == null)
+				return;
 			while (frameIndex >= light.SequenceData.Count)
 				light.SequenceData.Add(new LightSequenceData());
 			light.SequenceData[frameIndex].Hue = (int)colorPicker.Hue;
@@ -863,7 +874,7 @@ namespace DHDM
 
 		private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
 		{
-			if (FrameIndex >= backFiles.Length - 1)
+			if (backFiles == null || FrameIndex >= backFiles.Length - 1)
 				return;
 			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
 			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
@@ -879,6 +890,12 @@ namespace DHDM
 		{
 			dragStarted = false;
 			UpdateLights();
+		}
+
+		private void CopyColors_Click(object sender, RoutedEventArgs e)
+		{
+			string colorStr = $"{leftLight.Color.AsHtml}\t{rightLight.Color.AsHtml}";
+			System.Windows.Clipboard.SetText(colorStr);
 		}
 	}
 }

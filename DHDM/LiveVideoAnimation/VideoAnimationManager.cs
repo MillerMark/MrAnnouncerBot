@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using Imaging;
 using ObsControl;
@@ -93,10 +94,69 @@ namespace DHDM
 			{
 				string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
 				LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
-				// TODO: We need a LightAnimator that is a lot like a LiveFeedAnimator
+				//log.Clear();
+				foreach (Light light in lightingSequence.Lights)
+				{
+					FrameAnimator frameAnimator = new FrameAnimator(light.SequenceData.Count);
+					frameAnimator.Data = light;
+					frameAnimator.AnimationComplete += FrameAnimator_AnimationComplete;
+					frameAnimator.RenderFrame += FrameAnimator_RenderLights;
+					frameAnimator.Start(startTime);
+					lightAnimators.Add(frameAnimator);
+				}
 			}
 
 			existingAnimationIsRunning = true;
+		}
+
+		static List<string> log = new List<string>();
+
+		private static void FrameAnimator_RenderLights(object sender, RenderFrameEventArgs ea)
+		{
+			if (sender is FrameAnimator frameAnimator && frameAnimator.Data is Light light)
+			{
+				if (frameAnimator.FrameIndex >= light.SequenceData.Count)
+				{
+					ea.ShouldStop = true;
+					return;
+				}
+
+				LightSequenceData lightData = light.SequenceData[frameAnimator.FrameIndex];
+				BluetoothLight bluetoothLight;
+
+				if (light.ID == BluetoothLights.Left_ID)
+				{
+					bluetoothLight = BluetoothLights.Left;
+					//log.Add($"{lightData.Duration}s: Hue {lightData.Hue} at {lightData.Lightness} lightness ({(DateTime.Now - frameAnimator.StartTime).TotalSeconds}s passed since start.");
+				}
+				else
+					bluetoothLight = BluetoothLights.Right;
+
+				
+				Task.Run(async () => await bluetoothLight.SetAsync(lightData.Hue, lightData.Saturation, lightData.Lightness) );
+				ea.Duration = lightData.Duration;
+			}
+		}
+
+		static List<FrameAnimator> lightAnimators = new List<FrameAnimator>();
+
+		private static void FrameAnimator_AnimationComplete(object sender, EventArgs e)
+		{
+			//string str = string.Join(Environment.NewLine, log.ToArray());
+			if (sender is FrameAnimator frameAnimator)
+			{
+				frameAnimator.AnimationComplete -= FrameAnimator_AnimationComplete;
+				frameAnimator.RenderFrame -= FrameAnimator_RenderLights;
+				if (lightAnimators.Contains(frameAnimator))
+					try
+					{
+						lightAnimators.Remove(frameAnimator);
+					}
+					catch
+					{
+						// TODO: why are we throwing here?
+					}
+			}
 		}
 
 		public static string GetFullPathToMovementFile(string movementFileName)
@@ -143,6 +203,21 @@ namespace DHDM
 				HubtasticBaseStation.ShowImageFront(null);
 				HubtasticBaseStation.ShowImageBack(null);
 			}
+
+			ChangeLightsBasedOnScene(sceneName);
+		}
+
+		static async void ChangeLightsBasedOnScene(string sceneName)
+		{
+			SceneLightData sceneLightData = AllSceneLightData.Get(sceneName);
+			if (sceneLightData == null)
+			{
+				await BluetoothLights.Left.SetAsync(0, 0, 0);
+				await BluetoothLights.Right.SetAsync(0, 0, 0);
+				return;
+			}
+
+			sceneLightData.SetLightsNow();
 		}
 
 		private static void AnimationEditorTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

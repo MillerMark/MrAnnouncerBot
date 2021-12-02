@@ -16,8 +16,9 @@ namespace DHDM
 			{
 				if (lastSequenceData == null || !lastSequenceData.SameColor(lightSequenceData))
 				{
-					result.SequenceData.Add(lightSequenceData);
-					lastSequenceData = lightSequenceData;
+					LightSequenceData clonedSequence = lightSequenceData.Clone();
+					result.SequenceData.Add(clonedSequence);
+					lastSequenceData = clonedSequence;
 				}
 				else 
 					lastSequenceData.Duration += lightSequenceData.Duration;

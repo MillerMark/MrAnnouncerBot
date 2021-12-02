@@ -20,9 +20,17 @@ namespace DHDM
 			
 		}
 
+		public LightSequenceData(int hue, int saturation, int lightness, double duration)
+		{
+			Hue = hue;
+			Saturation = saturation;
+			Lightness = lightness;
+			Duration = duration;
+		}
+
 		public bool SameColor(LightSequenceData lightSequenceData)
 		{
-			return Hue == lightSequenceData.Hue ||
+			return Hue == lightSequenceData.Hue &&
 						 Saturation == lightSequenceData.Saturation &&
 						 Lightness == lightSequenceData.Lightness;
 		}
@@ -40,6 +48,11 @@ namespace DHDM
 				totalDuration -= singleFrameDuration;
 			}
 			return result;
+		}
+
+		public LightSequenceData Clone()
+		{
+			return new LightSequenceData(Hue, Saturation, Lightness, Duration);
 		}
 	}
 }

@@ -1248,6 +1248,9 @@
 						<Button x:Name="btnReloadNPCs" MaxWidth="90" Margin="8" Click="btnReloadNPCs_Click" >
 							Reload NPCs
 						</Button>
+						<Button x:Name="btnReloadSceneLightData" MaxWidth="140" Margin="8" Click="btnReloadSceneLightData_Click" >
+							Reload Scene Light Data
+						</Button>
 					</StackPanel>
 					
 				</TabItem>

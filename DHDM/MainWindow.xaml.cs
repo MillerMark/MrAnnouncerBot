@@ -11651,6 +11651,11 @@ namespace DHDM
 		{
 			AllInGameCreatures.Invalidate();
 		}
+
+		private void btnReloadSceneLightData_Click(object sender, RoutedEventArgs e)
+		{
+			AllSceneLightData.Invalidate();
+		}
 	}
 }
 

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DHDM"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Live Animation Editor" Height="450" Width="1163" Closed="Window_Closed">
+        Title="Live Animation Editor" Height="450" Width="1270" Closed="Window_Closed">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"></RowDefinition>
@@ -17,6 +17,11 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
+        <Grid.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Copy Colors" Click="CopyColors_Click"/>
+            </ContextMenu>
+        </Grid.ContextMenu>
 		<Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
 		<Button x:Name="btnSaveAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="153, 0, 0, 0" Click="btnSaveAnimation_Click">
 			Save

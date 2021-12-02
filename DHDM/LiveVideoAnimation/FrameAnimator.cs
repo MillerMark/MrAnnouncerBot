@@ -73,6 +73,8 @@ namespace DHDM
 
 		public double StartTimeOffset { get; set; } = 0;
 		public double TimeStretchFactor { get; set; } = 1;
+		public object Data { get; set; }
+		public DateTime StartTime { get => startTime; }
 
 		void OnAnimationComplete(object sender, EventArgs e)
 		{

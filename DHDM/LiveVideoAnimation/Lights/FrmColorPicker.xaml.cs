@@ -101,6 +101,7 @@ namespace DHDM
 				SetValue(LightnessProperty, value);
 			}
 		}
+		public HueSatLight Color => new HueSatLight(Hue / 360.0, Saturation / 100.0, Lightness / 100.0);
 
 		private static void OnLightnessChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
