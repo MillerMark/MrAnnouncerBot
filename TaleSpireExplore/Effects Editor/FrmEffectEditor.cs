@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TaleSpireCore;
 using Newtonsoft.Json;
+using System.Reflection.Emit;
 
 namespace TaleSpireExplore
 {
@@ -49,7 +50,7 @@ namespace TaleSpireExplore
 			}
 			else
 				trvEffectHierarchy.Nodes.Add(node);
-			
+
 			node.GameObject = Talespire.Prefabs.Clone(prefabName, GetNewInstanceId());
 			if (parentNode != null)
 			{
@@ -1314,14 +1315,14 @@ namespace TaleSpireExplore
 		private void btnClothBase_Click(object sender, EventArgs e)
 		{
 			ExpandNode(trvEffectHierarchy.Nodes, "Character(Clone)|MoveableOffset|Container|_Visual|_Rotator|BaseAsset|BaseLoader|clothBase(Clone)");
-			
+
 			//`![](73D62174C7FCA6DC128DF9379D5AEC4C.png;;13,165,283,326)
 		}
 
 		private void btnJumpToAssetLoader_Click(object sender, EventArgs e)
 		{
 			//`![](0D786283B65E28618092EDE3E235DCC1.png;;13,165,279,392)
-			ExpandNode(trvEffectHierarchy.Nodes, 
+			ExpandNode(trvEffectHierarchy.Nodes,
 				"Character(Clone)|" +
 					"MoveableOffset|" +
 						"Container|" +
@@ -1339,30 +1340,111 @@ namespace TaleSpireExplore
 				while (toolStripMenuItem.DropDownItems.Count > 0)
 					toolStripMenuItem.DropDownItems.RemoveAt(0);
 				Talespire.Log.Warning($"DropDownOpening");
-				ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add("New Custom Menu Item!!!");
-				newItem.Click += newVariableToolStripMenuItem_Click;
+				ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add("No existing properties yet!!!");
+				newItem.Click += miNewSmartProperty_Click;
 			}
 		}
 
-		private void newVariableToolStripMenuItem_Click(object sender, EventArgs e)
+		void AddNewSmartProperty(TreeNode treeNode)
+		{
+			if (treeNode == null)
+			{
+				Talespire.Log.Error($"propertyNode is null!!!");
+				return;
+			}
+
+			if (trvEffectHierarchy.Nodes.Count > 0)
+			{
+				GameObjectNode topNode = GetTopNode();
+				if (topNode == null)
+				{
+					Talespire.Log.Error($"topNode is null!!!");
+					return;
+				}
+
+				SmartProperty newSmartProp = new SmartProperty("Color", "Color");
+				newSmartProp.PropertyPaths.Add($"{GetFullPropertyName(treeNode)}");
+				if (topNode.CompositeEffect == null)
+				{
+					Talespire.Log.Error($"topNode.CompositeEffect is null.");
+					return;
+				}
+				topNode.CompositeEffect.SmartProperties.Add(newSmartProp);
+			}
+		}
+
+		private GameObjectNode GetTopNode()
+		{
+			return trvEffectHierarchy.Nodes[0] as GameObjectNode;
+		}
+
+		private void miNewSmartProperty_Click(object sender, EventArgs e)
 		{
 			if (sender is ToolStripMenuItem toolStripMenuItem)
 			{
-				Talespire.Log.Warning($"Add new variable!");
-				ContextMenuStrip contextMenuStrip = toolStripMenuItem.Owner as ContextMenuStrip;
-				if (contextMenuStrip?.SourceControl is TreeView treeView)
-				{
-					Talespire.Log.Warning($"TreeView found!!! Selected node is {treeView.SelectedNode}");
-				}
+				Talespire.Log.Warning($"Add new Smart Property!");
+
+				AddNewSmartProperty(GetSelectedNode(toolStripMenuItem));
 			}
-			else
-				Talespire.Log.Warning($"sender is a {sender?.GetType().Name}!");
+		}
+
+		private static TreeNode GetSelectedNode(ToolStripMenuItem toolStripMenuItem)
+		{
+			ContextMenuStrip contextMenuStrip = toolStripMenuItem.Owner as ContextMenuStrip;
+			if (!(contextMenuStrip?.SourceControl is TreeView treeView))
+				return null;
+
+			//Talespire.Log.Warning($"TreeView found!!! Selected node is {treeView.SelectedNode}");
+
+			return treeView.SelectedNode;
 		}
 
 		private void chkIncludeNonPublicMembers_CheckedChanged(object sender, EventArgs e)
 		{
 			if (trvEffectHierarchy.SelectedNode is GameObjectNode gameObjectNode)
 				ShowProperties(gameObjectNode.GameObject);
+		}
+
+		private void miRename_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void miDisconnect_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void ctxProperties_Opening(object sender, CancelEventArgs e)
+		{
+			Talespire.Log.Warning($"ctxProperties_Opening...");
+			miUseWithExisting.Visible = true;
+			miNewSmartProperty.Visible = true;
+			miRename.Visible = false;
+			miDisconnect.Visible = false;
+			GameObjectNode topNode = GetTopNode();
+			if (topNode == null)
+			{
+				Talespire.Log.Error($"topNode is null!!!");
+				return;
+			}
+
+			TreeNode selectedNode = trvProperties.SelectedNode;
+			if (selectedNode != null)
+			{
+				bool isSmartProperty = topNode.CompositeEffect.HasSmartProperty(GetFullPropertyName(selectedNode));
+				if (isSmartProperty)
+				{
+					miUseWithExisting.Visible = false;
+					miNewSmartProperty.Visible = false;
+					miRename.Visible = true;
+					miDisconnect.Visible = true;
+				}
+				else
+					Talespire.Log.Error($"isSmartProperty is false!");
+			}
+			else
+				Talespire.Log.Error($"selectedNode is null!");
 		}
 	}
 }

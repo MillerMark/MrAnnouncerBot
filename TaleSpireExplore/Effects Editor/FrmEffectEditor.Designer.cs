@@ -50,9 +50,11 @@
 			this.lblPropertyName = new System.Windows.Forms.Label();
 			this.trvProperties = new System.Windows.Forms.TreeView();
 			this.ctxProperties = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.UseWithExistingVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miUseWithExisting = new System.Windows.Forms.ToolStripMenuItem();
 			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.newVariableToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.miNewSmartProperty = new System.Windows.Forms.ToolStripMenuItem();
+			this.miDisconnect = new System.Windows.Forms.ToolStripMenuItem();
+			this.miRename = new System.Windows.Forms.ToolStripMenuItem();
 			this.btnStopAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnStartAllParticleSystems = new System.Windows.Forms.Button();
 			this.btnAttackJanus = new System.Windows.Forms.Button();
@@ -274,32 +276,49 @@
 			// ctxProperties
 			// 
 			this.ctxProperties.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.UseWithExistingVariableToolStripMenuItem,
-            this.newVariableToolStripMenuItem1});
+            this.miUseWithExisting,
+            this.miNewSmartProperty,
+            this.miDisconnect,
+            this.miRename});
 			this.ctxProperties.Name = "ctxProperties";
-			this.ctxProperties.Size = new System.Drawing.Size(210, 48);
+			this.ctxProperties.Size = new System.Drawing.Size(210, 114);
+			this.ctxProperties.Opening += new System.ComponentModel.CancelEventHandler(this.ctxProperties_Opening);
 			// 
-			// UseWithExistingVariableToolStripMenuItem
+			// miUseWithExisting
 			// 
-			this.UseWithExistingVariableToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.miUseWithExisting.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dummyToolStripMenuItem});
-			this.UseWithExistingVariableToolStripMenuItem.Name = "UseWithExistingVariableToolStripMenuItem";
-			this.UseWithExistingVariableToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
-			this.UseWithExistingVariableToolStripMenuItem.Text = "Use With Existing Variable";
-			this.UseWithExistingVariableToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
+			this.miUseWithExisting.Name = "miUseWithExisting";
+			this.miUseWithExisting.Size = new System.Drawing.Size(209, 22);
+			this.miUseWithExisting.Text = "Use With Existing Variable";
+			this.miUseWithExisting.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
 			// 
 			// dummyToolStripMenuItem
 			// 
 			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
-			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.dummyToolStripMenuItem.Text = "Dummy";
 			// 
-			// newVariableToolStripMenuItem1
+			// miNewSmartProperty
 			// 
-			this.newVariableToolStripMenuItem1.Name = "newVariableToolStripMenuItem1";
-			this.newVariableToolStripMenuItem1.Size = new System.Drawing.Size(209, 22);
-			this.newVariableToolStripMenuItem1.Text = "New Variable...";
-			this.newVariableToolStripMenuItem1.Click += new System.EventHandler(this.newVariableToolStripMenuItem_Click);
+			this.miNewSmartProperty.Name = "miNewSmartProperty";
+			this.miNewSmartProperty.Size = new System.Drawing.Size(209, 22);
+			this.miNewSmartProperty.Text = "New Smart Property...";
+			this.miNewSmartProperty.Click += new System.EventHandler(this.miNewSmartProperty_Click);
+			// 
+			// miDisconnect
+			// 
+			this.miDisconnect.Name = "miDisconnect";
+			this.miDisconnect.Size = new System.Drawing.Size(209, 22);
+			this.miDisconnect.Text = "Disconnect this Property ";
+			this.miDisconnect.Click += new System.EventHandler(this.miDisconnect_Click);
+			// 
+			// miRename
+			// 
+			this.miRename.Name = "miRename";
+			this.miRename.Size = new System.Drawing.Size(209, 22);
+			this.miRename.Text = "Rename...";
+			this.miRename.Click += new System.EventHandler(this.miRename_Click);
 			// 
 			// btnStopAllParticleSystems
 			// 
@@ -650,9 +669,11 @@
 		private System.Windows.Forms.Button btnClothBase;
 		private System.Windows.Forms.ContextMenuStrip ctxProperties;
 		private System.Windows.Forms.Button btnJumpToAssetLoader;
-		private System.Windows.Forms.ToolStripMenuItem UseWithExistingVariableToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem newVariableToolStripMenuItem1;
+		private System.Windows.Forms.ToolStripMenuItem miUseWithExisting;
+		private System.Windows.Forms.ToolStripMenuItem miNewSmartProperty;
 		private System.Windows.Forms.ToolStripMenuItem dummyToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkIncludeNonPublicMembers;
+		private System.Windows.Forms.ToolStripMenuItem miDisconnect;
+		private System.Windows.Forms.ToolStripMenuItem miRename;
 	}
 }

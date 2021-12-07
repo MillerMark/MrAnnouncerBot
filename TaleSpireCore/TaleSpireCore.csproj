@@ -145,6 +145,7 @@
     <Compile Include="CompositeEffects\PropertyChangers\Core\PropertyModDetails.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\PropertyChangerManager.cs" />
     <Compile Include="CompositeEffects\PropertyChangers\PropertyTypeAttribute.cs" />
+    <Compile Include="CompositeEffects\SmartProperty.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
     <Compile Include="ConvertUtils.cs" />
     <Compile Include="Decompiles\AssetDb2.cs" />

@@ -10,7 +10,7 @@ namespace TaleSpireCore
 {
 	public static class TaleSpireClient
 	{
-		public const string TaleSpireMachineIpAddress = "192.168.1.130";
+		public const string TaleSpireMachineIpAddress = "192.168.1.146";
 
 		public static ApiResponse SendMessageToServer(string command, float num)
 		{

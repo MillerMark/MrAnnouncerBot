@@ -601,6 +601,10 @@ namespace TaleSpireCore
 					Log.Error($"handles not found!");
 					return;
 				}
+				else
+				{
+					Log.Debug($"Found {handles.Count} ruler handles!!!");
+				}
 				BuildWallSegments(effectName, spellId, wallLength, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotation, distanceBetweenWallEffectsFeet, handles);
 			}
 

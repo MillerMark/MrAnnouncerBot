@@ -55,6 +55,11 @@ namespace TaleSpireCore
 		/// </summary>
 		public List<CompositeEffect> Children { get; set; } = new List<CompositeEffect>();
 
+		/// <summary>
+		/// The list of SmartProperty elements created for this effect.
+		/// </summary>
+		public List<SmartProperty> SmartProperties { get; set; } = new List<SmartProperty>();
+
 
 		// TODO: Change Scripts to a more sophisticate class, to include property settings.
 
@@ -310,6 +315,22 @@ namespace TaleSpireCore
 			}
 			
 			objectsToRefresh.Clear();
+		}
+
+		public bool HasSmartProperty(string fullPropertyName)
+		{
+			foreach (SmartProperty smartProperty in SmartProperties)
+				if (smartProperty.PropertyPaths.Contains(fullPropertyName))
+					return true;
+
+			Talespire.Log.Debug($"Property Paths:");
+			foreach (SmartProperty smartProperty in SmartProperties)
+				foreach (string propertyPath in smartProperty.PropertyPaths)
+					Talespire.Log.Debug($"  {propertyPath}");
+
+			Talespire.Log.Debug("");
+
+			return false;
 		}
 	}
 }
