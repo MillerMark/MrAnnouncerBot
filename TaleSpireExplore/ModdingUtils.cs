@@ -976,17 +976,22 @@ namespace TaleSpireExplore
 		// This only needs to be called from update if you are using the socket API or MoveCharacter calls.
 		public static void OnUpdate()
 		{
+			SpawnCreatureIfNeeded();
+			UpdateMove();
+			UpdateSpeech();
+			UpdateCustomStatNames();
+			//UpdateSlab();
+			//GetSlabSize();
+		}
+
+		private static void SpawnCreatureIfNeeded()
+		{
 			if (spawnCreature != null)
 			{
 				CreatureManager.CreateAndAddNewCreature(spawnCreature.CreatureData, spawnCreaturePos, quaternion.identity);
 				spawnCreature.DeleteAsset();
 				spawnCreature = null;
 			}
-			UpdateMove();
-			UpdateSpeech();
-			UpdateCustomStatNames();
-			UpdateSlab();
-			GetSlabSize();
 		}
 
 		public static string RotateCamera(string rotation, string absolute)

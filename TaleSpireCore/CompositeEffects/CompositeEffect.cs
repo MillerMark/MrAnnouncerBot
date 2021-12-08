@@ -323,14 +323,48 @@ namespace TaleSpireCore
 				if (smartProperty.PropertyPaths.Contains(fullPropertyName))
 					return true;
 
-			Talespire.Log.Debug($"Property Paths:");
-			foreach (SmartProperty smartProperty in SmartProperties)
-				foreach (string propertyPath in smartProperty.PropertyPaths)
-					Talespire.Log.Debug($"  {propertyPath}");
+			//Talespire.Log.Debug($"Property Paths:");
+			//foreach (SmartProperty smartProperty in SmartProperties)
+			//	foreach (string propertyPath in smartProperty.PropertyPaths)
+			//		Talespire.Log.Debug($"  {propertyPath}");
 
-			Talespire.Log.Debug("");
+			//Talespire.Log.Debug("");
 
 			return false;
+		}
+
+		public SmartProperty GetSmartProperty(string fullPropertyPath)
+		{
+			if (fullPropertyPath == null)
+				return null;
+
+			foreach (SmartProperty smartProperty in SmartProperties)
+				if (smartProperty.PropertyPaths.Contains(fullPropertyPath))
+					return smartProperty;
+
+			return null;
+		}
+
+		public bool SmartPropertyNameExists(string newName)
+		{
+			return SmartProperties.Any(smartProperty => smartProperty.Name == newName);
+		}
+
+		public void DisconnectProperty(string fullPropertyPath)
+		{
+			if (fullPropertyPath == null)
+				return;
+
+			SmartProperty smartProperty = GetSmartProperty(fullPropertyPath);
+			if (smartProperty == null)
+				return;
+
+			smartProperty.PropertyPaths.Remove(fullPropertyPath);
+		}
+		
+		public SmartProperty GetSmartPropertyByName(string smartPropertyName)
+		{
+			return SmartProperties.FirstOrDefault(x => x.Name == smartPropertyName);
 		}
 	}
 }

@@ -281,7 +281,7 @@
             this.miDisconnect,
             this.miRename});
 			this.ctxProperties.Name = "ctxProperties";
-			this.ctxProperties.Size = new System.Drawing.Size(210, 114);
+			this.ctxProperties.Size = new System.Drawing.Size(260, 92);
 			this.ctxProperties.Opening += new System.ComponentModel.CancelEventHandler(this.ctxProperties_Opening);
 			// 
 			// miUseWithExisting
@@ -289,8 +289,8 @@
 			this.miUseWithExisting.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dummyToolStripMenuItem});
 			this.miUseWithExisting.Name = "miUseWithExisting";
-			this.miUseWithExisting.Size = new System.Drawing.Size(209, 22);
-			this.miUseWithExisting.Text = "Use With Existing Variable";
+			this.miUseWithExisting.Size = new System.Drawing.Size(259, 22);
+			this.miUseWithExisting.Text = "Connect to Existing Smart Property";
 			this.miUseWithExisting.DropDownOpening += new System.EventHandler(this.UseWithExistingVariableToolStripMenuItem_DropDownOpening);
 			// 
 			// dummyToolStripMenuItem
@@ -302,22 +302,22 @@
 			// miNewSmartProperty
 			// 
 			this.miNewSmartProperty.Name = "miNewSmartProperty";
-			this.miNewSmartProperty.Size = new System.Drawing.Size(209, 22);
+			this.miNewSmartProperty.Size = new System.Drawing.Size(263, 22);
 			this.miNewSmartProperty.Text = "New Smart Property...";
 			this.miNewSmartProperty.Click += new System.EventHandler(this.miNewSmartProperty_Click);
 			// 
 			// miDisconnect
 			// 
 			this.miDisconnect.Name = "miDisconnect";
-			this.miDisconnect.Size = new System.Drawing.Size(209, 22);
+			this.miDisconnect.Size = new System.Drawing.Size(263, 22);
 			this.miDisconnect.Text = "Disconnect this Property ";
 			this.miDisconnect.Click += new System.EventHandler(this.miDisconnect_Click);
 			// 
 			// miRename
 			// 
 			this.miRename.Name = "miRename";
-			this.miRename.Size = new System.Drawing.Size(209, 22);
-			this.miRename.Text = "Rename...";
+			this.miRename.Size = new System.Drawing.Size(259, 22);
+			this.miRename.Text = "Rename Smart Property...";
 			this.miRename.Click += new System.EventHandler(this.miRename_Click);
 			// 
 			// btnStopAllParticleSystems

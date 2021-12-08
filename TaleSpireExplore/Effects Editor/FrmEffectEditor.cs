@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using TaleSpireCore;
 using Newtonsoft.Json;
 using System.Reflection.Emit;
+using MultiMod.Shared;
 
 namespace TaleSpireExplore
 {
@@ -537,32 +538,40 @@ namespace TaleSpireExplore
 			ValueEditors.ValueChanged += AllValueEditors_ValueChanged;
 		}
 
+		string GetTypeFromNode(TreeNode treeNode)
+		{
+			string typeName = null;
+			if (treeNode is PropertyNode propertyNode)
+			{
+				typeName = propertyNode.ParentInstance?.GetType().Name;
+				if (typeName == null)
+					typeName = "(unknown type)";
+			}
+			else if (treeNode is MaterialColorPropertyNode materialColorPropertyNode)
+				typeName = "Color";
+
+			return typeName;
+		}
+
 		private void trvProperties_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			try
 			{
 				HideExistingEditors();
 
-				string typeName;
-
 				if (e.Node is PropertyNode propertyNode)
 				{
-					typeName = propertyNode.ParentInstance?.GetType().Name;
-					if (typeName == null)
-						typeName = "(unknown type)";
 					ShowValueEditor(propertyNode);
 				}
 				else if (e.Node is MaterialColorPropertyNode materialColorPropertyNode)
 				{
-					typeName = "Color";
 					ShowMaterialColorEditor(materialColorPropertyNode);
 				}
 				else
 					return;
 
+				string typeName = GetTypeFromNode(e.Node);
 				lblPropertyName.Text = $"{typeName}.{e.Node.Text}:";
-
-
 			}
 			catch (Exception ex)
 			{
@@ -638,7 +647,7 @@ namespace TaleSpireExplore
 					userControl.Visible = false;
 		}
 
-		string GetFullPropertyName(TreeNode node)
+		string GetFullPropertyPath(TreeNode node)
 		{
 			List<string> propNames = new List<string>();
 			while (node != null)
@@ -711,7 +720,7 @@ namespace TaleSpireExplore
 				if (propertyChanger != null)
 				{
 					Talespire.Log.Debug($"Found propertyChanger!!!");
-					propertyChanger.Name = GetFullPropertyName(trvProperties.SelectedNode);
+					propertyChanger.Name = GetFullPropertyPath(trvProperties.SelectedNode);
 					gameObjectNode.CompositeEffect.AddProperty(propertyChanger);
 				}
 				CreateJson();
@@ -1314,7 +1323,7 @@ namespace TaleSpireExplore
 
 		private void btnClothBase_Click(object sender, EventArgs e)
 		{
-			ExpandNode(trvEffectHierarchy.Nodes, 
+			ExpandNode(trvEffectHierarchy.Nodes,
 				"Character(Clone)|" +
 					"MoveableOffset|" +
 						"Container|" +
@@ -1348,8 +1357,37 @@ namespace TaleSpireExplore
 				while (toolStripMenuItem.DropDownItems.Count > 0)
 					toolStripMenuItem.DropDownItems.RemoveAt(0);
 				Talespire.Log.Warning($"DropDownOpening");
-				ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add("No existing properties yet!!!");
-				newItem.Click += miNewSmartProperty_Click;
+				List<SmartProperty> allSmartProperties = ActiveCompositeEffect?.SmartProperties;
+				if (allSmartProperties == null || allSmartProperties.Count == 0)
+				{
+					ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add("No existing smart properties yet!!!");
+					newItem.Enabled = false;
+					//newItem.Click += miNewSmartProperty_Click;
+				}
+				else
+					foreach (SmartProperty smartProperty in allSmartProperties)
+					{
+						ToolStripItem newItem = toolStripMenuItem.DropDownItems.Add(smartProperty.Name);
+						newItem.Click += ConnectToSmartProperty_Click;
+					}
+			}
+		}
+
+		private void ConnectToSmartProperty_Click(object sender, EventArgs e)
+		{
+			if (sender is ToolStripItem toolStripItem)
+			{
+				string smartPropertyName = toolStripItem.Text;
+				Talespire.Log.Warning($"Connect to Smart Property {smartPropertyName}...");
+				SmartProperty smartProperty = ActiveCompositeEffect?.GetSmartPropertyByName(smartPropertyName);
+				if (smartProperty == null)
+				{
+					Talespire.Log.Error($"Smart property \"{smartProperty}\" not found!");
+					return;
+				}
+
+				smartProperty.PropertyPaths.Add(ActiveNodePropertyPath);
+				CreateJson();
 			}
 		}
 
@@ -1370,8 +1408,19 @@ namespace TaleSpireExplore
 					return;
 				}
 
-				SmartProperty newSmartProp = new SmartProperty("Color", "Color");
-				newSmartProp.PropertyPaths.Add($"{GetFullPropertyName(treeNode)}");
+				string typeName = GetTypeFromNode(treeNode);
+
+				string currentName = "SmartProperty";
+				string newName = FrmNameEffect.GetName(this, "Name Smart Property", currentName);
+
+				if (topNode.CompositeEffect.SmartPropertyNameExists(newName))
+				{
+					MessageBox.Show($"There is already a Smart Property named \"{newName}\". Use the Connect menu item instead.", "Error");
+					return;
+				}
+
+				SmartProperty newSmartProp = new SmartProperty(newName, typeName);
+				newSmartProp.PropertyPaths.Add($"{GetFullPropertyPath(treeNode)}");
 				if (topNode.CompositeEffect == null)
 				{
 					Talespire.Log.Error($"topNode.CompositeEffect is null.");
@@ -1393,6 +1442,8 @@ namespace TaleSpireExplore
 				Talespire.Log.Warning($"Add new Smart Property!");
 
 				AddNewSmartProperty(GetSelectedNode(toolStripMenuItem));
+
+				CreateJson();
 			}
 		}
 
@@ -1413,14 +1464,62 @@ namespace TaleSpireExplore
 				ShowProperties(gameObjectNode.GameObject);
 		}
 
-		private void miRename_Click(object sender, EventArgs e)
-		{
 
+		public string ActiveNodePropertyPath
+		{
+			get
+			{
+				TreeNode selectedNode = trvProperties.SelectedNode;
+				if (selectedNode == null)
+					return null;
+
+				return GetFullPropertyPath(selectedNode);
+			}
 		}
 
-		private void miDisconnect_Click(object sender, EventArgs e)
+		public SmartProperty ActiveSmartProperty
 		{
+			get
+			{
+				return ActiveCompositeEffect?.GetSmartProperty(ActiveNodePropertyPath);
+			}
+		}
 
+		public CompositeEffect ActiveCompositeEffect
+		{
+			get
+			{
+				GameObjectNode topNode = GetTopNode();
+				if (topNode == null)
+					return null;
+
+				return topNode.CompositeEffect;
+			}
+		}
+
+
+		private void miRename_Click(object sender, EventArgs e)
+		{
+			if (ActiveCompositeEffect == null)
+				return;
+
+			SmartProperty smartProperty = ActiveSmartProperty;
+			if (smartProperty == null)
+				return;
+
+			string currentName = smartProperty.Name;
+			string newName = FrmNameEffect.GetName(this, "Rename Smart Property", currentName);
+			if (currentName == newName)
+				return;
+
+			if (ActiveCompositeEffect.SmartPropertyNameExists(newName))
+			{
+				MessageBox.Show($"There is already a Smart Property named \"{newName}\".", "Error");
+				return;
+			}
+
+			smartProperty.Name = newName;
+			CreateJson();
 		}
 
 		private void ctxProperties_Opening(object sender, CancelEventArgs e)
@@ -1437,22 +1536,20 @@ namespace TaleSpireExplore
 				return;
 			}
 
-			TreeNode selectedNode = trvProperties.SelectedNode;
-			if (selectedNode != null)
+			bool isSmartProperty = ActiveSmartProperty != null;
+			if (isSmartProperty)
 			{
-				bool isSmartProperty = topNode.CompositeEffect.HasSmartProperty(GetFullPropertyName(selectedNode));
-				if (isSmartProperty)
-				{
-					miUseWithExisting.Visible = false;
-					miNewSmartProperty.Visible = false;
-					miRename.Visible = true;
-					miDisconnect.Visible = true;
-				}
-				else
-					Talespire.Log.Error($"isSmartProperty is false!");
+				miUseWithExisting.Visible = false;
+				miNewSmartProperty.Visible = false;
+				miRename.Visible = true;
+				miDisconnect.Visible = true;
 			}
-			else
-				Talespire.Log.Error($"selectedNode is null!");
+		}
+
+		private void miDisconnect_Click(object sender, EventArgs e)
+		{
+			ActiveCompositeEffect?.DisconnectProperty(ActiveNodePropertyPath);
+			CreateJson();
 		}
 	}
 }
