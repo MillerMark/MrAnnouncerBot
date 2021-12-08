@@ -9,7 +9,7 @@ namespace DHDM
 {
 	public static class SpellManager
 	{
-		static List<SpellEffectTimer> timers = new List<SpellEffectTimer>();
+		readonly static List<SpellEffectTimer> timers = new();
 		public static string nextSpellIdWeAreCasting = null;
 		public static string activeSpellName = null;
 
@@ -34,7 +34,7 @@ namespace DHDM
 
 		private static List<string> GetTargets(ProjectileEffectEventArgs ea)
 		{
-			List<string> targets = new List<string>();
+			List<string> targets = new();
 			if (Targeting.ActualKind.HasFlag(TargetKind.Volume) || Targeting.ActualKind.HasFlag(TargetKind.Location))
 				targets.Add(Targeting.TargetPoint.GetXyzStr());  // Adding a vector to the target list. Might add something like "(0, 0, 0) Square20"
 
@@ -118,7 +118,7 @@ namespace DHDM
 			else if (effectLocation == EffectLocation.LastTargetPosition || effectLocation == EffectLocation.MoveableTarget)
 			{
 				Vector targetPoint = Targeting.TargetPoint;
-				VectorDto vector = new VectorDto((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
+				VectorDto vector = new((float)targetPoint.x, (float)targetPoint.y, (float)targetPoint.z);
 				bool isMoveable = effectLocation == EffectLocation.MoveableTarget;
 				TaleSpireClient.PlayEffectAtPosition(effectName, spellId, vector, lifeTime, enlargeTime, secondsDelayStart, shrinkTime, rotationDegrees, isMoveable);
 			}
@@ -141,7 +141,7 @@ namespace DHDM
 
 		private static void CreateClearSpellTimer(string spellId, float secondsDelayStart, float shrinkTime)
 		{
-			SpellEffectTimer timer = new SpellEffectTimer();
+			SpellEffectTimer timer = new();
 			timer.Elapsed += ClearSpellTimer_Elapsed;
 			timer.SpellId = spellId;
 			timer.ShrinkTime = shrinkTime;
@@ -152,7 +152,7 @@ namespace DHDM
 
 		private static void CreateClearAttachedSpellTimer(string spellId, string taleSpireId, float secondsDelayStart)
 		{
-			SpellEffectTimer timer = new SpellEffectTimer();
+			SpellEffectTimer timer = new();
 			timer.Elapsed += ClearAttachedSpellTimer_Elapsed;
 			timer.SpellId = spellId;
 			timer.TaleSpireId = taleSpireId;
@@ -163,7 +163,7 @@ namespace DHDM
 
 		private static void ClearSpellTimer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			if (!(sender is SpellEffectTimer spellTimer))
+			if (sender is not SpellEffectTimer spellTimer)
 				return;
 
 			spellTimer.Stop();
@@ -173,7 +173,7 @@ namespace DHDM
 
 		private static void ClearAttachedSpellTimer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			if (!(sender is SpellEffectTimer spellTimer))
+			if (sender is not SpellEffectTimer spellTimer)
 				return;
 
 			spellTimer.Stop();

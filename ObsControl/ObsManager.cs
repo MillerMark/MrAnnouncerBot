@@ -60,7 +60,7 @@ namespace ObsControl
 			{
 				obsWebsocket.SetSourceRender(sourceName, visible, sceneName);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 
 			}
@@ -183,7 +183,7 @@ namespace ObsControl
 				obsWebsocket.SetSceneItemTransform(e.ItemName, (float)rotation, flipMultiplier * (float)scale, (float)scale, e.SceneName);
 
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				
 			}

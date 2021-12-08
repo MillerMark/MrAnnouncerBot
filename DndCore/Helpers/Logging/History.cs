@@ -48,7 +48,7 @@ namespace DndCore
 					}
 				}
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				
 			}

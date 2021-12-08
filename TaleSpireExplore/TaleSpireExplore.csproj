@@ -329,6 +329,12 @@
     <Compile Include="Effects Editor\FrmSelectItem.Designer.cs">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="PersistentEffects\UI\FrmNameEffect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmNameEffect.Designer.cs">
+      <DependentUpon>FrmNameEffect.cs</DependentUpon>
+    </Compile>
     <Compile Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -341,6 +347,12 @@
     <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
     <Compile Include="PersistentEffects\PersistentEffectsManager.cs" />
     <Compile Include="PersistentEffects\UI\EffectProperty.cs" />
+    <Compile Include="PersistentEffects\UI\FrmEffectList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmEffectList.Designer.cs">
+      <DependentUpon>FrmEffectList.cs</DependentUpon>
+    </Compile>
     <Compile Include="PersistentEffects\UI\FrmPropertyList.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -414,8 +426,14 @@
     <EmbeddedResource Include="Effects Editor\FrmSelectItem.resx">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmNameEffect.resx">
+      <DependentUpon>FrmNameEffect.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.resx">
       <DependentUpon>FrmPersistentEffectPropertyEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmEffectList.resx">
+      <DependentUpon>FrmEffectList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PersistentEffects\UI\FrmPropertyList.resx">
       <DependentUpon>FrmPropertyList.cs</DependentUpon>

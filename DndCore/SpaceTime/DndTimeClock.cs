@@ -310,7 +310,7 @@ namespace DndCore
 			{
 				alarm.FireAlarm(this);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				// TODO: Fire an OnException event handler....
 			}

@@ -1685,8 +1685,6 @@ namespace DHDM
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden SAVE threshold");
 		}
 
-		object lockObj;
-
 		bool IsPlayer(string userId)
 		{
 			const string karen = "240735151";
@@ -1928,7 +1926,7 @@ namespace DHDM
 			{
 				commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient, ActivePlayer);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 
 			}
@@ -7396,12 +7394,12 @@ namespace DHDM
 						dungeonMasterClient.JoinChannel(channel);
 						dungeonMasterClient.SendMessage(channel, message);
 					}
-					catch (Exception ex)
+					catch //(Exception ex)
 					{
 
 					}
 				}
-				catch (Exception ex)
+				catch //(Exception ex)
 				{
 
 				}
@@ -7592,7 +7590,7 @@ namespace DHDM
 				TestCastSpell(activeEventData.ParentGroup.Name);
 				UnleashTheNextRoll();
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				System.Diagnostics.Debugger.Break();
 			}

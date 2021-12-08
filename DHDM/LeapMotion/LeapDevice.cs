@@ -108,7 +108,7 @@ namespace DHDM
 				return skeletalData2d.TrackableEffectHueShiftRight;
 		}
 
-		async void UpdateLights()
+		void UpdateLights()
 		{
 			if (DateTime.Now - LastLightUpdateTime < TimeSpan.FromMilliseconds(MinTimeBetweenUpdatesMs))
 				return;

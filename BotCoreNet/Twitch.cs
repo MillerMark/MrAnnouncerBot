@@ -42,7 +42,7 @@ namespace BotCore
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
 				HookEvents(CodeRushedClient);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				System.Diagnostics.Debugger.Break();
 			}
@@ -56,7 +56,7 @@ namespace BotCore
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
 				HookEvents(DroneCommandsClient);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				System.Diagnostics.Debugger.Break();
 			}
@@ -82,7 +82,7 @@ namespace BotCore
 				client.Connect();
 				return client;
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				return null;
 			}
@@ -290,7 +290,7 @@ namespace BotCore
 				// TODO: Maybe give up on ParseExact...
 				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				Debugger.Break();
 				timeSpan = TimeSpan.FromSeconds(1);

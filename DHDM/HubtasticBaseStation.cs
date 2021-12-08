@@ -49,7 +49,7 @@ namespace DHDM
 				QuestionAnswerMap answerMap = JsonConvert.DeserializeObject<QuestionAnswerMap>(response);
 				OnReceivedInGameResponse(null, new QuestionAnswerMapEventArgs(answerMap));
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				
 			}

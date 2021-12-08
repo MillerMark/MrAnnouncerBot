@@ -31,5 +31,18 @@ namespace TaleSpireExplore
 			Talespire.Log.Error($"GetTaleSpireTopRight - Could not find TaleSpire window!!!");
 			return Point.Empty;
 		}
+
+		public static Point GetTaleSpireTopLeft()
+		{
+			IntPtr hWnd = GetTaleSpire();
+
+			if (hWnd != IntPtr.Zero)
+			{
+				Native.GetWindowRect(hWnd, out RECT lpRect);
+				return new Point(lpRect.Left, lpRect.Top);
+			}
+			Talespire.Log.Error($"GetTaleSpireTopLeft - Could not find TaleSpire window!!!");
+			return Point.Empty;
+		}
 	}
 }

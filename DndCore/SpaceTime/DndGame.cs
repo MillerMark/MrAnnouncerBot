@@ -15,7 +15,7 @@ namespace DndCore
 			ActivePlayerChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		List<Creature> allCreatures;
+		//List<Creature> allCreatures;
 		public const string STR_EndSpell = "EndSpell:";
 
 		public static DndGame Instance

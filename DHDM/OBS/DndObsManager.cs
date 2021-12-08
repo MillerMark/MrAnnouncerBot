@@ -99,7 +99,7 @@ namespace DHDM
 					return currentScene.Name;
 				return DndObsManager.STR_PlayerScene;
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				return DndObsManager.STR_PlayerScene;
 			}

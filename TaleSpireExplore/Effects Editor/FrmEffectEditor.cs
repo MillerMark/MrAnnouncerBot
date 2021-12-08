@@ -1314,7 +1314,15 @@ namespace TaleSpireExplore
 
 		private void btnClothBase_Click(object sender, EventArgs e)
 		{
-			ExpandNode(trvEffectHierarchy.Nodes, "Character(Clone)|MoveableOffset|Container|_Visual|_Rotator|BaseAsset|BaseLoader|clothBase(Clone)");
+			ExpandNode(trvEffectHierarchy.Nodes, 
+				"Character(Clone)|" +
+					"MoveableOffset|" +
+						"Container|" +
+							"_Visual|" +
+								"_Rotator|" +
+									"BaseAsset|" +
+										"BaseLoader|" +
+											"clothBase(Clone)");
 
 			//`![](73D62174C7FCA6DC128DF9379D5AEC4C.png;;13,165,283,326)
 		}

@@ -65,7 +65,7 @@ namespace AvalonEdit
 
 				return completionWindow;
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				return null;
 			}

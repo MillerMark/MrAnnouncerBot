@@ -106,7 +106,7 @@ namespace DHDM
 			{
 				ObsManager.SetSourceRender(sourceName, visible, sceneName);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				
 			}

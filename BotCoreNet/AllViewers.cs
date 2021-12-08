@@ -129,7 +129,7 @@ namespace BotCore
 				User user = await Twitch.GetUser(userName);
 				CheckViewer(user);
 			}
-			catch (Exception ex)
+			catch //(Exception ex)
 			{
 				//Debugger.Break();
 			}
