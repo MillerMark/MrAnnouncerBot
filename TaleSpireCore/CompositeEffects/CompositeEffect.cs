@@ -186,6 +186,8 @@ namespace TaleSpireCore
 			return gameObject;
 		}
 
+		static Dictionary<GameObject, CompositeEffect> compositeEffectMap = new Dictionary<GameObject, CompositeEffect>();
+
 		[Browsable(false)]
 		public GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
@@ -270,7 +272,17 @@ namespace TaleSpireCore
 					else
 						Talespire.Log.Error($"nestedEffectDto == null!");
 
+			if (instance != null)
+				compositeEffectMap[instance] = this;
+
+			// TODO: Worried about a slow memory leak here. If we can hook a unity event for when GOs are destroyed, we could plug the leak by removing those elements from compositeEffectMap.
+
 			return instance;
+		}
+
+		public static CompositeEffect GetFromGameObject(GameObject gameObject)
+		{
+			return compositeEffectMap.ContainsKey(gameObject) ? compositeEffectMap[gameObject] : null;
 		}
 
 		public static GameObject CreateKnownEffect(string effectName, string instanceId = null)
@@ -282,9 +294,11 @@ namespace TaleSpireCore
 				EffectParameters.ApplyAfterCreation(result, parameters);
 				return result;
 			}
+			else
+				Talespire.Log.Error($"KnownEffectsBuilder == null!!!");
 			return null;
 		}
-		//
+		
 		public static CompositeEffect CreateFrom(string json, string instanceId = null)
 		{
 			CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);

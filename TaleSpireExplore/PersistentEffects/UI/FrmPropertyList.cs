@@ -76,6 +76,7 @@ namespace TaleSpireExplore
 								if (persistentEffect != null)
 								{
 									Talespire.Log.Warning($"Properties[{effectProperty.Path}] = {value}!!!");
+									// TODO: Change this to be indexed by the property NAME, not the path.
 									persistentEffect.Properties[effectProperty.Path] = value.ToString();
 									Talespire.Log.Debug($"Mini.SavePersistentEffect();");
 									Mini.SavePersistentEffect(persistentEffect);

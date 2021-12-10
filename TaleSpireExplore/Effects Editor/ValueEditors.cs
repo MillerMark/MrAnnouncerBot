@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using TaleSpireCore;
 
 namespace TaleSpireExplore
 {
@@ -60,7 +61,16 @@ namespace TaleSpireExplore
 
 		public static List<IValueEditor> GetAll(string key)
 		{
-			return allEditors[key].Editors.Values.ToList();
+			try
+			{
+				if (allEditors.ContainsKey(key))
+					return allEditors[key].Editors.Values.ToList();
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex, $"{nameof(GetAll)}");
+			}
+			return null;
 		}
 
 		public static IValueEditor Get(string key, Type type)

@@ -40,9 +40,14 @@ namespace TaleSpireExplore
 
 		public static GameObject Create(string effectName, string instanceId = null)
 		{
+			Talespire.Log.Debug($"KnownEffects.Create(\"{effectName}\")");
 			string targetingSphereJson = Get(effectName)?.Effect;
 			if (targetingSphereJson == null)
+			{
+				Talespire.Log.Error($"targetingSphereJson == null");
 				return null;
+			}
+
 			Talespire.GameObjects.InvalidateFound();
 			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
 			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);

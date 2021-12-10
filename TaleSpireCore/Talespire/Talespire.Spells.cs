@@ -275,10 +275,17 @@ namespace TaleSpireCore
 				}
 
 				string prefabName = Effects.GetIndividualEffectName(EffectParameters.GetEffectNameOnly(effectName));
+				Log.Debug($"GetEffect() - prefabName = \"{prefabName}\"");
 				if (Prefabs.Has(prefabName))
+				{
+					Log.Debug($"Cloning...");
 					result = Prefabs.Clone(effectName);
+				}
 				else
+				{
+					Log.Debug($"CompositeEffect.CreateKnownEffect(\"{effectName}\")");
 					result = CompositeEffect.CreateKnownEffect(effectName);
+				}
 
 				PrepareEffect(result);
 				return result;

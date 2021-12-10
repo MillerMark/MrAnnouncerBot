@@ -77,7 +77,7 @@ namespace TaleSpireCore
 		/// <summary>
 		/// Gets the "Attached" GameObject holding persistent effects, if any on the specified creature.
 		/// </summary>
-		public static GameObject GetAttachedGameObject(this CreatureBoardAsset creatureBoardAsset)
+		public static GameObject GetAttachedParentGameObject(this CreatureBoardAsset creatureBoardAsset)
 		{
 			GameObject attachedNode = null;
 			GameObject assetLoader = creatureBoardAsset.GetAssetLoader();

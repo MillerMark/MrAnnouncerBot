@@ -325,7 +325,7 @@ namespace TaleSpireCore
 
 							persistentEffect = creatureAsset.GetPersistentEffect();
 							GameObject effectOrb = GetEffectOrb(creatureAsset);
-							GameObject attachedNode = creatureAsset.GetAttachedGameObject();
+							GameObject attachedNode = creatureAsset.GetAttachedParentGameObject();
 							if (attachedNode != null)
 							{
 								persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
@@ -378,6 +378,7 @@ namespace TaleSpireCore
 					attachedNode.transform.localEulerAngles = new Vector3(0, 0, 0);
 
 					Log.Warning($"miniName is {miniName}");
+					// TODO: Fix the naming issue.
 
 					//if (string.IsNullOrWhiteSpace(miniName))
 					//{

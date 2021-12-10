@@ -17,14 +17,13 @@ namespace TaleSpireExplore
 			InitializeComponent();
 		}
 
-		public static string GetName(Form parent, string caption, string currentName)
+		public static string GetName(Form owner, string caption, string currentName)
 		{
 			FrmNameEffect frmNameEffect = new FrmNameEffect();
 			frmNameEffect.tbxPropertyName.Text = currentName;
-			frmNameEffect.Parent = parent;
 			frmNameEffect.Text = caption;
 
-			if (frmNameEffect.ShowDialog() == DialogResult.OK)
+			if (frmNameEffect.ShowDialog(owner) == DialogResult.OK)
 				return frmNameEffect.tbxPropertyName.Text;
 
 			return currentName;

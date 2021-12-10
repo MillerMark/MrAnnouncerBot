@@ -220,8 +220,8 @@ namespace TaleSpireExplore
 			Logger.LogInfo("In Awake for SocketAPI Plug-in");
 			UnityEngine.Debug.Log("SocketAPI Plug-in loaded");
 			ModdingUtils.Initialize(this, this.Logger, true);
-
-			// TODO: Remove SceneManager.sceneLoaded event and the SceneManager_sceneLoaded handler when we have the explorer driver by commands.
+			KnownEffects.Invalidate();  // References the KnownEffects class, which triggers its static constructor, which registers our KnownEffectsBuilder before we load any scenes.
+																	// TODO: Remove SceneManager.sceneLoaded event and the SceneManager_sceneLoaded handler when we have the explorer driver by commands.
 			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 			CreatureManager.OnLineOfSightUpdated += CreatureManager_OnLineOfSightUpdated;
 		}
@@ -305,7 +305,6 @@ namespace TaleSpireExplore
 		public static void LoadKnownEffects()
 		{
 			Talespire.Log.Debug($"Loading Known Effects...");
-			KnownEffects.Invalidate();
 			SetTargetingSphere();
 			SetTargetingSquare();
 			SetTargetingCylinder();
@@ -322,6 +321,7 @@ namespace TaleSpireExplore
 			}
 			TargetingSphere.SetTargetingEffect(targetingSphereJson);
 		}
+
 		private static void SetTargetingCylinder()
 		{
 			string targetingCylinderJson = KnownEffects.Get("TargetingCylinder")?.Effect;

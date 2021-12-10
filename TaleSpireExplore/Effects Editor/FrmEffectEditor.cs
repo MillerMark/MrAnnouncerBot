@@ -641,10 +641,19 @@ namespace TaleSpireExplore
 
 		private void HideExistingEditors()
 		{
-			noneEditor.Visible = false;
-			foreach (IValueEditor valueEditor in ValueEditors.GetAll(STR_EffectEditorKey))
-				if (valueEditor is UserControl userControl)
-					userControl.Visible = false;
+			try
+			{
+				noneEditor.Visible = false;
+				List<IValueEditor> valueEditors = ValueEditors.GetAll(STR_EffectEditorKey);
+				if (valueEditors != null)
+					foreach (IValueEditor valueEditor in valueEditors)
+						if (valueEditor is UserControl userControl)
+							userControl.Visible = false;
+			}
+			catch (Exception ex)
+			{
+				Talespire.Log.Exception(ex, nameof(HideExistingEditors));
+			}
 		}
 
 		string GetFullPropertyPath(TreeNode node)
@@ -1393,40 +1402,57 @@ namespace TaleSpireExplore
 
 		void AddNewSmartProperty(TreeNode treeNode)
 		{
-			if (treeNode == null)
+			/* 
+			 [Error  :      Mark] ArgumentException in AddNewSmartProperty - "Cannot add a top level control to a control.
+Parameter name: value"
+[Warning:      Mark]   at System.Windows.Forms.Control+ControlCollection.Add (System.Windows.Forms.Control value) [0x0004e] in <73410c649db2499885382ad2ba89fba1>:0
+  at System.Windows.Forms.Control.set_Parent (System.Windows.Forms.Control value) [0x0003a] in <73410c649db2499885382ad2ba89fba1>:0
+  at (wrapper remoting-invoke-with-check) System.Windows.Forms.Control.set_Parent(System.Windows.Forms.Control)
+  at TaleSpireExplore.FrmNameEffect.GetName (System.Windows.Forms.Form parent, System.String caption, System.String currentName) [0x00014] in <ff1f86d0f5df47eb81402be562fbd383>:0
+  at TaleSpireExplore.FrmEffectEditor.AddNewSmartProperty (System.Windows.Forms.TreeNode treeNode) [0x00067] in <ff1f86d0f5df47eb81402be562fbd383>:0
+			
+			 */
+			try
 			{
-				Talespire.Log.Error($"propertyNode is null!!!");
-				return;
+				if (treeNode == null)
+				{
+					Talespire.Log.Error($"propertyNode is null!!!");
+					return;
+				}
+
+				if (trvEffectHierarchy.Nodes.Count > 0)
+				{
+					GameObjectNode topNode = GetTopNode();
+					if (topNode == null)
+					{
+						Talespire.Log.Error($"topNode is null!!!");
+						return;
+					}
+
+					string typeName = GetTypeFromNode(treeNode);
+
+					string currentName = "SmartProperty";
+					string newName = FrmNameEffect.GetName(this, "Name Smart Property", currentName);
+
+					if (topNode.CompositeEffect.SmartPropertyNameExists(newName))
+					{
+						MessageBox.Show($"There is already a Smart Property named \"{newName}\". Use the Connect menu item instead.", "Error");
+						return;
+					}
+
+					SmartProperty newSmartProp = new SmartProperty(newName, typeName);
+					newSmartProp.PropertyPaths.Add($"{GetFullPropertyPath(treeNode)}");
+					if (topNode.CompositeEffect == null)
+					{
+						Talespire.Log.Error($"topNode.CompositeEffect is null.");
+						return;
+					}
+					topNode.CompositeEffect.SmartProperties.Add(newSmartProp);
+				}
 			}
-
-			if (trvEffectHierarchy.Nodes.Count > 0)
+			catch (Exception ex)
 			{
-				GameObjectNode topNode = GetTopNode();
-				if (topNode == null)
-				{
-					Talespire.Log.Error($"topNode is null!!!");
-					return;
-				}
-
-				string typeName = GetTypeFromNode(treeNode);
-
-				string currentName = "SmartProperty";
-				string newName = FrmNameEffect.GetName(this, "Name Smart Property", currentName);
-
-				if (topNode.CompositeEffect.SmartPropertyNameExists(newName))
-				{
-					MessageBox.Show($"There is already a Smart Property named \"{newName}\". Use the Connect menu item instead.", "Error");
-					return;
-				}
-
-				SmartProperty newSmartProp = new SmartProperty(newName, typeName);
-				newSmartProp.PropertyPaths.Add($"{GetFullPropertyPath(treeNode)}");
-				if (topNode.CompositeEffect == null)
-				{
-					Talespire.Log.Error($"topNode.CompositeEffect is null.");
-					return;
-				}
-				topNode.CompositeEffect.SmartProperties.Add(newSmartProp);
+				Talespire.Log.Exception(ex, nameof(AddNewSmartProperty));
 			}
 		}
 

@@ -36,7 +36,6 @@ namespace TaleSpireCore
 							if (knownPropertyChangers[key] == null)
 								Talespire.Log.Error($"knownPropertyChangers[{key.Name}] == null!!!");
 						}
-						
 					}
 				}
 			}
@@ -48,6 +47,5 @@ namespace TaleSpireCore
 				Talespire.Log.Error($"!knownPropertyChangers.ContainsKey(type)");
 			return knownPropertyChangers[type];
 		}
-
 	}
 }

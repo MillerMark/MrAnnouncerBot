@@ -1,6 +1,7 @@
 ﻿// CreatureManager.SetCreatureExplicitHideState(creatureGuid, hideState);
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Bounce.Unmanaged;
 using UnityEngine;
 using TaleSpireCore;
@@ -214,12 +215,37 @@ namespace TaleSpireExplore
 				HidePersistentEffectUI();
 			
 			frmPropertyList = new FrmPropertyList();
-			frmPropertyList.Instance = mini.GetAttachedGameObject();
+			GameObject parentForAttachedObjects = mini.GetAttachedParentGameObject();
+			IEnumerable<Transform> children = parentForAttachedObjects.transform.Children();
+			frmPropertyList.Instance = parentForAttachedObjects;
+
+			CompositeEffect originalCompositeEffect = null;
+			foreach (Transform child in children)
+			{
+				originalCompositeEffect = CompositeEffect.GetFromGameObject(child.gameObject);
+				if (originalCompositeEffect != null)
+				{
+					Talespire.Log.Warning($"We found the CompositeEffect!!!");
+					frmPropertyList.Instance = child.gameObject;
+					break;
+				}
+			}
+
 			frmPropertyList.Mini = mini;
 			frmPropertyList.ClearProperties();
 			frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
 			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngles");
 			frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
+
+			if (originalCompositeEffect == null)
+				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
+			else // Add SmartProperties (which we can get from the Composite).
+				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
+				{
+					// TODO: Get the correct type, support multiple linked properties...
+					frmPropertyList.AddProperty(smartProperty.Name, typeof(Color), smartProperty.PropertyPaths.FirstOrDefault());
+				}
+
 
 			PersistentEffect persistentEffect = mini.GetPersistentEffect();
 			// TODO: Use persistentEffect to fill in the rest of the properties we want change.
@@ -252,22 +278,21 @@ namespace TaleSpireExplore
 			Talespire.PersistentEffects.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationLocked && ea.CreatureAsset.IsVisible);
 			ea.PersistentEffect.Initialize(ea.CreatureAsset);
 			foreach (string propertyPath in ea.PersistentEffect.Properties.Keys)
+				ModifyProperty(ea, propertyPath);
+		}
+
+		private static void ModifyProperty(PersistentEffectEventArgs ea, string propertyPath)
+		{
+			PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(ea.AttachedNode, propertyPath, true);
+			BasePropertyChanger propertyChanger = PropertyChangerManager.GetPropertyChanger(propertyModDetails.GetPropertyType());
+			propertyChanger.Name = propertyPath;
+			propertyChanger.Value = ea.PersistentEffect.Properties[propertyPath];
+			Talespire.Log.Warning($"Setting {propertyPath} to {propertyChanger.Value}");
+			if (propertyChanger != null)
 			{
-				PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(ea.AttachedNode, propertyPath, true);
-				if (propertyModDetails != null)
-					Talespire.Log.Error($"propertyModDetails != null");
-
-				BasePropertyChanger propertyChanger = PropertyChangerManager.GetPropertyChanger(propertyModDetails.GetPropertyType());
-				propertyChanger.Name = propertyPath;
-				propertyChanger.Value = ea.PersistentEffect.Properties[propertyPath];
-				Talespire.Log.Warning($"Setting {propertyPath} to {propertyChanger.Value}");
-				if (propertyChanger != null)
-				{
-					Talespire.Log.Warning($"propertyModDetails.SetValue(propertyChanger) !!! Hope this works!!!");
-					propertyModDetails.SetValue(propertyChanger);
-				}
+				Talespire.Log.Warning($"propertyModDetails.SetValue(propertyChanger) !!! Hope this works!!!");
+				propertyModDetails.SetValue(propertyChanger);
 			}
-
 		}
 	}
 }
