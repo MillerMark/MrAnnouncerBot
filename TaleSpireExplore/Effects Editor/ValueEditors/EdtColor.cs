@@ -36,10 +36,10 @@ namespace TaleSpireExplore
 			return result;
 		}
 
-		public void ValueChanged(object newValue)
+		public void ValueChanged(object newValue, bool committedChange = true)
 		{
 			if (ValueChangedListener != null)
-				ValueChangedListener.ValueHasChanged(this, newValue);
+				ValueChangedListener.ValueHasChanged(this, newValue, committedChange);
 		}
 
 		public Type GetValueType()
@@ -67,7 +67,7 @@ namespace TaleSpireExplore
 			trkMultiplier.Value = (int)Math.Floor(maxValue * 10);
 		}
 
-		private void ColorChanged()
+		private void ColorChanged(bool committedChange = false)
 		{
 			Talespire.Log.Debug($"EdtColor.ColorChanged");
 			float multiplier = trkMultiplier.Value / 10.0f;
@@ -124,7 +124,7 @@ namespace TaleSpireExplore
 			if (colorDialog.ShowDialog(GetParentForm()) == DialogResult.OK)
 			{
 				button.BackColor = colorDialog.Color;
-				ColorChanged();
+				ColorChanged(true);
 				UpdateHtml();
 				UpdateTrackbars();
 			}
@@ -138,7 +138,11 @@ namespace TaleSpireExplore
 		private void trkColor_Scroll(object sender, EventArgs e)
 		{
 			if (changingTrackbarsInternally)
+			{
+				Talespire.Log.Debug($"changingTrackbarsInternally is true");
 				return;
+			}
+
 			HueSatLight hueSatLight = GetHsl();
 			//Talespire.Log.Debug($"hueSatLight - hue = {hueSatLight.Hue}, saturation = {hueSatLight.Saturation}, lightness = {hueSatLight.Lightness} ");
 			btnSetColor.BackColor = hueSatLight.AsRGB;
@@ -167,7 +171,7 @@ namespace TaleSpireExplore
 			{
 				HueSatLight hueSatLight = new HueSatLight(tbxHtml.Text);
 				btnSetColor.BackColor = hueSatLight.AsRGB;
-				ColorChanged();
+				ColorChanged(true);
 				UpdateTrackbars();
 			}
 			catch (Exception ex)
@@ -185,6 +189,13 @@ namespace TaleSpireExplore
 		public void EditingProperty(string name)
 		{
 			// TODO: Change any editing style options in this editor based on name heuristics.
+		}
+
+		private void trkColor_MouseUp(object sender, MouseEventArgs e)
+		{
+			Talespire.Log.Debug($"trkColor_MouseUp!");
+			UpdateTrackbars();
+			ColorChanged(true);
 		}
 	}
 }

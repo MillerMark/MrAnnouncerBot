@@ -11,14 +11,14 @@ namespace TaleSpireCore
 		public GameObject AssetLoader { get; set; }
 		public GameObject EffectOrb { get; set; }
 		public GameObject AttachedNode { get; set; }
-		public PersistentEffect PersistentEffect { get; set; }
+		public IOldPersistentEffect PersistentEffect { get; set; }
 
 		public PersistentEffectEventArgs()
 		{
 
 		}
 
-		public void Set(CreatureBoardAsset creatureAsset, GameObject assetLoader, GameObject effectOrb, GameObject attachedNode, PersistentEffect persistentEffect)
+		public void Set(CreatureBoardAsset creatureAsset, GameObject assetLoader, GameObject effectOrb, GameObject attachedNode, IOldPersistentEffect persistentEffect)
 		{
 			CreatureAsset = creatureAsset;
 			AssetLoader = assetLoader;

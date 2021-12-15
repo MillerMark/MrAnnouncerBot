@@ -182,7 +182,7 @@ namespace TaleSpireCore
 							if (nextInstance == null)
 							{
 								if (logDetails)
-									Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance.");
+									Talespire.Log.Error($"Component \"{componentTypeName}\" not found in instance. {propertyName} not found.");
 
 								break;
 							}

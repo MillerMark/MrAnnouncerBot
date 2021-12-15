@@ -13,6 +13,8 @@ namespace TaleSpireCore
 	{
 		public static class PersistentEffects
 		{
+			internal const string STR_RichTextSizeZero = "<size=0>";
+
 			public static event PersistentEffectEventHandler PersistentEffectInitialized;
 			public static readonly string Folder = "TaleSpire_CustomData/PersistentEffects/";
 			static List<QueuedEffect> effectsToInitialize = new List<QueuedEffect>();
@@ -37,7 +39,7 @@ namespace TaleSpireCore
 				{
 					CreatureBoardAsset selectedCreature = Minis.GetSelected();
 					draggingPersistentEffect = selectedCreature.GetPersistentEffect();
-					if (draggingPersistentEffect != null && draggingPersistentEffect.RotationLocked)
+					if (draggingPersistentEffect != null && draggingPersistentEffect.RotationIsLocked)
 						trackingDraggedMiniForRotationLock = true;
 				}
 				else
@@ -64,7 +66,7 @@ namespace TaleSpireCore
 				return Board.InstantiateCreature(STR_Goat1BoardAssetId, new Vector3(pointerPos.x, pointerPos.y, pointerPos.z));
 			}
 
-			public static void Duplicate(PersistentEffect persistentEffect, string originalName)
+			public static void Duplicate(IOldPersistentEffect persistentEffect, string originalName)
 			{
 				persistentEffect.Hidden = false;
 				effectsToInitialize.Add(new QueuedEffect(CreateEffectAtPointer(), persistentEffect, originalName));
@@ -107,7 +109,11 @@ namespace TaleSpireCore
 			{
 				if (creatureAsset == null)
 					return;
+
 				Log.Warning($"UpdatePersistentEffect for {GetDisplayName(creatureAsset)} - \"{value}\"");
+
+				//[UpdatePersistentEffect for Character(Clone) - "{'Indicators':{'SpinLock':false},'EffectName':'R4.StormCloud','LockedRotation':0.0,'Hidden':true,'Properties':{'<Transform>.localScale':'(0.5, 0.5, 0.5)','<Transform>.localEulerAngles':'(0.0, 0.0, 90.0)','<Transform>.localPosition':'(4.3, 2.0, -2.3)'}}"
+
 				if (InitializeMiniAsEffect(creatureAsset))
 				{
 					Log.Debug($"Initialization succeeded!");
@@ -198,9 +204,9 @@ namespace TaleSpireCore
 				{
 					foreach (QueuedEffect queuedEffect in effectsToInitialize)
 						if (queuedEffect.EffectName != null)
-							InitializeEffect(queuedEffect.Id, queuedEffect.EffectName, queuedEffect.Name);
+							InitializeEffect(queuedEffect.Id, queuedEffect.EffectName, queuedEffect.MiniName);
 						else
-							InitializeEffect(queuedEffect.Id, queuedEffect.PersistentEffect, queuedEffect.Name);
+							InitializeEffect(queuedEffect.Id, queuedEffect.PersistentEffect, queuedEffect.MiniName);
 
 					CleanUp();
 				}
@@ -237,13 +243,13 @@ namespace TaleSpireCore
 					Log.Debug($"creatureAsset is null this update cycle....");
 				}
 			}
-			private static void InitializeEffect(string creatureId, PersistentEffect persistentEffect, string miniName)
+			private static void InitializeEffect(string creatureId, IOldPersistentEffect persistentEffect, string miniName)
 			{
 				Log.Debug($"InitializeEffect");
 				CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
 
 				if (persistentEffect == null)
-					persistentEffect = new PersistentEffect()
+					persistentEffect = new OldPersistentEffect()
 					{
 						EffectName = "R1.WaterWallSegment1"
 					};
@@ -260,9 +266,9 @@ namespace TaleSpireCore
 				if (effectName == null)
 					effectName = "R1.WaterWallSegment1";
 
-				PersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
 				if (persistentEffect == null)
-					persistentEffect = new PersistentEffect()
+					persistentEffect = new OldPersistentEffect()
 					{
 						EffectName = effectName
 					};
@@ -270,8 +276,13 @@ namespace TaleSpireCore
 				return InitializeMiniAsEffect(creatureAsset, persistentEffect, miniName);
 			}
 
+			public static bool HasSizeZeroMarker(string name)
+			{
+				return name.Contains(STR_RichTextSizeZero);
+			}
+
 			// TODO: Refactor this. Hard to read.
-			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect, string miniName)
+			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string miniName)
 			{
 				GameObject assetLoader = creatureAsset.GetAssetLoader();
 				if (assetLoader != null)
@@ -304,7 +315,7 @@ namespace TaleSpireCore
 							meshRenderer.material.shader = Materials.GetShader("Taleweaver/CreatureShader");
 
 							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
-							if (!StatMessaging.HasSizeZeroMarker(creatureAsset.Creature.Name))
+							if (!HasSizeZeroMarker(creatureAsset.Creature.Name))
 								CreatureManager.SetCreatureName(creatureAsset.CreatureId, "Effect");
 
 							return true;
@@ -361,9 +372,9 @@ namespace TaleSpireCore
 			}
 
 			static PersistentEffectEventArgs persistentEffectEventArgs = new PersistentEffectEventArgs();
-			static PersistentEffect draggingPersistentEffect;
+			static IOldPersistentEffect draggingPersistentEffect;
 
-			private static void InitializeNewlyCreatedPersistentEffect(CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect, string miniName)
+			private static void InitializeNewlyCreatedPersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string miniName)
 			{
 				GameObject assetLoader = creatureAsset.GetAssetLoader();
 				if (assetLoader != null)
@@ -396,7 +407,7 @@ namespace TaleSpireCore
 				}
 			}
 
-			private static void AttachEffect(CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect)
+			private static void AttachEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 			{
 				if (creatureAsset == null)
 				{
@@ -409,6 +420,15 @@ namespace TaleSpireCore
 					Log.Error($"AttachEffect - persistentEffect is null!!!");
 				}
 
+				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
+					SavePersistentEffect(creatureAsset, persistentEffect);
+
+				AttachEffect(creatureAsset, persistentEffect.EffectName);
+				
+			}
+
+			private static void SavePersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
+			{
 				Log.Debug($"JsonConvert.SerializeObject(persistentEffect);");
 				string defaultNewEffect = JsonConvert.SerializeObject(persistentEffect);
 				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
@@ -420,7 +440,6 @@ namespace TaleSpireCore
 				{
 					Log.Warning($"  Attached data = \"{creatureAsset.GetAttachedData()[STR_PersistentEffect]}\"");
 				}
-				AttachEffect(creatureAsset, persistentEffect.EffectName);
 			}
 
 			private static GameObject AddChild(GameObject parent, string nodeName)
@@ -446,12 +465,23 @@ namespace TaleSpireCore
 
 			private static void AttachEffect(CreatureBoardAsset creatureAsset, string defaultNewEffect = "MediumFire")
 			{
-				PersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
 
 				if (persistentEffect != null)
 				{
 					Log.Warning($"Adding effect \"{persistentEffect.EffectName}\"...");
-					Spells.AttachEffect(creatureAsset, persistentEffect.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
+					if (persistentEffect is SuperPersistentEffect superPersistentEffect)
+					{
+						for (int i = 0; i < superPersistentEffect.EffectProperties.Count; i++)
+						{
+							string prefix = i.ToString().PadLeft(2, '0');
+							EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
+							// TODO: Make sure we can read and write to the correct property in the correct effect!
+							Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
+						}
+					}
+					else
+						Spells.AttachEffect(creatureAsset, persistentEffect.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
 				}
 				else
 				{
@@ -483,16 +513,16 @@ namespace TaleSpireCore
 					return false;
 				}
 
-				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
 				if (persistentEffect == null)
 				{
 					Log.Error($"persistentEffect == null");
 					return false;
 				}
 
-				Log.Debug($"persistentEffect.RotationLocked = {persistentEffect.RotationLocked}");
+				Log.Debug($"persistentEffect.RotationLocked = {persistentEffect.RotationIsLocked}");
 
-				return persistentEffect.RotationLocked;
+				return persistentEffect.RotationIsLocked;
 			}
 			public static bool IsHidden(string creatureId)
 			{
@@ -504,7 +534,7 @@ namespace TaleSpireCore
 					return false;
 				}
 
-				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
 				if (persistentEffect == null)
 				{
 					Log.Error($"persistentEffect == null");
@@ -519,7 +549,7 @@ namespace TaleSpireCore
 			public static void SetRotationLocked(CreatureBoardAsset creatureBoardAsset, bool locked)
 			{
 				Log.Debug($"SetRotationLocked - locked: {locked}");
-				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
 				if (persistentEffect == null)
 				{
 					Log.Error($"persistentEffect == null");
@@ -529,7 +559,7 @@ namespace TaleSpireCore
 				Log.Debug($"SetRotationLocked - IsVisible: {creatureBoardAsset.IsVisible}");
 				SetSpinLockVisible(creatureBoardAsset, locked && creatureBoardAsset.IsVisible);
 
-				persistentEffect.RotationLocked = locked;
+				persistentEffect.RotationIsLocked = locked;
 				if (locked)
 					persistentEffect.LockedRotation = creatureBoardAsset.GetRotationDegrees();
 
@@ -539,7 +569,7 @@ namespace TaleSpireCore
 			public static void SetHidden(CreatureBoardAsset creatureBoardAsset, bool hidden)
 			{
 				Log.Debug($"SetHidden - hidden: {hidden}");
-				PersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
+				IOldPersistentEffect persistentEffect = creatureBoardAsset.GetPersistentEffect();
 				if (persistentEffect == null)
 				{
 					Log.Error($"persistentEffect == null");

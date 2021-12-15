@@ -4,11 +4,43 @@ using System.Collections.Generic;
 using UnityEngine;
 using LordAshes;
 using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace TaleSpireCore
 {
 	public static class TalespireExtensions
 	{
+		public static Dictionary<string, string> GetAttachedData(this CreatureBoardAsset asset)
+		{
+			string name = asset?.Creature?.Name;
+			int sizeZeroIndex = -1;
+			if (name != null)
+				sizeZeroIndex = name.IndexOf(Talespire.PersistentEffects.STR_RichTextSizeZero);
+			if (sizeZeroIndex >= 0)
+			{
+				string json = name.Substring(sizeZeroIndex + Talespire.PersistentEffects.STR_RichTextSizeZero.Length);
+				return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+			}
+			else
+				return new Dictionary<string, string>();
+		}
+
+		public static bool HasAttachedData(this CreatureBoardAsset asset, string key)
+		{
+			int sizeZeroIndex = asset.Creature.Name.IndexOf(Talespire.PersistentEffects.STR_RichTextSizeZero);
+			if (sizeZeroIndex >= 0)
+			{
+				string json = asset.Creature.Name.Substring(sizeZeroIndex + Talespire.PersistentEffects.STR_RichTextSizeZero.Length);
+				Dictionary<string, string> state = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+				if (state == null)
+					return false;
+
+				return state.ContainsKey(key);
+			}
+			else
+				return false;
+		}
+
 		public static Vector3 GetVector3(this VectorDto vectorDto)
 		{
 			return new Vector3(vectorDto.x, vectorDto.y, vectorDto.z);
@@ -100,36 +132,86 @@ namespace TaleSpireCore
 			return name;
 		}
 
-		public static PersistentEffect GetPersistentEffect(this CreatureBoardAsset creatureAsset)
+		public static IOldPersistentEffect GetPersistentEffect(this CreatureBoardAsset creatureAsset)
 		{
 			Dictionary<string, string> dictionaries = creatureAsset.GetAttachedData();
 
 			if (dictionaries == null)
 				return null;
 
+			IOldPersistentEffect superPersistentEffect = null;
+
 			if (dictionaries.ContainsKey(Talespire.PersistentEffects.STR_PersistentEffect))
 			{
 				string effectData = dictionaries[Talespire.PersistentEffects.STR_PersistentEffect];
 				try
 				{
-					return JsonConvert.DeserializeObject<PersistentEffect>(effectData);
+					superPersistentEffect = JsonConvert.DeserializeObject<SuperPersistentEffect>(effectData);
+					if (superPersistentEffect != null)
+						Talespire.Log.Warning($"Found a superPersistentEffect!!!");
 				}
 				catch (Exception ex)
 				{
-					return new PersistentEffect() { EffectName = effectData };
+					superPersistentEffect = null;
 				}
+
+				if (superPersistentEffect == null)
+				{
+					try
+					{
+						superPersistentEffect = JsonConvert.DeserializeObject<OldPersistentEffect>(effectData);
+						if (superPersistentEffect != null)
+						{
+							superPersistentEffect = new SuperPersistentEffect(superPersistentEffect);
+							Talespire.Log.Warning($"Converting to a new SuperPersistentEffect!!!!");
+						}
+					}
+					catch (Exception ex)
+					{
+						superPersistentEffect = null;
+					}
+				}
+
+				if (superPersistentEffect == null)
+					superPersistentEffect = new OldPersistentEffect() { EffectName = effectData };
 			}
 
-			return null;
+			return superPersistentEffect;
 		}
 
-		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, PersistentEffect persistentEffect)
+		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 		{
 			Talespire.Log.Warning($"Saving Persistent Effect....");
 			string newEffectData = JsonConvert.SerializeObject(persistentEffect);
 			Talespire.Log.Debug($"newEffectData: {newEffectData}");
 			StatMessaging.SetInfo(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
 		}
+
+		public static GameObject GetChildNodeStartingWith(this GameObject gameObject, string prefix, bool includeInactive = false)
+		{
+			Transform[] childTransforms = gameObject.GetComponentsInChildren<Transform>(includeInactive);
+			RectTransform[] rectTransforms = gameObject.GetComponentsInChildren<RectTransform>(includeInactive);
+
+			if (childTransforms != null)
+				foreach (Transform transform in childTransforms)
+				{
+					GameObject child = transform.gameObject;
+					if (child != null && child.name.StartsWith(prefix))
+						return child;
+				}
+
+			if (rectTransforms != null)
+				foreach (Transform transform in rectTransforms)
+				{
+					GameObject child = transform.gameObject;
+					if (child != null && child.name.StartsWith(prefix))
+						return child;
+				}
+
+			return null;
+		}
+
+
 
 		public static GameObject FindChild(this GameObject gameObject, string name, bool includeInactive = false)
 		{

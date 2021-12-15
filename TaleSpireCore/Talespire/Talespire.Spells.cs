@@ -80,7 +80,7 @@ namespace TaleSpireCore
 				AttachEffect(creatureBoardAsset, effectName, spellId, enlargeTime, lifeTime, shrinkTime);
 			}
 
-			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime, string parentNodeName = null)
+			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime, string parentNodeName = null, string prefix = null)
 			{
 				GameObject spell = GetEffect(effectName);
 
@@ -90,7 +90,7 @@ namespace TaleSpireCore
 					return;
 				}
 
-				spell.name = GetAttachedEffectName(spellId);
+				spell.name = GetAttachedEffectName(spellId, prefix);
 
 				GameObject creatureBase = creatureBoardAsset.GetAssetLoader();
 				Transform parentTransform = creatureBase.transform;
@@ -200,9 +200,11 @@ namespace TaleSpireCore
 				collisionEffects.Add(new CollisionEffect(effectName, spellId, lifeTime, enlargeTime, secondsDelayStart, useIntendedTarget, shrinkTime, rotation, hitFloor));
 			}
 
-			private static string GetAttachedEffectName(string spellId)
+			private static string GetAttachedEffectName(string spellId, string prefix = null)
 			{
-				return "Attached." + spellId;
+				if (prefix == null)
+					prefix = "Attached";
+				return $"{prefix}.{spellId}";
 			}
 
 			static GameObject GetSpell(string effectName, string spellId, float lifeTime, float enlargeTimeSeconds, float shrinkOnDeleteTime, float rotationDegrees, bool isMoveable)

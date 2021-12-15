@@ -47,8 +47,19 @@ namespace TaleSpireExplore
 
 		private void ValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
-			if (sender is AllValueEditors allValueEditors && allValueEditors.Key != STR_PersistentEffectsEditorKey)
+			if (!(sender is AllValueEditors allValueEditors))
+			{
+				Talespire.Log.Error($"sender is NOT AllValueEditors!!!");
 				return;
+			}
+
+			if (allValueEditors.Key != STR_PersistentEffectsEditorKey)
+			{
+				Talespire.Log.Error($"allValueEditors.Key != STR_PersistentEffectsEditorKey");
+				return;
+			}
+
+			Talespire.Log.Debug($"ValueEditors_ValueChanged...");
 			UpdateInstance(ea.Value, ea.CommittedChange);
 		}
 
@@ -72,22 +83,34 @@ namespace TaleSpireExplore
 
 							if (committedChange)
 							{
-								PersistentEffect persistentEffect = Mini.GetPersistentEffect();
+								IOldPersistentEffect persistentEffect = Mini.GetPersistentEffect();
 								if (persistentEffect != null)
 								{
 									Talespire.Log.Warning($"Properties[{effectProperty.Path}] = {value}!!!");
-									// TODO: Change this to be indexed by the property NAME, not the path.
+
+									// TODO: Use the correct EffectProperties instead of Properties (based on the prefix of the selected control).
+									// TODO: Change this to be indexed by the property NAME, not the path (to support multiple linked properties (to a single SmartProperty).
 									persistentEffect.Properties[effectProperty.Path] = value.ToString();
 									Talespire.Log.Debug($"Mini.SavePersistentEffect();");
 									Mini.SavePersistentEffect(persistentEffect);
 								}
+								else
+									Talespire.Log.Error($"persistentEffect is not found!!");
 							}
 							else
-								Talespire.Log.Warning($"Not a committed change! Not saving!");
+								Talespire.Log.Warning($"Not a committed change! Not saving my friend!");
 						}
+						else
+							Talespire.Log.Error($"propertyChanger not found!!!");
 					}
+					else
+						Talespire.Log.Error($"childAtPoint is not a value editor!");
 				}
+				else
+					Talespire.Log.Error($"frmPersistentEffectPropertyEditor is null!");
 			}
+			else
+				Talespire.Log.Error($"effectProperty is NULL!!!");
 		}
 
 		public void AddProperty(string name, Type type, string path)
@@ -194,6 +217,7 @@ namespace TaleSpireExplore
 
 		public void ValueHasChanged(IValueEditor editor, object value, bool committedChange = false)
 		{
+			Talespire.Log.Debug($"ValueHasChanged...");
 			UpdateInstance(value, committedChange);
 		}
 

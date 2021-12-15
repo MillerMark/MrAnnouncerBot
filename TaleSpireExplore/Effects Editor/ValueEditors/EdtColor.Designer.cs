@@ -110,6 +110,7 @@
 			this.trkHue.TabIndex = 7;
 			this.trkHue.TickFrequency = 10;
 			this.trkHue.Scroll += new System.EventHandler(this.trkColor_Scroll);
+			this.trkHue.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkColor_MouseUp);
 			// 
 			// trkSat
 			// 
@@ -120,6 +121,7 @@
 			this.trkSat.TabIndex = 7;
 			this.trkSat.TickFrequency = 10;
 			this.trkSat.Scroll += new System.EventHandler(this.trkColor_Scroll);
+			this.trkSat.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkColor_MouseUp);
 			// 
 			// trkLight
 			// 
@@ -130,6 +132,7 @@
 			this.trkLight.TabIndex = 7;
 			this.trkLight.TickFrequency = 10;
 			this.trkLight.Scroll += new System.EventHandler(this.trkColor_Scroll);
+			this.trkLight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkColor_MouseUp);
 			// 
 			// pictureBox1
 			// 
@@ -161,6 +164,7 @@
 			this.trkMultiplier.TickFrequency = 10;
 			this.trkMultiplier.Value = 10;
 			this.trkMultiplier.Scroll += new System.EventHandler(this.trkMultiplier_Scroll);
+			this.trkMultiplier.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkColor_MouseUp);
 			// 
 			// EdtColor
 			// 

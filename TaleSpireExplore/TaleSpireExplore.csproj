@@ -455,7 +455,24 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\*.dll" "\\DESKTOP-CMECAO6\TaleSpire\BepInEx\plugins\*.dll"
+    <PostBuildEvent>ECHO ON
+ECHO.
+ECHO Copying *.DLLs to TaleSpire machine (main folder)...
+copy "C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\*.dll" "\\DESKTOP-CMECAO6\TaleSpire\BepInEx\plugins\*.dll"
+ECHO.
+ECHO Copying *.DLLs to TaleSpire machine (ModMan folder)...
+copy "C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\*.dll" "\\DESKTOP-CMECAO6\ModMan\TaleSpireExplorer\*.dll"
+ECHO. 
+ECHO Copying TaleSpireExplore.dll to TaleSpire machine (CodeRushed-TaleSpireExplore folder)...
+copy "C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\TaleSpireExplore.dll" "\\DESKTOP-CMECAO6\ModMan\CodeRushed-TaleSpireExplore\*.dll"
+ECHO.
+ECHO Copying *.pngs to TaleSpire machine (TaleSpire\TaleSpire_CustomData\PersistentEffects\Assets folder)...
 copy "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\TaleSpireExplore\Icons\*.png" "\\DESKTOP-CMECAO6\TaleSpire\TaleSpire_CustomData\PersistentEffects\Assets\*.png"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>ECHO ON
+ECHO.
+ECHO Grabbing the latest StatMessagingPlugin.dll from the TaleSpire machine...
+Copy "\\DESKTOP-CMECAO6\ModMan\LordAshes-StatMessagingPlugin\*.dll" "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\StatMessaging\TaleSpireStatMessaging\bin\Debug\*.*"</PreBuildEvent>
   </PropertyGroup>
 </Project>

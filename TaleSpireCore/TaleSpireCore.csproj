@@ -172,6 +172,9 @@
     <Compile Include="DTOs\SayTextData.cs" />
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="Color\HueSatLight.cs" />
+    <Compile Include="PersistentEffects\EffectProperties.cs" />
+    <Compile Include="PersistentEffects\IOldPersistentEffect.cs" />
+    <Compile Include="PersistentEffects\SuperPersistentEffect.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Spell Effects\SpellMissile.cs" />
     <Compile Include="Talespire\Core\Cloned Enums\DamageSide.cs" />
@@ -199,7 +202,7 @@
     <Compile Include="Talespire\Core\MiniRotator.cs" />
     <Compile Include="Talespire\Core\EffectParameters\Core\EffectParameters.cs" />
     <Compile Include="Talespire\Core\EventArgs\CreatureBoardAssetEventArgs.cs" />
-    <Compile Include="PersistentEffects\PersistentEffect.cs" />
+    <Compile Include="PersistentEffects\OldPersistentEffect.cs" />
     <Compile Include="Talespire\QueuedEffect.cs" />
     <Compile Include="Talespire\Scripts\CameraSpinner.cs" />
     <Compile Include="Talespire\Talespire.Convert.cs" />

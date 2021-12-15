@@ -5,14 +5,14 @@ using Newtonsoft.Json;
 
 namespace TaleSpireCore
 {
-	public class PersistentEffect
+	public class OldPersistentEffect : IOldPersistentEffect
 	{
 		private const string STR_SpinLock = "SpinLock";
-		// TODO: EffectName is going to get way more sophisticated
+		
 		public string EffectName { get; set; }
 
 		[JsonIgnore]
-		public bool RotationLocked
+		public bool RotationIsLocked
 		{
 			get
 			{
@@ -30,11 +30,11 @@ namespace TaleSpireCore
 		public float LockedRotation { get; set; }
 
 		public bool Hidden { get; set; }
-		public Dictionary<string, bool> Indicators = new Dictionary<string, bool>();  /* Indicator Name (has to match the GameObject) mapped to its visible state */
+		public Dictionary<string, bool> Indicators { get; set; } = new Dictionary<string, bool>();  /* Indicator Name (has to match the GameObject) mapped to its visible state */
 
 		public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
-		public PersistentEffect()
+		public OldPersistentEffect()
 		{
 			InitializeIndicators();
 		}
@@ -47,7 +47,7 @@ namespace TaleSpireCore
 
 		public void Initialize(CreatureBoardAsset creatureBoardAsset)
 		{
-			if (RotationLocked)
+			if (RotationIsLocked)
 				creatureBoardAsset.SetRotationDegrees(LockedRotation);
 		}
 	}
