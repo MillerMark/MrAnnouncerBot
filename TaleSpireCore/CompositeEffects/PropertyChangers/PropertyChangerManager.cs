@@ -43,6 +43,8 @@ namespace TaleSpireCore
 
 		public static BasePropertyChanger GetPropertyChanger(Type type)
 		{
+			if (type == null)
+				return null;
 			if (!knownPropertyChangers.ContainsKey(type))
 				Talespire.Log.Error($"!knownPropertyChangers.ContainsKey(type)");
 			return knownPropertyChangers[type];

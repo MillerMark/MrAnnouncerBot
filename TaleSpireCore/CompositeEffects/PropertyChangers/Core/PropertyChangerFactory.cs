@@ -17,7 +17,7 @@ namespace TaleSpireCore
 				return null;
 			BasePropertyChanger propertyChanger = CreateFromTypeName(propertyType.Name, logErrors);
 			if (propertyChanger != null)
-				propertyChanger.Name = propertyModDetails.GetName();
+				propertyChanger.FullPropertyPath = propertyModDetails.GetName();
 			return propertyChanger;
 		}
 

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
+using System.Runtime.CompilerServices;
 
 namespace TaleSpireCore
 {
@@ -11,13 +12,21 @@ namespace TaleSpireCore
 	{
 		public const string STR_ChangePrefix = "Change";
 
-		public string Name { get; set; }
+		/// <summary>
+		/// The complete path to the property relative to the parenting GameObject node. 
+		/// Attached components can be referenced by their component class name inside 
+		/// angle brackets.
+		/// For example, "&lt;ParticleSystemRenderer&gt;.material._TintColor".
+		/// </summary>
+		public string FullPropertyPath { get; set; }
+
 		public string Value { get; set; }
+
 		public object ValueOverride { get; set; }
 
 		public BasePropertyChanger(string propertyName, string valueStr)
 		{
-			Name = propertyName;
+			FullPropertyPath = propertyName;
 			Value = valueStr;
 		}
 
@@ -49,15 +58,15 @@ namespace TaleSpireCore
 		{
 			try
 			{
-				PropertyModDetails propertyModDetails = GetPropertyModDetails(instance, Name, logErrors);
+				PropertyModDetails propertyModDetails = GetPropertyModDetails(instance, FullPropertyPath, logErrors);
 
-				if (Name.EndsWith("LifeTime"))
-					Talespire.Log.Debug($"Setting {Name} to {GetValue()} (in {GetType().Name})...");
+				//if (Name.EndsWith("LifeTime"))
+				//	Talespire.Log.Debug($"Setting {Name} to {GetValue()} (in {GetType().Name})...");
 				propertyModDetails.SetValue(this);
 			}
 			catch (Exception ex)
 			{
-				Talespire.Log.Error($"Error while modifying property {Name}!");
+				Talespire.Log.Error($"Error while modifying property \"{FullPropertyPath}\"!");
 				Talespire.Log.Exception(ex);
 			}
 		}
@@ -71,7 +80,7 @@ namespace TaleSpireCore
 			}
 			catch (Exception ex)
 			{
-				Talespire.Log.Error($"ModifyPropertyWithDetails - Error while modifying property {Name}!");
+				Talespire.Log.Error($"ModifyPropertyWithDetails - Error while modifying property {FullPropertyPath}!");
 				Talespire.Log.Exception(ex);
 			}
 		}
@@ -122,16 +131,18 @@ namespace TaleSpireCore
 			return false;
 		}
 
-		public static PropertyModDetails GetPropertyModDetails(object instance, string fullPropertyName, bool logErrors = false)
+		public static PropertyModDetails GetPropertyModDetails(object instance, string fullPropertyPath, bool logErrors = false)
 		{
+			if (Guard.IsNull(fullPropertyPath, nameof(fullPropertyPath))) return null;
+
 			bool logDetails = logErrors; // fullPropertyName.EndsWith("LifeTime");
 			PropertyModDetails propertyModDetails = new PropertyModDetails();
 			propertyModDetails.instance = null;
 			if (logDetails)
 			{
-				Talespire.Log.Debug($"fullPropertyName: {fullPropertyName}");
+				Talespire.Log.Debug($"fullPropertyName: \"{fullPropertyPath}\"");
 			}
-			string[] split = fullPropertyName.Split('.');
+			string[] split = fullPropertyPath.Split('.');
 			object nextInstance = instance;
 			propertyModDetails.property = null;
 			propertyModDetails.field = null;
@@ -243,7 +254,7 @@ namespace TaleSpireCore
 			if (typeName.StartsWith(STR_ChangePrefix))
 				typeName = typeName.Substring(STR_ChangePrefix.Length);
 			Talespire.Log.Debug($"typeName = {typeName}");
-			return new PropertyChangerDto() { Name = Name, Value = Value, Type = typeName };
+			return new PropertyChangerDto() { FullPropertyPath = FullPropertyPath, Value = Value, Type = typeName };
 		}
 	}
 }

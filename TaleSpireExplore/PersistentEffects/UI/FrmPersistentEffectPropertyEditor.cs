@@ -18,6 +18,17 @@ namespace TaleSpireExplore
 			InitializeComponent();
 		}
 
+		protected override CreateParams CreateParams
+		{
+			get
+			{
+				CreateParams cp = base.CreateParams;
+				// turn on WS_EX_TOOLWINDOW style bit
+				cp.ExStyle |= 0x80;
+				return cp;
+			}
+		}
+
 		public void SetLocation(Point taleSpireTopRight)
 		{
 			const int INT_PropertyEditorMargin = 8;

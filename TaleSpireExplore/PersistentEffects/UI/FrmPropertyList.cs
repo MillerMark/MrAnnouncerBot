@@ -63,42 +63,60 @@ namespace TaleSpireExplore
 			UpdateInstance(ea.Value, ea.CommittedChange);
 		}
 
-		private void UpdateInstance(object value, bool committedChange)
+		private void UpdateInstance(object valueOverride, bool committedChange)
 		{
-			EffectProperty effectProperty = lstProperties.SelectedItem as EffectProperty;
-			if (effectProperty != null)
+			if (lstProperties.SelectedItem is EffectProperty effectProperty)
 			{
-				// TODO: Store this change in the Mini.
+				// Store this change in the Mini.
 				if (frmPersistentEffectPropertyEditor != null)
 				{
 					Control childAtPoint = frmPersistentEffectPropertyEditor.GetChildAtPoint(new Point(4, 4));
 					if (childAtPoint is IValueEditor valueEditor)
 					{
 						BasePropertyChanger propertyChanger = valueEditor.GetPropertyChanger();
+						string saveValue = propertyChanger.Value;
 						if (propertyChanger != null)
 						{
-							propertyChanger.Name = effectProperty.Path;
-							propertyChanger.ValueOverride = value;
-							propertyChanger.ModifyProperty(Instance, true);
-
-							if (committedChange)
+							string[] paths = effectProperty.Paths.Split(';');
+							bool needToSave = true;
+							foreach (string path in paths)
 							{
-								IOldPersistentEffect persistentEffect = Mini.GetPersistentEffect();
-								if (persistentEffect != null)
-								{
-									Talespire.Log.Warning($"Properties[{effectProperty.Path}] = {value}!!!");
+								propertyChanger.FullPropertyPath = path;
+								propertyChanger.ValueOverride = valueOverride;
+								propertyChanger.ModifyProperty(Instance, true);
 
-									// TODO: Use the correct EffectProperties instead of Properties (based on the prefix of the selected control).
-									// TODO: Change this to be indexed by the property NAME, not the path (to support multiple linked properties (to a single SmartProperty).
-									persistentEffect.Properties[effectProperty.Path] = value.ToString();
-									Talespire.Log.Debug($"Mini.SavePersistentEffect();");
-									Mini.SavePersistentEffect(persistentEffect);
+								if (needToSave)
+								{
+									if (committedChange)
+									{
+										needToSave = false;
+										IOldPersistentEffect persistentEffect = Mini.GetPersistentEffect();
+										string propertyKey;
+
+										if (effectProperty.Name.StartsWith("$"))
+											propertyKey = effectProperty.Name;
+										else
+											propertyKey = effectProperty.Paths;
+
+										if (persistentEffect != null)
+										{
+											Talespire.Log.Warning($"Properties[{propertyKey}] = {saveValue}!!!");
+
+											// TODO: Use the correct EffectProperties instead of Properties (based on the prefix of the selected control).
+											// TODO: Change this to be indexed by the property NAME, not the path (to support multiple linked properties (to a single SmartProperty).
+											persistentEffect.Properties[propertyKey] = saveValue; // valueOverride.ToString();
+											Talespire.Log.Debug($"Mini.SavePersistentEffect();");
+											Mini.SavePersistentEffect(persistentEffect);
+										}
+										else
+											Talespire.Log.Error($"persistentEffect is not found!!");
+									}
+									else
+									{
+										//Talespire.Log.Warning($"Not a committed change! Not saving my friend!");
+									}
 								}
-								else
-									Talespire.Log.Error($"persistentEffect is not found!!");
 							}
-							else
-								Talespire.Log.Warning($"Not a committed change! Not saving my friend!");
 						}
 						else
 							Talespire.Log.Error($"propertyChanger not found!!!");
@@ -113,6 +131,12 @@ namespace TaleSpireExplore
 				Talespire.Log.Error($"effectProperty is NULL!!!");
 		}
 
+		/// <summary>
+		/// Adds a property to the EffectProperties list.
+		/// </summary>
+		/// <param name="name">The name of the property to add.</param>
+		/// <param name="type">The type of the property to add.</param>
+		/// <param name="path">The path to the property to change. Separate multiple paths with a semicolon (";").</param>
 		public void AddProperty(string name, Type type, string path)
 		{
 			EffectProperties.Add(new EffectProperty(name, type, path));
@@ -190,7 +214,7 @@ namespace TaleSpireExplore
 					if (valueEditor is IValueEditor iValueEditor)
 					{
 						iValueEditor.EditingProperty(effectProperty.Name);
-						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Path);
+						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
 						Talespire.Log.Warning($"iValueEditor.SetValue(propertyModDetails.GetValue());");
 						iValueEditor.SetValue(propertyModDetails.GetValue());
 					}
@@ -206,6 +230,17 @@ namespace TaleSpireExplore
 			catch (Exception ex)
 			{
 				Talespire.Log.Exception(ex, nameof(lstProperties_SelectedIndexChanged));
+			}
+		}
+
+		protected override CreateParams CreateParams
+		{
+			get
+			{
+				CreateParams cp = base.CreateParams;
+				// turn on WS_EX_TOOLWINDOW style bit
+				cp.ExStyle |= 0x80;
+				return cp;
 			}
 		}
 

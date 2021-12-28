@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define disableBluetoothLights
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -35,6 +36,8 @@ namespace DHDM
 
 		async Task Send(byte[] byteArray)
 		{
+#if disableBluetoothLights
+#else
 			await GetDevice();
 			if (device == null)
 				return;
@@ -48,6 +51,7 @@ namespace DHDM
 				GattCharacteristic gattCharacteristic = await controlService.GetCharacteristicAsync(BluetoothUuid.FromGuid(new Guid(STR_CharacteristicID)));
 				await gattCharacteristic.WriteValueWithoutResponseAsync(byteArray);
 			}
+#endif
 		}
 
 		private async Task GetDevice()

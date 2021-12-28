@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using TaleSpireCore;
 
 namespace TaleSpireExplore
@@ -19,6 +20,7 @@ namespace TaleSpireExplore
 		}
 
 		const int INT_PropertyEditorMargin = 8;
+		const int INT_MaxListHeight = 832;
 		Point lastLocation;
 
 		private void SetLocation(Point topLeftOfTaleSpire)
@@ -28,12 +30,23 @@ namespace TaleSpireExplore
 			Location = new Point(topLeftOfTaleSpire.X + INT_PropertyEditorMargin, topLeftOfTaleSpire.Y + WindowHelper.TaleSpireTitleBarHeight);
 			lastLocation = topLeftOfTaleSpire;
 		}
+		
+		public Point UpperLeft
+		{
+			get
+			{
+				Point location = WindowHelper.GetTaleSpireTopLeft();
+				location.Offset(14, 156);  // Get this down below the atmosphere button.
+				return location;
+			}
+		}
+		
 
-		private void FrmPropertyList_Load(object sender, EventArgs e)
+		private void FrmEffectsList_Load(object sender, EventArgs e)
 		{
 			ShowEffectsList();
-
-			SetLocation(WindowHelper.GetTaleSpireTopLeft());
+			SetLocation(UpperLeft);
+			ResizeToFitButton();
 			windowDragTimer.Start();
 			WindowHelper.FocusTaleSpire();
 		}
@@ -47,33 +60,28 @@ namespace TaleSpireExplore
 
 		private void WindowDragTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
 		{
-			SetLocation(WindowHelper.GetTaleSpireTopLeft());
+			SetLocation(UpperLeft);
 		}
 
 		void SetHeightAndWidth()
 		{
-			const int topBottomMargin = 12;
-			const int leftRightMargin = 12;
-			int height = lstEffects.Items.Count * lstEffects.ItemHeight + topBottomMargin;
+			int height = lstEffects.Items.Count * lstEffects.ItemHeight;
 			int maxWidthSoFar = 0;
-			// TODO: Search known effects and measure text to determine proper width...
-			//foreach (EffectProperty effectProperty in EffectProperties)
-			//{
-			//	Size measureText = TextRenderer.MeasureText(effectProperty.Name, lstEffects.Font);
-			//	if (measureText.Width > maxWidthSoFar)
-			//		maxWidthSoFar = measureText.Width;
-			//}
-			Height = height;
-			lstEffects.Height = height;
-			Width = maxWidthSoFar + leftRightMargin;
+			
+			foreach (string effectName in lstEffects.Items)
+			{
+				Size measureText = TextRenderer.MeasureText(effectName, lstEffects.Font);
+				if (measureText.Width > maxWidthSoFar)
+					maxWidthSoFar = measureText.Width;
+			}
+
+			lstEffects.Height = Math.Min(INT_MaxListHeight, height);
+			lstEffects.Width = maxWidthSoFar + System.Windows.Forms.SystemInformation.VerticalScrollBarWidth;
 		}
 
 		public void ShowEffectsList()
 		{
-			// TODO: Add effects....
-			//lstEffects.Items.Add(effect);
-			//lstEffects.SelectedIndex = 0;
-
+			RefreshEffectsList();
 			SetHeightAndWidth();
 		}
 
@@ -92,6 +100,58 @@ namespace TaleSpireExplore
 			catch (Exception ex)
 			{
 				Talespire.Log.Exception(ex, nameof(LstEffects_SelectedIndexChanged));
+			}
+		}
+
+		protected override CreateParams CreateParams
+		{
+			get
+			{
+				CreateParams cp = base.CreateParams;
+				// turn on WS_EX_TOOLWINDOW style bit
+				cp.ExStyle |= 0x80;
+				return cp;
+			}
+		}
+
+		bool showingFullList;
+
+		public void ResizeToFitList()
+		{
+			this.Width = lstEffects.Width;
+			this.Height = btnEffects.Height + lstEffects.Height;
+		}
+
+		public void ResizeToFitButton()
+		{
+			this.Width = btnEffects.Width;
+			this.Height = btnEffects.Height;
+		}
+
+		void RefreshEffectsList()
+		{
+			lstEffects.Items.Clear();
+
+			List<string> allKnownEffects = KnownEffects.GetAllNames();
+			allKnownEffects.Sort();
+
+			foreach (string knownEffect in allKnownEffects)
+				lstEffects.Items.Add(knownEffect);
+		}
+
+		private void btnEffects_Click(object sender, EventArgs e)
+		{
+			showingFullList = !showingFullList;
+			if (showingFullList)
+			{
+				btnEffects.Text = "<<";
+				ShowEffectsList();
+				ResizeToFitList();
+			}
+			else
+			{
+				btnEffects.Text = "Add";
+				ResizeToFitButton();
 			}
 		}
 	}

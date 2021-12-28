@@ -40,22 +40,29 @@ namespace TaleSpireExplore
 
 		public static GameObject Create(string effectName, string instanceId = null)
 		{
-			Talespire.Log.Debug($"KnownEffects.Create(\"{effectName}\")");
-			string targetingSphereJson = Get(effectName)?.Effect;
-			if (targetingSphereJson == null)
+			Talespire.Log.Indent($"KnownEffects.Create(\"{effectName}\")");
+			try
 			{
-				Talespire.Log.Error($"targetingSphereJson == null");
-				return null;
+				string effectJson = Get(effectName)?.Effect;
+				if (effectJson == null)
+				{
+					Talespire.Log.Error($"effectJson == null");
+					return null;
+				}
+
+				Talespire.GameObjects.InvalidateFound();
+				CompositeEffect compositeEffect = CompositeEffect.CreateFrom(effectJson);
+				GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
+				compositeEffect.RefreshIfNecessary(gameObject);
+
+				if (gameObject != null)
+					gameObject.name = effectName;
+				return gameObject;
 			}
-
-			Talespire.GameObjects.InvalidateFound();
-			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
-			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
-			compositeEffect.RefreshIfNecessary(gameObject);
-
-			if (gameObject != null)
-				gameObject.name = effectName;
-			return gameObject;
+			finally
+			{
+				Talespire.Log.Unindent();
+			}
 		}
 
 		public static GameObject CreateUnsafe(string effectName, string instanceId = null)

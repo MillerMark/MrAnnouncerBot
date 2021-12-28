@@ -50,6 +50,7 @@
 			this.ForeColor = System.Drawing.Color.White;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Name = "FrmPersistentEffectPropertyEditor";
+			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
 			this.Text = "FrmPersistentEffectPropertyEditor";
 			this.TopMost = true;

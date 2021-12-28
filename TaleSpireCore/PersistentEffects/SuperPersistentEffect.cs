@@ -51,6 +51,15 @@ namespace TaleSpireCore
 		public SuperPersistentEffect(IOldPersistentEffect persistentEffect)
 		{
 			EffectProperties = new List<EffectProperties>();
+
+			Talespire.Log.Debug($"");
+			Talespire.Log.Debug($"new SuperPersistentEffect(from old)...");
+			Talespire.Log.Debug($"");
+			Talespire.Log.Debug($"Property Keys:");
+			foreach (string propertyPath in persistentEffect.Properties.Keys)
+				Talespire.Log.Debug($"  {propertyPath}");
+			Talespire.Log.Debug($"");
+
 			EffectProperties.Add(new EffectProperties(persistentEffect.EffectName, persistentEffect.Properties));
 
 			Hidden = persistentEffect.Hidden;

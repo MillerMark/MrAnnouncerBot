@@ -473,6 +473,9 @@ copy "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\TaleSpireExplore\Icons\*.pn
     <PreBuildEvent>ECHO ON
 ECHO.
 ECHO Grabbing the latest StatMessagingPlugin.dll from the TaleSpire machine...
-Copy "\\DESKTOP-CMECAO6\ModMan\LordAshes-StatMessagingPlugin\*.dll" "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\StatMessaging\TaleSpireStatMessaging\bin\Debug\*.*"</PreBuildEvent>
+Copy "\\DESKTOP-CMECAO6\ModMan\LordAshes-StatMessagingPlugin\*.dll" "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\StatMessaging\TaleSpireStatMessaging\bin\Debug\*.*"
+
+:://ECHO Grabbing the latest RadialMenuPlugin.dll from the TaleSpire machine...
+:://Copy "\\DESKTOP-CMECAO6\ModMan\HolloFox_TS-RadialUIPlugin\*.dll" "D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\RadialMenus\RadialUIPlugin\bin\Debug\*.*"</PreBuildEvent>
   </PropertyGroup>
 </Project>

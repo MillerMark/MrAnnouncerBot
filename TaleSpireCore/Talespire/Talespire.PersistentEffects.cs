@@ -6,6 +6,8 @@ using Bounce.Unmanaged;
 using UnityEngine;
 using Newtonsoft.Json;
 using LordAshes;
+using static TaleSpireCore.Talespire;
+using System.Diagnostics;
 
 namespace TaleSpireCore
 {
@@ -57,19 +59,34 @@ namespace TaleSpireCore
 
 			public static void Create(string effectName = "MediumFire")
 			{
-				effectsToInitialize.Add(new QueuedEffect(CreateEffectAtPointer(), effectName));
+				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), effectName));
 			}
 
-			private static string CreateEffectAtPointer()
+			private static string InstantiateGoatAtPointer()
 			{
 				float3 pointerPos = RulerHelpers.GetPointerPos();
 				return Board.InstantiateCreature(STR_Goat1BoardAssetId, new Vector3(pointerPos.x, pointerPos.y, pointerPos.z));
 			}
 
-			public static void Duplicate(IOldPersistentEffect persistentEffect, string originalName)
+			public static void Duplicate(IOldPersistentEffect persistentEffect, string originalName, string persistentEffectData)
 			{
+				Log.Debug($"-");
+				Log.Debug($"--");
+				Log.Debug($"---");
+				Log.Debug($"----");
+				Log.Debug($"-----");
+				Log.Warning($"Duplicating (originalName = \"{originalName}\")...");
+				Log.Debug($"");
+				Log.Warning($"{persistentEffectData}");
+				Log.Debug($"");
+				Log.Debug($"-----");
+				Log.Debug($"----");
+				Log.Debug($"---");
+				Log.Debug($"--");
+				Log.Debug($"-");
+
 				persistentEffect.Hidden = false;
-				effectsToInitialize.Add(new QueuedEffect(CreateEffectAtPointer(), persistentEffect, originalName));
+				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), persistentEffect, originalName));
 			}
 
 			static List<string> updatedCreatures = new List<string>();
@@ -179,101 +196,34 @@ namespace TaleSpireCore
 				Log.Debug($"CheckForNewMinis()...");
 				lastMiniCount = allMinis.Length;
 				foreach (CreatureBoardAsset creatureBoardAsset in allMinis)
-				{
 					if (IsMiniAnUninitializedEffect(creatureBoardAsset))
 						InitializeMiniAsEffect(creatureBoardAsset);
-				}
 			}
-			public static void Update()
+
+			internal static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, string effectName = null, string newCreatureName = null)
 			{
-				InitializeEffectsIfNecessary();
-				if (Time.time - boardActivationTime < 60)
+				Log.Indent($"InitializeMiniAsEffect({creatureAsset.CreatureId}, \"{effectName}\", \"{newCreatureName}\")");
+				try
 				{
-					frameCount++;
-					if (frameCount > 5) // Every five frames we will check for new minis...
+					if (effectName == null)
+						effectName = "R1.WaterWallSegment1";
+
+					// I think the problem is close to here. We got to here because the goat clone was not found in the initial update cycle, which led to putting the data in a list to try later, which led to effectName being null when passed in here.
+					IOldPersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
+					if (persistentEffect == null)
 					{
-						frameCount = 0;
-						CheckForNewMinis();
+						Log.Error($"Error - persistentEffect == null (not found by call to GetPersistentEffect()).");
+						persistentEffect = new SuperPersistentEffect();
+						if (persistentEffect is SuperPersistentEffect superPersistentEffect)
+							superPersistentEffect.EffectProperties.Add(new EffectProperties() { EffectName = effectName });
 					}
-				}
-			}
 
-			private static void InitializeEffectsIfNecessary()
-			{
-				if (effectsToInitialize.Count != 0)
+					return InitializeMiniFromPersistentEffect(creatureAsset, persistentEffect, newCreatureName);
+				}
+				finally
 				{
-					foreach (QueuedEffect queuedEffect in effectsToInitialize)
-						if (queuedEffect.EffectName != null)
-							InitializeEffect(queuedEffect.Id, queuedEffect.EffectName, queuedEffect.MiniName);
-						else
-							InitializeEffect(queuedEffect.Id, queuedEffect.PersistentEffect, queuedEffect.MiniName);
-
-					CleanUp();
+					Log.Unindent();
 				}
-			}
-
-			private static void CleanUp()
-			{
-				if (updatedCreatures.Count > 0)
-				{
-					foreach (string creatureId in updatedCreatures)
-						RemoveEffectToInitialize(creatureId);
-
-					updatedCreatures.Clear();
-				}
-			}
-
-			private static void RemoveEffectToInitialize(string creatureId)
-			{
-				List<QueuedEffect> matchingEffects = effectsToInitialize.Where(x => x.Id == creatureId).ToList();
-				foreach (QueuedEffect miniEffectName in matchingEffects)
-					effectsToInitialize.Remove(miniEffectName);
-			}
-
-			private static void InitializeEffect(string creatureId, string effectName, string name)
-			{
-				CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
-
-				if (creatureAsset != null)
-				{
-					InitializeMiniAsEffect(creatureAsset, effectName, name);
-				}
-				else
-				{
-					Log.Debug($"creatureAsset is null this update cycle....");
-				}
-			}
-			private static void InitializeEffect(string creatureId, IOldPersistentEffect persistentEffect, string miniName)
-			{
-				Log.Debug($"InitializeEffect");
-				CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
-
-				if (persistentEffect == null)
-					persistentEffect = new OldPersistentEffect()
-					{
-						EffectName = "R1.WaterWallSegment1"
-					};
-
-				if (creatureAsset != null)
-					InitializeMiniAsEffect(creatureAsset, persistentEffect, miniName);
-				else
-					Log.Debug($"creatureAsset is null this update cycle....");
-			}
-
-			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, string effectName = null, string miniName = null)
-			{
-				Log.Debug($"InitializeMiniAsEffect");
-				if (effectName == null)
-					effectName = "R1.WaterWallSegment1";
-
-				IOldPersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
-				if (persistentEffect == null)
-					persistentEffect = new OldPersistentEffect()
-					{
-						EffectName = effectName
-					};
-
-				return InitializeMiniAsEffect(creatureAsset, persistentEffect, miniName);
 			}
 
 			public static bool HasSizeZeroMarker(string name)
@@ -282,88 +232,110 @@ namespace TaleSpireCore
 			}
 
 			// TODO: Refactor this. Hard to read.
-			private static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string miniName)
+			internal static bool InitializeMiniFromPersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string newCreatureName)
 			{
-				GameObject assetLoader = creatureAsset.GetAssetLoader();
-				if (assetLoader != null)
+				Log.Indent();
+				try
 				{
-					GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
-					if (goatClone != null)
+					GameObject assetLoader = creatureAsset.GetAssetLoader();
+					Log.Warning($"creatureAsset.Creature.Name = \"{creatureAsset.Creature.Name}\"");
+					if (assetLoader != null)
 					{
-						MeshFilter meshFilter = goatClone.GetComponent<MeshFilter>();
-						MeshRenderer meshRenderer = goatClone.GetComponent<MeshRenderer>();
-						if (meshFilter != null && meshRenderer != null)
+						GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+						if (goatClone != null)
 						{
-							Log.Warning($"Name = \"{creatureAsset.Creature.Name}\"");
-							Log.Warning($"miniName = {miniName}");
-							Log.Debug($"  meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);");
-							meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);
-							if (meshFilter.sharedMesh != null)
-								Log.Warning($"  meshFilter.sharedMesh is assigned!!!");
-
-							goatClone.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
-							goatClone.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
-
-							InitializeNewlyCreatedPersistentEffect(creatureAsset, persistentEffect, miniName);
-
-							Material baseGlow = Materials.GetMaterial("Standard (Instance)");
-
-							if (baseGlow != null)
-								baseGlow.SetColor("_Color", Color.black);
-
-							meshRenderer.material = baseGlow;  // Reassigning kills hide?
-							meshRenderer.material.shader = Materials.GetShader("Taleweaver/CreatureShader");
-
-							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
-							if (!HasSizeZeroMarker(creatureAsset.Creature.Name))
-								CreatureManager.SetCreatureName(creatureAsset.CreatureId, "Effect");
-
-							return true;
-						}
-						else
-							Log.Debug($"Mesh Filter or Mesh Renderer not found in this update cycle...");
-					}
-					else
-					{
-						if (assetLoader.FindChild(STR_EffectOrb) != null)
-						{
-							if (effectsToInitialize.Count > 0)
-								Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
-							if (updatedCreatures.Count > 0)
-								Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
-
-							Log.Warning($"Already initialized. Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
-
-							persistentEffect = creatureAsset.GetPersistentEffect();
-							GameObject effectOrb = GetEffectOrb(creatureAsset);
-							GameObject attachedNode = creatureAsset.GetAttachedParentGameObject();
-							if (attachedNode != null)
+							MeshFilter meshFilter = goatClone.GetComponent<MeshFilter>();
+							MeshRenderer meshRenderer = goatClone.GetComponent<MeshRenderer>();
+							if (meshFilter != null && meshRenderer != null)
 							{
-								persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
-								OnPersistentEffectInitialized(creatureAsset, persistentEffectEventArgs);
+								PositionOrb(goatClone);
+
+								ReplaceMaterial(meshFilter, meshRenderer);
+
+								InitializeNewlyCreatedPersistentEffect(creatureAsset, persistentEffect, newCreatureName);
+
+								updatedCreatures.Add(creatureAsset.CreatureId.ToString());
+
+								Log.Debug($"returning true");
+								return true;
 							}
 							else
-								Log.Error($"attachedNode is null!!!");
-
-							updatedCreatures.Add(creatureAsset.CreatureId.ToString());
+								Log.Debug($"Mesh Filter or Mesh Renderer not found in this update cycle...");
 						}
 						else
-							Log.Debug($"goatClone not found in this update cycle...");
+						{
+							if (assetLoader.FindChild(STR_EffectOrb) != null)
+							{
+								if (effectsToInitialize.Count > 0)
+									Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
+								if (updatedCreatures.Count > 0)
+									Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
+
+								Log.Warning($"Already initialized. Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
+
+								persistentEffect = creatureAsset.GetPersistentEffect();
+								GameObject effectOrb = GetEffectOrb(creatureAsset);
+								GameObject attachedNode = creatureAsset.GetAttachedParentGameObject();
+								if (attachedNode != null)
+								{
+									persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
+									OnPersistentEffectInitialized(creatureAsset, persistentEffectEventArgs);
+								}
+								else
+									Log.Error($"attachedNode is null!!!");
+
+								updatedCreatures.Add(creatureAsset.CreatureId.ToString());
+							}
+							else
+								Log.Debug($"goatClone not found in this update cycle...");
+						}
 					}
+					else
+						Log.Debug($"Asset Loader not found in this update cycle...");
+					Log.Debug($"returning false");
+					return false;
 				}
-				else
-					Log.Debug($"Asset Loader not found in this update cycle...");
-				return false;
+				finally
+				{
+					Log.Unindent();
+				}
+			}
+
+			private static void ReplaceMaterial(MeshFilter meshFilter, MeshRenderer meshRenderer)
+			{
+				Log.Debug($"  meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);");
+				meshFilter.sharedMesh = PrimitiveHelper.GetPrimitiveMesh(PrimitiveType.Sphere);
+				if (meshFilter.sharedMesh != null)
+					Log.Warning($"  meshFilter.sharedMesh is assigned!!!");
+
+				Material baseGlow = Materials.GetMaterial("Standard (Instance)");
+
+				if (baseGlow != null)
+					baseGlow.SetColor("_Color", Color.black);
+
+				meshRenderer.material = baseGlow;  // Reassigning kills hide?
+				meshRenderer.material.shader = Materials.GetShader("Taleweaver/CreatureShader");
+			}
+
+			private static void PositionOrb(GameObject orb)
+			{
+				orb.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
+				orb.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 			}
 
 			static void AddAdornments(GameObject adornmentsParent)
+			{
+				AddSpinLock(adornmentsParent);
+			}
+
+			private static void AddSpinLock(GameObject adornmentsParent)
 			{
 				GameObject spinLock = Prefabs.Clone(STR_SpinLockIndicator);
 				spinLock.name = STR_SpinLockIndicator;
 				spinLock.transform.SetParent(adornmentsParent.transform);
 				spinLock.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 				spinLock.transform.localPosition = new Vector3(0, -0.7f, 0);
-				spinLock.transform.localEulerAngles =		new Vector3(0, 0, 0);
+				spinLock.transform.localEulerAngles = new Vector3(0, 0, 0);
 			}
 
 			public static void OnPersistentEffectInitialized(object sender, PersistentEffectEventArgs ea)
@@ -374,72 +346,95 @@ namespace TaleSpireCore
 			static PersistentEffectEventArgs persistentEffectEventArgs = new PersistentEffectEventArgs();
 			static IOldPersistentEffect draggingPersistentEffect;
 
-			private static void InitializeNewlyCreatedPersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string miniName)
+			private static void InitializeNewlyCreatedPersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string newCreatureName)
 			{
+				Log.Indent();
 				GameObject assetLoader = creatureAsset.GetAssetLoader();
 				if (assetLoader != null)
 				{
-					GameObject effectOrb = assetLoader.FindChild(STR_UninitializedMiniMeshName);
-					effectOrb.name = STR_EffectOrb;  // renaming Goat_01(Clone) to EffectOrb to indicate we have added effects and re-meshed the goat!
-					effectOrb.transform.localEulerAngles = new Vector3(0, 0, 0);
-					AddAdornments(effectOrb);
-					GameObject attachedNode = AddChild(assetLoader, STR_AttachedNode);
-					attachedNode.transform.localScale = new Vector3(1, 1, 1);
-					attachedNode.transform.localPosition = new Vector3(0.1f, -0.2f, 0.045f);
-					attachedNode.transform.localEulerAngles = new Vector3(0, 0, 0);
+					GameObject effectOrb = InitializeOrb(assetLoader);
+					GameObject attachedNode = AddAttachmentNode(assetLoader);
 
-					Log.Warning($"miniName is {miniName}");
-					// TODO: Fix the naming issue.
-
-					//if (string.IsNullOrWhiteSpace(miniName))
-					//{
-					//	miniName = creatureAsset.GetOnlyCreatureName();
-					//	if (string.IsNullOrWhiteSpace(miniName) || miniName == "Goat 01")
-					//		miniName = "Effect";
-					//}
-
-					//CreatureManager.SetCreatureName(creatureAsset.Creature.CreatureId, miniName);
-
-					AttachEffect(creatureAsset, persistentEffect);
+					AttachEffect(creatureAsset, persistentEffect, newCreatureName);
 
 					persistentEffectEventArgs.Set(creatureAsset, assetLoader, effectOrb, attachedNode, persistentEffect);
 					OnPersistentEffectInitialized(creatureAsset, persistentEffectEventArgs);
 				}
+				Log.Unindent();
 			}
 
-			private static void AttachEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
+			private static GameObject AddAttachmentNode(GameObject assetLoader)
 			{
-				if (creatureAsset == null)
+				GameObject attachedNode = AddChild(assetLoader, STR_AttachedNode);
+				attachedNode.transform.localScale = new Vector3(1, 1, 1);
+				attachedNode.transform.localPosition = new Vector3(0.1f, -0.2f, 0.045f);
+				attachedNode.transform.localEulerAngles = new Vector3(0, 0, 0);
+				return attachedNode;
+			}
+
+			/// <summary>
+			/// Initializes the effect orb (the sphere that represents the effect when it's visible).
+			/// </summary>
+			private static GameObject InitializeOrb(GameObject assetLoader)
+			{
+				GameObject effectOrb = assetLoader.FindChild(STR_UninitializedMiniMeshName);
+				effectOrb.name = STR_EffectOrb;  // renaming Goat_01(Clone) to EffectOrb to indicate we have added effects and re-meshed the goat!
+				effectOrb.transform.localEulerAngles = new Vector3(0, 0, 0);
+				AddAdornments(effectOrb);
+				return effectOrb;
+			}
+
+			static List<SavedCreatureEffect> savedEffectsData = new List<SavedCreatureEffect>();
+			static List<SavedCreatureEffect> creaturesRenameData = new List<SavedCreatureEffect>();
+
+			private static void AttachEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string newCreatureName)
+			{
+				Log.Indent("AttachEffect(CreatureBoardAsset, IOldPersistentEffect)");
+
+				try
 				{
-					Log.Error($"AttachEffect - creatureAsset is null!");
-					return;
-				}
+					if (persistentEffect == null)
+					{
+						Log.Error($"AttachEffect - persistentEffect is null!!!");
+						return;
+					}
 
-				if (persistentEffect == null)
+					if (creatureAsset == null)
+					{
+						Log.Error($"AttachEffect - creatureAsset is null!");
+						return;
+					}
+
+					if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
+					{
+						Log.Debug($"nameData.Add(new SavedCreatureEffect(creatureAsset.CreatureId, persistentEffect));");
+						savedEffectsData.Add(new SavedCreatureEffect(creatureAsset.CreatureId, persistentEffect, newCreatureName));
+					}
+
+					AttachEffects(creatureAsset, persistentEffect);
+
+					//SavePersistentEffect(creatureAsset, persistentEffect);
+				}
+				finally
 				{
-					Log.Error($"AttachEffect - persistentEffect is null!!!");
+					Log.Unindent();
 				}
-
-				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
-					SavePersistentEffect(creatureAsset, persistentEffect);
-
-				AttachEffect(creatureAsset, persistentEffect.EffectName);
-				
 			}
 
 			private static void SavePersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 			{
-				Log.Debug($"JsonConvert.SerializeObject(persistentEffect);");
+				Log.Indent();
 				string defaultNewEffect = JsonConvert.SerializeObject(persistentEffect);
 				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
 				{
-					Log.Warning($"  Creature has no attached data - Adding {defaultNewEffect}!");
+					Log.Warning($"StatMessaging.SetInfo({creatureAsset.CreatureId}, {defaultNewEffect})");
 					StatMessaging.SetInfo(creatureAsset.CreatureId, STR_PersistentEffect, defaultNewEffect);
 				}
 				else
 				{
 					Log.Warning($"  Attached data = \"{creatureAsset.GetAttachedData()[STR_PersistentEffect]}\"");
 				}
+				Log.Unindent();
 			}
 
 			private static GameObject AddChild(GameObject parent, string nodeName)
@@ -463,13 +458,11 @@ namespace TaleSpireCore
 				return goatClone != null;
 			}
 
-			private static void AttachEffect(CreatureBoardAsset creatureAsset, string defaultNewEffect = "MediumFire")
+			private static void AttachEffects(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 			{
-				IOldPersistentEffect persistentEffect = creatureAsset.GetPersistentEffect();
-
+				Log.Indent();
 				if (persistentEffect != null)
 				{
-					Log.Warning($"Adding effect \"{persistentEffect.EffectName}\"...");
 					if (persistentEffect is SuperPersistentEffect superPersistentEffect)
 					{
 						for (int i = 0; i < superPersistentEffect.EffectProperties.Count; i++)
@@ -477,17 +470,24 @@ namespace TaleSpireCore
 							string prefix = i.ToString().PadLeft(2, '0');
 							EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
 							// TODO: Make sure we can read and write to the correct property in the correct effect!
+							Log.Warning($"prefix == \"{prefix}\"");
+							Log.Warning($"Adding effect \"{effectProperties.EffectName}\"...");
 							Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
 						}
 					}
 					else
+					{
 						Spells.AttachEffect(creatureAsset, persistentEffect.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
+					}
 				}
 				else
 				{
-					Log.Warning($"Adding default \"{defaultNewEffect}\"...");
-					Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
+					Log.Error($"Unable to attach any effects. {nameof(persistentEffect)} is null!");
+					//Log.Warning($"Adding \"{defaultNewEffect}\"...");
+					//Spells.AttachEffect(creatureAsset, defaultNewEffect, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
 				}
+
+				Log.Unindent();
 			}
 
 			public static bool IsPersistentEffect(string creatureId)
@@ -609,11 +609,115 @@ namespace TaleSpireCore
 			{
 				return IsRotationLocked(creatureId.ToString());
 			}
+
 			public static bool IsPersistentEffectHidden(NGuid creatureId)
 			{
 				return IsHidden(creatureId.ToString());
 			}
 
+			private static void InitializeEffectsIfNecessary()
+			{
+				if (effectsToInitialize.Count != 0)
+				{
+					foreach (QueuedEffect queuedEffect in effectsToInitialize)
+						queuedEffect.Initialize();
+
+					CleanUp();
+				}
+			}
+
+			private static void CleanUp()
+			{
+				if (updatedCreatures.Count > 0)
+				{
+					foreach (string creatureId in updatedCreatures)
+						RemoveEffectToInitialize(creatureId);
+
+					updatedCreatures.Clear();
+				}
+			}
+
+			private static void RemoveEffectToInitialize(string creatureId)
+			{
+				List<QueuedEffect> matchingEffects = effectsToInitialize.Where(x => x.Id == creatureId).ToList();
+				foreach (QueuedEffect miniEffectName in matchingEffects)
+					effectsToInitialize.Remove(miniEffectName);
+			}
+
+			public static void Update()
+			{
+				InitializeEffectsIfNecessary();
+				if (Time.time - boardActivationTime < 60)
+				{
+					frameCount++;
+					if (frameCount > 5) // Every five frames we will check for new minis...
+					{
+						frameCount = 0;
+						CheckForNewMinis();
+					}
+				}
+
+				if (savedEffectsData.Count > 0)
+					ProcessSavedEffectsData();
+				if (creaturesRenameData.Count > 0)
+					ProcessCreatureRenameData();
+			}
+
+			static void ProcessCreatureRenameData()
+			{
+				List<SavedCreatureEffect> creaturesToRemove = new List<SavedCreatureEffect>();
+				foreach (SavedCreatureEffect creatureRenameData in creaturesRenameData)
+				{
+					if (DateTime.Now - creatureRenameData.CreationTime > TimeSpan.FromMilliseconds(500))
+					{
+						// 500ms have passed. rename...
+						CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureRenameData.ToString());
+						if (creatureBoardAsset != null)
+						{
+							Log.Warning($"OMG - We are setting the creature's name to {creatureRenameData.NewCreatureName}!!!");
+							creatureBoardAsset.Creature.name = creatureRenameData.NewCreatureName;
+						}
+
+						creaturesToRemove.Add(creatureRenameData);
+					}
+				}
+
+				foreach (SavedCreatureEffect creatureToRemove in creaturesToRemove)
+					creaturesRenameData.Remove(creatureToRemove);
+			}
+
+			static void ProcessSavedEffectsData()
+			{
+				List<SavedCreatureEffect> creaturesToRemove = new List<SavedCreatureEffect>();
+				foreach (SavedCreatureEffect savedCreatureEffect in savedEffectsData)
+				{
+					if (DateTime.Now - savedCreatureEffect.CreationTime > TimeSpan.FromMilliseconds(200))
+					{
+						// 200ms have passed. Initialize...
+						StorePersistentData(savedCreatureEffect.ID, savedCreatureEffect.PersistentEffect);
+
+						if (!string.IsNullOrWhiteSpace(savedCreatureEffect.NewCreatureName))
+							creaturesRenameData.Add(savedCreatureEffect);  // Need to rename it next...
+
+						creaturesToRemove.Add(savedCreatureEffect);
+					}
+				}
+
+				foreach (SavedCreatureEffect creatureToRemove in creaturesToRemove)
+					savedEffectsData.Remove(creatureToRemove);
+			}
+
+			static void StorePersistentData(CreatureGuid iD, IOldPersistentEffect persistentEffect)
+			{
+				Log.Indent();
+				CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(iD.ToString());
+				if (creatureBoardAsset != null)
+					SavePersistentEffect(creatureBoardAsset, persistentEffect);
+				else
+					Log.Error($"creatureBoardAsset is null!");
+
+				Log.Unindent();
+			}
 		}
 	}
 }

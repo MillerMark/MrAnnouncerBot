@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using Bounce.Unmanaged;
 using UnityEngine;
 using TaleSpireCore;
+using System.Runtime.CompilerServices;
 
 namespace TaleSpireExplore
 {
 	public static class PersistentEffectsManager
 	{
+		const string STR_SmartPropertyPrefix = "$";
 		static FrmPropertyList frmPropertyList;
 
 		static void AddCharacterMenu(
@@ -21,16 +23,13 @@ namespace TaleSpireExplore
 		{
 			if (availabilityCheck == null)
 				availabilityCheck = IsPersistentEffect;
-			RadialUI.RadialUIPlugin
-				.AddOnCharacter(
-					Guid.NewGuid().ToString(),
-					new MapMenu.ItemArgs
-					{
-						Action = action,
-						Title = title,
-						CloseMenuOnActivate = true,
-						Icon = LoadIcon(iconFileName)
-					},
+			RadialUI.RadialUIPlugin.RegisterAddCharacter(new MapMenu.ItemArgs
+			{
+				Action = action,
+				Title = title,
+				CloseMenuOnActivate = true,
+				Icon = LoadIcon(iconFileName)
+			},
 					availabilityCheck);
 		}
 
@@ -41,13 +40,15 @@ namespace TaleSpireExplore
 
 			CreatureBoardAsset creatureAtMenu = RadialUI.RadialUIPlugin.CreatureAtMenu;
 
+			Talespire.Log.Warning($"DuplicateEffectAtMenu: \"{menuItem}\", \"{arg2}\"");
+			Talespire.Log.Warning($"CreatureAtMenu: {creatureAtMenu}");
+
 			if (creatureAtMenu != null)
 			{
 				IOldPersistentEffect persistentEffect = creatureAtMenu.GetPersistentEffect();
-				Talespire.PersistentEffects.Duplicate(persistentEffect, creatureAtMenu.GetOnlyCreatureName());
+				string persistentEffectData = creatureAtMenu.GetPersistentEffectData();
+				Talespire.PersistentEffects.Duplicate(persistentEffect, creatureAtMenu.GetOnlyCreatureName(), persistentEffectData);
 			}
-			Talespire.Log.Warning($"DuplicateEffectAtMenu: {menuItem}, {arg2}");
-			Talespire.Log.Warning($"CreatureAtMenu: {RadialUI.RadialUIPlugin.CreatureAtMenu}");
 		}
 
 		static void HideOrb(MapMenuItem menuItem, object arg2)
@@ -115,59 +116,176 @@ namespace TaleSpireExplore
 				HidePersistentEffectUI();
 		}
 
-		static void ModifyProperty(PersistentEffectEventArgs ea, string propertyPath, string prefix = null)
+		static void ModifyProperty(PersistentEffectEventArgs ea, string propertyPath, string prefix = null, string propertyKey = null, bool logDetails = false)
 		{
+			if (logDetails)
+				Talespire.Log.Debug($"ModifyProperty({propertyPath})");
+			if (propertyKey == null)
+				propertyKey = propertyPath;
+
 			GameObject childNodeToModify = ea.AttachedNode.GetChildNodeStartingWith(prefix);
 			if (childNodeToModify == null)
 			{
 				Talespire.Log.Error($"childNodeToModify == null");
 				childNodeToModify = ea.AttachedNode;
 			}
-			PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(childNodeToModify, propertyPath, true);
+			PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(childNodeToModify, propertyPath, logDetails);
 			if (propertyModDetails == null)
 			{
 				Talespire.Log.Error($"propertyModDetails == null for property {propertyPath}");
 				return;
 			}
-			Talespire.Log.Debug($"propertyModDetails.GetPropertyType() = {propertyModDetails.GetPropertyType()}");
-			BasePropertyChanger propertyChanger = PropertyChangerManager.GetPropertyChanger(
-				propertyModDetails.GetPropertyType());
+			if (logDetails)
+				Talespire.Log.Debug($"propertyModDetails.GetPropertyType() = {propertyModDetails.GetPropertyType()}");
+			BasePropertyChanger propertyChanger = PropertyChangerManager.GetPropertyChanger(propertyModDetails.GetPropertyType());
+
 			if (propertyChanger != null)
 			{
-				propertyChanger.Name = propertyPath;
-				propertyChanger.Value = ea.PersistentEffect.Properties[propertyPath];
+				propertyChanger.FullPropertyPath = propertyPath;
+				// TODO: I think we need to check to see if PersistentEffect is a new effect (and then use its EffectProperties accordingly).
+				if (ea.PersistentEffect is SuperPersistentEffect superPersistentEffect && prefix != null)
+				{
+					Talespire.Log.Warning($"prefix = \"{prefix}\"");
+					string numberStr;
+					if (prefix.StartsWith("0") && prefix.Length > 1)
+						numberStr = prefix.Remove(0, 1);
+					else
+						numberStr = prefix;
+
+					if (!int.TryParse(numberStr, out int index))
+					{
+						Talespire.Log.Error($"Unable to parse \"{numberStr}\" into a number.");
+						index = 0;
+					}
+
+					if (index >= 0 && index < superPersistentEffect.EffectProperties.Count)
+					{
+						EffectProperties effectProperties = superPersistentEffect.EffectProperties[index];
+						ChangeProperty(effectProperties.Properties, propertyKey, propertyPath, propertyModDetails, propertyChanger, logDetails);
+					}
+					else
+						Talespire.Log.Error($"index ({index}) out of range. Unable to modify property.");
+
+					Talespire.Log.Warning($"ModifyProperty TODO: PersistentEffect is a new SuperPersistentEffect (use its EffectProperties accordingly)!");
+				}
+				else
+				{
+					ChangeProperty(ea.PersistentEffect.Properties, propertyKey, propertyPath, propertyModDetails, propertyChanger, logDetails);
+				}
+			}
+		}
+
+		private static void ChangeProperty(Dictionary<string, string> properties, string propertyKey, string propertyPath, PropertyModDetails propertyModDetails, BasePropertyChanger propertyChanger, bool logDetails)
+		{
+			if (logDetails)
+			{
+				Talespire.Log.Debug($"");
+				Talespire.Log.Debug($"---");
+				Talespire.Log.Warning($"Properties[propertyKey] = {properties[propertyKey]}");
+			}
+
+			propertyChanger.Value = properties[propertyKey];
+
+			if (logDetails)
+			{
 				Talespire.Log.Warning($"Setting {propertyPath} to {propertyChanger.Value}");
 				Talespire.Log.Warning($"propertyModDetails.SetValue(propertyChanger) !!! Hope this works!!!");
-				propertyModDetails.SetValue(propertyChanger);
+			}
+
+			propertyModDetails.SetValue(propertyChanger);
+
+			if (logDetails)
+			{
+				Talespire.Log.Debug($"---");
+				Talespire.Log.Debug($"");
 			}
 		}
 
 		static void PersistentEffects_PersistentEffectInitialized(object sender, PersistentEffectEventArgs ea)
 		{
-			Talespire.PersistentEffects
-				.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationIsLocked && ea.CreatureAsset.IsVisible);
+			// Guards are needed when we duplicate...
+			if (Guard.IsNull(ea, nameof(ea))) return;
+			if (Guard.IsNull(ea.PersistentEffect, nameof(ea.PersistentEffect))) return;
+			if (Guard.IsNull(ea.CreatureAsset, nameof(ea.CreatureAsset))) return;
+			if (Guard.IsNull(ea.AttachedNode, nameof(ea.AttachedNode))) return;
+			Talespire.Log.Indent();
+			Talespire.Log.Debug($"All guarded data is good");
+
+			Talespire.PersistentEffects.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationIsLocked && ea.CreatureAsset.IsVisible);
 			ea.PersistentEffect.Initialize(ea.CreatureAsset);
+
 			if (ea.PersistentEffect is SuperPersistentEffect superPersistentEffect)
 			{
-				foreach (EffectProperties effectProperties in superPersistentEffect.EffectProperties)
+				for (int i = 0; i < superPersistentEffect.EffectProperties.Count; i++)
 				{
+					string prefix = i.ToString().PadLeft(2, '0');
+					GameObject childNode = ea.AttachedNode.GetChildNodeStartingWith(prefix);
+					CompositeEffect originalCompositeEffect = null;
+
+					if (childNode == null)
+					{
+						Talespire.Log.Error($"childNode == null - unable to find child node starting with {prefix}");
+						Talespire.Log.Hierarchy(ea.AttachedNode);
+					}
+					else
+						originalCompositeEffect = CompositeEffect.GetFromGameObject(childNode);
+
+					if (originalCompositeEffect != null)
+						Talespire.Log.Warning($"Found the originalCompositeEffect!!!");
+					else
+						Talespire.Log.Error($"DID NOT FIND the originalCompositeEffect matching \"{childNode}\"!!!");
+
+					EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
+
 					foreach (string propertyPath in effectProperties.Properties.Keys)
-						// TODO: Use Prefix instead of EffectName.
-						ModifyProperty(ea, propertyPath, effectProperties.EffectName);
+					{
+
+						if (propertyPath.StartsWith(STR_SmartPropertyPrefix))  // SmartProperty
+						{
+							if (originalCompositeEffect == null)
+							{
+								Talespire.Log.Error($"DID NOT FIND originalCompositeEffect for {childNode}!!! Unable to get smart properties from it!");
+								break;
+							}
+							string smartPropertyName = propertyPath.Substring(1);
+							SmartProperty smartProperty = originalCompositeEffect.SmartProperties.FirstOrDefault(x => x.Name == smartPropertyName);
+							if (smartProperty == null)
+							{
+								Talespire.Log.Error($"smartProperty {smartPropertyName} NOT found!!!");
+							}
+							else
+							{
+								foreach (string smartPropertyPath in smartProperty.PropertyPaths)
+								{
+									string propertyKey = propertyPath;
+									Talespire.Log.Debug($"ModifyProperty(ea, {smartPropertyPath}, {prefix}, {propertyKey});");
+									ModifyProperty(ea, smartPropertyPath, prefix, propertyKey);
+								}
+							}
+						}
+						else
+						{
+							Talespire.Log.Debug($"ModifyProperty(ea, {propertyPath}, {prefix});");
+							ModifyProperty(ea, propertyPath, prefix);
+						}
+					}
 				}
-			} else
+			}
+			else
 				foreach (string propertyPath in ea.PersistentEffect.Properties.Keys)
 					ModifyProperty(ea, propertyPath);
+
+			Talespire.Log.Unindent();
 		}
 
 		static void RemoveCharacterMenu(string menuText)
 		{
-			RadialUI.RadialUIPlugin.AddOnRemoveCharacter(Guid.NewGuid().ToString(), menuText, IsPersistentEffect);
+			RadialUI.RadialUIPlugin.RegisterRemoveCharacter(menuText, IsPersistentEffect);
 		}
 
 		static void RemoveGmMenu(string menuText)
 		{
-			RadialUI.RadialUIPlugin.AddOnRemoveSubmenuGm(Guid.NewGuid().ToString(), menuText, IsPersistentEffect);
+			RadialUI.RadialUIPlugin.RegisterRemoveSubmenuGm(menuText, IsPersistentEffect);
 		}
 
 		static void SetHidden(bool value)
@@ -244,12 +362,29 @@ namespace TaleSpireExplore
 		static void ShowPersistentEffectUI(CreatureBoardAsset mini)
 		{
 			Talespire.Log.Debug($"ShowPersistentEffectUI...");
+			if (mini == null)
+			{
+				Talespire.Log.Error($"mini is NULL! - exiting!");
+				return;
+			}
+
 			if (frmPropertyList != null)
 				HidePersistentEffectUI();
 
 			frmPropertyList = new FrmPropertyList();
 			GameObject parentForAttachedObjects = mini.GetAttachedParentGameObject();
+			if (parentForAttachedObjects == null)
+			{
+				Talespire.Log.Error($"parentForAttachedObjects is NULL! - exiting!");
+				return;
+			}
+
 			IEnumerable<Transform> children = parentForAttachedObjects.transform.Children();
+			if (children == null)
+			{
+				Talespire.Log.Error($"children is NULL! - exiting!");
+				return;
+			}
 			frmPropertyList.Instance = parentForAttachedObjects;
 
 			CompositeEffect originalCompositeEffect = null;
@@ -274,16 +409,9 @@ namespace TaleSpireExplore
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
 			else // Add SmartProperties (which we can get from the Composite).
 				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
-				{
-					// TODO: Get the correct type, support multiple linked properties...
-					frmPropertyList.AddProperty(smartProperty.Name, typeof(Color), smartProperty.PropertyPaths.FirstOrDefault());
-				}
-
+					frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, typeof(Color), string.Join(";", smartProperty.PropertyPaths.ToArray()));
 
 			IOldPersistentEffect persistentEffect = mini.GetPersistentEffect();
-			// TODO: Use persistentEffect to fill in the rest of the properties we want change.
-
-
 			frmPropertyList.Show();
 		}
 

@@ -115,12 +115,17 @@ namespace TaleSpireCore
 
 				foreach (PropertyChangerDto propertyChangerDto in Props)
 				{
-					Talespire.Log.Debug($"{propertyChangerDto.Name}: {propertyChangerDto.Type};");
+					if (string.IsNullOrWhiteSpace(propertyChangerDto.FullPropertyPath))
+					{
+						Talespire.Log.Error($"propertyChangerDto.FullPropertyPath for type {propertyChangerDto.Type} with value {propertyChangerDto.Value} is null or empty!");
+						continue;
+					}
+					Talespire.Log.Debug($"{propertyChangerDto.FullPropertyPath}: {propertyChangerDto.Type};");
 					BasePropertyChanger changer = PropertyChangerFactory.CreateFrom(propertyChangerDto);
 					if (changer != null)
 					{
 						Talespire.Log.Debug($"Found property changer ({propertyChangerDto.Type})!");
-						changer.Name = propertyChangerDto.Name;
+						changer.FullPropertyPath = propertyChangerDto.FullPropertyPath;
 						changer.Value = propertyChangerDto.Value;
 						properties.Add(changer);
 					}
@@ -133,11 +138,11 @@ namespace TaleSpireCore
 
 		void RemoveExistingProperty(string name)
 		{
-			BasePropertyChanger propertyChanger = properties.FirstOrDefault(x => x.Name == name);
+			BasePropertyChanger propertyChanger = properties.FirstOrDefault(x => x.FullPropertyPath == name);
 			if (propertyChanger != null)
 				properties.Remove(propertyChanger);
 
-			PropertyChangerDto propDto = Props.FirstOrDefault(y => y.Name == name);
+			PropertyChangerDto propDto = Props.FirstOrDefault(y => y.FullPropertyPath == name);
 			if (propDto != null)
 				Props.Remove(propDto);
 		}
@@ -145,7 +150,7 @@ namespace TaleSpireCore
 		public void AddProperty(BasePropertyChanger propertyChanger)
 		{
 			InitializePropertyVars();
-			RemoveExistingProperty(propertyChanger.Name);
+			RemoveExistingProperty(propertyChanger.FullPropertyPath);
 			properties.Add(propertyChanger);
 			Props.Add(propertyChanger.ToPropertyChangerDto());
 		}
@@ -165,9 +170,14 @@ namespace TaleSpireCore
 
 			foreach (var basePropertyDto in properties)
 			{
-				Talespire.Log.Debug($">> Modifying {basePropertyDto.Name} with \"{basePropertyDto.Value}\"");
+				if (string.IsNullOrWhiteSpace(basePropertyDto.FullPropertyPath))
+				{
+					Talespire.Log.Error($"basePropertyDto.FullPropertyPath is null or empty.");
+					continue;
+				}
+				Talespire.Log.Debug($">> Modifying {basePropertyDto.FullPropertyPath} with \"{basePropertyDto.Value}\"");
 
-				if (refreshableProperties.Contains(basePropertyDto.Name))
+				if (refreshableProperties.Contains(basePropertyDto.FullPropertyPath))
 					needRefresh = true;
 
 				basePropertyDto.ModifyProperty(effect);
@@ -191,7 +201,8 @@ namespace TaleSpireCore
 		[Browsable(false)]
 		public GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
-			//Talespire.Log.Debug($"CreateOrFindUnsafe...");
+			Talespire.Log.Debug($"CreateOrFindUnsafe...");
+
 			//if (ExistingChildName != null)
 			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
 			//else
@@ -273,7 +284,12 @@ namespace TaleSpireCore
 						Talespire.Log.Error($"nestedEffectDto == null!");
 
 			if (instance != null)
+			{
+				Talespire.Log.Warning($"compositeEffectMap[{instance}] = this (CompositeEffect);");
 				compositeEffectMap[instance] = this;
+			}
+			else
+				Talespire.Log.Error($"Unable to map newly-created composite effect to instance {instance}.");
 
 			// TODO: Worried about a slow memory leak here. If we can hook a unity event for when GOs are destroyed, we could plug the leak by removing those elements from compositeEffectMap.
 
@@ -301,9 +317,18 @@ namespace TaleSpireCore
 		
 		public static CompositeEffect CreateFrom(string json, string instanceId = null)
 		{
-			CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
-			compositeEffect.RebuildPropertiesAfterLoad();
-			return compositeEffect;
+			Talespire.Log.Indent("CompositeEffect.CreateFrom");
+			try
+			{
+				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
+				compositeEffect.RebuildPropertiesAfterLoad();
+
+				return compositeEffect;
+			}
+			finally
+			{
+				Talespire.Log.Unindent();
+			}
 		}
 
 		public void RefreshIfNecessary(GameObject gameObject)

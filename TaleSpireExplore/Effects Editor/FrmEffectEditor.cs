@@ -729,7 +729,7 @@ namespace TaleSpireExplore
 				if (propertyChanger != null)
 				{
 					Talespire.Log.Debug($"Found propertyChanger!!!");
-					propertyChanger.Name = GetFullPropertyPath(trvProperties.SelectedNode);
+					propertyChanger.FullPropertyPath = GetFullPropertyPath(trvProperties.SelectedNode);
 					gameObjectNode.CompositeEffect.AddProperty(propertyChanger);
 				}
 				CreateJson();

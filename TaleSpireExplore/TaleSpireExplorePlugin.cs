@@ -234,7 +234,6 @@ namespace TaleSpireExplore
 		void InitializeTarget()
 		{
 			LoadKnownEffects();
-			Talespire.Log.Debug($"InitializeTarget / Toggling Flashlight...");
 			Talespire.Log.Debug($"  Talespire.Target.On();");
 			Talespire.Target.On();
 			Talespire.Log.Debug($"  Talespire.Target.Off();");
@@ -284,7 +283,15 @@ namespace TaleSpireExplore
 					Talespire.Log.Exception(ex);
 				}
 			}
+
+			if (frmEffectList == null)
+			{
+				frmEffectList = new FrmEffectList();
+				frmEffectList.Show();
+			}
 		}
+
+		FrmEffectList frmEffectList;
 
 		private static void AddDispatcherToScene()
 		{

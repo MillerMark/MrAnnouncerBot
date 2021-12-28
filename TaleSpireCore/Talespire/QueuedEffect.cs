@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using static TaleSpireCore.Talespire;
 
 namespace TaleSpireCore
 {
@@ -25,6 +26,51 @@ namespace TaleSpireCore
 		public QueuedEffect()
 		{
 
+		}
+
+		private static void InitializeFromEffectName(string creatureId, string effectName, string name)
+		{
+			Log.Indent();
+			CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
+
+			if (creatureAsset != null)
+				PersistentEffects.InitializeMiniAsEffect(creatureAsset, effectName, name);
+			else
+				Log.Debug($"creatureAsset is null this update cycle....");
+			Log.Unindent();
+		}
+
+		private static void InitializeFromPersistentEffect(string creatureId, IOldPersistentEffect persistentEffect, string newCreatureName)
+		{
+			Log.Indent();
+			CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
+
+			if (persistentEffect == null)
+			{
+				Log.Error($"persistentEffect is null!");
+				persistentEffect = new OldPersistentEffect()
+				{
+					EffectName = "R1.WaterWallSegment1"
+				};
+			}
+
+			if (creatureAsset != null)
+				PersistentEffects.InitializeMiniFromPersistentEffect(creatureAsset, persistentEffect, newCreatureName);
+			else
+				Log.Warning($"creatureAsset is null (ID = {creatureId}) this update cycle....");
+
+			Log.Unindent();
+		}
+
+		public void Initialize()
+		{
+			Log.Indent();
+			if (EffectName != null)
+				InitializeFromEffectName(Id, EffectName, MiniName);
+			else
+				InitializeFromPersistentEffect(Id, PersistentEffect, MiniName);
+
+			Log.Unindent();
 		}
 	}
 }

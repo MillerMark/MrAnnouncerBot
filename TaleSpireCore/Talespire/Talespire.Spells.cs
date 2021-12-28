@@ -90,6 +90,8 @@ namespace TaleSpireCore
 					return;
 				}
 
+				Log.Indent();
+
 				spell.name = GetAttachedEffectName(spellId, prefix);
 
 				GameObject creatureBase = creatureBoardAsset.GetAssetLoader();
@@ -114,6 +116,8 @@ namespace TaleSpireCore
 					Instances.AddTemporal(spell, lifeTime, 2f * shrinkTime / 3f, enlargeTime, shrinkTime);
 				else if (enlargeTime > 0)
 					Instances.EnlargeSoon(spell, enlargeTime);
+
+				Log.Unindent();
 			}
 
 			public static void PlayEffectAtCreatureBase(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)

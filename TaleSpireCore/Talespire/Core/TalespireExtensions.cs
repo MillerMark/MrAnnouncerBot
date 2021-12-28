@@ -5,6 +5,7 @@ using UnityEngine;
 using LordAshes;
 using Newtonsoft.Json;
 using System.Xml.Linq;
+using Unity.Entities;
 
 namespace TaleSpireCore
 {
@@ -25,20 +26,31 @@ namespace TaleSpireCore
 				return new Dictionary<string, string>();
 		}
 
-		public static bool HasAttachedData(this CreatureBoardAsset asset, string key)
+		public static bool HasAttachedData(this CreatureBoardAsset asset, string key, bool logErrors = false)
 		{
+			if (logErrors)
+				Talespire.Log.Debug($"Checking attached data for \"{asset.Creature.Name}\"...");
+
 			int sizeZeroIndex = asset.Creature.Name.IndexOf(Talespire.PersistentEffects.STR_RichTextSizeZero);
 			if (sizeZeroIndex >= 0)
 			{
 				string json = asset.Creature.Name.Substring(sizeZeroIndex + Talespire.PersistentEffects.STR_RichTextSizeZero.Length);
 				Dictionary<string, string> state = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 				if (state == null)
+				{
+					if (logErrors)
+						Talespire.Log.Error($"Deserialization failed!");
 					return false;
+				}
 
 				return state.ContainsKey(key);
 			}
 			else
+			{
+				if (logErrors)
+					Talespire.Log.Error($"\"{Talespire.PersistentEffects.STR_RichTextSizeZero}\" marker not found in name!");
 				return false;
+			}
 		}
 
 		public static Vector3 GetVector3(this VectorDto vectorDto)
@@ -125,11 +137,27 @@ namespace TaleSpireCore
 
 		public static string GetOnlyCreatureName(this CreatureBoardAsset creatureAsset)
 		{
-			string name = creatureAsset.Creature.name;
+			string name;
+			if (creatureAsset.CreatureLoaders.Length > 0 && creatureAsset.CreatureLoaders[0].LoadedAsset?.name != null)
+				name = creatureAsset.CreatureLoaders[0].LoadedAsset.name;
+			else
+				name = creatureAsset.Creature.name;
 			int sizeIndex = name.IndexOf("<size=0>");
 			if (sizeIndex > 0)
 				return name.Substring(0, sizeIndex);
 			return name;
+		}
+
+		public static string GetPersistentEffectData(this CreatureBoardAsset creatureAsset)
+		{
+			Dictionary<string, string> dictionaries = creatureAsset.GetAttachedData();
+
+			if (dictionaries == null)
+				return null;
+
+			if (dictionaries.ContainsKey(Talespire.PersistentEffects.STR_PersistentEffect))
+				return dictionaries[Talespire.PersistentEffects.STR_PersistentEffect];
+			return null;
 		}
 
 		public static IOldPersistentEffect GetPersistentEffect(this CreatureBoardAsset creatureAsset)
@@ -148,7 +176,15 @@ namespace TaleSpireCore
 				{
 					superPersistentEffect = JsonConvert.DeserializeObject<SuperPersistentEffect>(effectData);
 					if (superPersistentEffect != null)
-						Talespire.Log.Warning($"Found a superPersistentEffect!!!");
+					{
+						if (string.IsNullOrWhiteSpace(superPersistentEffect.EffectName))
+						{
+							Talespire.Log.Warning($"ConvertOldToNewPersistentEffect(\"{effectData}\")");
+							superPersistentEffect = ConvertOldToNewPersistentEffect(effectData);
+						}
+						else
+							Talespire.Log.Warning($"Found a superPersistentEffect - {superPersistentEffect.EffectName}!!!");
+					}
 				}
 				catch (Exception ex)
 				{
@@ -157,19 +193,7 @@ namespace TaleSpireCore
 
 				if (superPersistentEffect == null)
 				{
-					try
-					{
-						superPersistentEffect = JsonConvert.DeserializeObject<OldPersistentEffect>(effectData);
-						if (superPersistentEffect != null)
-						{
-							superPersistentEffect = new SuperPersistentEffect(superPersistentEffect);
-							Talespire.Log.Warning($"Converting to a new SuperPersistentEffect!!!!");
-						}
-					}
-					catch (Exception ex)
-					{
-						superPersistentEffect = null;
-					}
+					superPersistentEffect = ConvertOldToNewPersistentEffect(effectData);
 				}
 
 				if (superPersistentEffect == null)
@@ -177,6 +201,22 @@ namespace TaleSpireCore
 			}
 
 			return superPersistentEffect;
+		}
+
+		private static IOldPersistentEffect ConvertOldToNewPersistentEffect(string effectData)
+		{
+			try
+			{
+				IOldPersistentEffect oldPersistentEffect = JsonConvert.DeserializeObject<OldPersistentEffect>(effectData);
+				if (oldPersistentEffect != null)
+					return new SuperPersistentEffect(oldPersistentEffect);
+			}
+			catch (Exception ex)
+			{
+				return null;
+			}
+
+			return null;
 		}
 
 		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
