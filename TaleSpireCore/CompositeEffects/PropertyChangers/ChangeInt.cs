@@ -15,7 +15,6 @@ namespace TaleSpireCore
 		{
 		}
 
-
 		protected override object ParseValue()
 		{
 			if (int.TryParse(Value, out int result))

@@ -656,7 +656,7 @@ namespace TaleSpireExplore
 			}
 		}
 
-		string GetFullPropertyPath(TreeNode node)
+		string GetFullPropertyPath(TreeNode node, bool includeParentNodes = false)
 		{
 			List<string> propNames = new List<string>();
 			while (node != null)
@@ -664,6 +664,17 @@ namespace TaleSpireExplore
 				propNames.Insert(0, node.Text);
 				node = node.Parent;
 			}
+
+			if (includeParentNodes)
+			{
+				TreeNode gameObjectParent = trvEffectHierarchy.SelectedNode;
+				while (gameObjectParent != null && gameObjectParent != trvEffectHierarchy.Nodes[0])
+				{
+					propNames.Insert(0, $"[{gameObjectParent.Text}]");
+					gameObjectParent = gameObjectParent.Parent;
+				}
+			}
+
 			return string.Join(".", propNames);
 		}
 
@@ -766,7 +777,7 @@ namespace TaleSpireExplore
 				Talespire.Instances.Delete(effectEditorTestId);
 				Talespire.GameObjects.InvalidateFound();
 				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(tbxJson.Text);
-				compositeEffect.RebuildPropertiesAfterLoad();
+				compositeEffect.RebuildProperties();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(FrmExplorer.JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(FrmExplorer.MerkinId);
 				return compositeEffect.CreateOrFindSafe(effectEditorTestId, merkinPosition, janusPosition);
@@ -1430,6 +1441,15 @@ Parameter name: value"
 					}
 
 					string typeName = GetTypeFromNode(treeNode);
+					if (treeNode is PropertyNode propertyNode)
+					{
+						Type type = propertyNode?.ValueInstance?.GetType();
+						if (type != null)
+						{
+							typeName = type.ToString();
+						}
+					}
+					Talespire.Log.Debug($"typeName = \"{typeName}\"");
 
 					string currentName = "SmartProperty";
 					string newName = FrmNameEffect.GetName(this, "Name Smart Property", currentName);
@@ -1441,7 +1461,7 @@ Parameter name: value"
 					}
 
 					SmartProperty newSmartProp = new SmartProperty(newName, typeName);
-					newSmartProp.PropertyPaths.Add($"{GetFullPropertyPath(treeNode)}");
+					newSmartProp.PropertyPaths.Add($"{GetFullPropertyPath(treeNode, true)}");
 					if (topNode.CompositeEffect == null)
 					{
 						Talespire.Log.Error($"topNode.CompositeEffect is null.");
@@ -1499,7 +1519,7 @@ Parameter name: value"
 				if (selectedNode == null)
 					return null;
 
-				return GetFullPropertyPath(selectedNode);
+				return GetFullPropertyPath(selectedNode, true);
 			}
 		}
 
@@ -1572,7 +1592,7 @@ Parameter name: value"
 			}
 		}
 
-		private void miDisconnect_Click(object sender, EventArgs e)
+		private void miDisconnectSmartProperty_Click(object sender, EventArgs e)
 		{
 			ActiveCompositeEffect?.DisconnectProperty(ActiveNodePropertyPath);
 			CreateJson();

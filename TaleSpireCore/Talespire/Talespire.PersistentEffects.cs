@@ -252,6 +252,19 @@ namespace TaleSpireCore
 
 								ReplaceMaterial(meshFilter, meshRenderer);
 
+								if (persistentEffect == null)
+								{
+									persistentEffect = creatureAsset.GetPersistentEffect();
+									if (persistentEffect == null)
+									{
+										Log.Error($"persistentEffect is null! Creating Waterfall!");
+										persistentEffect = new OldPersistentEffect()
+										{
+											EffectName = "R1.WaterWallSegment1"
+										};
+									}
+								}
+
 								InitializeNewlyCreatedPersistentEffect(creatureAsset, persistentEffect, newCreatureName);
 
 								updatedCreatures.Add(creatureAsset.CreatureId.ToString());
@@ -470,8 +483,7 @@ namespace TaleSpireCore
 							string prefix = i.ToString().PadLeft(2, '0');
 							EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
 							// TODO: Make sure we can read and write to the correct property in the correct effect!
-							Log.Warning($"prefix == \"{prefix}\"");
-							Log.Warning($"Adding effect \"{effectProperties.EffectName}\"...");
+							Log.Warning($"Adding effect \"{effectProperties.EffectName}\" with prefix \"{prefix}\"...");
 							Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
 						}
 					}

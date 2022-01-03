@@ -329,6 +329,7 @@
     <Compile Include="Effects Editor\FrmSelectItem.Designer.cs">
       <DependentUpon>FrmSelectItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="PersistentEffects\TypeLookup.cs" />
     <Compile Include="PersistentEffects\UI\FrmNameEffect.cs">
       <SubType>Form</SubType>
     </Compile>

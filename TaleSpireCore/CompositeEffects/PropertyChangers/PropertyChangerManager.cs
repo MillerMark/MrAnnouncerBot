@@ -19,24 +19,37 @@ namespace TaleSpireCore
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			foreach (Assembly assembly in assemblies)
 			{
-				Type[] types = assembly.GetTypes();
-				foreach (Type type in types)
+				try
 				{
-					if (typeof(BasePropertyChanger).IsAssignableFrom(type) && type.Name != nameof(BasePropertyChanger))
+					Type[] types = assembly.GetTypes();
+					foreach (Type type in types)
 					{
-						Talespire.Log.Warning($"Registering {type.Name}...");
-						PropertyTypeAttribute propertyTypeAttribute = type.GetCustomAttribute<PropertyTypeAttribute>(false);
-						if (propertyTypeAttribute != null)
+						if (typeof(BasePropertyChanger).IsAssignableFrom(type) && type.Name != nameof(BasePropertyChanger))
 						{
-							Type key = propertyTypeAttribute.PropertyType;
-							if (knownPropertyChangers.ContainsKey(key))
-								Talespire.Log.Error($"Error - knownPropertyChangers already contains an entry for {key.Name}!!!");
+							Talespire.Log.Warning($"Registering {type.Name}...");
+							PropertyTypeAttribute propertyTypeAttribute = type.GetCustomAttribute<PropertyTypeAttribute>(false);
+							if (propertyTypeAttribute != null)
+							{
+								Type key = propertyTypeAttribute.PropertyType;
+								if (knownPropertyChangers.ContainsKey(key))
+									Talespire.Log.Error($"Error - knownPropertyChangers already contains an entry for {key.Name}!!!");
 
-							knownPropertyChangers[key] = Activator.CreateInstance(type) as BasePropertyChanger;
-							if (knownPropertyChangers[key] == null)
-								Talespire.Log.Error($"knownPropertyChangers[{key.Name}] == null!!!");
+								knownPropertyChangers[key] = Activator.CreateInstance(type) as BasePropertyChanger;
+								if (knownPropertyChangers[key] == null)
+									Talespire.Log.Error($"knownPropertyChangers[{key.Name}] == null!!!");
+							}
 						}
 					}
+				}
+				catch (ReflectionTypeLoadException ex)
+				{
+					Talespire.Log.Exception(ex);
+					Talespire.Log.Indent("LoaderExceptions: ");
+					foreach (Exception exception in ex.LoaderExceptions)
+					{
+						
+					}
+					Talespire.Log.Unindent("LoaderExceptions");
 				}
 			}
 		}
@@ -45,8 +58,16 @@ namespace TaleSpireCore
 		{
 			if (type == null)
 				return null;
+
+			if (type.IsEnum)
+				type = typeof(Enum);
+
 			if (!knownPropertyChangers.ContainsKey(type))
-				Talespire.Log.Error($"!knownPropertyChangers.ContainsKey(type)");
+			{
+				Talespire.Log.Error($"knownPropertyChangers does not Contain Key of type {type}.");
+				return null;
+			}
+
 			return knownPropertyChangers[type];
 		}
 	}

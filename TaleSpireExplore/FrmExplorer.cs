@@ -1312,7 +1312,7 @@ namespace TaleSpireExplore
 				Talespire.GameObjects.InvalidateFound();
 				Talespire.Instances.Delete(testInstanceId);
 				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(text);
-				compositeEffect.RebuildPropertiesAfterLoad();
+				compositeEffect.RebuildProperties();
 				CharacterPosition janusPosition = Talespire.Minis.GetPosition(JanusId);
 				CharacterPosition merkinPosition = Talespire.Minis.GetPosition(MerkinId);
 				compositeEffect.CreateOrFindSafe(testInstanceId, merkinPosition, janusPosition);
@@ -1509,6 +1509,15 @@ namespace TaleSpireExplore
 		private void button1_Click(object sender, EventArgs e)
 		{
 			//RadialUI.RadialUIPlugin.RegisterRemoveCharacter("Fly Toggle", callback);
+		}
+
+		private void btnInsertSeparatorIntoLog_Click(object sender, EventArgs e)
+		{
+			Talespire.Log.Debug($"");
+			Talespire.Log.Debug($"");
+			Talespire.Log.Warning($"-----------------------------------------------------------------------------------------");
+			Talespire.Log.Debug($"");
+			Talespire.Log.Debug($"");
 		}
 
 		//bool callback(string menuText, string miniId, string targetId)

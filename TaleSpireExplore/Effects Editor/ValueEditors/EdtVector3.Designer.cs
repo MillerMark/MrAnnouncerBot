@@ -61,6 +61,13 @@
 			this.label6 = new System.Windows.Forms.Label();
 			this.rbRotate = new System.Windows.Forms.RadioButton();
 			this.rbTranslate = new System.Windows.Forms.RadioButton();
+			this.radioButton4 = new System.Windows.Forms.RadioButton();
+			this.btnY315 = new System.Windows.Forms.Button();
+			this.btnY45 = new System.Windows.Forms.Button();
+			this.btnX315 = new System.Windows.Forms.Button();
+			this.btnX45 = new System.Windows.Forms.Button();
+			this.btnZ45 = new System.Windows.Forms.Button();
+			this.btnZ315 = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetX)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetY)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkOffsetZ)).BeginInit();
@@ -218,7 +225,7 @@
 			// radioButton1
 			// 
 			this.radioButton1.AutoSize = true;
-			this.radioButton1.Location = new System.Drawing.Point(73, 335);
+			this.radioButton1.Location = new System.Drawing.Point(74, 316);
 			this.radioButton1.Name = "radioButton1";
 			this.radioButton1.Size = new System.Drawing.Size(48, 17);
 			this.radioButton1.TabIndex = 4;
@@ -230,7 +237,7 @@
 			// 
 			this.radioButton2.AutoSize = true;
 			this.radioButton2.Checked = true;
-			this.radioButton2.Location = new System.Drawing.Point(73, 358);
+			this.radioButton2.Location = new System.Drawing.Point(74, 339);
 			this.radioButton2.Name = "radioButton2";
 			this.radioButton2.Size = new System.Drawing.Size(39, 17);
 			this.radioButton2.TabIndex = 4;
@@ -242,7 +249,7 @@
 			// radioButton3
 			// 
 			this.radioButton3.AutoSize = true;
-			this.radioButton3.Location = new System.Drawing.Point(73, 381);
+			this.radioButton3.Location = new System.Drawing.Point(74, 362);
 			this.radioButton3.Name = "radioButton3";
 			this.radioButton3.Size = new System.Drawing.Size(45, 17);
 			this.radioButton3.TabIndex = 4;
@@ -403,7 +410,7 @@
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(48, 315);
+			this.label5.Location = new System.Drawing.Point(49, 296);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(80, 13);
 			this.label5.TabIndex = 7;
@@ -464,11 +471,107 @@
 			this.rbTranslate.UseVisualStyleBackColor = true;
 			this.rbTranslate.CheckedChanged += new System.EventHandler(this.rbTranslate_CheckedChanged);
 			// 
+			// radioButton4
+			// 
+			this.radioButton4.AutoSize = true;
+			this.radioButton4.Location = new System.Drawing.Point(74, 385);
+			this.radioButton4.Name = "radioButton4";
+			this.radioButton4.Size = new System.Drawing.Size(45, 17);
+			this.radioButton4.TabIndex = 13;
+			this.radioButton4.Text = "x 30";
+			this.radioButton4.UseVisualStyleBackColor = true;
+			this.radioButton4.Click += new System.EventHandler(this.ChangeMultiplier);
+			// 
+			// btnY315
+			// 
+			this.btnY315.BackColor = System.Drawing.Color.Black;
+			this.btnY315.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnY315.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnY315.Location = new System.Drawing.Point(206, 58);
+			this.btnY315.Name = "btnY315";
+			this.btnY315.Size = new System.Drawing.Size(49, 23);
+			this.btnY315.TabIndex = 14;
+			this.btnY315.Text = "-45";
+			this.btnY315.UseVisualStyleBackColor = false;
+			this.btnY315.Click += new System.EventHandler(this.changeY_Click);
+			// 
+			// btnY45
+			// 
+			this.btnY45.BackColor = System.Drawing.Color.Black;
+			this.btnY45.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnY45.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnY45.Location = new System.Drawing.Point(206, 145);
+			this.btnY45.Name = "btnY45";
+			this.btnY45.Size = new System.Drawing.Size(49, 23);
+			this.btnY45.TabIndex = 15;
+			this.btnY45.Text = "+45";
+			this.btnY45.UseVisualStyleBackColor = false;
+			this.btnY45.Click += new System.EventHandler(this.changeY_Click);
+			// 
+			// btnX315
+			// 
+			this.btnX315.BackColor = System.Drawing.Color.Black;
+			this.btnX315.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnX315.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnX315.Location = new System.Drawing.Point(15, 158);
+			this.btnX315.Name = "btnX315";
+			this.btnX315.Size = new System.Drawing.Size(49, 23);
+			this.btnX315.TabIndex = 16;
+			this.btnX315.Text = "-45";
+			this.btnX315.UseVisualStyleBackColor = false;
+			this.btnX315.Click += new System.EventHandler(this.changeX_Click);
+			// 
+			// btnX45
+			// 
+			this.btnX45.BackColor = System.Drawing.Color.Black;
+			this.btnX45.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnX45.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnX45.Location = new System.Drawing.Point(15, 245);
+			this.btnX45.Name = "btnX45";
+			this.btnX45.Size = new System.Drawing.Size(49, 23);
+			this.btnX45.TabIndex = 17;
+			this.btnX45.Text = "+45";
+			this.btnX45.UseVisualStyleBackColor = false;
+			this.btnX45.Click += new System.EventHandler(this.changeX_Click);
+			// 
+			// btnZ45
+			// 
+			this.btnZ45.BackColor = System.Drawing.Color.Black;
+			this.btnZ45.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnZ45.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnZ45.Location = new System.Drawing.Point(206, 348);
+			this.btnZ45.Name = "btnZ45";
+			this.btnZ45.Size = new System.Drawing.Size(49, 23);
+			this.btnZ45.TabIndex = 18;
+			this.btnZ45.Text = "+45";
+			this.btnZ45.UseVisualStyleBackColor = false;
+			this.btnZ45.Click += new System.EventHandler(this.changeZ_Click);
+			// 
+			// btnZ315
+			// 
+			this.btnZ315.BackColor = System.Drawing.Color.Black;
+			this.btnZ315.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+			this.btnZ315.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnZ315.Location = new System.Drawing.Point(206, 263);
+			this.btnZ315.Name = "btnZ315";
+			this.btnZ315.Size = new System.Drawing.Size(49, 23);
+			this.btnZ315.TabIndex = 19;
+			this.btnZ315.Text = "-45";
+			this.btnZ315.UseVisualStyleBackColor = false;
+			this.btnZ315.Click += new System.EventHandler(this.changeZ_Click);
+			// 
 			// EdtVector3
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.Black;
+			this.Controls.Add(this.btnZ315);
+			this.Controls.Add(this.btnZ45);
+			this.Controls.Add(this.btnX45);
+			this.Controls.Add(this.btnX315);
+			this.Controls.Add(this.btnY45);
+			this.Controls.Add(this.btnY315);
+			this.Controls.Add(this.radioButton4);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.checkBox4);
@@ -546,5 +649,12 @@
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.RadioButton rbRotate;
 		private System.Windows.Forms.RadioButton rbTranslate;
+		private System.Windows.Forms.RadioButton radioButton4;
+		private System.Windows.Forms.Button btnY315;
+		private System.Windows.Forms.Button btnY45;
+		private System.Windows.Forms.Button btnX315;
+		private System.Windows.Forms.Button btnX45;
+		private System.Windows.Forms.Button btnZ45;
+		private System.Windows.Forms.Button btnZ315;
 	}
 }

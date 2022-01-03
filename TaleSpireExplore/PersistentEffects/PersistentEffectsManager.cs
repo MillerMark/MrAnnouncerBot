@@ -145,7 +145,9 @@ namespace TaleSpireExplore
 				// TODO: I think we need to check to see if PersistentEffect is a new effect (and then use its EffectProperties accordingly).
 				if (ea.PersistentEffect is SuperPersistentEffect superPersistentEffect && prefix != null)
 				{
-					Talespire.Log.Warning($"prefix = \"{prefix}\"");
+					if (logDetails)
+						Talespire.Log.Warning($"prefix = \"{prefix}\"");
+
 					string numberStr;
 					if (prefix.StartsWith("0") && prefix.Length > 1)
 						numberStr = prefix.Remove(0, 1);
@@ -165,8 +167,6 @@ namespace TaleSpireExplore
 					}
 					else
 						Talespire.Log.Error($"index ({index}) out of range. Unable to modify property.");
-
-					Talespire.Log.Warning($"ModifyProperty TODO: PersistentEffect is a new SuperPersistentEffect (use its EffectProperties accordingly)!");
 				}
 				else
 				{
@@ -177,27 +177,20 @@ namespace TaleSpireExplore
 
 		private static void ChangeProperty(Dictionary<string, string> properties, string propertyKey, string propertyPath, PropertyModDetails propertyModDetails, BasePropertyChanger propertyChanger, bool logDetails)
 		{
-			if (logDetails)
-			{
-				Talespire.Log.Debug($"");
-				Talespire.Log.Debug($"---");
-				Talespire.Log.Warning($"Properties[propertyKey] = {properties[propertyKey]}");
-			}
-
 			propertyChanger.Value = properties[propertyKey];
 
 			if (logDetails)
-			{
-				Talespire.Log.Warning($"Setting {propertyPath} to {propertyChanger.Value}");
-				Talespire.Log.Warning($"propertyModDetails.SetValue(propertyChanger) !!! Hope this works!!!");
-			}
+				Talespire.Log.Warning($"Setting {propertyPath} to \"{propertyChanger.GetValue()}\"");
 
 			propertyModDetails.SetValue(propertyChanger);
 
-			if (logDetails)
+			if (propertyPath.EndsWith("intensity"))
 			{
-				Talespire.Log.Debug($"---");
-				Talespire.Log.Debug($"");
+				float setValue = (float)propertyModDetails.GetValue();
+				if (setValue != (float)propertyChanger.GetValue())
+					Talespire.Log.Error($"setValue ({setValue}) is NOT equal to the value set ({propertyChanger.GetValue()})");
+				else
+					Talespire.Log.Warning($"intensity is set to ({setValue}).");
 			}
 		}
 
@@ -259,21 +252,21 @@ namespace TaleSpireExplore
 								{
 									string propertyKey = propertyPath;
 									Talespire.Log.Debug($"ModifyProperty(ea, {smartPropertyPath}, {prefix}, {propertyKey});");
-									ModifyProperty(ea, smartPropertyPath, prefix, propertyKey);
+									ModifyProperty(ea, smartPropertyPath, prefix, propertyKey, true);
 								}
 							}
 						}
 						else
 						{
 							Talespire.Log.Debug($"ModifyProperty(ea, {propertyPath}, {prefix});");
-							ModifyProperty(ea, propertyPath, prefix);
+							ModifyProperty(ea, propertyPath, prefix, null, true);
 						}
 					}
 				}
 			}
 			else
 				foreach (string propertyPath in ea.PersistentEffect.Properties.Keys)
-					ModifyProperty(ea, propertyPath);
+					ModifyProperty(ea, propertyPath, null, null, true);
 
 			Talespire.Log.Unindent();
 		}
@@ -385,7 +378,9 @@ namespace TaleSpireExplore
 				Talespire.Log.Error($"children is NULL! - exiting!");
 				return;
 			}
-			frmPropertyList.Instance = parentForAttachedObjects;
+
+			// TODO: Add support for multiple child nodes (UI to select the attached effect).
+			frmPropertyList.Instance = parentForAttachedObjects.GetChildNodeStartingWith("00");
 
 			CompositeEffect originalCompositeEffect = null;
 			foreach (Transform child in children)
@@ -409,7 +404,22 @@ namespace TaleSpireExplore
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
 			else // Add SmartProperties (which we can get from the Composite).
 				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
-					frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, typeof(Color), string.Join(";", smartProperty.PropertyPaths.ToArray()));
+				{
+					Type type = TypeLookup.GetType(smartProperty.Type);
+					if (type == null)
+						if (smartProperty.Type == "Enum")
+						{
+							Talespire.Log.Error($"Enum types not supported yet! Fix this!!!");
+							continue;
+						}
+						else
+						{
+							Talespire.Log.Error($"type == null. Unable to add SmartProperty!!!");
+							continue;
+						}
+
+					frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, type, string.Join(";", smartProperty.PropertyPaths.ToArray()));
+				}
 
 			IOldPersistentEffect persistentEffect = mini.GetPersistentEffect();
 			frmPropertyList.Show();

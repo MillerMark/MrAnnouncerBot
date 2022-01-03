@@ -23,6 +23,7 @@ namespace TaleSpireExplore
 			rotateNames.Add("rotate");
 			rotateNames.Add("rotation");
 			rotateNames.Add("angle");
+			rotateNames.Add("direction");
 
 			scaleNames.Add("scale");
 		}
@@ -172,9 +173,7 @@ namespace TaleSpireExplore
 		{
 			float amountToChange = 0;
 			if (sender is Button button)
-			{
 				float.TryParse(button.Text, out amountToChange);
-			}
 
 			return amountToChange;
 		}
@@ -217,6 +216,12 @@ namespace TaleSpireExplore
 				btnX90.Visible = false;
 				btnY90.Visible = false;
 				btnZ90.Visible = false;
+				btnX315.Visible = false;
+				btnY315.Visible = false;
+				btnZ315.Visible = false;
+				btnX45.Visible = false;
+				btnY45.Visible = false;
+				btnZ45.Visible = false;
 			}
 		}
 
@@ -237,6 +242,12 @@ namespace TaleSpireExplore
 				btnX90.Visible = true;
 				btnY90.Visible = true;
 				btnZ90.Visible = true;
+				btnX315.Visible = true;
+				btnY315.Visible = true;
+				btnZ315.Visible = true;
+				btnX45.Visible = true;
+				btnY45.Visible = true;
+				btnZ45.Visible = true;
 			}
 		}
 
@@ -258,6 +269,12 @@ namespace TaleSpireExplore
 				btnX90.Visible = false;
 				btnY90.Visible = false;
 				btnZ90.Visible = false;
+				btnX315.Visible = false;
+				btnY315.Visible = false;
+				btnZ315.Visible = false;
+				btnX45.Visible = false;
+				btnY45.Visible = false;
+				btnZ45.Visible = false;
 			}
 		}
 

@@ -28,6 +28,17 @@ namespace TaleSpireCore
 			return false;
 		}
 
+		public override object TryGetValue(object instance, string propertyName)
+		{
+			if (instance is Material material)
+			{
+				// TODO: Verify property name is in the shader????
+				return material.GetFloat(propertyName);
+			}
+
+			return null;
+		}
+
 		public override bool CanSetProperty(object instance, string propertyName)
 		{
 			return instance is Material;

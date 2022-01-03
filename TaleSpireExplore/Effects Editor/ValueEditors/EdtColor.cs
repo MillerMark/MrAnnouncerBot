@@ -49,16 +49,30 @@ namespace TaleSpireExplore
 
 		public void SetValue(object newValue)
 		{
-			Talespire.Log.Debug($"EdtColor.SetValue - {newValue}");
-			if (!(newValue is UnityEngine.Color newColor))
-				return;
-			SetMultiplier(newColor);
-			Talespire.Log.Debug($"btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);");
-			btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);
-			Talespire.Log.Debug($"UpdateTrackbars();");
-			UpdateTrackbars();
-			Talespire.Log.Debug($"UpdateHtml();");
-			UpdateHtml();
+			Talespire.Log.Indent($"EdtColor.SetValue - {newValue}");
+			try
+			{
+				if (!(newValue is UnityEngine.Color newColor))
+				{
+					if (newValue == null)
+						Talespire.Log.Error($"newValue is null!!!");
+					else
+						Talespire.Log.Error($"newValue is not a color (newValue is a {newValue.GetType()})");
+					return;
+				}
+
+				SetMultiplier(newColor);
+				Talespire.Log.Debug($"btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);");
+				btnSetColor.BackColor = ColorUtils.ToSysDrawColor(newColor);
+				Talespire.Log.Debug($"UpdateTrackbars();");
+				UpdateTrackbars();
+				Talespire.Log.Debug($"UpdateHtml();");
+				UpdateHtml();
+			}
+			finally
+			{
+				Talespire.Log.Unindent();
+			}
 		}
 
 		void SetMultiplier(UnityEngine.Color newColor)

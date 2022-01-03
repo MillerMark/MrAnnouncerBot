@@ -105,9 +105,10 @@ namespace TaleSpireCore
 		/// <summary>
 		/// Call after deserialization...
 		/// </summary>
-		public void RebuildPropertiesAfterLoad()
+		public void RebuildProperties()
 		{
-			Talespire.Log.Debug("RebuildPropertiesAfterLoad");
+			Talespire.Log.Indent();
+			LogThis();
 
 			if (Props != null)
 			{
@@ -133,7 +134,23 @@ namespace TaleSpireCore
 			}
 
 			foreach (CompositeEffect compositeEffect in Children)
-				compositeEffect.RebuildPropertiesAfterLoad();
+				compositeEffect.RebuildProperties();
+
+			Talespire.Log.Unindent();
+		}
+
+		private void LogThis()
+		{
+			if (PrefabToCreate != null)
+				Talespire.Log.Warning($"PrefabToCreate: {PrefabToCreate}");
+			else if (EffectNameToCreate != null)
+				Talespire.Log.Warning($"EffectNameToCreate: {EffectNameToCreate}");
+			else if (ItemToBorrow != null)
+				Talespire.Log.Warning($"ItemToBorrow: {ItemToBorrow}");
+			else if (ItemToClone != null)
+				Talespire.Log.Warning($"ItemToClone: {ItemToClone}");
+			else if (ExistingChildName != null)
+				Talespire.Log.Warning($"ExistingChildName: {ExistingChildName}");
 		}
 
 		void RemoveExistingProperty(string name)
@@ -167,7 +184,7 @@ namespace TaleSpireCore
 		{
 			if (properties == null)
 				return;
-
+			Talespire.Log.Indent();
 			foreach (var basePropertyDto in properties)
 			{
 				if (string.IsNullOrWhiteSpace(basePropertyDto.FullPropertyPath))
@@ -175,13 +192,21 @@ namespace TaleSpireCore
 					Talespire.Log.Error($"basePropertyDto.FullPropertyPath is null or empty.");
 					continue;
 				}
-				Talespire.Log.Debug($">> Modifying {basePropertyDto.FullPropertyPath} with \"{basePropertyDto.Value}\"");
+				if (basePropertyDto.ValueOverride != null && basePropertyDto.Value != basePropertyDto.ValueOverride)
+				{
+					Talespire.Log.Error($"ValueOverride == \"{basePropertyDto.ValueOverride}\", but Value == \"{basePropertyDto.Value}\"");
+					Talespire.Log.Warning($">> Setting {basePropertyDto.FullPropertyPath} to \"{basePropertyDto.ValueOverride}\"");
+				}
+				else
+					Talespire.Log.Warning($">> Setting {basePropertyDto.FullPropertyPath} to \"{basePropertyDto.Value}\"");
 
 				if (refreshableProperties.Contains(basePropertyDto.FullPropertyPath))
 					needRefresh = true;
 
 				basePropertyDto.ModifyProperty(effect);
+				
 			}
+			Talespire.Log.Unindent();
 		}
 
 		public GameObject CreateOrFindSafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
@@ -201,8 +226,6 @@ namespace TaleSpireCore
 		[Browsable(false)]
 		public GameObject CreateOrFindUnsafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
 		{
-			Talespire.Log.Debug($"CreateOrFindUnsafe...");
-
 			//if (ExistingChildName != null)
 			//	Talespire.Log.Debug($"Finding {ExistingChildName}...");
 			//else
@@ -285,7 +308,7 @@ namespace TaleSpireCore
 
 			if (instance != null)
 			{
-				Talespire.Log.Warning($"compositeEffectMap[{instance}] = this (CompositeEffect);");
+				//Talespire.Log.Warning($"compositeEffectMap[{instance}] = this ({this});");
 				compositeEffectMap[instance] = this;
 			}
 			else
@@ -321,7 +344,7 @@ namespace TaleSpireCore
 			try
 			{
 				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
-				compositeEffect.RebuildPropertiesAfterLoad();
+				compositeEffect.RebuildProperties();
 
 				return compositeEffect;
 			}

@@ -29,7 +29,7 @@ namespace TaleSpireExplore
 		public void ValueChanged(object newValue)
 		{
 			if (ValueChangedListener != null)
-				ValueChangedListener.ValueHasChanged(this, newValue);
+				ValueChangedListener.ValueHasChanged(this, newValue, true);
 		}
 
 		public Type GetValueType()

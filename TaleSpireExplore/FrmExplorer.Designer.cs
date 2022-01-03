@@ -91,6 +91,7 @@
 			this.btnCamera2 = new System.Windows.Forms.Button();
 			this.btnReloadSpellEffects = new System.Windows.Forms.Button();
 			this.button1 = new System.Windows.Forms.Button();
+			this.btnInsertSeparatorIntoLog = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnLoadClasses
@@ -692,17 +693,29 @@
 			this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.button1.Location = new System.Drawing.Point(1001, 483);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(88, 31);
+			this.button1.Size = new System.Drawing.Size(137, 31);
 			this.button1.TabIndex = 26;
 			this.button1.Text = "Remove Fly Menu";
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
+			// 
+			// btnInsertSeparatorIntoLog
+			// 
+			this.btnInsertSeparatorIntoLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnInsertSeparatorIntoLog.Location = new System.Drawing.Point(1183, 483);
+			this.btnInsertSeparatorIntoLog.Name = "btnInsertSeparatorIntoLog";
+			this.btnInsertSeparatorIntoLog.Size = new System.Drawing.Size(119, 31);
+			this.btnInsertSeparatorIntoLog.TabIndex = 27;
+			this.btnInsertSeparatorIntoLog.Text = "-------------------------------";
+			this.btnInsertSeparatorIntoLog.UseVisualStyleBackColor = true;
+			this.btnInsertSeparatorIntoLog.Click += new System.EventHandler(this.btnInsertSeparatorIntoLog_Click);
 			// 
 			// FrmExplorer
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1331, 592);
+			this.Controls.Add(this.btnInsertSeparatorIntoLog);
 			this.Controls.Add(this.btnTest2);
 			this.Controls.Add(this.btnBattleZone);
 			this.Controls.Add(this.btnSkyScraper);
@@ -836,5 +849,6 @@
 		private System.Windows.Forms.Button btnCamera2;
 		private System.Windows.Forms.Button btnReloadSpellEffects;
 		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.Button btnInsertSeparatorIntoLog;
 	}
 }

@@ -43,7 +43,7 @@ namespace TaleSpireCore
 				return property.GetValue(instance);
 			else if (field != null)
 				return field.GetValue(instance);
-			
+
 			return null;
 		}
 

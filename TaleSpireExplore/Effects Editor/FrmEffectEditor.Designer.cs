@@ -311,7 +311,7 @@
 			this.miDisconnect.Name = "miDisconnect";
 			this.miDisconnect.Size = new System.Drawing.Size(263, 22);
 			this.miDisconnect.Text = "Disconnect this Property ";
-			this.miDisconnect.Click += new System.EventHandler(this.miDisconnect_Click);
+			this.miDisconnect.Click += new System.EventHandler(this.miDisconnectSmartProperty_Click);
 			// 
 			// miRename
 			// 

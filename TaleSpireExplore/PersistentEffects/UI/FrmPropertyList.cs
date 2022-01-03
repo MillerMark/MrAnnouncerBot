@@ -47,24 +47,33 @@ namespace TaleSpireExplore
 
 		private void ValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
-			if (!(sender is AllValueEditors allValueEditors))
-			{
-				Talespire.Log.Error($"sender is NOT AllValueEditors!!!");
-				return;
-			}
+			Talespire.Log.Indent();
 
-			if (allValueEditors.Key != STR_PersistentEffectsEditorKey)
+			try
 			{
-				Talespire.Log.Error($"allValueEditors.Key != STR_PersistentEffectsEditorKey");
-				return;
-			}
+				if (!(sender is AllValueEditors allValueEditors))
+				{
+					Talespire.Log.Error($"sender is NOT AllValueEditors!!!");
+					return;
+				}
 
-			Talespire.Log.Debug($"ValueEditors_ValueChanged...");
-			UpdateInstance(ea.Value, ea.CommittedChange);
+				if (allValueEditors.Key != STR_PersistentEffectsEditorKey)
+				{
+					Talespire.Log.Error($"allValueEditors.Key != STR_PersistentEffectsEditorKey");
+					return;
+				}
+
+				UpdateInstance(ea.Value, ea.CommittedChange);
+			}
+			finally
+			{
+				Talespire.Log.Unindent();
+			}
 		}
 
 		private void UpdateInstance(object valueOverride, bool committedChange)
 		{
+			Talespire.Log.Indent();
 			if (lstProperties.SelectedItem is EffectProperty effectProperty)
 			{
 				// Store this change in the Mini.
@@ -83,7 +92,7 @@ namespace TaleSpireExplore
 							{
 								propertyChanger.FullPropertyPath = path;
 								propertyChanger.ValueOverride = valueOverride;
-								propertyChanger.ModifyProperty(Instance, true);
+								propertyChanger.ModifyProperty(Instance);
 
 								if (needToSave)
 								{
@@ -129,6 +138,8 @@ namespace TaleSpireExplore
 			}
 			else
 				Talespire.Log.Error($"effectProperty is NULL!!!");
+
+			Talespire.Log.Unindent();
 		}
 
 		/// <summary>
@@ -214,9 +225,16 @@ namespace TaleSpireExplore
 					if (valueEditor is IValueEditor iValueEditor)
 					{
 						iValueEditor.EditingProperty(effectProperty.Name);
+						Talespire.Log.Warning($"effectProperty.Paths = \"{effectProperty.Paths}\"");
 						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
 						Talespire.Log.Warning($"iValueEditor.SetValue(propertyModDetails.GetValue());");
-						iValueEditor.SetValue(propertyModDetails.GetValue());
+						object newValue = propertyModDetails.GetValue();
+						if (newValue == null)
+						{
+							BasePropertyChanger propertyChanger = iValueEditor.GetPropertyChanger();
+							newValue = propertyChanger.TryGetValue(Instance, effectProperty.Paths);
+						}
+						iValueEditor.SetValue(newValue);
 					}
 					else
 						Talespire.Log.Error($"valueEditor is NOT an IValueEditor!!!");
@@ -252,7 +270,6 @@ namespace TaleSpireExplore
 
 		public void ValueHasChanged(IValueEditor editor, object value, bool committedChange = false)
 		{
-			Talespire.Log.Debug($"ValueHasChanged...");
 			UpdateInstance(value, committedChange);
 		}
 

@@ -55,6 +55,7 @@
       </Item>
       <Item Id="{f52c5162-57a5-44be-87f3-9d4b01eb98ff}">
         <FilterName>N - Internal/Friend</FilterName>
+        <IsActive>False</IsActive>
       </Item>
       <Item Id="{afd15232-7f55-41b1-aaa6-a92ad74f0a60}">
         <FilterName>T - Protected Internal/Friend</FilterName>

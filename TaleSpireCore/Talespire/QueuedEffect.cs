@@ -45,15 +45,6 @@ namespace TaleSpireCore
 			Log.Indent();
 			CreaturePresenter.TryGetAsset(new CreatureGuid(creatureId), out CreatureBoardAsset creatureAsset);
 
-			if (persistentEffect == null)
-			{
-				Log.Error($"persistentEffect is null!");
-				persistentEffect = new OldPersistentEffect()
-				{
-					EffectName = "R1.WaterWallSegment1"
-				};
-			}
-
 			if (creatureAsset != null)
 				PersistentEffects.InitializeMiniFromPersistentEffect(creatureAsset, persistentEffect, newCreatureName);
 			else

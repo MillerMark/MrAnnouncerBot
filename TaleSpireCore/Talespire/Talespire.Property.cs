@@ -54,23 +54,23 @@ namespace TaleSpireCore
 				Modify(instance, propertyName, value);
 			}
 
-			public static void Modify(object instance, string propertyName, object value, bool logErrors = true)
+			public static void Modify(object instance, string propertyName, object value, bool logDetails = false)
 			{
 				Log.Debug($"Modify - {propertyName} to {value}");
-				PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(instance, propertyName, logErrors);
+				PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(instance, propertyName, logDetails);
 				if (propertyModDetails == null || !propertyModDetails.Found)
 				{
-					if (logErrors)
+					if (logDetails)
 						Log.Error($"{propertyName} not found in instance.");
 					return;
 				}
-				BasePropertyChanger propertyChanger = PropertyChangerFactory.CreateFromModDetails(propertyModDetails, logErrors);
+				BasePropertyChanger propertyChanger = PropertyChangerFactory.CreateFromModDetails(propertyModDetails, logDetails);
 				if (propertyChanger != null)
 				{
 					propertyChanger.ValueOverride = value;
 					propertyChanger.ModifyPropertyWithDetails(propertyModDetails);
 				}
-				else if (logErrors)
+				else if (logDetails)
 					if (propertyModDetails.attachedPropertyType != null)
 						Log.Error($"propertyChanger ({propertyName} to {value} of type {propertyModDetails.attachedPropertyType.Name}) is null!");
 					else

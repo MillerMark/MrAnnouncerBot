@@ -37,10 +37,7 @@ namespace TaleSpireExplore
 
 		private void FrmPersistentEffectPropertyEditor_Load(object sender, EventArgs e)
 		{
-			Talespire.Log.Warning($"SetLocation(WindowHelper.GetTaleSpireTopRight());");
 			SetLocation(WindowHelper.GetTaleSpireTopRight());
-			Talespire.Log.Warning($"----");
-
 		}
 	}
 }
