@@ -26,29 +26,34 @@ namespace TaleSpireCore
 				manualLogSource = Logger.CreateLogSource("mm");
 			}
 
+			private static void LogData(LogLevel logLevel, object data)
+			{
+				manualLogSource.Log(logLevel, TotalIndent + data);
+			}
+
 			public static void Info(object data)
 			{
-				manualLogSource.Log(LogLevel.Info, TotalIndent + data);
+				LogData(LogLevel.Info, data);
 			}
 
 			public static void Error(object data)
 			{
-				manualLogSource.Log(LogLevel.Error, TotalIndent + data);
+				LogData(LogLevel.Error, data);
 			}
 
 			public static void Warning(object data)
 			{
-				manualLogSource.Log(LogLevel.Warning, TotalIndent + data);
+				LogData(LogLevel.Warning, data);
 			}
 
 			public static void Debug(object data)
 			{
-				manualLogSource.Log(LogLevel.Debug, TotalIndent + data);
+				LogData(LogLevel.Debug, data);
 			}
 
 			public static void Message(object data)
 			{
-				manualLogSource.Log(LogLevel.Message, TotalIndent + data);
+				LogData(LogLevel.Message, data);
 			}
 
 			public static void Exception(Exception ex, [CallerMemberName] string callerName = "")
@@ -58,8 +63,8 @@ namespace TaleSpireCore
 				string suffix = $" in {callerName}";
 				while (ex != null)
 				{
-					manualLogSource.Log(LogLevel.Error, TotalIndent + $"{indent}{prefix}{ex.GetType().Name}{suffix} - \"{ex.Message}\"");
-					manualLogSource.Log(LogLevel.Warning, TotalIndent + ex.StackTrace);
+					LogData(LogLevel.Error, TotalIndent + $"{indent}{prefix}{ex.GetType().Name}{suffix} - \"{ex.Message}\"");
+					LogData(LogLevel.Warning, TotalIndent + ex.StackTrace);
 					ex = ex.InnerException;
 					prefix = "Inner: ";
 					suffix = "";

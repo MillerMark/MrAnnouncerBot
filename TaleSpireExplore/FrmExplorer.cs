@@ -1478,7 +1478,7 @@ namespace TaleSpireExplore
 
 		private void btnSkyScraper_Click(object sender, EventArgs e)
 		{
-			tbxTargetLocation.Text = "15, 22.5, 95.4";
+			tbxTargetLocation.Text = "22, 22.52, 97";
 		}
 
 		private void btnBattleZone_Click(object sender, EventArgs e)

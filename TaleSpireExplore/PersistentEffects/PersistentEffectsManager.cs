@@ -35,19 +35,19 @@ namespace TaleSpireExplore
 
 		static void DuplicateEffectAtMenu(MapMenuItem menuItem, object arg2)
 		{
-			if (menuItem != null)
-				Talespire.Log.Warning($"menuItem.gameObject.name = {menuItem.gameObject.name}");
+			//if (menuItem != null)
+			//	Talespire.Log.Warning($"menuItem.gameObject.name = {menuItem.gameObject.name}");
 
 			CreatureBoardAsset creatureAtMenu = RadialUI.RadialUIPlugin.CreatureAtMenu;
 
-			Talespire.Log.Warning($"DuplicateEffectAtMenu: \"{menuItem}\", \"{arg2}\"");
-			Talespire.Log.Warning($"CreatureAtMenu: {creatureAtMenu}");
+			//Talespire.Log.Warning($"DuplicateEffectAtMenu: \"{menuItem}\", \"{arg2}\"");
+			//Talespire.Log.Warning($"CreatureAtMenu: {creatureAtMenu.Creature.Name}");
 
 			if (creatureAtMenu != null)
 			{
 				IOldPersistentEffect persistentEffect = creatureAtMenu.GetPersistentEffect();
-				string persistentEffectData = creatureAtMenu.GetPersistentEffectData();
-				Talespire.PersistentEffects.Duplicate(persistentEffect, creatureAtMenu.GetOnlyCreatureName(), persistentEffectData);
+				//string persistentEffectData = creatureAtMenu.GetPersistentEffectData();
+				Talespire.PersistentEffects.Duplicate(persistentEffect, creatureAtMenu.GetOnlyCreatureName());
 			}
 		}
 
@@ -183,15 +183,6 @@ namespace TaleSpireExplore
 				Talespire.Log.Warning($"Setting {propertyPath} to \"{propertyChanger.GetValue()}\"");
 
 			propertyModDetails.SetValue(propertyChanger);
-
-			if (propertyPath.EndsWith("intensity"))
-			{
-				float setValue = (float)propertyModDetails.GetValue();
-				if (setValue != (float)propertyChanger.GetValue())
-					Talespire.Log.Error($"setValue ({setValue}) is NOT equal to the value set ({propertyChanger.GetValue()})");
-				else
-					Talespire.Log.Warning($"intensity is set to ({setValue}).");
-			}
 		}
 
 		static void PersistentEffects_PersistentEffectInitialized(object sender, PersistentEffectEventArgs ea)
@@ -223,10 +214,8 @@ namespace TaleSpireExplore
 					else
 						originalCompositeEffect = CompositeEffect.GetFromGameObject(childNode);
 
-					if (originalCompositeEffect != null)
-						Talespire.Log.Warning($"Found the originalCompositeEffect!!!");
-					else
-						Talespire.Log.Error($"DID NOT FIND the originalCompositeEffect matching \"{childNode}\"!!!");
+					if (originalCompositeEffect == null)
+						Talespire.Log.Error($"DID NOT FIND a CompositeEffect for \"{childNode}\"!!!");
 
 					EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
 
@@ -237,7 +226,7 @@ namespace TaleSpireExplore
 						{
 							if (originalCompositeEffect == null)
 							{
-								Talespire.Log.Error($"DID NOT FIND originalCompositeEffect for {childNode}!!! Unable to get smart properties from it!");
+								Talespire.Log.Error($"DID NOT FIND a CompositeEffect for {childNode}!!! Unable to get smart properties from it!");
 								break;
 							}
 							string smartPropertyName = propertyPath.Substring(1);

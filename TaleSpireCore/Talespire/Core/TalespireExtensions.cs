@@ -137,15 +137,23 @@ namespace TaleSpireCore
 
 		public static string GetOnlyCreatureName(this CreatureBoardAsset creatureAsset)
 		{
-			string name;
-			if (creatureAsset.CreatureLoaders.Length > 0 && creatureAsset.CreatureLoaders[0].LoadedAsset?.name != null)
-				name = creatureAsset.CreatureLoaders[0].LoadedAsset.name;
-			else
-				name = creatureAsset.Creature.name;
-			int sizeIndex = name.IndexOf("<size=0>");
-			if (sizeIndex > 0)
-				return name.Substring(0, sizeIndex);
-			return name;
+			try
+			{
+				string name = creatureAsset.Creature.Name;
+
+				if (name == null && creatureAsset.CreatureLoaders.Length > 0)
+					name = creatureAsset.CreatureLoaders[0].LoadedAsset.name;
+
+				if (name == null)
+					return string.Empty;
+
+				int sizeIndex = name.IndexOf(Talespire.PersistentEffects.STR_RichTextSizeZero);
+				return sizeIndex > 0 ? name.Substring(0, sizeIndex) : name;
+			}
+			finally
+			{
+				Talespire.Log.Unindent();
+			}
 		}
 
 		public static string GetPersistentEffectData(this CreatureBoardAsset creatureAsset)

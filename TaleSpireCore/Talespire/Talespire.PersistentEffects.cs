@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using LordAshes;
 using static TaleSpireCore.Talespire;
 using System.Diagnostics;
+using Steamworks;
 
 namespace TaleSpireCore
 {
@@ -25,7 +26,6 @@ namespace TaleSpireCore
 			const string STR_EffectOrb = "EffectOrb";
 			internal const string STR_AttachedNode = "Attached";
 			const string STR_SpinLockIndicator = "SpinLock";
-			const string STR_RichTextSizeModifier = "<size=0>";
 			internal static readonly string STR_PersistentEffect = "$CodeRush.PersistentEffect$";
 
 			public static void Initialize()
@@ -59,7 +59,7 @@ namespace TaleSpireCore
 
 			public static void Create(string effectName = "MediumFire")
 			{
-				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), effectName));
+				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), effectName) { MiniName = effectName });
 			}
 
 			private static string InstantiateGoatAtPointer()
@@ -68,25 +68,34 @@ namespace TaleSpireCore
 				return Board.InstantiateCreature(STR_Goat1BoardAssetId, new Vector3(pointerPos.x, pointerPos.y, pointerPos.z));
 			}
 
-			public static void Duplicate(IOldPersistentEffect persistentEffect, string originalName, string persistentEffectData)
+			static string IncrementEndingNumber(string originalName)
 			{
-				Log.Debug($"-");
-				Log.Debug($"--");
-				Log.Debug($"---");
-				Log.Debug($"----");
-				Log.Debug($"-----");
-				Log.Warning($"Duplicating (originalName = \"{originalName}\")...");
-				Log.Debug($"");
-				Log.Warning($"{persistentEffectData}");
-				Log.Debug($"");
-				Log.Debug($"-----");
-				Log.Debug($"----");
-				Log.Debug($"---");
-				Log.Debug($"--");
-				Log.Debug($"-");
+				string numberStr = "";
+				
+				int index = originalName.Length - 1;
+				while (index > 0 && char.IsDigit(originalName[index]))
+				{
+					numberStr = originalName[index] + numberStr;
+					index--;
+				}
+				
+				if (index > 0 && index < originalName.Length - 1)
+				{
+					string firstPart = originalName.Substring(0, index + 1);
+					int number = int.Parse(numberStr);
+					number++;
+					return firstPart + number.ToString();
+				}
+				return originalName + " 2";
+			}
 
+			public static void Duplicate(IOldPersistentEffect persistentEffect, string originalName)
+			{
+				//Log.Warning($"Duplicating (originalName = \"{originalName}\")...");
 				persistentEffect.Hidden = false;
-				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), persistentEffect, originalName));
+				string newName = IncrementEndingNumber(originalName);
+				Log.Warning($"Duplicate - newName = \"{newName}\"");
+				effectsToInitialize.Add(new QueuedEffect(InstantiateGoatAtPointer(), persistentEffect, newName));
 			}
 
 			static List<string> updatedCreatures = new List<string>();
@@ -145,7 +154,7 @@ namespace TaleSpireCore
 			private static string GetDisplayName(CreatureBoardAsset creatureAsset)
 			{
 				string name = creatureAsset.Creature.Name;
-				int indexOfSeparator = name.IndexOf(STR_RichTextSizeModifier);
+				int indexOfSeparator = name.IndexOf(STR_RichTextSizeZero);
 				if (indexOfSeparator > 0)
 					return name.Substring(0, indexOfSeparator);
 				return name;
@@ -169,13 +178,18 @@ namespace TaleSpireCore
 
 			static void BoardHasBecomeActive()
 			{
-				Log.Warning($"BoardHasBecomeActive - these are the minis we see now:");
+				Log.Warning($"BoardHasBecomeActive - minis we see now:");
 				CreatureBoardAsset[] allMinis = Minis.GetAll();
 				foreach (CreatureBoardAsset creatureBoardAsset in allMinis)
 				{
-					Log.Debug($"  {creatureBoardAsset.name} - {creatureBoardAsset.Creature.name}");
+					Creature creature = creatureBoardAsset.GetComponent<Creature>();
+					if (creature != null)
+						Log.Debug($"  {creature.Name} ({creatureBoardAsset.Creature.CreatureId.Value})");
+					else
+						Log.Warning($"  <Creature> component missing! ({creatureBoardAsset.Creature.CreatureId.Value})");
 				}
 				Log.Debug($"-----------------------");
+				Log.Debug($"");
 				boardActivationTime = Time.time;
 			}
 
@@ -683,12 +697,8 @@ namespace TaleSpireCore
 					if (DateTime.Now - creatureRenameData.CreationTime > TimeSpan.FromMilliseconds(500))
 					{
 						// 500ms have passed. rename...
-						CreatureBoardAsset creatureBoardAsset = Minis.GetCreatureBoardAsset(creatureRenameData.ToString());
-						if (creatureBoardAsset != null)
-						{
-							Log.Warning($"OMG - We are setting the creature's name to {creatureRenameData.NewCreatureName}!!!");
-							creatureBoardAsset.Creature.name = creatureRenameData.NewCreatureName;
-						}
+						Log.Warning($"Setting the creature's name to \"{creatureRenameData.NewCreatureName}\"!!!");
+						CreatureManager.SetCreatureName(creatureRenameData.ID, creatureRenameData.NewCreatureName);
 
 						creaturesToRemove.Add(creatureRenameData);
 					}
@@ -707,9 +717,14 @@ namespace TaleSpireCore
 					{
 						// 200ms have passed. Initialize...
 						StorePersistentData(savedCreatureEffect.ID, savedCreatureEffect.PersistentEffect);
-
+						
 						if (!string.IsNullOrWhiteSpace(savedCreatureEffect.NewCreatureName))
+						{
+							Log.Warning($"savedCreatureEffect.NewCreatureName is \"{savedCreatureEffect.NewCreatureName}\"");
 							creaturesRenameData.Add(savedCreatureEffect);  // Need to rename it next...
+						}
+						else
+							Log.Warning($"NewCreatureName is not set!!!");
 
 						creaturesToRemove.Add(savedCreatureEffect);
 					}
