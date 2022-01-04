@@ -228,6 +228,7 @@
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\SlidableFloats.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
       <SubType>UserControl</SubType>
@@ -316,6 +317,7 @@
     </Compile>
     <Compile Include="Effects Editor\ValueEditors\Core\IValueChangedListener.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\IValueEditor.cs" />
+    <Compile Include="Effects Editor\ValueEditors\SlidableFloat.cs" />
     <Compile Include="FrmExplorer.cs">
       <SubType>Form</SubType>
     </Compile>

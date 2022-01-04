@@ -224,7 +224,7 @@ namespace TaleSpireExplore
 					Talespire.Log.Debug($"Instance: {Instance}");
 					if (valueEditor is IValueEditor iValueEditor)
 					{
-						iValueEditor.EditingProperty(effectProperty.Name);
+						iValueEditor.EditingProperty(effectProperty.Name, effectProperty.Paths);
 						Talespire.Log.Warning($"effectProperty.Paths = \"{effectProperty.Paths}\"");
 						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
 						Talespire.Log.Warning($"iValueEditor.SetValue(propertyModDetails.GetValue());");

@@ -148,8 +148,8 @@ namespace TaleSpireExplore
 			CutsceneManager.OnCutscenesChanged += CutsceneManager_OnCutscenesChanged;
 			CutsceneManager.OnGMBlockChanged += CutsceneManager_OnGMBlockChanged;
 			GUIManager.OnGUIManagerInitalized += GUIManager_OnGUIManagerInitialized;
-			GameSettings.OnScreenResolutionChange += GameSettings_OnScreenResolutionChange;
-			GameSettings.OnUIScaleChange += GameSettings_OnUIScaleChange;
+			//GameSettings.OnScreenResolutionChange += GameSettings_OnScreenResolutionChange;
+			//GameSettings.OnUIScaleChange += GameSettings_OnUIScaleChange;
 			InitiativeManager.OnTurnQueueEditUpdate += InitiativeManager_OnTurnQueueEditUpdate;
 			InitiativeManager.OnTurnQueueUpdate += InitiativeManager_OnTurnQueueUpdate;
 			InitiativeManager.OnTurnSwitch += InitiativeManager_OnTurnSwitch;
@@ -217,8 +217,8 @@ namespace TaleSpireExplore
 			CutsceneManager.OnCutscenesChanged -= CutsceneManager_OnCutscenesChanged;
 			CutsceneManager.OnGMBlockChanged -= CutsceneManager_OnGMBlockChanged;
 			GUIManager.OnGUIManagerInitalized -= GUIManager_OnGUIManagerInitialized;
-			GameSettings.OnScreenResolutionChange -= GameSettings_OnScreenResolutionChange;
-			GameSettings.OnUIScaleChange -= GameSettings_OnUIScaleChange;
+			//GameSettings.OnScreenResolutionChange -= GameSettings_OnScreenResolutionChange;
+			//GameSettings.OnUIScaleChange -= GameSettings_OnUIScaleChange;
 			InitiativeManager.OnTurnQueueEditUpdate -= InitiativeManager_OnTurnQueueEditUpdate;
 			InitiativeManager.OnTurnQueueUpdate -= InitiativeManager_OnTurnQueueUpdate;
 			InitiativeManager.OnTurnSwitch -= InitiativeManager_OnTurnSwitch;
@@ -341,15 +341,15 @@ namespace TaleSpireExplore
 			LogEvent($"InitiativeManager.OnTurnQueueEditUpdate(obj: {obj})");
 		}
 
-		private void GameSettings_OnUIScaleChange(float obj)
-		{
-			LogEvent($"GameSettings.OnUIScaleChange(obj: {obj})");
-		}
+		//private void GameSettings_OnUIScaleChange(float obj)
+		//{
+		//	LogEvent($"GameSettings.OnUIScaleChange(obj: {obj})");
+		//}
 
-		private void GameSettings_OnScreenResolutionChange(int arg1, int arg2)
-		{
-			LogEvent($"GameSettings.OnScreenResolutionChange(arg1: {arg1}, arg2: {arg2})");
-		}
+		//private void GameSettings_OnScreenResolutionChange(int arg1, int arg2)
+		//{
+		//	LogEvent($"GameSettings.OnScreenResolutionChange(arg1: {arg1}, arg2: {arg2})");
+		//}
 
 		private void GUIManager_OnGUIManagerInitialized()
 		{
@@ -462,6 +462,13 @@ namespace TaleSpireExplore
 		private void BoardToolManager_OnSwitchTool(BoardTool obj)
 		{
 			LogEvent($"BoardToolManager.OnSwitchTool(obj: {obj})");
+			//if (obj is InteractivePlaceableMenuBoardTool interactivePlaceableMenuBoardTool)
+			//{
+			//	Talespire.Log.Warning($"interactivePlaceableMenuBoardTool.name = \"{interactivePlaceableMenuBoardTool.name}\"");
+			//	Talespire.Log.Warning($"interactivePlaceableMenuBoardTool.tag = \"{interactivePlaceableMenuBoardTool.tag}\"");
+			//	Talespire.Log.Warning($"interactivePlaceableMenuBoardTool.gameObject = \"{interactivePlaceableMenuBoardTool.gameObject}\"");
+			//	Talespire.Log.Warning($"interactivePlaceableMenuBoardTool.InternalState = \"{interactivePlaceableMenuBoardTool.InternalState}\"");
+			//}
 		}
 
 		private void BuildPlane_OnEnabledChange(bool obj)
@@ -1503,6 +1510,8 @@ namespace TaleSpireExplore
 
 		private void btnReloadSpellEffects_Click(object sender, EventArgs e)
 		{
+			KnownEffects.Invalidate();
+			SlidableFloats.Invalidate();
 			TaleSpireExplorePlugin.LoadKnownEffects();
 		}
 

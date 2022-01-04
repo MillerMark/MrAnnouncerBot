@@ -135,6 +135,11 @@ namespace TaleSpireCore
 			return creatureBoardAsset.HasAttachedData(Talespire.PersistentEffects.STR_PersistentEffect);
 		}
 
+		public static bool MatchesAnyLower(this List<string> names, string lowerCaseName)
+		{
+			return names.Any(x => lowerCaseName.Contains(x));
+		}
+
 		public static string GetOnlyCreatureName(this CreatureBoardAsset creatureAsset)
 		{
 			try

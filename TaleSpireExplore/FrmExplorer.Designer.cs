@@ -682,9 +682,9 @@
 			// 
 			this.btnReloadSpellEffects.Location = new System.Drawing.Point(989, 282);
 			this.btnReloadSpellEffects.Name = "btnReloadSpellEffects";
-			this.btnReloadSpellEffects.Size = new System.Drawing.Size(169, 26);
+			this.btnReloadSpellEffects.Size = new System.Drawing.Size(149, 49);
 			this.btnReloadSpellEffects.TabIndex = 21;
-			this.btnReloadSpellEffects.Text = "Reload Spell Effects";
+			this.btnReloadSpellEffects.Text = "Reload Caches";
 			this.btnReloadSpellEffects.UseVisualStyleBackColor = true;
 			this.btnReloadSpellEffects.Click += new System.EventHandler(this.btnReloadSpellEffects_Click);
 			// 

@@ -602,7 +602,7 @@ namespace TaleSpireExplore
 			else
 			{
 				Talespire.Log.Debug($"valueEditor EditingProperty \"{propertyNode.PropertyName}\" - {type.FullName}!");
-				activeValueEditor.EditingProperty(propertyNode.PropertyName);
+				activeValueEditor.EditingProperty(propertyNode.PropertyName, string.Empty);
 			}
 
 			if (activeValueEditor is UserControl userControl)

@@ -87,7 +87,7 @@ namespace TaleSpireExplore
 			float multiplier = trkMultiplier.Value / 10.0f;
 			UnityEngine.Color color = ColorUtils.ToUnityColor(btnSetColor.BackColor, multiplier);
 			Talespire.Log.Debug($"ValueChanged(color);");
-			ValueChanged(color);
+			ValueChanged(color, committedChange);
 		}
 
 		private void UpdateTrackbars()
@@ -200,7 +200,7 @@ namespace TaleSpireExplore
 			ColorChanged();
 		}
 
-		public void EditingProperty(string name)
+		public void EditingProperty(string name, string paths)
 		{
 			// TODO: Change any editing style options in this editor based on name heuristics.
 		}

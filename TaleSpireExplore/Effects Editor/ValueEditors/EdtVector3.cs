@@ -278,20 +278,15 @@ namespace TaleSpireExplore
 			}
 		}
 
-		bool HasMatch(List<string> names, string lowerCaseName)
-		{
-			return names.Any(x => lowerCaseName.Contains(x));
-		}
-
-		public void EditingProperty(string name)
+		public void EditingProperty(string name, string paths)
 		{
 			string lowerCaseName = name.ToLower();
-			if (HasMatch(rotateNames, lowerCaseName))
+			if (rotateNames.MatchesAnyLower(lowerCaseName))
 			{
 				rbRotate.Checked = true;
 				rbRotate_CheckedChanged(null, null);
 			}
-			else if (HasMatch(scaleNames, lowerCaseName))
+			else if (scaleNames.MatchesAnyLower(lowerCaseName))
 			{
 				rbScale.Checked = true;
 				rbScale_CheckedChanged(null, null);

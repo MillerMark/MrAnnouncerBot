@@ -67,7 +67,7 @@ namespace TaleSpireExplore
 				ValueChanged(result);
 		}
 
-		public void EditingProperty(string name)
+		public void EditingProperty(string name, string paths)
 		{
 			// TODO: Change any editing style options in this editor based on name heuristics.
 		}

@@ -30,6 +30,8 @@
 		{
 			this.label1 = new System.Windows.Forms.Label();
 			this.tbxValue = new System.Windows.Forms.TextBox();
+			this.trkValue = new System.Windows.Forms.TrackBar();
+			((System.ComponentModel.ISupportInitialize)(this.trkValue)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -45,9 +47,20 @@
 			// 
 			this.tbxValue.Location = new System.Drawing.Point(55, 8);
 			this.tbxValue.Name = "tbxValue";
-			this.tbxValue.Size = new System.Drawing.Size(188, 20);
+			this.tbxValue.Size = new System.Drawing.Size(260, 20);
 			this.tbxValue.TabIndex = 1;
 			this.tbxValue.TextChanged += new System.EventHandler(this.tbxValue_TextChanged);
+			// 
+			// trkValue
+			// 
+			this.trkValue.Location = new System.Drawing.Point(47, 34);
+			this.trkValue.Name = "trkValue";
+			this.trkValue.Size = new System.Drawing.Size(276, 45);
+			this.trkValue.TabIndex = 2;
+			this.trkValue.Value = 5;
+			this.trkValue.Visible = false;
+			this.trkValue.Scroll += new System.EventHandler(this.trkValue_Scroll);
+			this.trkValue.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkValue_MouseUp);
 			// 
 			// EdtFloat
 			// 
@@ -55,8 +68,10 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.tbxValue);
 			this.Controls.Add(this.label1);
+			this.Controls.Add(this.trkValue);
 			this.Name = "EdtFloat";
-			this.Size = new System.Drawing.Size(330, 35);
+			this.Size = new System.Drawing.Size(330, 69);
+			((System.ComponentModel.ISupportInitialize)(this.trkValue)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -66,5 +81,6 @@
 
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox tbxValue;
+		private System.Windows.Forms.TrackBar trkValue;
 	}
 }
