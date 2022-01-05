@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TaleSpireCore;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace TaleSpireExplore
 {
@@ -81,7 +82,9 @@ namespace TaleSpireExplore
 				else if (SelectionType == SelectionType.EffectName)
 					foreach (string effect in KnownEffects.GetAllNames().Where(y => FilterCatches(y)).OrderBy(x => x).ToList())
 						lstItems.Items.Add(effect);
-
+				else if (SelectionType == SelectionType.Script)
+					foreach (string effect in KnownScripts.GetAllNames().Where(y => FilterCatches(y)).OrderBy(x => x).ToList())
+						lstItems.Items.Add(effect);
 			}
 			finally
 			{
@@ -106,6 +109,16 @@ namespace TaleSpireExplore
 			FrmSelectItem frmSelectItem = new FrmSelectItem();
 			frmSelectItem.SelectionType = SelectionType.EffectName;
 			frmSelectItem.lblTitle.Text = "Effect:";
+			if (frmSelectItem.ShowDialog(owner) == DialogResult.OK)
+				return frmSelectItem.lstItems.SelectedItem as string;
+			return null;
+		}
+
+		public static string SelectScript(FrmEffectEditor owner)
+		{
+			FrmSelectItem frmSelectItem = new FrmSelectItem();
+			frmSelectItem.SelectionType = SelectionType.Script;
+			frmSelectItem.lblTitle.Text = "Script:";
 			if (frmSelectItem.ShowDialog(owner) == DialogResult.OK)
 				return frmSelectItem.lstItems.SelectedItem as string;
 			return null;

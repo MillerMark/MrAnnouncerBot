@@ -55,6 +55,7 @@ namespace TaleSpireExplore
 			allValueEditors.Register(new EdtBool());
 			allValueEditors.Register(new EdtString());
 			allValueEditors.Register(new EdtColor());
+			allValueEditors.Register(new EdtMiniGrouper());
 			allValueEditors.Register(new EdtVector3());
 			allValueEditors.Register(new EdtMinMaxGradient());
 		}

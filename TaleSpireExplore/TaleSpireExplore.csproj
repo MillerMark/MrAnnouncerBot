@@ -232,6 +232,12 @@
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.Designer.cs">
+      <DependentUpon>EdtMiniGrouper.cs</DependentUpon>
+    </Compile>
     <Compile Include="Effects Editor\ValueEditors\SlidableFloats.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
@@ -385,6 +391,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMiniGrouper.resx">
+      <DependentUpon>EdtMiniGrouper.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Effects Editor\ValueEditors\EdtEnum.resx">
       <DependentUpon>EdtEnum.cs</DependentUpon>
     </EmbeddedResource>

@@ -428,5 +428,13 @@ namespace TaleSpireCore
 		{
 			return SmartProperties.FirstOrDefault(x => x.Name == smartPropertyName);
 		}
+
+		public void AddScript(string scriptName)
+		{
+			if (Scripts == null)
+				Scripts = new List<string>();
+
+			Scripts.Add(scriptName);
+		}
 	}
 }

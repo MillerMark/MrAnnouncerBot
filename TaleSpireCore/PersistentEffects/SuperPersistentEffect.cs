@@ -36,6 +36,8 @@ namespace TaleSpireCore
 		[JsonIgnore]
 		public Dictionary<string, string> Properties { get => EffectProperties.FirstOrDefault()?.Properties; }
 
+		public Dictionary<string, string> ScriptData { get; set; } = new Dictionary<string, string>();
+
 		[JsonIgnore]
 		public string EffectName { get => EffectProperties.FirstOrDefault()?.EffectName; }
 

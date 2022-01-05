@@ -489,23 +489,53 @@ namespace TaleSpireCore
 			{
 				Log.Indent();
 				if (persistentEffect != null)
-				{
-					if (persistentEffect is SuperPersistentEffect superPersistentEffect)
+				if (persistentEffect is SuperPersistentEffect superPersistentEffect)
 					{
 						for (int i = 0; i < superPersistentEffect.EffectProperties.Count; i++)
 						{
 							string prefix = i.ToString().PadLeft(2, '0');
 							EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
-							// TODO: Make sure we can read and write to the correct property in the correct effect!
 							Log.Warning($"Adding effect \"{effectProperties.EffectName}\" with prefix \"{prefix}\"...");
-							Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
+							GameObject spell = Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
+							
+							CompositeEffect compositeEffect = CompositeEffect.GetFromGameObject(spell);
+							
+							if (compositeEffect == null)
+								Log.Error($"compositeEffect is null!");
+
+							if (compositeEffect != null && compositeEffect.Scripts != null)
+							{
+								Log.Warning($"Found a composite effect with scripts!");
+								foreach (string script in compositeEffect.Scripts)
+									if (!superPersistentEffect.ScriptData.ContainsKey(script))
+									{
+										Log.Warning($"Adding Script Data {script}!!!");
+										superPersistentEffect.ScriptData[script] = "";
+									}
+							}
+
+							if (superPersistentEffect.ScriptData != null && superPersistentEffect.ScriptData.Count > 0)
+							{
+								Log.Debug($"");
+								Log.Debug($"----");
+								Log.Debug($"Attaching scripts!");
+								foreach (string scriptName in superPersistentEffect.ScriptData.Keys)
+								{
+									Log.Warning($"Adding script: {scriptName}");
+									TaleSpireBehavior script = spell.AddComponent(KnownScripts.GetType(scriptName)) as TaleSpireBehavior;
+									if (script != null)
+									{
+										script.OwnerCreated(creatureAsset.CreatureId.ToString());
+										script.Initialize(superPersistentEffect.ScriptData[scriptName]);
+									}
+								}
+							}
 						}
 					}
 					else
 					{
 						Spells.AttachEffect(creatureAsset, persistentEffect.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode);
-					}
-				}
+					} 
 				else
 				{
 					Log.Error($"Unable to attach any effects. {nameof(persistentEffect)} is null!");

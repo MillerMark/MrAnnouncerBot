@@ -80,14 +80,14 @@ namespace TaleSpireCore
 				AttachEffect(creatureBoardAsset, effectName, spellId, enlargeTime, lifeTime, shrinkTime);
 			}
 
-			public static void AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime, string parentNodeName = null, string prefix = null)
+			public static GameObject AttachEffect(CreatureBoardAsset creatureBoardAsset, string effectName, string spellId, float enlargeTime, float lifeTime, float shrinkTime, string parentNodeName = null, string prefix = null)
 			{
 				GameObject spell = GetEffect(effectName);
 
 				if (spell == null)
 				{
 					Log.Error($"Spell effect \"{effectName}\" not found. Unable to Attach the effect.");
-					return;
+					return null;
 				}
 
 				Log.Indent();
@@ -118,6 +118,7 @@ namespace TaleSpireCore
 					Instances.EnlargeSoon(spell, enlargeTime);
 
 				Log.Unindent();
+				return spell;
 			}
 
 			public static void PlayEffectAtCreatureBase(string effectName, string spellId, string creatureId, float lifeTime = 0, float enlargeTimeSeconds = 0, float secondsDelayStart = 0, float shrinkTime = 0, float rotationDegrees = 0)

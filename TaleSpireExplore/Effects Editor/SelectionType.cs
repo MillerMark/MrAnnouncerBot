@@ -8,6 +8,7 @@ namespace TaleSpireExplore
 		Prefabs,
 		ExistingGameObjects,
 		Minis,
-		EffectName
+		EffectName,
+		Script
 	}
 }

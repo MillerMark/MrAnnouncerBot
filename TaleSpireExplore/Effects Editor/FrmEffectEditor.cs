@@ -567,6 +567,10 @@ namespace TaleSpireExplore
 				{
 					ShowMaterialColorEditor(materialColorPropertyNode);
 				}
+				else if (e.Node is ComponentNode componentNode)
+				{
+					ShowValueEditor(componentNode);
+				}
 				else
 					return;
 
@@ -580,6 +584,29 @@ namespace TaleSpireExplore
 			}
 		}
 
+		private void ShowValueEditor(ComponentNode componentNode)
+		{
+			// TODO: This is hard coded. Work this challenge until it's not.
+
+			if (componentNode.Component is MiniGrouper miniGrouper)
+			{
+				Type type = typeof(MiniGrouper);
+				activeValueEditor = ValueEditors.Get(STR_EffectEditorKey, type);
+				if (activeValueEditor == null)
+				{
+					activeValueEditor = noneEditor;
+					Talespire.Log.Debug($"(no valueEditor yet for {type.FullName})");
+				}
+				else
+				{
+					Talespire.Log.Debug($"valueEditor EditingProperty \"{componentNode.Component.GetType().FullName}\"!");
+					activeValueEditor.EditingProperty(string.Empty, string.Empty);
+				}
+
+				if (activeValueEditor is UserControl userControl)
+					userControl.Visible = true;
+			}
+		}
 
 		EdtNone noneEditor = new EdtNone();
 		private void ShowValueEditor(PropertyNode propertyNode)
@@ -1595,6 +1622,38 @@ Parameter name: value"
 		private void miDisconnectSmartProperty_Click(object sender, EventArgs e)
 		{
 			ActiveCompositeEffect?.DisconnectProperty(ActiveNodePropertyPath);
+			CreateJson();
+		}
+
+		private void addScriptToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			string scriptName = FrmSelectItem.SelectScript(this);
+			Talespire.Log.Warning($"Selected script is: {scriptName}!");
+			ActiveCompositeEffect?.AddScript(scriptName);
+			if (trvEffectHierarchy.Nodes.Count > 0)
+				if (trvEffectHierarchy.Nodes[0] is GameObjectNode gameObjectNode)
+				{
+					try
+					{
+						Talespire.Log.Debug($"Type.GetType(scriptName) = \"{KnownScripts.GetType(scriptName)?.FullName}\"");
+						gameObjectNode.GameObject.AddComponent(KnownScripts.GetType(scriptName));
+					}
+					catch (Exception ex)
+					{
+						Talespire.Log.Exception(ex);
+					}
+					//Talespire.Log.Debug($"gameObjectNode.GameObject.AddComponent<MiniGrouper>();");
+					//try
+					//{
+					//	gameObjectNode.GameObject.AddComponent<MiniGrouper>();
+					//}
+					//catch (Exception ex)
+					//{
+					//	Talespire.Log.Exception(ex);
+					//}
+					ShowProperties(gameObjectNode.GameObject);
+				}
+
 			CreateJson();
 		}
 	}

@@ -1512,6 +1512,7 @@ namespace TaleSpireExplore
 		{
 			KnownEffects.Invalidate();
 			SlidableFloats.Invalidate();
+			KnownScripts.Invalidate();
 			TaleSpireExplorePlugin.LoadKnownEffects();
 		}
 

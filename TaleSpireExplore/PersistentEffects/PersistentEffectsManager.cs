@@ -142,7 +142,7 @@ namespace TaleSpireExplore
 			if (propertyChanger != null)
 			{
 				propertyChanger.FullPropertyPath = propertyPath;
-				// TODO: I think we need to check to see if PersistentEffect is a new effect (and then use its EffectProperties accordingly).
+				
 				if (ea.PersistentEffect is SuperPersistentEffect superPersistentEffect && prefix != null)
 				{
 					if (logDetails)

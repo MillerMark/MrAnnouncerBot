@@ -146,26 +146,27 @@
             this.toolStripMenuItem1,
             this.addScriptToolStripMenuItem});
 			this.ctxGameObjects.Name = "ctxGameObjects";
-			this.ctxGameObjects.Size = new System.Drawing.Size(130, 54);
+			this.ctxGameObjects.Size = new System.Drawing.Size(181, 76);
 			// 
 			// deleteToolStripMenuItem
 			// 
 			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.deleteToolStripMenuItem.Text = "Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(126, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
 			// 
 			// addScriptToolStripMenuItem
 			// 
 			this.addScriptToolStripMenuItem.Name = "addScriptToolStripMenuItem";
-			this.addScriptToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+			this.addScriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.addScriptToolStripMenuItem.Text = "Add Script";
 			this.addScriptToolStripMenuItem.DropDownOpening += new System.EventHandler(this.addScriptToolStripMenuItem_DropDownOpening);
+			this.addScriptToolStripMenuItem.Click += new System.EventHandler(this.addScriptToolStripMenuItem_Click);
 			// 
 			// btnAddPrefab
 			// 
@@ -296,20 +297,20 @@
 			// dummyToolStripMenuItem
 			// 
 			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
-			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
 			this.dummyToolStripMenuItem.Text = "Dummy";
 			// 
 			// miNewSmartProperty
 			// 
 			this.miNewSmartProperty.Name = "miNewSmartProperty";
-			this.miNewSmartProperty.Size = new System.Drawing.Size(263, 22);
+			this.miNewSmartProperty.Size = new System.Drawing.Size(259, 22);
 			this.miNewSmartProperty.Text = "New Smart Property...";
 			this.miNewSmartProperty.Click += new System.EventHandler(this.miNewSmartProperty_Click);
 			// 
 			// miDisconnect
 			// 
 			this.miDisconnect.Name = "miDisconnect";
-			this.miDisconnect.Size = new System.Drawing.Size(263, 22);
+			this.miDisconnect.Size = new System.Drawing.Size(259, 22);
 			this.miDisconnect.Text = "Disconnect this Property ";
 			this.miDisconnect.Click += new System.EventHandler(this.miDisconnectSmartProperty_Click);
 			// 
