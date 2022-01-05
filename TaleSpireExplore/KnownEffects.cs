@@ -26,6 +26,18 @@ namespace TaleSpireExplore
 			return allKnownEffects.Select(x => x.Name).ToList();
 		}
 
+		public static List<string> GetNamesFromCategory(string selectedCategory)
+		{
+			LoadIfNecessary();
+			return allKnownEffects.Where(x => x.Category == selectedCategory).Select(x => x.Name).ToList();
+		}
+
+		public static List<string> GetAllCategories()
+		{
+			LoadIfNecessary();
+			return allKnownEffects.Select(x => x.Category).Distinct().ToList();
+		}
+
 		static void LoadIfNecessary()
 		{
 			if (allKnownEffects == null)
@@ -72,7 +84,6 @@ namespace TaleSpireExplore
 				return null;
 			Talespire.GameObjects.InvalidateFound();
 			CompositeEffect compositeEffect = CompositeEffect.CreateFrom(targetingSphereJson);
-			//Talespire.Log.Debug($"GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);");
 			GameObject gameObject = compositeEffect.CreateOrFindUnsafe(instanceId);
 			compositeEffect.RefreshIfNecessary(gameObject);
 

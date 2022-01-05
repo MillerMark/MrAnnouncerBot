@@ -153,6 +153,10 @@
       <HintPath>..\DLLs\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Physics">
+      <HintPath>..\DLLs\Unity.Physics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Postprocessing.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DLLs\Unity.Postprocessing.Runtime.dll</HintPath>

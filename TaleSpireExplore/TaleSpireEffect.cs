@@ -14,7 +14,10 @@ namespace TaleSpireExplore
 
 		[Column]
 		public string Effect { get; set; }
-		
+
+		[Column]
+		public string Category { get; set; }
+
 		public TaleSpireEffect()
 		{
 

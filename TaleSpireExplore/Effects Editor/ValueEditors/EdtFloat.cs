@@ -83,18 +83,17 @@ namespace TaleSpireExplore
 
 		public void EditingProperty(string name, string paths)
 		{
-			Talespire.Log.Warning($"paths = \"{paths}\"");
+			//Talespire.Log.Warning($"paths = \"{paths}\"");
 			string[] allPaths = paths.Split(';');
 			List<SlidableFloat> allSlidableFloats = SlidableFloats.GetAll();
 			SlidableFloat slidableFloat = allSlidableFloats.FirstOrDefault(x => x.Matches(name, allPaths));
 			if (slidableFloat == null)
 			{
 				trkValue.Visible = false;
-				Talespire.Log.Debug($"Did not find a SlidableFloat for \"{name}\"");
+				Talespire.Log.Debug($"Did not find a SlidableFloat for \"{name}\" or \"{paths}\".");
 				return;
 			}
 
-			Talespire.Log.Warning($"Found a SlidableFloat for \"{name}\"");
 			trkValue.Visible = true;
 			multiplier = Math.Pow(10, slidableFloat.DecimalPlaces);
 			trkValue.Minimum = (int)Math.Round(slidableFloat.Min * multiplier);
