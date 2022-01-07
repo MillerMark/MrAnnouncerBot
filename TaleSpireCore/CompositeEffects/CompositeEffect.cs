@@ -30,22 +30,32 @@ namespace TaleSpireCore
 		/// <summary>
 		/// The seconds to delay awakening this effect, in seconds.
 		/// </summary>
+		[DefaultValue(0)]
 		public float DelayStart { get; set; }
-
 
 		/// <summary>
 		/// The name of the prefab effect to create at this location in the hierarchy.
 		/// Leave empty to create an empty game object.
 		/// </summary>
+		[DefaultValue(null)]
 		public string PrefabToCreate { get; set; }
+
+		[DefaultValue(null)]
 		public string ExistingChildName { get; set; }
+
+		[DefaultValue(null)]
 		public string ItemToClone { get; set; }
 
-
+		/// <summary>
+		/// If true, then the effect will be hidden when the base is hidden.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool VisibilityMatchesBase { get; set; }
 
 		/// <summary>
 		/// The list of all the properties needing changing in this composite effect.
 		/// </summary>
+		[DefaultValue(null)]
 		public List<PropertyChangerDto> Props { get; set; }
 
 
@@ -53,12 +63,14 @@ namespace TaleSpireCore
 		/// Any child effects. The structure of this effect composite needs to match the structure of the prefab.
 		/// Empty game objects and other prefabs can parent this prefab/game object or be children to this effect.
 		/// </summary>
-		public List<CompositeEffect> Children { get; set; } = new List<CompositeEffect>();
+		[DefaultValue(null)]
+		public List<CompositeEffect> Children { get; set; }
 
 		/// <summary>
 		/// The list of SmartProperty elements created for this effect.
 		/// </summary>
-		public List<SmartProperty> SmartProperties { get; set; } = new List<SmartProperty>();
+		[DefaultValue(null)]
+		public List<SmartProperty> SmartProperties { get; set; }
 
 
 		// TODO: Change Scripts to a more sophisticate class, to include property settings.
@@ -66,6 +78,7 @@ namespace TaleSpireCore
 		/// <summary>
 		/// Scripts to add to this composite effect (added before setting properties).
 		/// </summary>
+		[DefaultValue(null)]
 		public List<string> Scripts { get; set; }
 
 
@@ -77,7 +90,11 @@ namespace TaleSpireCore
 
 		[JsonIgnore]
 		public CreatureBoardAsset Mini { get; set; }
+
+		[DefaultValue(null)]
 		public string ItemToBorrow { get; set; }
+
+		[DefaultValue(null)]
 		public string EffectNameToCreate { get; set; }
 
 
@@ -95,9 +112,10 @@ namespace TaleSpireCore
 			if (needRefresh)
 				return true;
 			
-			foreach (CompositeEffect compositeEffect in Children)
-				if (compositeEffect.NeedsRefreshing())
-					return true;
+			if (Children != null)
+				foreach (CompositeEffect compositeEffect in Children)
+					if (compositeEffect.NeedsRefreshing())
+						return true;
 
 			return false;
 		}
@@ -133,8 +151,9 @@ namespace TaleSpireCore
 				}
 			}
 
-			foreach (CompositeEffect compositeEffect in Children)
-				compositeEffect.RebuildProperties();
+			if (Children != null)
+				foreach (CompositeEffect compositeEffect in Children)
+					compositeEffect.RebuildProperties();
 
 			Talespire.Log.Unindent();
 		}
@@ -204,7 +223,6 @@ namespace TaleSpireCore
 					needRefresh = true;
 
 				basePropertyDto.ModifyProperty(effect);
-				
 			}
 			Talespire.Log.Unindent();
 		}
@@ -381,23 +399,17 @@ namespace TaleSpireCore
 
 		public bool HasSmartProperty(string fullPropertyName)
 		{
-			foreach (SmartProperty smartProperty in SmartProperties)
-				if (smartProperty.PropertyPaths.Contains(fullPropertyName))
-					return true;
-
-			//Talespire.Log.Debug($"Property Paths:");
-			//foreach (SmartProperty smartProperty in SmartProperties)
-			//	foreach (string propertyPath in smartProperty.PropertyPaths)
-			//		Talespire.Log.Debug($"  {propertyPath}");
-
-			//Talespire.Log.Debug("");
+			if (SmartProperties != null)
+				foreach (SmartProperty smartProperty in SmartProperties)
+					if (smartProperty.PropertyPaths.Contains(fullPropertyName))
+						return true;
 
 			return false;
 		}
 
 		public SmartProperty GetSmartProperty(string fullPropertyPath)
 		{
-			if (fullPropertyPath == null)
+			if (fullPropertyPath == null || SmartProperties == null)
 				return null;
 
 			foreach (SmartProperty smartProperty in SmartProperties)
@@ -409,6 +421,9 @@ namespace TaleSpireCore
 
 		public bool SmartPropertyNameExists(string newName)
 		{
+			if (SmartProperties == null)
+				return false;
+
 			return SmartProperties.Any(smartProperty => smartProperty.Name == newName);
 		}
 
@@ -426,6 +441,9 @@ namespace TaleSpireCore
 		
 		public SmartProperty GetSmartPropertyByName(string smartPropertyName)
 		{
+			if (SmartProperties == null)
+				return null;
+
 			return SmartProperties.FirstOrDefault(x => x.Name == smartPropertyName);
 		}
 

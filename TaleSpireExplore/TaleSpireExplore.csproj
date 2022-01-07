@@ -232,6 +232,7 @@
     <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
     <Compile Include="Effects Editor\SelectionType.cs" />
     <Compile Include="Effects Editor\ValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\IScriptEditor.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.cs">
       <SubType>UserControl</SubType>
     </Compile>

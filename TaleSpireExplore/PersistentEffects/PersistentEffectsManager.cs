@@ -106,10 +106,12 @@ namespace TaleSpireExplore
 		{
 			SetRotationLock(true);
 		}
-
+		public static bool SuppressPersistentEffectUI;
 		static void Minis_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
 		{
-			Talespire.Log.Warning($"Minis_MiniSelected");
+			if (SuppressPersistentEffectUI)
+				return;
+
 			if (ea.Mini != null && ea.Mini.IsPersistentEffect())
 				ShowPersistentEffectUI(ea.Mini);
 			else
@@ -230,7 +232,7 @@ namespace TaleSpireExplore
 								break;
 							}
 							string smartPropertyName = propertyPath.Substring(1);
-							SmartProperty smartProperty = originalCompositeEffect.SmartProperties.FirstOrDefault(x => x.Name == smartPropertyName);
+							SmartProperty smartProperty = originalCompositeEffect.SmartProperties?.FirstOrDefault(x => x.Name == smartPropertyName);
 							if (smartProperty == null)
 							{
 								Talespire.Log.Error($"smartProperty {smartPropertyName} NOT found!!!");
@@ -391,7 +393,7 @@ namespace TaleSpireExplore
 
 			if (originalCompositeEffect == null)
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
-			else // Add SmartProperties (which we can get from the Composite).
+			else if (originalCompositeEffect.SmartProperties != null)  // Add SmartProperties (which we can get from the Composite).
 				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
 				{
 					Type type = TypeLookup.GetType(smartProperty.Type);

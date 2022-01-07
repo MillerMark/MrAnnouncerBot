@@ -38,7 +38,10 @@ namespace TaleSpireCore
 		{
 			if (allKnownScriptTypes == null)
 				ReloadKnownScript();
-			return allKnownScriptTypes.FirstOrDefault(x => x.FullName == scriptName);
+			Type foundType = allKnownScriptTypes.FirstOrDefault(x => x.FullName == scriptName);
+			if (foundType == null)
+				foundType = allKnownScriptTypes.FirstOrDefault(x => x.Name == scriptName);
+			return foundType;
 		}
 	}
 }

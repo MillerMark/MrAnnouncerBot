@@ -222,10 +222,32 @@ namespace TaleSpireExplore
 					frmPersistentEffectPropertyEditor.Height = valueEditor.Height + 8;
 
 					Talespire.Log.Debug($"Instance: {Instance}");
+					if (valueEditor is IScriptEditor scriptEditor)
+					{
+
+						Talespire.Log.Warning($"Instance = \"{Instance}\"");
+						if (effectProperty.Paths.StartsWith("<") && effectProperty.Paths.EndsWith(">"))
+						{
+							// Could be a script!
+							Talespire.Log.Debug($"Could be a script!");
+							Type scriptType = KnownScripts.GetType(effectProperty.Paths.Substring(1, effectProperty.Paths.Length - 2));
+							if (scriptType != null)
+							{
+								Talespire.Log.Debug($"scriptType found {scriptType.FullName}");
+								UnityEngine.Component script = Instance.GetComponent(scriptType.FullName);
+								scriptEditor.InitializeInstance(script as MonoBehaviour);
+							}
+							else
+								Talespire.Log.Debug($"{effectProperty.Paths} is not a Script!");
+						}
+					}
+
 					if (valueEditor is IValueEditor iValueEditor)
 					{
 						iValueEditor.EditingProperty(effectProperty.Name, effectProperty.Paths);
 						Talespire.Log.Warning($"effectProperty.Paths = \"{effectProperty.Paths}\"");
+						
+						
 						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
 						Talespire.Log.Warning($"iValueEditor.SetValue(propertyModDetails.GetValue());");
 						object newValue = propertyModDetails.GetValue();

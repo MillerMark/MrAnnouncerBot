@@ -259,6 +259,9 @@ namespace TaleSpireExplore
 		{
 			if (scene.name == "Startup" || scene.name == "Systems" || scene.name == "Login")
 				return;
+
+			PersistentEffectsManager.SuppressPersistentEffectUI = false;
+
 			//ShowGameObjectsInScene(scene);
 			//if (gameObjects != null)
 			//	for (int i = 0; i < gameObjects.Length; i++)

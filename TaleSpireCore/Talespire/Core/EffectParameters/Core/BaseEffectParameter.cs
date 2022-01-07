@@ -26,7 +26,7 @@ namespace TaleSpireCore
 				if (float.TryParse(rightSide, out float scaleValue))
 					scale = new Vector3(scaleValue, scaleValue, scaleValue);
 				else
-					Talespire.Log.Error($"Unable to convert \"{rightSide}\" to a float.");
+					Talespire.Log.Error($"Unable to convert \"{rightSide}\" to a float or a Vector3.");
 			}
 
 			return scale;

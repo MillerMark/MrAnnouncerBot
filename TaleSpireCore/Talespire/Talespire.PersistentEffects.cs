@@ -9,6 +9,7 @@ using LordAshes;
 using static TaleSpireCore.Talespire;
 using System.Diagnostics;
 using Steamworks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace TaleSpireCore
 {
@@ -137,8 +138,6 @@ namespace TaleSpireCore
 					return;
 
 				Log.Warning($"UpdatePersistentEffect for {GetDisplayName(creatureAsset)} - \"{value}\"");
-
-				//[UpdatePersistentEffect for Character(Clone) - "{'Indicators':{'SpinLock':false},'EffectName':'R4.StormCloud','LockedRotation':0.0,'Hidden':true,'Properties':{'<Transform>.localScale':'(0.5, 0.5, 0.5)','<Transform>.localEulerAngles':'(0.0, 0.0, 90.0)','<Transform>.localPosition':'(4.3, 2.0, -2.3)'}}"
 
 				if (InitializeMiniAsEffect(creatureAsset))
 				{
@@ -346,7 +345,7 @@ namespace TaleSpireCore
 
 			private static void PositionOrb(GameObject orb)
 			{
-				orb.transform.localPosition = new Vector3(0.1f, 0.6f, 0);
+				orb.transform.localPosition = new Vector3(0.13f, 0.6f, 0.05f);
 				orb.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 			}
 
@@ -498,21 +497,7 @@ namespace TaleSpireCore
 							Log.Warning($"Adding effect \"{effectProperties.EffectName}\" with prefix \"{prefix}\"...");
 							GameObject spell = Spells.AttachEffect(creatureAsset, effectProperties.EffectName, creatureAsset.CreatureId.ToString(), 0, 0, 0, STR_AttachedNode, prefix);
 							
-							CompositeEffect compositeEffect = CompositeEffect.GetFromGameObject(spell);
-							
-							if (compositeEffect == null)
-								Log.Error($"compositeEffect is null!");
-
-							if (compositeEffect != null && compositeEffect.Scripts != null)
-							{
-								Log.Warning($"Found a composite effect with scripts!");
-								foreach (string script in compositeEffect.Scripts)
-									if (!superPersistentEffect.ScriptData.ContainsKey(script))
-									{
-										Log.Warning($"Adding Script Data {script}!!!");
-										superPersistentEffect.ScriptData[script] = "";
-									}
-							}
+							TransferPropertiesToPersistentEffect(CompositeEffect.GetFromGameObject(spell), superPersistentEffect);
 
 							if (superPersistentEffect.ScriptData != null && superPersistentEffect.ScriptData.Count > 0)
 							{
@@ -544,6 +529,25 @@ namespace TaleSpireCore
 				}
 
 				Log.Unindent();
+			}
+
+			private static void TransferPropertiesToPersistentEffect(CompositeEffect compositeEffect, SuperPersistentEffect superPersistentEffect)
+			{
+				if (compositeEffect == null)
+					return;
+
+				superPersistentEffect.VisibilityMatchesBase = compositeEffect.VisibilityMatchesBase;
+
+				if (compositeEffect.Scripts != null)
+				{
+					Log.Warning($"Found a composite effect with scripts!");
+					foreach (string script in compositeEffect.Scripts)
+						if (!superPersistentEffect.ScriptData.ContainsKey(script))
+						{
+							Log.Warning($"Adding Script Data {script}!!!");
+							superPersistentEffect.ScriptData[script] = "";
+						}
+				}
 			}
 
 			public static bool IsPersistentEffect(string creatureId)
@@ -645,9 +649,14 @@ namespace TaleSpireCore
 					SetOrbIndicatorVisible(effectOrb, shouldBeVisible, key);
 				}
 
-				// STR_SpinLockIndicator -> callback architecture???
-				
-				
+				if (persistentEffect is SuperPersistentEffect superPersistentEffect && superPersistentEffect.VisibilityMatchesBase)
+				{
+					GameObject attachedParentGameObject = creatureBoardAsset.GetAttachedParentGameObject();
+					if (attachedParentGameObject != null)
+						attachedParentGameObject.SetActive(!hidden);
+					else
+						Log.Error($"Unable to find attached parent game object! Cannot hide this control!");
+				}
 
 				creatureBoardAsset.SavePersistentEffect(persistentEffect);
 			}

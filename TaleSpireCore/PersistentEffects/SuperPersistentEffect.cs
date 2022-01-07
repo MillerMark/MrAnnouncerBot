@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace TaleSpireCore
 {
@@ -42,6 +43,9 @@ namespace TaleSpireCore
 		public string EffectName { get => EffectProperties.FirstOrDefault()?.EffectName; }
 
 		public Dictionary<string, bool> Indicators { get; set; } = new Dictionary<string, bool>();  /* Indicator Name (has to match the GameObject) mapped to its visible state */
+		
+		[DefaultValue(false)]
+		public bool VisibilityMatchesBase { get; set; }
 
 		public List<EffectProperties> EffectProperties = new List<EffectProperties>();
 

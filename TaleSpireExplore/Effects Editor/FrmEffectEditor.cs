@@ -128,6 +128,10 @@ namespace TaleSpireExplore
 
 			// TODO: Support adding empty GameObjects, and renaming them later!!!
 			childNode.CompositeEffect.ExistingChildName = gameObject.name;
+			
+			if (parentNode.CompositeEffect.Children == null)
+				parentNode.CompositeEffect.Children = new List<CompositeEffect>();
+
 			parentNode.CompositeEffect.Children.Add(childNode.CompositeEffect);
 
 			childNode.GameObject = gameObject;
@@ -586,11 +590,9 @@ namespace TaleSpireExplore
 
 		private void ShowValueEditor(ComponentNode componentNode)
 		{
-			// TODO: This is hard coded. Work this challenge until it's not.
-
-			if (componentNode.Component is MiniGrouper miniGrouper)
+			if (componentNode.Component is TaleSpireBehavior)
 			{
-				Type type = typeof(MiniGrouper);
+				Type type = componentNode.Component.GetType();
 				activeValueEditor = ValueEditors.Get(STR_EffectEditorKey, type);
 				if (activeValueEditor == null)
 				{
@@ -1494,6 +1496,8 @@ Parameter name: value"
 						Talespire.Log.Error($"topNode.CompositeEffect is null.");
 						return;
 					}
+					if (topNode.CompositeEffect.SmartProperties == null)
+						topNode.CompositeEffect.SmartProperties = new List<SmartProperty>();
 					topNode.CompositeEffect.SmartProperties.Add(newSmartProp);
 				}
 			}

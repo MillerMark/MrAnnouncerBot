@@ -80,6 +80,7 @@
 			this.trkHue.Size = new System.Drawing.Size(253, 45);
 			this.trkHue.TabIndex = 7;
 			this.trkHue.TickFrequency = 10;
+			this.trkHue.Scroll += new System.EventHandler(this.trkHue_Scroll);
 			// 
 			// lbGroupName
 			// 
