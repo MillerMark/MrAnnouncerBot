@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Linq;
 using Bounce.Unmanaged;
 using LordAshes;
+using static Bounce.TaleSpire.AssetManagement.AssetsDataView;
+using Unity.Entities.UniversalDelegates;
 
 namespace TaleSpireCore
 {
@@ -11,11 +13,25 @@ namespace TaleSpireCore
 	{
 		public static class Minis
 		{
+			public static event CreatureBoardAssetEventHandler NewMiniSelected;
 			public static event CreatureBoardAssetEventHandler MiniSelected;
 
 			static CreatureBoardAssetEventArgs creatureBoardAssetEventArgs = new CreatureBoardAssetEventArgs();
+			public static void OnNewMiniSelected(CreatureBoardAssetEventArgs ea)
+			{
+				if (ea.Mini == null)
+					Log.Error($"OnNewMiniSelected - ea.Mini is null!");
+				else
+					Log.Warning($"OnNewMiniSelected - {ea.Mini.GetOnlyCreatureName()}!");
+				NewMiniSelected?.Invoke(null, ea);
+			}
+
 			public static void OnMiniSelected(CreatureBoardAssetEventArgs ea)
 			{
+				if (ea.Mini == null)
+					Log.Error($"OnMiniSelected - ea.Mini is null!");
+				else
+					Log.Warning($"OnMiniSelected - {ea.Mini.GetOnlyCreatureName()} selected!");
 				MiniSelected?.Invoke(null, ea);
 			}
 
@@ -45,21 +61,22 @@ namespace TaleSpireCore
 
 			static CreatureBoardAsset lastSelectedMini;
 
-			static void OnNewMiniSelected(CreatureBoardAsset selectedMini)
-			{
-				miniSelected = true;
-				creatureBoardAssetEventArgs.SetMini(selectedMini);
-				OnMiniSelected(creatureBoardAssetEventArgs);
-				lastSelectedMini = selectedMini;
-			}
-
 			private static void BoardToolManager_OnSwitchTool(BoardTool obj)
 			{
 				CreatureBoardAsset selectedMini = GetSelected();
-				if (selectedMini != lastSelectedMini)
+
+				creatureBoardAssetEventArgs.SetMini(selectedMini);
+				Log.Debug($"BoardToolManager_OnSwitchTool - {obj}");
+
+				if (obj is DefaultBoardTool)
 				{
-					OnNewMiniSelected(selectedMini);
+					if (selectedMini != lastSelectedMini)
+						OnNewMiniSelected(creatureBoardAssetEventArgs);
+
+					OnMiniSelected(creatureBoardAssetEventArgs);
 				}
+
+				lastSelectedMini = selectedMini;
 			}
 
 			public static CreatureBoardAsset GetCreatureBoardAsset(string id)
@@ -131,7 +148,14 @@ namespace TaleSpireCore
 
 			static IndicatorGlowfader GetIndicatorGlowFader(string id)
 			{
-				return GetCreatureBoardAsset(id)?.BaseLoader?.GetComponentInChildren<IndicatorGlowfader>();
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return null;
+				
+				if (creatureBoardAsset.IsFlying)
+					return creatureBoardAsset.FlyingIndicator?.GetComponentInChildren<IndicatorGlowfader>();
+				
+				return creatureBoardAsset.BaseLoader?.GetComponentInChildren<IndicatorGlowfader>();
 			}
 
 			public static CreatureBoardAsset GetSelected()
@@ -839,6 +863,83 @@ namespace TaleSpireCore
 					else
 						vector = creatureBoardAsset.GetCharacterPosition().Position.GetVector3();
 				return vector;
+			}
+
+			// ![](330E21079BE9A11BBF50634E3F861264.png)
+			public static void SetBaseColorWithIndex(string id, int index)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return;
+
+				creatureBoardAsset.SetBaseColorWithIndex(index);
+				CreatureManager.SetBaseColorIndex(creatureBoardAsset.CreatureId, new CreatureColorIndex((ushort)index));
+			}
+
+			// ![](330E21079BE9A11BBF50634E3F861264.png)
+			public static int GetBaseColorIndex(string id)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return 0;
+				return creatureBoardAsset.GetBaseColorIndex();
+			}
+
+			public static void MoveRelative(string id, Vector3 deltaMove)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return;
+
+				Vector3 dropPosition = creatureBoardAsset.PlacedPosition + deltaMove;
+				MoveCreatureTo(creatureBoardAsset, dropPosition);
+			}
+
+			private static Vector3 MoveCreatureTo(CreatureBoardAsset creatureBoardAsset, Vector3 dropPosition)
+			{
+				if (dropPosition.y < 0)
+					dropPosition = new Vector3(dropPosition.x, 0, dropPosition.z);
+
+				if (!creatureBoardAsset.IsFlying)
+					dropPosition = Board.GetFloorPositionClosestTo(dropPosition);
+
+				creatureBoardAsset.Drop(dropPosition, dropPosition.y + 0.5f);
+				return dropPosition;
+			}
+
+			public static void MoveVertically(string id, float altitude)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return;
+
+				Vector3 dropPosition = new Vector3(creatureBoardAsset.PlacedPosition.x, altitude, creatureBoardAsset.PlacedPosition.z);
+				MoveCreatureTo(creatureBoardAsset, dropPosition);
+			}
+
+			public static void SetFlying(string id, bool isFlying)
+			{
+				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
+				if (creatureBoardAsset == null)
+					return;
+
+				creatureBoardAsset.EnableFlying(isFlying);
+				CreatureManager.SetCreatureFlyingState(creatureBoardAsset.CreatureId, isFlying);
+			}
+
+			static void SetExplicitlyHidden(string id, bool explicitlyHidden)
+			{
+				CreatureManager.SetCreatureExplicitHideState(new CreatureGuid(id), explicitlyHidden);
+			}
+
+			public static void Show(string id)
+			{
+				SetExplicitlyHidden(id, false);
+			}
+
+			public static void Hide(string id)
+			{
+				SetExplicitlyHidden(id, true);
 			}
 		}
 	}

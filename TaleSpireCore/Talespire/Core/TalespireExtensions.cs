@@ -11,6 +11,38 @@ namespace TaleSpireCore
 {
 	public static class TalespireExtensions
 	{
+		// ![](330E21079BE9A11BBF50634E3F861264.png)
+		// ![](A4B633BD4A6C55C7C086DDE7783ADCB6.png;;;0.02569,0.02569)
+		public static int GetBaseColorIndex(this CreatureBoardAsset creatureBoardAsset)
+		{
+			if (Guard.IsNull(creatureBoardAsset, "creatureBoardAsset")) return 0;
+
+			MaterialPropertyBlock _matBlock = ReflectionHelper.GetNonPublicField<MaterialPropertyBlock>(creatureBoardAsset, "_matBlock");
+
+			int BaseIndex = Shader.PropertyToID("_baseIndex");
+			if (_matBlock == null)
+				return 0;
+
+			Renderer[] renderers = creatureBoardAsset.Renderers;
+
+			if (renderers == null)
+				return 0;
+
+			if (renderers.Length <= 0 || renderers[0] == null)
+				return 0;
+
+			renderers[0].GetPropertyBlock(_matBlock);
+
+			return _matBlock.GetInt(BaseIndex);
+		}
+
+		public static float GetFlyingAltitude(this CreatureBoardAsset creature)
+		{
+			if (!creature.IsFlying || creature.FlyingIndicator == null)
+				return 0;
+			return creature.FlyingIndicator.ElevationAmount;
+		}
+
 		public static Dictionary<string, string> GetAttachedData(this CreatureBoardAsset asset)
 		{
 			string name = asset?.Creature?.Name;

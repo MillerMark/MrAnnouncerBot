@@ -395,22 +395,22 @@ namespace TaleSpireExplore
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
 			else if (originalCompositeEffect.SmartProperties != null)  // Add SmartProperties (which we can get from the Composite).
 				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
-				{
-					Type type = TypeLookup.GetType(smartProperty.Type);
-					if (type == null)
-						if (smartProperty.Type == "Enum")
-						{
-							Talespire.Log.Error($"Enum types not supported yet! Fix this!!!");
-							continue;
-						}
-						else
-						{
-							Talespire.Log.Error($"type == null. Unable to add SmartProperty!!!");
-							continue;
-						}
+					{
+						Type type = TypeLookup.GetType(smartProperty.Type);
+						if (type == null)
+							if (smartProperty.Type == "Enum")
+							{
+								Talespire.Log.Error($"Enum types not supported yet! Fix this!!!");
+								continue;
+							}
+							else
+							{
+								Talespire.Log.Error($"type == null. Unable to add SmartProperty!!!");
+								continue;
+							}
 
-					frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, type, string.Join(";", smartProperty.PropertyPaths.ToArray()));
-				}
+						frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, type, string.Join(";", smartProperty.PropertyPaths.ToArray()));
+					}
 
 			IOldPersistentEffect persistentEffect = mini.GetPersistentEffect();
 			frmPropertyList.Show();
@@ -431,8 +431,22 @@ namespace TaleSpireExplore
 		{
 			LoadMenuMods();
 			Talespire.PersistentEffects.PersistentEffectInitialized += PersistentEffects_PersistentEffectInitialized;
-			Talespire.Minis.MiniSelected += Minis_MiniSelected;
+			//BoardSessionManager.OnClientSelectedCreatureChange += BoardSessionManager_OnClientSelectedCreatureChange;
+			Talespire.Minis.NewMiniSelected += Minis_NewMiniSelected;
 		}
+
+		private static void Minis_NewMiniSelected(object sender, CreatureBoardAssetEventArgs ea)
+		{
+			Minis_MiniSelected(sender, ea);
+		}
+
+		//private static void BoardSessionManager_OnClientSelectedCreatureChange(ClientGuid arg1, CreatureGuid arg2)
+		//{
+		//	CreatureBoardAsset mini = Talespire.Minis.GetCreatureBoardAsset(arg2.ToString());
+		//	Talespire.Log.Warning($"ClientSelectedCreatureChange: {mini.GetOnlyCreatureName()}!");
+		//	
+		//	Minis_MiniSelected(null, new CreatureBoardAssetEventArgs() { Mini = mini });
+		//}
 
 		public static void LoadMenuMods()
 		{
@@ -440,8 +454,8 @@ namespace TaleSpireExplore
 			AddCharacterMenu("Properties...", "IconEdit.png", ShowPropertyEditor);
 			AddCharacterMenu("Lock Rotation", "LockRotation.png", LockRotation, ShouldShowLockRotationMenuItem);
 			AddCharacterMenu("Unlock Rotation", "UnlockRotation.png", UnlockRotation, ShouldShowUnlockRotationMenuItem);
-			AddCharacterMenu("Hide Orb", "HideShowOrb.png", HideOrb, ShouldShowHideOrbMenuItem);
-			AddCharacterMenu("Reveal Orb", "HideShowOrb.png", ShowOrb, ShouldShowRevealOrbMenuItem);
+			AddCharacterMenu("Hide Base", "HideShowOrb.png", HideOrb, ShouldShowHideOrbMenuItem);
+			AddCharacterMenu("Reveal Base", "HideShowOrb.png", ShowOrb, ShouldShowRevealOrbMenuItem);
 
 			RemoveCharacterMenu("Stats");
 			RemoveCharacterMenu("HP");

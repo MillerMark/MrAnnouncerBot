@@ -90,7 +90,7 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				Log.Indent();
+				Log.Indent("Spells.AttachEffect");
 
 				spell.name = GetAttachedEffectName(spellId, prefix);
 
@@ -104,8 +104,11 @@ namespace TaleSpireCore
 						parentTransform = parentNode.transform;
 				}
 
+				// TODO: IS the same technique required for localScale?
+				Vector3 savePosition = spell.transform.localPosition;
 				spell.transform.SetParent(parentTransform);
 				spell.transform.position = parentTransform.position;
+				spell.transform.localPosition = savePosition;
 
 				if (parentNodeName != null)
 					spell.transform.localEulerAngles = Vector3.zero;
@@ -117,7 +120,7 @@ namespace TaleSpireCore
 				else if (enlargeTime > 0)
 					Instances.EnlargeSoon(spell, enlargeTime);
 
-				Log.Unindent();
+				Log.Unindent("Spells.AttachEffect");
 				return spell;
 			}
 

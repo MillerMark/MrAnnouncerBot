@@ -117,7 +117,7 @@ namespace TaleSpireExplore
 			{
 				PersistentEffectsManager.SuppressPersistentEffectUI = false;
 				editing = false;
-				lbInstructions.Text = "Click to Edit the group.";
+				lbInstructions.Text = "<< Click to Edit the group.";
 				btnEdit.Text = "Edit";
 			}
 		}
@@ -154,6 +154,21 @@ namespace TaleSpireExplore
 			System.Drawing.Color asRGB = hueSatLight.AsRGB;
 			MiniGrouperScript.IndicatorColor = new UnityEngine.Color(asRGB.R / 255.0f, asRGB.G / 255.0f, asRGB.B / 255.0f);
 			MiniGrouperScript.RefreshIndicators();
+		}
+
+		private void btnMatchAltitude_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.MatchAltitude();
+		}
+
+		private void btnHideAll_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.HideAll();
+		}
+
+		private void btnShowAll_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.ShowAll();
 		}
 	}
 }
