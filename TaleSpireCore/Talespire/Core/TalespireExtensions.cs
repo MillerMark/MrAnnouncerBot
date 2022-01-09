@@ -211,40 +211,34 @@ namespace TaleSpireCore
 			if (dictionaries == null)
 				return null;
 
-			IOldPersistentEffect superPersistentEffect = null;
+			IOldPersistentEffect persistentEffect = null;
 
 			if (dictionaries.ContainsKey(Talespire.PersistentEffects.STR_PersistentEffect))
 			{
 				string effectData = dictionaries[Talespire.PersistentEffects.STR_PersistentEffect];
 				try
 				{
-					superPersistentEffect = JsonConvert.DeserializeObject<SuperPersistentEffect>(effectData);
-					if (superPersistentEffect != null)
-					{
-						if (string.IsNullOrWhiteSpace(superPersistentEffect.EffectName))
-						{
-							Talespire.Log.Warning($"ConvertOldToNewPersistentEffect(\"{effectData}\")");
-							superPersistentEffect = ConvertOldToNewPersistentEffect(effectData);
-						}
-						else
-							Talespire.Log.Warning($"Found a superPersistentEffect - {superPersistentEffect.EffectName}!!!");
-					}
+					persistentEffect = JsonConvert.DeserializeObject<SuperPersistentEffect>(effectData);
+					if (persistentEffect != null)
+						if (string.IsNullOrWhiteSpace(persistentEffect.EffectName))
+							persistentEffect = ConvertOldToNewPersistentEffect(effectData);
 				}
 				catch (Exception ex)
 				{
-					superPersistentEffect = null;
+					persistentEffect = null;
 				}
 
-				if (superPersistentEffect == null)
+				if (persistentEffect == null)
 				{
-					superPersistentEffect = ConvertOldToNewPersistentEffect(effectData);
+					persistentEffect = ConvertOldToNewPersistentEffect(effectData);
 				}
 
-				if (superPersistentEffect == null)
-					superPersistentEffect = new OldPersistentEffect() { EffectName = effectData };
+				if (persistentEffect == null)
+					persistentEffect = new OldPersistentEffect() { EffectName = effectData };
 			}
 
-			return superPersistentEffect;
+			return persistentEffect;
+
 		}
 
 		private static IOldPersistentEffect ConvertOldToNewPersistentEffect(string effectData)
@@ -265,10 +259,23 @@ namespace TaleSpireCore
 
 		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 		{
+			Talespire.Log.Indent();
 			Talespire.Log.Warning($"Saving Persistent Effect....");
 			string newEffectData = JsonConvert.SerializeObject(persistentEffect);
+			if (newEffectData.Contains(",'BaseIndex"))
+			{
+				Talespire.Log.Error($"Error - expecting ScriptData to have escaped slashes\\\\!");
+				if (persistentEffect is SuperPersistentEffect superPersistentEffect)
+				{
+					foreach (string key in superPersistentEffect.ScriptData.Keys)
+						Talespire.Log.Warning($"  ScriptData[{key}] == \"{superPersistentEffect.ScriptData[key]}\"");
+				}
+			}
 			Talespire.Log.Debug($"newEffectData: {newEffectData}");
-			StatMessaging.SetInfo(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
+			
+			StatMessaging.SetInfoNoGuard(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
+
+			Talespire.Log.Unindent();
 		}
 
 		public static GameObject GetChildNodeStartingWith(this GameObject gameObject, string prefix, bool includeInactive = false)

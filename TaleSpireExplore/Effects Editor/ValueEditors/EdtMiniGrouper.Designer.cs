@@ -79,12 +79,13 @@
 			// trkHue
 			// 
 			this.trkHue.Location = new System.Drawing.Point(74, 33);
-			this.trkHue.Maximum = 100;
+			this.trkHue.Maximum = 360;
 			this.trkHue.Name = "trkHue";
 			this.trkHue.Size = new System.Drawing.Size(253, 45);
 			this.trkHue.TabIndex = 7;
 			this.trkHue.TickFrequency = 10;
 			this.trkHue.Scroll += new System.EventHandler(this.trkHue_Scroll);
+			this.trkHue.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkHue_MouseUp);
 			// 
 			// lbGroupName
 			// 

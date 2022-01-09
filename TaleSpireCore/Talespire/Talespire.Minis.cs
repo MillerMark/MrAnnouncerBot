@@ -66,7 +66,7 @@ namespace TaleSpireCore
 				CreatureBoardAsset selectedMini = GetSelected();
 
 				creatureBoardAssetEventArgs.SetMini(selectedMini);
-				Log.Debug($"BoardToolManager_OnSwitchTool - {obj}");
+				//Log.Debug($"BoardToolManager_OnSwitchTool - {obj}");
 
 				if (obj is DefaultBoardTool)
 				{

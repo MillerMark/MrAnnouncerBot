@@ -175,6 +175,7 @@
     <Compile Include="Color\HueSatLight.cs" />
     <Compile Include="KnownScripts.cs" />
     <Compile Include="MiniGrouper.cs" />
+    <Compile Include="MiniGrouperData.cs" />
     <Compile Include="PersistentEffects\EffectProperties.cs" />
     <Compile Include="PersistentEffects\IOldPersistentEffect.cs" />
     <Compile Include="PersistentEffects\SuperPersistentEffect.cs" />

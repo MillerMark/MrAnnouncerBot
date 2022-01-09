@@ -601,7 +601,7 @@ namespace TaleSpireExplore
 				}
 				else
 				{
-					Talespire.Log.Debug($"valueEditor EditingProperty \"{componentNode.Component.GetType().FullName}\"!");
+					//Talespire.Log.Debug($"valueEditor EditingProperty \"{componentNode.Component.GetType().FullName}\"!");
 					activeValueEditor.EditingProperty(string.Empty, string.Empty);
 				}
 
@@ -660,7 +660,9 @@ namespace TaleSpireExplore
 				Talespire.Log.Debug($"(no valueEditor yet for UnityEngine.Color)");
 			}
 			else
-				Talespire.Log.Debug($"valueEditor found for UnityEngine.Color!");
+			{
+				//Talespire.Log.Debug($"valueEditor found for UnityEngine.Color!");
+			}
 
 			if (activeValueEditor is UserControl userControl)
 				userControl.Visible = true;

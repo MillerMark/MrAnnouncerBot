@@ -63,7 +63,7 @@ namespace TaleSpireExplore
 					return;
 				}
 
-				UpdateInstance(ea.Value, ea.CommittedChange);
+				UpdateInstance(ea.Editor, ea.Value, ea.CommittedChange);
 			}
 			finally
 			{
@@ -71,7 +71,7 @@ namespace TaleSpireExplore
 			}
 		}
 
-		private void UpdateInstance(object valueOverride, bool committedChange)
+		private void UpdateInstance(IValueEditor editor, object valueOverride, bool committedChange)
 		{
 			Talespire.Log.Indent();
 			if (lstProperties.SelectedItem is EffectProperty effectProperty)
@@ -100,25 +100,42 @@ namespace TaleSpireExplore
 									{
 										needToSave = false;
 										IOldPersistentEffect persistentEffect = Mini.GetPersistentEffect();
-										string propertyKey;
-
-										if (effectProperty.Name.StartsWith("$"))
-											propertyKey = effectProperty.Name;
-										else
-											propertyKey = effectProperty.Paths;
-
-										if (persistentEffect != null)
+										if (editor is IScriptEditor scriptEditor)
 										{
-											Talespire.Log.Warning($"Properties[{propertyKey}] = {saveValue}!!!");
-
-											// TODO: Use the correct EffectProperties instead of Properties (based on the prefix of the selected control).
-											// TODO: Change this to be indexed by the property NAME, not the path (to support multiple linked properties (to a single SmartProperty).
-											persistentEffect.Properties[propertyKey] = saveValue; // valueOverride.ToString();
-											Talespire.Log.Debug($"Mini.SavePersistentEffect();");
-											Mini.SavePersistentEffect(persistentEffect);
+											Talespire.Log.Debug($"");
+											Talespire.Log.Warning($"editor is IScriptEditor scriptEditor!!!");
+											Talespire.Log.Warning($"effectProperty.Type = {effectProperty.Type?.FullName}");
+											Talespire.Log.Warning($"scriptEditor.LastSerializedData = \"{scriptEditor.LastSerializedData}\"");
+											Talespire.Log.Debug($"");
+											if (persistentEffect is SuperPersistentEffect superPersistentEffect)
+												if (effectProperty.Type != null)
+												{
+													superPersistentEffect.ScriptData[effectProperty.Type.FullName] = scriptEditor.LastSerializedData;
+													Mini.SavePersistentEffect(persistentEffect);
+												}
 										}
 										else
-											Talespire.Log.Error($"persistentEffect is not found!!");
+										{
+											string propertyKey;
+
+											if (effectProperty.Name.StartsWith("$"))
+												propertyKey = effectProperty.Name;
+											else
+												propertyKey = effectProperty.Paths;
+
+											if (persistentEffect != null)
+											{
+												Talespire.Log.Warning($"Properties[{propertyKey}] = \"{saveValue}\"!!!");
+
+												// TODO: Use the correct EffectProperties instead of Properties (based on the prefix of the selected control).
+												// TODO: Change this to be indexed by the property NAME, not the path (to support multiple linked properties (to a single SmartProperty).
+												persistentEffect.Properties[propertyKey] = saveValue; // valueOverride.ToString();
+												Talespire.Log.Debug($"Mini.SavePersistentEffect();");
+												Mini.SavePersistentEffect(persistentEffect);
+											}
+											else
+												Talespire.Log.Error($"persistentEffect is not found!!");
+										}
 									}
 									else
 									{
@@ -221,7 +238,6 @@ namespace TaleSpireExplore
 					frmPersistentEffectPropertyEditor.Controls.Add(valueEditor);
 					frmPersistentEffectPropertyEditor.Height = valueEditor.Height + 8;
 
-					Talespire.Log.Debug($"Instance: {Instance}");
 					if (valueEditor is IScriptEditor scriptEditor)
 					{
 
@@ -249,7 +265,7 @@ namespace TaleSpireExplore
 						
 						
 						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
-						Talespire.Log.Warning($"iValueEditor.SetValue(propertyModDetails.GetValue());");
+						Talespire.Log.Warning($"iValueEditor.SetValue(\"{propertyModDetails.GetValue()}\");");
 						object newValue = propertyModDetails.GetValue();
 						if (newValue == null)
 						{
@@ -292,7 +308,7 @@ namespace TaleSpireExplore
 
 		public void ValueHasChanged(IValueEditor editor, object value, bool committedChange = false)
 		{
-			UpdateInstance(value, committedChange);
+			UpdateInstance(editor, value, committedChange);
 		}
 
 		public void PrepForClose()

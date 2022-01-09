@@ -9,6 +9,7 @@ namespace TaleSpireCore
 {
 	public class MiniGrouper : TaleSpireBehavior
 	{
+		public MiniGrouperData Data { get; set; } = new MiniGrouperData();
 		System.Timers.Timer updateMiniIndicatorTimer;
 		System.Timers.Timer checkMiniAltitudeTimer;
 		bool moveToolActive;
@@ -18,10 +19,11 @@ namespace TaleSpireCore
 		bool isFlying;
 		bool needToClearGroupIndicators;
 		string lastMemberSelected;
-		public List<string> Members { get; set; } = new List<string>();
-		public Color IndicatorColor { get; set; } = UnityEngine.Color.red;
+		public Color IndicatorColor { get; set; } = Color.red;
 		public MiniGrouper()
 		{
+			Talespire.Log.Indent();
+
 			BoardToolManager.OnSwitchTool += BoardToolManager_OnSwitchTool;
 			CreatureManager.OnRequiresSyncStatusChanged += CreatureManager_OnRequiresSyncStatusChanged;
 			Talespire.Minis.NewMiniSelected += Minis_NewMiniSelected;
@@ -32,16 +34,17 @@ namespace TaleSpireCore
 			checkMiniAltitudeTimer = new System.Timers.Timer();
 			checkMiniAltitudeTimer.Interval = 250;
 			checkMiniAltitudeTimer.Elapsed += CheckMiniAltitudeTimer_Elapsed;
+			Talespire.Log.Unindent();
 		}
 
 		private void Minis_NewMiniSelected(object sender, CreatureBoardAssetEventArgs ea)
 		{
+			Talespire.Log.Debug($"\"{ea.Mini?.GetOnlyCreatureName()}\" selected.");
 			if (ea.Mini?.CreatureId.ToString() == OwnerID)
 			{
-				Talespire.Log.Warning($"MiniGrouper selected - RefreshIndicators();");
+				Talespire.Log.Warning($"MiniGrouper.RefreshIndicators();");
 				RefreshIndicators();
 			}
-			Talespire.Log.Debug("NON-Grouper selected.");
 		}
 
 		private void CreatureManager_OnRequiresSyncStatusChanged(bool obj)
@@ -55,7 +58,7 @@ namespace TaleSpireCore
 
 		void UpdateAllBaseColors()
 		{
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.SetBaseColorWithIndex(memberId, baseColorIndex);
 		}
 
@@ -66,12 +69,17 @@ namespace TaleSpireCore
 
 			float altitude = owner.GetCharacterPosition().Position.y;
 
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 			{
 				Talespire.Minis.SetFlying(memberId, isFlying);
 				if (!isFlying)
 					Talespire.Minis.MoveVertically(memberId, altitude);
 			}
+		}
+
+		void DataChanged()
+		{
+			OnStateChanged(Data);
 		}
 
 		private void CompareChanges(CreatureBoardAsset selected)
@@ -81,17 +89,22 @@ namespace TaleSpireCore
 			{
 				Talespire.Log.Debug($"BaseColor changed from {baseColorIndex} to {newBaseColorIndex}!!!");
 				baseColorIndex = newBaseColorIndex;
+				Data.BaseIndex = baseColorIndex;
 				UpdateAllBaseColors();
+				Talespire.Log.Warning($"DataChanged();");
+				DataChanged();
 			}
 
 			if (isFlying != selected.IsFlying)
 			{
 				isFlying = !isFlying;
+				Data.Flying = isFlying;
 				if (isFlying)
 					Talespire.Log.Debug($"Group is now FLYING!!!");
 				else
 					Talespire.Log.Debug($"Group is now GROUNDED!!!");
 				UpdateFlyingState();
+				DataChanged();
 			}
 		}
 
@@ -115,6 +128,24 @@ namespace TaleSpireCore
 			base.Initialize(scriptData);
 			CreatureBoardAsset owner = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
 			SaveOwnerDetails(owner);
+			if (!string.IsNullOrWhiteSpace(scriptData))
+			{
+				Data = Newtonsoft.Json.JsonConvert.DeserializeObject<MiniGrouperData>(scriptData);
+				Talespire.Log.Warning($"We got some data!");
+				if (Data.BaseIndex >= 0)
+				{
+					baseColorIndex = Data.BaseIndex;
+					UpdateAllBaseColors();
+				}
+
+				if (Data.Flying)
+				{
+					isFlying = true;
+					UpdateFlyingState();
+				}
+
+				UpdateRingHue(Data.RingHue);
+			}
 		}
 
 		private void UnhookEvents()
@@ -122,7 +153,7 @@ namespace TaleSpireCore
 			Talespire.Log.Debug($"MiniGrouper.UnhookEvents!!!!!");
 			BoardToolManager.OnSwitchTool -= BoardToolManager_OnSwitchTool;
 			CreatureManager.OnRequiresSyncStatusChanged -= CreatureManager_OnRequiresSyncStatusChanged;
-			Talespire.Minis.NewMiniSelected += Minis_NewMiniSelected;
+			Talespire.Minis.NewMiniSelected -= Minis_NewMiniSelected;
 		}
 
 		void OnDestroy()
@@ -135,14 +166,14 @@ namespace TaleSpireCore
 			if (deltaMove.x == 0 && deltaMove.y == 0 && deltaMove.z == 0)
 				return;  // No movement.
 
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.MoveRelative(memberId, deltaMove);
 		}
 
 		void RemoveMember(CreatureBoardAsset creatureBoardAsset)
 		{
 			string id = creatureBoardAsset.CreatureId.ToString();
-			Members.Remove(creatureBoardAsset.CreatureId.ToString());
+			Data.Members.Remove(creatureBoardAsset.CreatureId.ToString());
 			Talespire.Minis.IndicatorChangeColor(id, Color.black);
 			UpdateMiniColorsSoon();
 		}
@@ -150,7 +181,7 @@ namespace TaleSpireCore
 		void AddMember(CreatureBoardAsset creatureBoardAsset)
 		{
 			string id = creatureBoardAsset.CreatureId.ToString();
-			Members.Add(id);
+			Data.Members.Add(id);
 			UpdateMiniColors();
 			UpdateMiniColorsSoon();
 		}
@@ -170,7 +201,7 @@ namespace TaleSpireCore
 
 		private void UpdateMiniColors()
 		{
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.IndicatorChangeColor(memberId, IndicatorColor);
 
 			Talespire.Minis.IndicatorChangeColor(OwnerID, IndicatorColor);
@@ -184,7 +215,7 @@ namespace TaleSpireCore
 
 		public void ToggleMember(CreatureBoardAsset creatureBoardAsset)
 		{
-			if (Members.Contains(creatureBoardAsset.CreatureId.ToString()))
+			if (Data.Members.Contains(creatureBoardAsset.CreatureId.ToString()))
 				RemoveMember(creatureBoardAsset);
 			else
 				AddMember(creatureBoardAsset);
@@ -199,7 +230,7 @@ namespace TaleSpireCore
 		void ClearGroupIndicators()
 		{
 			needToClearGroupIndicators = false;
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				if (memberId != lastMemberSelected)
 					Talespire.Minis.IndicatorChangeColor(memberId, Color.black);
 			lastMemberSelected = null;
@@ -279,21 +310,45 @@ namespace TaleSpireCore
 
 			float altitude = owner.GetCharacterPosition().Position.y;
 
-			foreach (string memberId in Members)
-			{
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.MoveVertically(memberId, altitude);
-			}
+		}
+
+		internal override void OwnerSelected()
+		{
+			RefreshIndicators();
 		}
 
 		public void ShowAll()
 		{
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.Show(memberId);
 		}
 		public void HideAll()
 		{
-			foreach (string memberId in Members)
+			foreach (string memberId in Data.Members)
 				Talespire.Minis.Hide(memberId);
+		}
+
+		public void UpdateRingHue(int ringHue)
+		{
+			Talespire.Log.Warning($"Setting Data.RingHue to {ringHue}");
+			Data.RingHue = ringHue;
+			HueSatLight hueSatLight = new HueSatLight(ringHue / 360.0, 1, 0.5);
+			System.Drawing.Color asRGB = hueSatLight.AsRGB;
+			IndicatorColor = new Color(asRGB.R / 255.0f, asRGB.G / 255.0f, asRGB.B / 255.0f);
+			RefreshIndicators();
+		}
+
+		public void CommitRingHue(int ringHue)
+		{
+			UpdateRingHue(ringHue);
+			DataChanged();
+		}
+
+		public void UpdateMemberList()
+		{
+			DataChanged();
 		}
 	}
 }

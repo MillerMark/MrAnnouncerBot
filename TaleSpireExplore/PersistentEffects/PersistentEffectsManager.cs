@@ -144,7 +144,7 @@ namespace TaleSpireExplore
 			if (propertyChanger != null)
 			{
 				propertyChanger.FullPropertyPath = propertyPath;
-				
+
 				if (ea.PersistentEffect is SuperPersistentEffect superPersistentEffect && prefix != null)
 				{
 					if (logDetails)
@@ -387,14 +387,18 @@ namespace TaleSpireExplore
 
 			frmPropertyList.Mini = mini;
 			frmPropertyList.ClearProperties();
+
+			// TODO: Add support for suppressing these:
 			frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
 			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngles");
 			frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
 
 			if (originalCompositeEffect == null)
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");
-			else if (originalCompositeEffect.SmartProperties != null)  // Add SmartProperties (which we can get from the Composite).
-				foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
+			else
+			{
+				if (originalCompositeEffect.SmartProperties != null)  // Add SmartProperties (which we can get from the Composite).
+					foreach (SmartProperty smartProperty in originalCompositeEffect.SmartProperties)
 					{
 						Type type = TypeLookup.GetType(smartProperty.Type);
 						if (type == null)
@@ -412,7 +416,26 @@ namespace TaleSpireExplore
 						frmPropertyList.AddProperty(STR_SmartPropertyPrefix + smartProperty.Name, type, string.Join(";", smartProperty.PropertyPaths.ToArray()));
 					}
 
-			IOldPersistentEffect persistentEffect = mini.GetPersistentEffect();
+				SuperPersistentEffect superPersistentEffect = mini.GetPersistentEffect() as SuperPersistentEffect;
+
+				if (superPersistentEffect != null)
+				{
+					Talespire.Log.Debug($"Looking for scripts...");
+					foreach (string key in superPersistentEffect.ScriptData.Keys)
+					{
+						Talespire.Log.Warning($"  ScriptData[{key}] == \"{superPersistentEffect.ScriptData[key]}\"");
+						Type scriptType = KnownScripts.GetType(key);
+						if (scriptType == null)
+						{
+							Talespire.Log.Error($"scriptType is null!!!");
+							continue;
+						}
+
+						frmPropertyList.AddProperty($"<{scriptType.Name}>", scriptType, $"<{scriptType.FullName}>");
+					}
+				}
+			}
+
 			frmPropertyList.Show();
 		}
 

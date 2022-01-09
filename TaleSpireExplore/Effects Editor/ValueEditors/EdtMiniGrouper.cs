@@ -10,12 +10,12 @@ using System.Windows.Forms;
 using static UnityEngine.ParticleSystem;
 using UnityEngine;
 using TaleSpireCore;
+using Newtonsoft.Json;
 
 namespace TaleSpireExplore
 {
 	public partial class EdtMiniGrouper : UserControl, IValueEditor, IScriptEditor
 	{
-		string data;
 		public EdtMiniGrouper()
 		{
 			InitializeComponent();
@@ -26,15 +26,20 @@ namespace TaleSpireExplore
 		private void OnDispose(object sender, EventArgs e)
 		{
 			Talespire.Minis.MiniSelected -= PersistentEffectsManager_MiniSelected;
+			if (MiniGrouperScript != null)
+			{
+				Talespire.Log.Warning($"OnDispose / MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;");
+				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
+			}
 		}
 
 		void RefreshMemberList()
 		{
 			lstMembers.Items.Clear();
-			
+
 			if (Guard.IsNull(MiniGrouperScript, "Script")) return;
-			
-			foreach (string member in MiniGrouperScript.Members)
+
+			foreach (string member in MiniGrouperScript.Data.Members)
 			{
 				CreatureBoardAsset creatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(member);
 				if (creatureBoardAsset != null)
@@ -69,15 +74,18 @@ namespace TaleSpireExplore
 
 		public BasePropertyChanger GetPropertyChanger()
 		{
+			Talespire.Log.Debug($"EdtMiniGrouper.GetPropertyChanger() -- lastSerializedData = \"{LastSerializedData}\"");
 			ChangeString result = new ChangeString();
-			result.SetValue(data);
+			result.SetValue(LastSerializedData);
 			return result;
 		}
 
 		public void ValueChanged(object newValue, bool committedChange = true)
 		{
+			Talespire.Log.Indent();
 			if (ValueChangedListener != null)
 				ValueChangedListener.ValueHasChanged(this, newValue, committedChange);
+			Talespire.Log.Unindent();
 		}
 
 		public Type GetValueType()
@@ -87,10 +95,10 @@ namespace TaleSpireExplore
 
 		public void SetValue(object newValue)
 		{
-			Talespire.Log.Indent($"EdtMiniGrouper.SetValue - {newValue}");
+			Talespire.Log.Indent($"EdtMiniGrouper.SetValue - \"{newValue}\"");
 			try
 			{
-				
+
 			}
 			finally
 			{
@@ -104,6 +112,7 @@ namespace TaleSpireExplore
 		}
 
 		bool editing;
+		public string LastSerializedData { get; set; }
 		private void btnEdit_Click(object sender, EventArgs e)
 		{
 			if (!editing)
@@ -119,15 +128,48 @@ namespace TaleSpireExplore
 				editing = false;
 				lbInstructions.Text = "<< Click to Edit the group.";
 				btnEdit.Text = "Edit";
+				if (MiniGrouperScript != null)
+					MiniGrouperScript.UpdateMemberList();
 			}
 		}
 
 		public void InitializeInstance(MonoBehaviour script)
 		{
 			MiniGrouperScript = script as MiniGrouper;
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
+				Talespire.Log.Warning($"InitializeInstance - MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;");
+				MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;
+			}
+			else
+				Talespire.Log.Error($"InitializeInstance - MiniGrouperScript is null!");
+
 			RefreshMemberList();
 			RefreshTrackHue();
 			MiniGrouperScript?.RefreshIndicators();
+		}
+
+		private void MiniGrouperScript_StateChanged(object sender, object e)
+		{
+			Talespire.Log.Indent();
+			if (MiniGrouperScript != null)
+			{
+				Talespire.Log.Warning($"MiniGrouperScript.Data.RingHue = {MiniGrouperScript.Data.RingHue}");
+				if (sender is MiniGrouper miniGrouper)
+				{
+					if (miniGrouper.Data?.RingHue != MiniGrouperScript.Data.RingHue)
+						Talespire.Log.Error($"miniGrouper.Data?.RingHue != MiniGrouperScript.Data.RingHue");
+				}
+				LastSerializedData = JsonConvert.SerializeObject(MiniGrouperScript.Data);
+				Talespire.Log.Warning($"MiniGrouperScript.Data = {LastSerializedData}");
+
+				// TODO: Figure out what we're going to store in the "$Group" property, if anything.
+				ValueChanged("");
+			}
+			else
+				Talespire.Log.Error($"MiniGrouperScript is null!!!");
+			Talespire.Log.Unindent();
 		}
 
 		private void RefreshTrackHue()
@@ -143,17 +185,14 @@ namespace TaleSpireExplore
 			byte blue = (byte)Math.Round(MiniGrouperScript.IndicatorColor.b * 255.0);
 			System.Drawing.Color color = System.Drawing.Color.FromArgb(red, green, blue);
 			HueSatLight hueSatLight = new HueSatLight(color);
-			trkHue.Value = (int)Math.Round(hueSatLight.Hue * 100.0);
+			trkHue.Value = (int)Math.Round(hueSatLight.Hue * 360.0);
 		}
 
 		private void trkHue_Scroll(object sender, EventArgs e)
 		{
 			if (MiniGrouperScript == null)
 				return;
-			HueSatLight hueSatLight = new HueSatLight(trkHue.Value / 100.0, 1, 0.5);
-			System.Drawing.Color asRGB = hueSatLight.AsRGB;
-			MiniGrouperScript.IndicatorColor = new UnityEngine.Color(asRGB.R / 255.0f, asRGB.G / 255.0f, asRGB.B / 255.0f);
-			MiniGrouperScript.RefreshIndicators();
+			MiniGrouperScript.UpdateRingHue(trkHue.Value);
 		}
 
 		private void btnMatchAltitude_Click(object sender, EventArgs e)
@@ -169,6 +208,11 @@ namespace TaleSpireExplore
 		private void btnShowAll_Click(object sender, EventArgs e)
 		{
 			MiniGrouperScript?.ShowAll();
+		}
+
+		private void trkHue_MouseUp(object sender, MouseEventArgs e)
+		{
+			MiniGrouperScript.CommitRingHue(trkHue.Value);
 		}
 	}
 }
