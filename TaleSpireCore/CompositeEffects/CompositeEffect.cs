@@ -33,6 +33,15 @@ namespace TaleSpireCore
 		[DefaultValue(0)]
 		public float DelayStart { get; set; }
 
+		[DefaultValue(false)]
+		public bool SuppressPosition { get; set; }
+
+		[DefaultValue(false)]
+		public bool SuppressRotation { get; set; }
+
+		[DefaultValue(false)]
+		public bool SuppressScale { get; set; }
+
 		/// <summary>
 		/// The name of the prefab effect to create at this location in the hierarchy.
 		/// Leave empty to create an empty game object.

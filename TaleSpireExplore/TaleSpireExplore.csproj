@@ -239,6 +239,8 @@
     <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.Designer.cs">
       <DependentUpon>EdtMiniGrouper.cs</DependentUpon>
     </Compile>
+    <Compile Include="Effects Editor\ValueEditors\FormationEditingMode.cs" />
+    <Compile Include="Effects Editor\ValueEditors\GroupMember.cs" />
     <Compile Include="Effects Editor\ValueEditors\SlidableFloats.cs" />
     <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
     <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">

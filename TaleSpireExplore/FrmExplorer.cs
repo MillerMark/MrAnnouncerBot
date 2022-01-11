@@ -1362,9 +1362,9 @@ namespace TaleSpireExplore
 			if ((ModifierKeys & Keys.Shift) == Keys.Shift)
 				Talespire.Minis.IndicatorTurnOff(MerkinId);
 			else if (lastRed)
-				Talespire.Minis.IndicatorChangeColor(MerkinId, UnityEngine.Color.blue, 2);
+				Talespire.Minis.IndicatorRingChangeColor(MerkinId, UnityEngine.Color.blue, 2);
 			else
-				Talespire.Minis.IndicatorChangeColor(MerkinId, UnityEngine.Color.red);
+				Talespire.Minis.IndicatorRingChangeColor(MerkinId, UnityEngine.Color.red);
 
 			lastRed = !lastRed;
 		}

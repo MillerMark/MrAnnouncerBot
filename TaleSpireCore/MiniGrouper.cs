@@ -9,6 +9,7 @@ namespace TaleSpireCore
 {
 	public class MiniGrouper : TaleSpireBehavior
 	{
+		CreatureBoardAsset ownerCreature;
 		public MiniGrouperData Data { get; set; } = new MiniGrouperData();
 		System.Timers.Timer updateMiniIndicatorTimer;
 		System.Timers.Timer checkMiniAltitudeTimer;
@@ -20,10 +21,21 @@ namespace TaleSpireCore
 		bool needToClearGroupIndicators;
 		string lastMemberSelected;
 		public Color IndicatorColor { get; set; } = Color.red;
+
+		public CreatureBoardAsset OwnerCreature
+		{
+			get
+			{
+				if (ownerCreature == null)
+					ownerCreature = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
+				return ownerCreature;
+			}
+		}
+
 		public MiniGrouper()
 		{
 			Talespire.Log.Indent();
-
+			BoardSessionManager.OnStateChange += BoardSessionManager_OnStateChange;
 			BoardToolManager.OnSwitchTool += BoardToolManager_OnSwitchTool;
 			CreatureManager.OnRequiresSyncStatusChanged += CreatureManager_OnRequiresSyncStatusChanged;
 			Talespire.Minis.NewMiniSelected += Minis_NewMiniSelected;
@@ -35,6 +47,14 @@ namespace TaleSpireCore
 			checkMiniAltitudeTimer.Interval = 250;
 			checkMiniAltitudeTimer.Elapsed += CheckMiniAltitudeTimer_Elapsed;
 			Talespire.Log.Unindent();
+		}
+
+		private void BoardSessionManager_OnStateChange(PhotonSimpleSingletonStateMBehaviour<BoardSessionManager>.State obj)
+		{
+			if (obj.ToString() == "Active")
+			{
+				ownerCreature = null;
+			}
 		}
 
 		private void Minis_NewMiniSelected(object sender, CreatureBoardAssetEventArgs ea)
@@ -51,9 +71,8 @@ namespace TaleSpireCore
 		{
 			if (!obj)
 				return;
-			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
-			if (selected?.Creature.CreatureId.ToString() == OwnerID)
-				CompareChanges(selected);
+
+			CompareChanges();
 		}
 
 		void UpdateAllBaseColors()
@@ -64,27 +83,40 @@ namespace TaleSpireCore
 
 		void UpdateFlyingState()
 		{
-			CreatureBoardAsset owner = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
-			if (Guard.IsNull(owner, "owner")) return;
-
-			float altitude = owner.GetCharacterPosition().Position.y;
-
-			foreach (string memberId in Data.Members)
+			Talespire.Log.Indent();
+			try
 			{
-				Talespire.Minis.SetFlying(memberId, isFlying);
+				CreatureBoardAsset owner = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
+				if (Guard.IsNull(owner, "owner")) return;
+
+				float altitude = owner.GetCharacterPosition().Position.y;
+
+				foreach (string memberId in Data.Members)
+					Talespire.Minis.SetFlying(memberId, isFlying);
+
 				if (!isFlying)
-					Talespire.Minis.MoveVertically(memberId, altitude);
+					foreach (string memberId in Data.Members)
+					{
+						Talespire.Log.Debug($"Moving relative...");
+						Talespire.Minis.MoveRelative(memberId, new Vector3(0.01f, 0, 0.01f));
+					}
+			}
+			finally
+			{
+				Talespire.Log.Unindent();
 			}
 		}
 
-		void DataChanged()
+		public void DataChanged()
 		{
 			OnStateChanged(Data);
 		}
 
-		private void CompareChanges(CreatureBoardAsset selected)
+		private void CompareChanges()
 		{
-			int newBaseColorIndex = selected.GetBaseColorIndex();
+			if (OwnerCreature == null)
+				return;
+			int newBaseColorIndex = OwnerCreature.GetBaseColorIndex();
 			if (baseColorIndex != newBaseColorIndex)
 			{
 				Talespire.Log.Debug($"BaseColor changed from {baseColorIndex} to {newBaseColorIndex}!!!");
@@ -95,9 +127,9 @@ namespace TaleSpireCore
 				DataChanged();
 			}
 
-			if (isFlying != selected.IsFlying)
+			if (isFlying != OwnerCreature.IsFlying)
 			{
-				isFlying = !isFlying;
+				isFlying = OwnerCreature.IsFlying;
 				Data.Flying = isFlying;
 				if (isFlying)
 					Talespire.Log.Debug($"Group is now FLYING!!!");
@@ -138,11 +170,8 @@ namespace TaleSpireCore
 					UpdateAllBaseColors();
 				}
 
-				if (Data.Flying)
-				{
-					isFlying = true;
-					UpdateFlyingState();
-				}
+				isFlying = Data.Flying;
+				//UpdateFlyingState();
 
 				UpdateRingHue(Data.RingHue);
 			}
@@ -174,7 +203,7 @@ namespace TaleSpireCore
 		{
 			string id = creatureBoardAsset.CreatureId.ToString();
 			Data.Members.Remove(creatureBoardAsset.CreatureId.ToString());
-			Talespire.Minis.IndicatorChangeColor(id, Color.black);
+			Talespire.Minis.IndicatorRingChangeColor(id, Color.black);
 			UpdateMiniColorsSoon();
 		}
 
@@ -202,9 +231,12 @@ namespace TaleSpireCore
 		private void UpdateMiniColors()
 		{
 			foreach (string memberId in Data.Members)
-				Talespire.Minis.IndicatorChangeColor(memberId, IndicatorColor);
+				Talespire.Minis.IndicatorRingChangeColor(memberId, IndicatorColor);
 
-			Talespire.Minis.IndicatorChangeColor(OwnerID, IndicatorColor);
+			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
+
+			if (selected?.Creature.CreatureId.ToString() == OwnerID)
+				Talespire.Minis.IndicatorRingChangeColor(OwnerID, IndicatorColor);
 		}
 
 		private void UpdateMiniIndicatorTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -232,7 +264,7 @@ namespace TaleSpireCore
 			needToClearGroupIndicators = false;
 			foreach (string memberId in Data.Members)
 				if (memberId != lastMemberSelected)
-					Talespire.Minis.IndicatorChangeColor(memberId, Color.black);
+					Talespire.Minis.IndicatorRingChangeColor(memberId, Color.black);
 			lastMemberSelected = null;
 		}
 
@@ -250,10 +282,9 @@ namespace TaleSpireCore
 			}
 			else if (obj is DefaultBoardTool)
 			{
-				CreatureBoardAsset selected = Talespire.Minis.GetSelected();
-				if (selected?.Creature.CreatureId.ToString() == OwnerID)
+				if (OwnerCreature != null)
 				{
-					float newAltitude = selected.GetFlyingAltitude();
+					float newAltitude = OwnerCreature.GetFlyingAltitude();
 
 					if (newAltitude != lastAltitude)
 						Talespire.Log.Warning($"Altitude changed from {lastAltitude} to {newAltitude}!");
@@ -264,15 +295,22 @@ namespace TaleSpireCore
 					if (moveToolActive)
 					{
 						RefreshIndicators();
-						Vector3 newPosition = selected.PlacedPosition;
+						Vector3 newPosition = OwnerCreature.PlacedPosition;
 						Vector3 deltaMove = newPosition - lastGroupPosition;
 						MoveGroup(deltaMove);
 						lastGroupPosition = newPosition;
 					}
 				}
-				else
+
+				CreatureBoardAsset selected = Talespire.Minis.GetSelected();
+				
+				if (selected?.Creature.CreatureId.ToString() != OwnerID)
 				{
-					lastMemberSelected = selected?.CreatureId.ToString();
+					if (selected == null)
+						lastMemberSelected = null;
+					else
+						lastMemberSelected = selected.CreatureId.ToString();
+
 					if (needToClearGroupIndicators)
 						ClearGroupIndicators();
 				}
@@ -286,15 +324,14 @@ namespace TaleSpireCore
 			Talespire.Log.Indent();
 			checkMiniAltitudeTimer.Stop();
 
-			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
-			if (selected?.Creature.CreatureId.ToString() == OwnerID)
+			if (OwnerCreature != null)
 			{
-				float newAltitude = selected.GetFlyingAltitude();
+				float newAltitude = OwnerCreature.GetFlyingAltitude();
 
 				if (newAltitude != lastAltitude)
 				{
 					Talespire.Log.Warning($"Altitude changed from {lastAltitude} to {newAltitude}!");
-					lastGroupPosition = selected.PlacedPosition;
+					lastGroupPosition = OwnerCreature.PlacedPosition;
 				}
 
 				lastAltitude = newAltitude;
@@ -305,10 +342,9 @@ namespace TaleSpireCore
 
 		public void MatchAltitude()
 		{
-			CreatureBoardAsset owner = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
-			if (Guard.IsNull(owner, "owner")) return;
+			if (Guard.IsNull(OwnerCreature, "OwnerCreature")) return;
 
-			float altitude = owner.GetCharacterPosition().Position.y;
+			float altitude = OwnerCreature.GetCharacterPosition().Position.y;
 
 			foreach (string memberId in Data.Members)
 				Talespire.Minis.MoveVertically(memberId, altitude);
@@ -322,8 +358,12 @@ namespace TaleSpireCore
 		public void ShowAll()
 		{
 			foreach (string memberId in Data.Members)
+			{
 				Talespire.Minis.Show(memberId);
+				Talespire.Minis.MoveRelative(memberId, Vector3.zero);
+			}
 		}
+
 		public void HideAll()
 		{
 			foreach (string memberId in Data.Members)
@@ -349,6 +389,49 @@ namespace TaleSpireCore
 		public void UpdateMemberList()
 		{
 			DataChanged();
+		}
+
+		public void SetHp(int hp, int maxHp)
+		{
+			foreach (string memberId in Data.Members)
+				Talespire.Minis.SetHp(memberId, hp, maxHp);
+		}
+
+		public void Heal(int hp)
+		{
+			foreach (string memberId in Data.Members)
+				Talespire.Minis.Heal(memberId, hp, Data.AutoKnockdown);
+		}
+
+		public void Damage(int hp)
+		{
+			foreach (string memberId in Data.Members)
+				Talespire.Minis.Damage(memberId, hp, Data.AutoKnockdown);
+		}
+
+		public void KnockdownToggle()
+		{
+			Talespire.Minis.KnockDown(Data.Members);
+		}
+
+		public void RenameAll(string newName)
+		{
+			if (!string.IsNullOrWhiteSpace(newName))
+				newName += " ";
+
+			int creatureNum = 1;
+			foreach (string member in Data.Members)
+				if (Talespire.Minis.Rename(member, $"{newName}{creatureNum}"))
+					creatureNum++;
+		}
+
+		public void RemoveMembers(List<string> creaturesToRemove)
+		{
+			foreach (string creatureId in creaturesToRemove)
+			{
+				Talespire.Log.Debug($"Removing {creatureId}.");
+				Data.Members.Remove(creatureId);
+			}
 		}
 	}
 }

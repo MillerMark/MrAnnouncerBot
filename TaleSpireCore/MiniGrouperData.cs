@@ -9,6 +9,7 @@ namespace TaleSpireCore
 	{
 		public bool Hidden { get; set; }
 		public bool Flying { get; set; }
+		public bool AutoKnockdown { get; set; } = true;
 		public int BaseIndex { get; set; } = -1;
 		public int RingHue { get; set; }
 		public List<string> Members { get; set; } = new List<string>();

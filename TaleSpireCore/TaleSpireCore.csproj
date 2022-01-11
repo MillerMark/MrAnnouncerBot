@@ -239,6 +239,7 @@
     <Compile Include="Talespire\Core\VisibilityChange.cs" />
     <Compile Include="Talespire\Talespire.Rulers.cs" />
     <Compile Include="Talespire\Talespire.PersistentEffects.cs" />
+    <Compile Include="Talespire\Talespire.Menus.cs" />
     <Compile Include="Talespire\TargetingCylinder.cs" />
     <Compile Include="Talespire\TargetingSphere.cs" />
     <Compile Include="Talespire\TargetingSquare.cs" />

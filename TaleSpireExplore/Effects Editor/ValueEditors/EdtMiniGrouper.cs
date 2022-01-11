@@ -16,11 +16,15 @@ namespace TaleSpireExplore
 {
 	public partial class EdtMiniGrouper : UserControl, IValueEditor, IScriptEditor
 	{
+		System.Timers.Timer updateMemberListTimer;
 		public EdtMiniGrouper()
 		{
 			InitializeComponent();
 			Disposed += OnDispose;
 			Talespire.Minis.MiniSelected += PersistentEffectsManager_MiniSelected;
+			updateMemberListTimer = new System.Timers.Timer();
+			updateMemberListTimer.Interval = 500;
+			updateMemberListTimer.Elapsed += UpdateMemberListTimer_Elapsed;
 		}
 
 		private void OnDispose(object sender, EventArgs e)
@@ -39,12 +43,17 @@ namespace TaleSpireExplore
 
 			if (Guard.IsNull(MiniGrouperScript, "Script")) return;
 
+			List<string> notFoundCreatures = new List<string>();
 			foreach (string member in MiniGrouperScript.Data.Members)
 			{
 				CreatureBoardAsset creatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(member);
 				if (creatureBoardAsset != null)
-					lstMembers.Items.Add(creatureBoardAsset.GetOnlyCreatureName());
+					lstMembers.Items.Add(new GroupMember(creatureBoardAsset));
+				else
+					notFoundCreatures.Add(member);
 			}
+
+			MiniGrouperScript.RemoveMembers(notFoundCreatures);
 		}
 
 		private void PersistentEffectsManager_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
@@ -56,7 +65,8 @@ namespace TaleSpireExplore
 
 			if (ea.Mini.Creature.CreatureId.ToString() == MiniGrouperScript.OwnerID)
 			{
-				Talespire.Log.Error($"Cannot add grouper to itself!!!!");
+				ea.Mini.Creature.Speak("Click \"Done\" to finish group editing.");
+				//Talespire.Log.Error($"Cannot add grouper to itself!!!!");
 				return;
 			}
 
@@ -115,21 +125,69 @@ namespace TaleSpireExplore
 		public string LastSerializedData { get; set; }
 		private void btnEdit_Click(object sender, EventArgs e)
 		{
-			if (!editing)
-			{
-				editing = true;
-				PersistentEffectsManager.SuppressPersistentEffectUI = true;  // So we no longer show or hide the PE UI when selecting minis.
-				lbInstructions.Text = "Click a mini to add or remove it from the group.";
-				btnEdit.Text = "Done";
-			}
+			if (editing)
+				StopEditMode();
 			else
+				StartEditMode();
+		}
+
+		private void StopEditMode()
+		{
+			PersistentEffectsManager.SuppressPersistentEffectUI = false;
+			editing = false;
+			lbInstructions.Text = "<< Click to Edit the group.";
+			btnEdit.Text = "Edit";
+			if (MiniGrouperScript != null)
+				MiniGrouperScript.UpdateMemberList();
+			btnEdit.BackColor = System.Drawing.Color.FromArgb(60, 60, 60);
+			btnEdit.ForeColor = System.Drawing.Color.White;
+			EnableControlsBasedOnMemberCount();
+		}
+
+		private void StartEditMode()
+		{
+			editing = true;
+			PersistentEffectsManager.SuppressPersistentEffectUI = true;  // So we no longer show or hide the PE UI when selecting minis.
+			lbInstructions.Text = "Click a mini to add or remove it from the group.";
+			btnEdit.Text = "Done";
+			btnEdit.BackColor = System.Drawing.Color.DarkRed;
+			btnEdit.ForeColor = System.Drawing.Color.White;
+		}
+
+		void EnableControlsBasedOnMemberCount()
+		{
+			EnableMemberControls(lstMembers.Items.Count > 0);
+			if (formationEditingMode == FormationEditingMode.Columns)
+				SetColumnRange();
+		}
+
+		void EnableMemberControls(bool enabled)
+		{
+			txtNewName.Enabled = enabled;
+			lblNewCreatureName.Enabled = enabled;
+			tbxSetHp.Enabled = enabled;
+			lblOutOf.Enabled = enabled;
+			tbxMaxHp.Enabled = enabled;
+			tbxDamage.Enabled = enabled;
+			lbHP1.Enabled = enabled;
+			lbHP2.Enabled = enabled;
+			tbxHealth.Enabled = enabled;
+
+			EnableButtons(enabled, btnMatchAltitude, btnRenameAll, btnHideAll, btnShowAll, btnLookAt, btnSetHp, btnKnockdown, btnDamage, btnHeal);
+		}
+
+		void EnableButtons(bool enabled, params Button[] buttons)
+		{
+			foreach (Button button in buttons)
 			{
-				PersistentEffectsManager.SuppressPersistentEffectUI = false;
-				editing = false;
-				lbInstructions.Text = "<< Click to Edit the group.";
-				btnEdit.Text = "Edit";
-				if (MiniGrouperScript != null)
-					MiniGrouperScript.UpdateMemberList();
+				if (enabled)
+				{
+
+				}
+				else
+				{
+
+				}
 			}
 		}
 
@@ -147,6 +205,7 @@ namespace TaleSpireExplore
 
 			RefreshMemberList();
 			RefreshTrackHue();
+			chkKnockdownZeroHpCreatures.Checked = MiniGrouperScript.Data.AutoKnockdown;
 			MiniGrouperScript?.RefreshIndicators();
 		}
 
@@ -164,7 +223,6 @@ namespace TaleSpireExplore
 				LastSerializedData = JsonConvert.SerializeObject(MiniGrouperScript.Data);
 				Talespire.Log.Warning($"MiniGrouperScript.Data = {LastSerializedData}");
 
-				// TODO: Figure out what we're going to store in the "$Group" property, if anything.
 				ValueChanged("");
 			}
 			else
@@ -213,6 +271,210 @@ namespace TaleSpireExplore
 		private void trkHue_MouseUp(object sender, MouseEventArgs e)
 		{
 			MiniGrouperScript.CommitRingHue(trkHue.Value);
+		}
+
+		private void lstMembers_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			GroupMember groupMember = lstMembers.SelectedItem as GroupMember;
+			if (groupMember != null)
+				lblSelectedCreatureName.Text = $"Create more like {groupMember.Name}...";
+			else
+				lblSelectedCreatureName.Text = $"Create more creatures.";
+		}
+
+		private void chkKnockdownZeroHpCreatures_CheckedChanged(object sender, EventArgs e)
+		{
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.Data.AutoKnockdown = chkKnockdownZeroHpCreatures.Checked;
+				MiniGrouperScript.DataChanged();
+			}
+		}
+
+		private void btnHeal_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.Heal(GetInt(tbxHealth.Text));
+		}
+
+		private void btnDamage_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.Damage(GetInt(tbxDamage.Text));
+		}
+
+		FormationEditingMode formationEditingMode = FormationEditingMode.Columns;
+		int lastRadius = 3;
+		int lastColumnCount = 1;
+
+		private void EditingCircular()
+		{
+			trkColumnsRadius.Minimum = 3;
+			trkColumnsRadius.Maximum = 150;
+			formationEditingMode = FormationEditingMode.Radius;
+			SetVisibilityColumnsRadiusTracker(true);
+			lblColumnsRadius.Text = "Radius:";
+			toolTip1.SetToolTip(trkColumnsRadius, "Changes the radius in circular formations.");
+			UpdateColumnRadiusLabel();
+		}
+
+		private void EditingColumns()
+		{
+			formationEditingMode = FormationEditingMode.Columns;
+			SetColumnRange();
+			SetVisibilityColumnsRadiusTracker(true);
+			lblColumnsRadius.Text = "Columns:";
+			toolTip1.SetToolTip(trkColumnsRadius, "Changes the number of columns in rectangular formations.");
+			UpdateColumnRadiusLabel();
+		}
+
+		private void SetColumnRange()
+		{
+			trkColumnsRadius.Minimum = 1;
+			trkColumnsRadius.Maximum = lstMembers.Items.Count;
+		}
+
+		private void rbRectangular_CheckedChanged(object sender, EventArgs e)
+		{
+			EditingColumns();
+		}
+
+		private void rbCircular_CheckedChanged(object sender, EventArgs e)
+		{
+			EditingCircular();
+		}
+
+		private void rbSemiCircle_CheckedChanged(object sender, EventArgs e)
+		{
+			EditingCircular();
+		}
+
+		private void rbTriangle_CheckedChanged(object sender, EventArgs e)
+		{
+			formationEditingMode = FormationEditingMode.None;
+			SetVisibilityColumnsRadiusTracker(false);
+		}
+
+		private void rbGaggle_CheckedChanged(object sender, EventArgs e)
+		{
+			EditingColumns();
+		}
+
+		private void SetVisibilityColumnsRadiusTracker(bool isVisible)
+		{
+			lblColumnsRadius.Visible = isVisible;
+			lblColumnRadiusValue.Visible = isVisible;
+			trkColumnsRadius.Visible = isVisible;
+
+		}
+
+		private void trkColumnsRadius_Scroll(object sender, EventArgs e)
+		{
+			if (formationEditingMode == FormationEditingMode.Radius)
+				lastRadius = trkColumnsRadius.Value;
+			else
+				lastColumnCount = trkColumnsRadius.Value;
+			UpdateColumnRadiusLabel();
+		}
+
+		private void UpdateColumnRadiusLabel()
+		{
+			if (formationEditingMode == FormationEditingMode.Radius)
+				lblColumnRadiusValue.Text = $"{lastRadius}ft";
+			else
+				lblColumnRadiusValue.Text = $"{lastColumnCount}";
+		}
+
+		private void trkSpacing_Scroll(object sender, EventArgs e)
+		{
+			lblSpacingValue.Text = $"{trkSpacing.Value}ft";
+		}
+
+		private void trkFormationRotation_Scroll(object sender, EventArgs e)
+		{
+			lblRotationValue.Text = $"{trkFormationRotation.Value}°";
+			// TODO: Rotate the formation around the mini.
+		}
+
+		private void btnAdd_Click(object sender, EventArgs e)
+		{
+			GroupMember groupMember = lstMembers.SelectedItem as GroupMember;
+			// TODO: Create more members.
+		}
+
+		private void tbxGroupName_TextChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnLookAt_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnKnockdown_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.KnockdownToggle();
+		}
+
+		int GetInt(string text)
+		{
+			if (int.TryParse(text, out int result))
+				return result;
+
+			return 0;
+		}
+		private void btnSetHp_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.SetHp(GetInt(tbxSetHp.Text), GetInt(tbxMaxHp.Text));
+		}
+
+		private void txtNewName_TextChanged(object sender, EventArgs e)
+		{
+			btnRenameAll.Enabled = !string.IsNullOrWhiteSpace(txtNewName.Text);
+		}
+
+		private void btn_MouseEnter(object sender, EventArgs e)
+		{
+			if (sender is Button button)
+				button.BackColor = System.Drawing.Color.FromArgb(12, 12, 12);
+		}
+
+		private void btn_MouseLeave(object sender, EventArgs e)
+		{
+			if (sender is Button button)
+				button.BackColor = System.Drawing.Color.FromArgb(60, 60, 60);
+		}
+
+		private void btnEdit_MouseEnter(object sender, EventArgs e)
+		{
+			if (editing)
+				return;
+
+			btn_MouseEnter(sender, e);
+		}
+
+		private void btnEdit_MouseLeave(object sender, EventArgs e)
+		{
+			if (editing)
+				return;
+
+			btn_MouseLeave(sender, e);
+		}
+
+		private void UpdateMemberListTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			updateMemberListTimer.Stop();
+			RefreshMemberList();
+		}
+
+		void RefreshMemberListSoon()
+		{
+			updateMemberListTimer.Start();
+		}
+
+		private void btnRenameAll_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.RenameAll(txtNewName.Text);
+			RefreshMemberListSoon();
 		}
 	}
 }

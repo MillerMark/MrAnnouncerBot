@@ -388,10 +388,14 @@ namespace TaleSpireExplore
 			frmPropertyList.Mini = mini;
 			frmPropertyList.ClearProperties();
 
-			// TODO: Add support for suppressing these:
-			frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
-			frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngles");
-			frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
+			if (originalCompositeEffect?.SuppressPosition != true)
+				frmPropertyList.AddProperty("Position", typeof(Vector3), "<Transform>.localPosition");
+
+			if (originalCompositeEffect?.SuppressRotation != true)
+				frmPropertyList.AddProperty("Rotation", typeof(Vector3), "<Transform>.localEulerAngles");
+
+			if (originalCompositeEffect?.SuppressScale != true)
+				frmPropertyList.AddProperty("Scale", typeof(Vector3), "<Transform>.localScale");
 
 			if (originalCompositeEffect == null)
 				Talespire.Log.Warning($"We DID NOT FIND the CompositeEffect!!!");

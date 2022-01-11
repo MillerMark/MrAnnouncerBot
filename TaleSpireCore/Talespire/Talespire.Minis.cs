@@ -6,6 +6,9 @@ using Bounce.Unmanaged;
 using LordAshes;
 using static Bounce.TaleSpire.AssetManagement.AssetsDataView;
 using Unity.Entities.UniversalDelegates;
+using Unity.Entities;
+using System.Management.Instrumentation;
+using System.Reflection;
 
 namespace TaleSpireCore
 {
@@ -128,7 +131,7 @@ namespace TaleSpireCore
 				return creatureAsset.GetCharacterPosition();
 			}
 
-			public static void IndicatorChangeColor(string id, Color newColor, float multiplier = 1)
+			public static void IndicatorRingChangeColor(string id, Color newColor, float multiplier = 1)
 			{
 				IndicatorGlowfader indicatorGlowFader = GetIndicatorGlowFader(id);
 
@@ -151,10 +154,10 @@ namespace TaleSpireCore
 				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
 				if (creatureBoardAsset == null)
 					return null;
-				
+
 				if (creatureBoardAsset.IsFlying)
 					return creatureBoardAsset.FlyingIndicator?.GetComponentInChildren<IndicatorGlowfader>();
-				
+
 				return creatureBoardAsset.BaseLoader?.GetComponentInChildren<IndicatorGlowfader>();
 			}
 
@@ -168,7 +171,8 @@ namespace TaleSpireCore
 						return asset;
 					}
 
-				Log.Debug($"Selected asset NOT found for {LocalClient.SelectedCreatureId.Value}");
+				if (LocalClient.SelectedCreatureId.ToString() != "00000000-0000-0000-0000-000000000000")
+					Log.Debug($"Selected asset NOT found for {LocalClient.SelectedCreatureId.Value}");
 				return null;
 			}
 
@@ -383,6 +387,10 @@ namespace TaleSpireCore
 
 			private static void PlayEmote(CreatureBoardAsset creatureBoardAsset, string emote)
 			{
+				if (emote == AnimationNames.KnockDown)
+				{
+					Log.Error($"Use ToggleStatusEmote instead to animate a knock-down.");
+				}
 				creatureBoardAsset.Creature.PlayEmote(emote);
 			}
 
@@ -396,9 +404,37 @@ namespace TaleSpireCore
 				PlayEmote(creatureId, AnimationNames.Twirl);
 			}
 
-			public static void KnockDown(string creatureId)
+			public static void KnockDown(List<string> creatureIds)
 			{
-				PlayEmote(creatureId, AnimationNames.KnockDown);
+				ActionTimeline knockdownStatusEmote = Menus.GetKnockdownStatusEmote();
+				if (knockdownStatusEmote == null)
+				{
+					Log.Error($"knockdownStatusEmote not found.");
+					return;
+				}
+				bool anyStandingUp = false;
+				foreach (string creatureId in creatureIds)
+				{
+					CreatureBoardAsset asset = GetCreatureBoardAsset(creatureId);
+					if (asset?.HasActiveEmote(knockdownStatusEmote) == false)
+					{
+						anyStandingUp = true;
+						break;
+					}
+				}
+
+				foreach (string creatureId in creatureIds)
+				{
+					CreatureBoardAsset asset = GetCreatureBoardAsset(creatureId);
+					if (asset == null)
+					{
+						Log.Error($"KnockDown / creatureId {creatureId} not found.");
+						continue;
+					}
+
+					if (!anyStandingUp || !asset.HasActiveEmote(knockdownStatusEmote))
+						asset.Creature.ToggleStatusEmote(knockdownStatusEmote);
+				}
 			}
 
 			public static void Surprise(string creatureId)
@@ -900,10 +936,14 @@ namespace TaleSpireCore
 				if (dropPosition.y < 0)
 					dropPosition = new Vector3(dropPosition.x, 0, dropPosition.z);
 
+				float dropOffset = 0;
 				if (!creatureBoardAsset.IsFlying)
+				{
 					dropPosition = Board.GetFloorPositionClosestTo(dropPosition);
+					dropOffset = 0.5f;
+				}
 
-				creatureBoardAsset.Drop(dropPosition, dropPosition.y + 0.5f);
+				creatureBoardAsset.Drop(dropPosition, dropPosition.y + dropOffset);
 				return dropPosition;
 			}
 
@@ -919,12 +959,73 @@ namespace TaleSpireCore
 
 			public static void SetFlying(string id, bool isFlying)
 			{
-				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
-				if (creatureBoardAsset == null)
-					return;
+				Log.Indent();
+				try
+				{
+					CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
 
-				creatureBoardAsset.EnableFlying(isFlying);
-				CreatureManager.SetCreatureFlyingState(creatureBoardAsset.CreatureId, isFlying);
+					if (Guard.IsNull(creatureBoardAsset, "creatureBoardAsset"))
+						return;
+
+					string creatureName = creatureBoardAsset.GetOnlyCreatureName();
+					if (creatureBoardAsset.IsFlying != isFlying)
+					{
+						Log.Warning($"Setting {creatureName}'s flying state to {isFlying}");
+						CreatureManager.SetCreatureFlyingState(creatureBoardAsset.CreatureId, isFlying);
+						creatureBoardAsset.EnableFlying(isFlying);
+						if (creatureBoardAsset.IsFlying != isFlying)
+							Log.Error($"Error: {creatureName} is flying state is still {creatureBoardAsset.IsFlying}.");
+
+						if (!isFlying)
+						{
+							Log.Debug($"creatureBoardAsset.DropAtCurrentLocation();");
+							creatureBoardAsset.DropAtCurrentLocation();
+						}
+					}
+					else
+					{
+						if (isFlying)
+							Log.Warning($"{creatureName} is already flying!");
+						else
+							Log.Warning($"{creatureName} is already grounded!");
+					}
+				}
+				finally
+				{
+					Log.Unindent();
+				}
+			}
+
+			public static void SetStats(string id, float current, float max, int statIndex = -1)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return;
+
+				asset.SetStat(current, max, statIndex);
+			}
+
+			public static void SetHp(string id, float currentHp, float maxHp)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return;
+
+				asset.SetHp(currentHp, maxHp);
+			}
+
+			public static CreatureStat GetStats(string id, int statIndex = -1)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return default;
+
+				return asset.GetStats(statIndex);
+			}
+
+			public static CreatureStat GetHp(string id)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return default;
+
+				return asset.GetHp();
 			}
 
 			static void SetExplicitlyHidden(string id, bool explicitlyHidden)
@@ -940,6 +1041,78 @@ namespace TaleSpireCore
 			public static void Hide(string id)
 			{
 				SetExplicitlyHidden(id, true);
+			}
+
+			/// <summary>
+			/// Heals the specified mini by the specified hp.
+			/// </summary>
+			/// <param name="id">The id of the mini.</param>
+			/// <param name="hp">The hit points to add.</param>
+			/// <param name="autoStandup">If true, stands the mini if it's knocked down (with zero HP) as part of the healing process.</param>
+			public static void Heal(string id, int hp, bool autoStandup = false)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return;
+
+				CreatureStat hitPoints = asset.GetHp();
+				float newHp = hitPoints.Value + hp;
+				if (newHp > hitPoints.Max)
+					newHp = hitPoints.Max;
+
+				if (autoStandup && hitPoints.Value == 0 && newHp > 0)
+					asset.StandUp();
+
+				asset.SetHp(newHp, hitPoints.Max);
+			}
+
+			/// <summary>
+			/// Applies damage to the specified mini.
+			/// </summary>
+			/// <param name="id">The id of the mini to damage.</param>
+			/// <param name="hp">The amount of hp to subtract.</param>
+			/// <param name="autoKnockdown">If true, and damage reduces the character to zero hp, the knockdown state will become active.</param>
+			public static void Damage(string id, int hp, bool autoKnockdown = false)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return;
+
+				CreatureStat hitPoints = asset.GetHp();
+				float newHp = hitPoints.Value - hp;
+				if (newHp <= 0)
+				{
+					newHp = 0;
+					if (autoKnockdown)
+						asset.Knockdown();
+				}
+
+				asset.SetHp(newHp, hitPoints.Max);
+			}
+
+			public static bool IsKnockedDown(string id)
+			{
+				ActionTimeline knockdownStatusEmote = Menus.GetKnockdownStatusEmote();
+				if (knockdownStatusEmote == null)
+				{
+					Log.Error($"knockdownStatusEmote not found.");
+					return false;
+				}
+				return HasActiveEmote(id, knockdownStatusEmote);
+			}
+
+			public static bool HasActiveEmote(string id, ActionTimeline actionTimeline)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (Guard.IsNull(asset, "asset")) return false;
+
+				return asset.HasActiveEmote(actionTimeline);
+			}
+
+			public static bool Rename(string memberId, string newName)
+			{
+				CreatureBoardAsset asset = GetCreatureBoardAsset(memberId);
+				if (Guard.IsNull(asset, "asset")) return false;
+				CreatureManager.SetCreatureName(asset.CreatureId, newName);
+				return true;
 			}
 		}
 	}

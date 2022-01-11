@@ -490,12 +490,9 @@ namespace TaleSpireCore
 							if (superPersistentEffect.ScriptData != null && superPersistentEffect.ScriptData.Count > 0)
 							{
 								Log.Debug($"");
-								Log.Debug($"----");
-								Log.Debug($"Attaching scripts!");
 								foreach (string scriptName in superPersistentEffect.ScriptData.Keys)
 								{
-									Log.Warning($"Adding script: {scriptName}");
-									Log.Warning($"Adding Script: {scriptName} with data: \"{superPersistentEffect.ScriptData[scriptName]}\"");
+									Log.Warning($"Adding Script: {scriptName} to \"{creatureAsset.GetOnlyCreatureName()}\" with data: \"{superPersistentEffect.ScriptData[scriptName]}\"");
 									TaleSpireBehavior script = spell.AddComponent(KnownScripts.GetType(scriptName)) as TaleSpireBehavior;
 									if (script != null)
 									{

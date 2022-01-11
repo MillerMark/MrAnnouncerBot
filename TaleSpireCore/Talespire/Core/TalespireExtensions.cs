@@ -6,6 +6,7 @@ using LordAshes;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 using Unity.Entities;
+using static TaleSpireCore.Talespire;
 
 namespace TaleSpireCore
 {
@@ -34,6 +35,100 @@ namespace TaleSpireCore
 			renderers[0].GetPropertyBlock(_matBlock);
 
 			return _matBlock.GetInt(BaseIndex);
+		}
+
+		public static void Knockdown(this CreatureBoardAsset asset)
+		{
+			ActionTimeline knockdownStatusEmote = Menus.GetKnockdownStatusEmote();
+			if (knockdownStatusEmote == null)
+			{
+				Log.Error($"knockdownStatusEmote not found.");
+				return;
+			}
+			bool isKnockedDown = asset.HasActiveEmote(knockdownStatusEmote);
+			if (isKnockedDown)
+			{
+				Log.Debug($"Asset {asset.GetOnlyCreatureName()} is already knocked down!");
+				return;
+			}
+			asset.Creature.ToggleStatusEmote(knockdownStatusEmote);
+		}
+
+
+		/// <summary>
+		/// Removes the Knockdown status emote for creatures that are knocked down (and stands the mini upright).
+		/// </summary>
+		public static void StandUp(this CreatureBoardAsset asset)
+		{
+			ActionTimeline knockdownStatusEmote = Menus.GetKnockdownStatusEmote();
+			if (knockdownStatusEmote == null)
+			{
+				Log.Error($"knockdownStatusEmote not found.");
+				return;
+			}
+			bool isStanding = !asset.HasActiveEmote(knockdownStatusEmote);
+			if (isStanding)
+			{
+				Log.Debug($"Asset {asset.GetOnlyCreatureName()} is already knocked up!");
+				return;
+			}
+			asset.Creature.ToggleStatusEmote(knockdownStatusEmote);
+		}
+
+		public static bool HasActiveEmote(this CreatureBoardAsset asset, ActionTimeline actionTimeline)
+		{
+			CreatureDataV2 _mostRecentCreatureData = asset.GetRecentCreatureData();
+
+			if (_mostRecentCreatureData.ActiveEmoteIds == null)
+				return false;
+
+			return _mostRecentCreatureData.ActiveEmoteIds.Contains(actionTimeline.ActionTimelineId);
+		}
+
+		public static CreatureDataV2 GetRecentCreatureData(this CreatureBoardAsset asset)
+		{
+			return (CreatureDataV2)ReflectionHelper.GetNonPublicFieldValue(asset.Creature, "_mostRecentCreatureData");
+		}
+
+
+		public static CreatureStat GetHp(this CreatureBoardAsset asset)
+		{
+			return asset.GetStats(-1);
+		}
+
+		public static CreatureStat GetStats(this CreatureBoardAsset asset, int statIndex)
+		{
+			if (!CreatureManager.TryGetCreatureData(asset.Creature.CreatureId, out CreatureDataV2 creatureData))
+				return default;
+
+			switch (statIndex)
+			{
+				case -1: return new CreatureStat(asset.Creature.Hp.Value, asset.Creature.Hp.Max);
+				case 0: return creatureData.Stat0;
+				case 1: return creatureData.Stat1;
+				case 2: return creatureData.Stat2;
+				case 3: return creatureData.Stat3;
+				case 4: return creatureData.Stat4;
+				case 5: return creatureData.Stat5;
+				case 6: return creatureData.Stat6;
+				case 7: return creatureData.Stat7;
+			}
+
+			Talespire.Log.Error($"statIndex {statIndex} out of range! Must be between -1 and 7!");
+
+			return default;
+		}
+
+		public static void SetHp(this CreatureBoardAsset creature, float currentHp, float maxHp)
+		{
+			CreatureStat cs = new CreatureStat(currentHp, maxHp);
+			CreatureManager.SetCreatureStatByIndex(creature.Creature.CreatureId, cs, -1);
+		}
+
+		public static void SetStat(this CreatureBoardAsset creature, float current, float max, int statIndex)
+		{
+			CreatureStat cs = new CreatureStat(current, max);
+			CreatureManager.SetCreatureStatByIndex(creature.Creature.CreatureId, cs, statIndex);
 		}
 
 		public static float GetFlyingAltitude(this CreatureBoardAsset creature)
@@ -189,7 +284,7 @@ namespace TaleSpireCore
 				return string.Empty;
 
 			int sizeIndex = name.IndexOf(Talespire.PersistentEffects.STR_RichTextSizeZero);
-			return sizeIndex > 0 ? name.Substring(0, sizeIndex) : name;
+			return sizeIndex > 0 ? name.Substring(0, sizeIndex).Trim() : name;
 		}
 
 		public static string GetPersistentEffectData(this CreatureBoardAsset creatureAsset)
