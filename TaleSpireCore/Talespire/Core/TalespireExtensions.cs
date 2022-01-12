@@ -37,6 +37,29 @@ namespace TaleSpireCore
 			return _matBlock.GetInt(BaseIndex);
 		}
 
+		public static Vector3 MoveCreatureTo(this CreatureBoardAsset asset, Vector3 dropPosition)
+		{
+			if (dropPosition.y < 0)
+				dropPosition = new Vector3(dropPosition.x, 0, dropPosition.z);
+
+			float dropOffset = 0;
+			if (!asset.IsFlying)
+			{
+				dropPosition = Board.GetFloorPositionClosestTo(dropPosition);
+				dropOffset = 0.5f;
+			}
+
+			asset.Drop(dropPosition, dropPosition.y + dropOffset);
+			return dropPosition;
+		}
+
+		public static float GetBaseDiameterFeet(this CreatureBoardAsset asset)
+		{
+			const float BaseDiameterFactor = 4.5f;
+
+			return BaseDiameterFactor * asset.CreatureScale;
+		}
+
 		public static void Knockdown(this CreatureBoardAsset asset)
 		{
 			ActionTimeline knockdownStatusEmote = Menus.GetKnockdownStatusEmote();

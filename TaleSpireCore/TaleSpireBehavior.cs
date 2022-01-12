@@ -18,14 +18,7 @@ namespace TaleSpireCore
 
 		protected virtual void OnStateChanged(object data)
 		{
-			Talespire.Log.Warning($"StateChanged?.Invoke(this, data);");
-			if (StateChanged == null)
-			{
-				Talespire.Log.Error($"StateChanged is null!");
-				return;
-			}
-
-			Talespire.Log.Debug($"StateChanged.GetInvocationList().Length = {StateChanged.GetInvocationList().Length}");
+			if (Guard.IsNull(StateChanged, "StateChanged")) return;
 
 			StateChanged?.Invoke(this, data);
 		}
@@ -35,6 +28,7 @@ namespace TaleSpireCore
 
 		}
 
+		// TODO: Maybe delete this because it's no longer used?
 		internal virtual void OwnerSelected()
 		{
 

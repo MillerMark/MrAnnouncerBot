@@ -16,15 +16,23 @@ namespace TaleSpireExplore
 {
 	public partial class EdtMiniGrouper : UserControl, IValueEditor, IScriptEditor
 	{
+		const float GaggleVariance = 0.4f;
 		System.Timers.Timer updateMemberListTimer;
+		System.Timers.Timer updateGroupNameTimer;
+		bool initializing;
 		public EdtMiniGrouper()
 		{
+			initializing = true;
 			InitializeComponent();
 			Disposed += OnDispose;
 			Talespire.Minis.MiniSelected += PersistentEffectsManager_MiniSelected;
 			updateMemberListTimer = new System.Timers.Timer();
 			updateMemberListTimer.Interval = 500;
 			updateMemberListTimer.Elapsed += UpdateMemberListTimer_Elapsed;
+			updateGroupNameTimer = new System.Timers.Timer();
+			updateGroupNameTimer.Interval = 1500;
+			updateGroupNameTimer.Elapsed += UpdateGroupNameTimer_Elapsed;
+			initializing = false;
 		}
 
 		private void OnDispose(object sender, EventArgs e)
@@ -64,11 +72,7 @@ namespace TaleSpireExplore
 			if (Guard.IsNull(MiniGrouperScript, "Script")) return;
 
 			if (ea.Mini.Creature.CreatureId.ToString() == MiniGrouperScript.OwnerID)
-			{
-				ea.Mini.Creature.Speak("Click \"Done\" to finish group editing.");
-				//Talespire.Log.Error($"Cannot add grouper to itself!!!!");
 				return;
-			}
 
 			MiniGrouperScript.ToggleMember(ea.Mini);
 			RefreshMemberList();
@@ -133,6 +137,8 @@ namespace TaleSpireExplore
 
 		private void StopEditMode()
 		{
+			MiniGrouperScript?.StopEditing();
+			btnMatchAltitude.Visible = true;
 			PersistentEffectsManager.SuppressPersistentEffectUI = false;
 			editing = false;
 			lbInstructions.Text = "<< Click to Edit the group.";
@@ -146,6 +152,11 @@ namespace TaleSpireExplore
 
 		private void StartEditMode()
 		{
+			MiniGrouperScript?.ClearLeaderMovementCache();
+			MiniGrouperScript?.StartEditing();
+			if (MiniGrouperScript != null)
+				Talespire.Minis.Speak(MiniGrouperScript.OwnerID, "Click minis to include/exclude. Move me (to position the leader).");
+			btnMatchAltitude.Visible = false;
 			editing = true;
 			PersistentEffectsManager.SuppressPersistentEffectUI = true;  // So we no longer show or hide the PE UI when selecting minis.
 			lbInstructions.Text = "Click a mini to add or remove it from the group.";
@@ -172,24 +183,9 @@ namespace TaleSpireExplore
 			lbHP1.Enabled = enabled;
 			lbHP2.Enabled = enabled;
 			tbxHealth.Enabled = enabled;
-
-			EnableButtons(enabled, btnMatchAltitude, btnRenameAll, btnHideAll, btnShowAll, btnLookAt, btnSetHp, btnKnockdown, btnDamage, btnHeal);
 		}
 
-		void EnableButtons(bool enabled, params Button[] buttons)
-		{
-			foreach (Button button in buttons)
-			{
-				if (enabled)
-				{
-
-				}
-				else
-				{
-
-				}
-			}
-		}
+		bool changingInternally;
 
 		public void InitializeInstance(MonoBehaviour script)
 		{
@@ -205,8 +201,40 @@ namespace TaleSpireExplore
 
 			RefreshMemberList();
 			RefreshTrackHue();
-			chkKnockdownZeroHpCreatures.Checked = MiniGrouperScript.Data.AutoKnockdown;
+			changingInternally = true;
+			try
+			{
+				UpdateGroupControls();
+				UpdateFormationControls();
+				UpdateLookControls();
+				trkSpacing.Value = MiniGrouperScript.Data.Spacing;
+				lblSpacingValue.Text = $"{trkSpacing.Value}ft";
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 			MiniGrouperScript?.RefreshIndicators();
+		}
+
+		private void UpdateGroupControls()
+		{
+			tbxGroupName.Text = MiniGrouperScript.GetGroupName();
+		}
+
+		private void UpdateFormationControls()
+		{
+			rbFormation.Checked = MiniGrouperScript.Data.Movement == GroupMovementMode.Formation;
+			rbFollowTheLeader.Checked = MiniGrouperScript.Data.Movement == GroupMovementMode.FollowTheLeader;
+		}
+
+		private void UpdateLookControls()
+		{
+			rbLookTowardLeader.Checked = MiniGrouperScript.Data.Look == LookTowardMode.Leader;
+			rbLookTowardMovement.Checked = MiniGrouperScript.Data.Look == LookTowardMode.Movement;
+			rbLookTowardNearestOutsider.Checked = MiniGrouperScript.Data.Look == LookTowardMode.NearestOutsider;
+			rbLookTowardNearestMember.Checked = MiniGrouperScript.Data.Look == LookTowardMode.NearestMember;
+			rbLookTowardSpecificCreature.Checked = MiniGrouperScript.Data.Look == LookTowardMode.SpecificCreature;
 		}
 
 		private void MiniGrouperScript_StateChanged(object sender, object e)
@@ -277,18 +305,9 @@ namespace TaleSpireExplore
 		{
 			GroupMember groupMember = lstMembers.SelectedItem as GroupMember;
 			if (groupMember != null)
-				lblSelectedCreatureName.Text = $"Create more like {groupMember.Name}...";
+				lblSelectedCreatureName.Text = $"Create more creatures (like \"{groupMember.Name}\")";
 			else
 				lblSelectedCreatureName.Text = $"Create more creatures.";
-		}
-
-		private void chkKnockdownZeroHpCreatures_CheckedChanged(object sender, EventArgs e)
-		{
-			if (MiniGrouperScript != null)
-			{
-				MiniGrouperScript.Data.AutoKnockdown = chkKnockdownZeroHpCreatures.Checked;
-				MiniGrouperScript.DataChanged();
-			}
 		}
 
 		private void btnHeal_Click(object sender, EventArgs e)
@@ -304,7 +323,7 @@ namespace TaleSpireExplore
 		FormationEditingMode formationEditingMode = FormationEditingMode.Columns;
 		int lastRadius = 3;
 		int lastColumnCount = 1;
-
+		
 		private void EditingCircular()
 		{
 			trkColumnsRadius.Minimum = 3;
@@ -334,28 +353,40 @@ namespace TaleSpireExplore
 
 		private void rbRectangular_CheckedChanged(object sender, EventArgs e)
 		{
+			ResetRotationToZero();
 			EditingColumns();
+			ArrangeInRectangle(0);
 		}
 
 		private void rbCircular_CheckedChanged(object sender, EventArgs e)
 		{
+			ResetRotationToZero();
 			EditingCircular();
 		}
 
 		private void rbSemiCircle_CheckedChanged(object sender, EventArgs e)
 		{
+			ResetRotationToZero();
 			EditingCircular();
 		}
 
 		private void rbTriangle_CheckedChanged(object sender, EventArgs e)
 		{
+			ResetRotationToZero();
 			formationEditingMode = FormationEditingMode.None;
 			SetVisibilityColumnsRadiusTracker(false);
 		}
 
+		void ArrangeInRectangle(float percentVariance)
+		{
+			MiniGrouperScript?.ArrangeInRectangle(trkColumnsRadius.Value, trkSpacing.Value, percentVariance);
+		}
+
 		private void rbGaggle_CheckedChanged(object sender, EventArgs e)
 		{
+			ResetRotationToZero();
 			EditingColumns();
+			ArrangeInRectangle(GaggleVariance);
 		}
 
 		private void SetVisibilityColumnsRadiusTracker(bool isVisible)
@@ -372,7 +403,22 @@ namespace TaleSpireExplore
 				lastRadius = trkColumnsRadius.Value;
 			else
 				lastColumnCount = trkColumnsRadius.Value;
+			ResetRotationToZero();
 			UpdateColumnRadiusLabel();
+			UpdateFormation();
+		}
+
+		private void ResetRotationToZero()
+		{
+			changingInternally = true;
+			try
+			{
+				trkFormationRotation.Value = 0;
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		private void UpdateColumnRadiusLabel()
@@ -386,12 +432,25 @@ namespace TaleSpireExplore
 		private void trkSpacing_Scroll(object sender, EventArgs e)
 		{
 			lblSpacingValue.Text = $"{trkSpacing.Value}ft";
+			
+			if (changingInternally || initializing)
+				return;
+
+			if (rbFormation.Checked)
+				UpdateFormation();
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.Data.Spacing = trkSpacing.Value;
+				MiniGrouperScript.DataChanged();
+			}
 		}
 
-		private void trkFormationRotation_Scroll(object sender, EventArgs e)
+		private void UpdateFormation()
 		{
-			lblRotationValue.Text = $"{trkFormationRotation.Value}°";
-			// TODO: Rotate the formation around the mini.
+			if (rbRectangular.Checked)
+				ArrangeInRectangle(0);
+			else if (rbGaggle.Checked)
+				ArrangeInRectangle(GaggleVariance);
 		}
 
 		private void btnAdd_Click(object sender, EventArgs e)
@@ -402,17 +461,10 @@ namespace TaleSpireExplore
 
 		private void tbxGroupName_TextChanged(object sender, EventArgs e)
 		{
-
-		}
-
-		private void btnLookAt_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void btnKnockdown_Click(object sender, EventArgs e)
-		{
-			MiniGrouperScript?.KnockdownToggle();
+			if (changingInternally)
+				return;
+			updateGroupNameTimer.Stop();
+			updateGroupNameTimer.Start();
 		}
 
 		int GetInt(string text)
@@ -466,6 +518,12 @@ namespace TaleSpireExplore
 			RefreshMemberList();
 		}
 
+		private void UpdateGroupNameTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			updateGroupNameTimer.Stop();
+			MiniGrouperScript?.SetGroupName(tbxGroupName.Text);
+		}
+
 		void RefreshMemberListSoon()
 		{
 			updateMemberListTimer.Start();
@@ -475,6 +533,76 @@ namespace TaleSpireExplore
 		{
 			MiniGrouperScript?.RenameAll(txtNewName.Text);
 			RefreshMemberListSoon();
+		}
+
+		void UpdateMovementMode()
+		{
+			if (changingInternally || MiniGrouperScript == null)
+				return;
+
+			if (rbFormation.Checked)
+				MiniGrouperScript.Data.Movement = GroupMovementMode.Formation;
+			else
+				MiniGrouperScript.Data.Movement = GroupMovementMode.FollowTheLeader;
+			MiniGrouperScript.DataChanged();
+		}
+
+		void UpdateLookSettings()
+		{
+			if (changingInternally || MiniGrouperScript == null)
+				return;
+
+			if (rbLookTowardLeader.Checked)
+				MiniGrouperScript.Data.Look = LookTowardMode.Leader;
+			else if (rbLookTowardMovement.Checked)
+				MiniGrouperScript.Data.Look = LookTowardMode.Movement;
+			else if (rbLookTowardNearestOutsider.Checked)
+				MiniGrouperScript.Data.Look = LookTowardMode.NearestOutsider;
+			else if (rbLookTowardNearestMember.Checked)
+				MiniGrouperScript.Data.Look = LookTowardMode.NearestMember;
+			else if (rbLookTowardSpecificCreature.Checked)
+				MiniGrouperScript.Data.Look = LookTowardMode.SpecificCreature;
+			
+			MiniGrouperScript.DataChanged();
+		}
+		private void rbFormation_CheckedChanged(object sender, EventArgs e)
+		{
+			UpdateMovementMode();
+		}
+
+		private void rbFollowTheLeader_CheckedChanged(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.ClearLeaderMovementCache();
+			UpdateMovementMode();
+		}
+
+		private void rbLookToward_CheckedChanged(object sender, EventArgs e)
+		{
+			if (changingInternally)
+				return;
+			UpdateLookSettings();
+		}
+
+		private void btnDestroyGroup_Click(object sender, EventArgs e)
+		{
+			if (MessageBox.Show("Destroy ALL THE MINIS in the group? Are You Sure?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Stop) == DialogResult.Yes)
+			{
+				MiniGrouperScript?.DestroyAll();
+			}
+		}
+
+		private void trkFormationRotation_MouseDown(object sender, MouseEventArgs e)
+		{
+			Talespire.Log.Warning($"trkFormationRotation.Value = {trkFormationRotation.Value}");
+			MiniGrouperScript?.MarkPositionsForLiveRotation(trkFormationRotation.Value);
+		}
+
+		private void trkFormationRotation_Scroll(object sender, EventArgs e)
+		{
+			lblRotationValue.Text = $"{trkFormationRotation.Value}°";
+			if (changingInternally)
+				return;
+			MiniGrouperScript?.RotateFormation(trkFormationRotation.Value);
 		}
 	}
 }

@@ -288,7 +288,7 @@ namespace TaleSpireCore
 					Log.Error($"Speak: Creature with id \"{id}\" not found.");
 					return null;
 				}
-				ChatManager.SendChatMessage(message, asset.Creature.CreatureId.Value);
+				asset.Creature.Speak(message);
 				return asset;
 			}
 
@@ -923,28 +923,12 @@ namespace TaleSpireCore
 
 			public static void MoveRelative(string id, Vector3 deltaMove)
 			{
-				CreatureBoardAsset creatureBoardAsset = GetCreatureBoardAsset(id);
-				if (creatureBoardAsset == null)
+				CreatureBoardAsset asset = GetCreatureBoardAsset(id);
+				if (asset == null)
 					return;
 
-				Vector3 dropPosition = creatureBoardAsset.PlacedPosition + deltaMove;
-				MoveCreatureTo(creatureBoardAsset, dropPosition);
-			}
-
-			private static Vector3 MoveCreatureTo(CreatureBoardAsset creatureBoardAsset, Vector3 dropPosition)
-			{
-				if (dropPosition.y < 0)
-					dropPosition = new Vector3(dropPosition.x, 0, dropPosition.z);
-
-				float dropOffset = 0;
-				if (!creatureBoardAsset.IsFlying)
-				{
-					dropPosition = Board.GetFloorPositionClosestTo(dropPosition);
-					dropOffset = 0.5f;
-				}
-
-				creatureBoardAsset.Drop(dropPosition, dropPosition.y + dropOffset);
-				return dropPosition;
+				Vector3 dropPosition = asset.PlacedPosition + deltaMove;
+				asset.MoveCreatureTo(dropPosition);
 			}
 
 			public static void MoveVertically(string id, float altitude)
@@ -954,7 +938,7 @@ namespace TaleSpireCore
 					return;
 
 				Vector3 dropPosition = new Vector3(creatureBoardAsset.PlacedPosition.x, altitude, creatureBoardAsset.PlacedPosition.z);
-				MoveCreatureTo(creatureBoardAsset, dropPosition);
+				creatureBoardAsset.MoveCreatureTo(dropPosition);
 			}
 
 			public static void SetFlying(string id, bool isFlying)

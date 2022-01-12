@@ -173,7 +173,10 @@
     <Compile Include="DTOs\SayTextData.cs" />
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="Color\HueSatLight.cs" />
+    <Compile Include="GroupMovementMode.cs" />
     <Compile Include="KnownScripts.cs" />
+    <Compile Include="LookTowardMode.cs" />
+    <Compile Include="MemberLocation.cs" />
     <Compile Include="MiniGrouper.cs" />
     <Compile Include="MiniGrouperData.cs" />
     <Compile Include="PersistentEffects\EffectProperties.cs" />
