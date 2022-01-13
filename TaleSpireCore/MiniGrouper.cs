@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Bounce.ManagedCollections;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
+using Unity.Entities.UniversalDelegates;
+using Spaghet.Compiler.Ops;
 
 namespace TaleSpireCore
 {
@@ -240,6 +242,8 @@ namespace TaleSpireCore
 		/// </summary>
 		private List<MemberLocation> GetMemberLocations(CreatureBoardAsset leaderAsset)
 		{
+			if (lastMemberLocations != null)
+				return lastMemberLocations;
 			List<MemberLocation> memberLocations = new List<MemberLocation>();
 			foreach (string memberId in Data.Members)
 			{
@@ -259,8 +263,18 @@ namespace TaleSpireCore
 
 		private void StayInFormation(Vector3 deltaMove)
 		{
+			if (OwnerCreature == null)
+				return;
+
+			float rotationDegrees = OwnerCreature.GetRotationDegrees();
 			foreach (string memberId in Data.Members)
+			{
 				Talespire.Minis.MoveRelative(memberId, deltaMove);
+				if (Data.Look == LookTowardMode.Movement)
+					Talespire.Minis.RotateTo(memberId, rotationDegrees);
+			}
+
+			ClearLastMemberLocationCache();
 		}
 
 		void RemoveMember(CreatureBoardAsset creatureBoardAsset)
@@ -367,7 +381,7 @@ namespace TaleSpireCore
 				}
 
 				CreatureBoardAsset selected = Talespire.Minis.GetSelected();
-				
+
 				if (selected?.Creature.CreatureId.ToString() != OwnerID)
 				{
 					if (selected == null)
@@ -560,7 +574,13 @@ namespace TaleSpireCore
 			}
 		}
 
-		public void ArrangeInRectangle(int columns, int spacingFeet, float percentVariance)
+		void CacheLastMemberLocations(List<MemberLocation> memberLocations, CreatureBoardAsset leaderAsset)
+		{
+			UpdateMemberLocations(memberLocations, leaderAsset);
+			lastMemberLocations = memberLocations;
+		}
+
+		public void ArrangeInRectangle(int columns, int spacingFeet, float percentVariance, int rotationDegrees)
 		{
 			CreatureBoardAsset leaderAsset = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
 			if (Guard.IsNull(leaderAsset, "leaderAsset")) return;
@@ -572,23 +592,56 @@ namespace TaleSpireCore
 
 			float startingX = memberLocations[0].Position.x;
 			float startingZ = memberLocations[0].Position.z;
-			int rowCount = 0;
-			int columnCount = 0;
+			int rowIndex = 0;
+			int columnIndex = 0;
 
+			Vector3 centerPoint = leaderAsset.PlacedPosition;
+			int minisInLastRow = memberLocations.Count % columns;
+			int lastRowIndex = (int)Math.Floor((double)memberLocations.Count / columns);
+			float normalRowLength = (columns - 1) * GetSpaceTiles(spacingFeet, baseDiameterFeet);
+			float lengthLastRow = (minisInLastRow - 1) * GetSpaceTiles(spacingFeet, baseDiameterFeet);
+			
 			foreach (MemberLocation memberLocation in memberLocations)
 			{
-				float x = startingX + columnCount * GetSpaceTiles(spacingFeet, baseDiameterFeet, percentVariance);
-				float z = startingZ + rowCount * GetSpaceTiles(spacingFeet, baseDiameterFeet, percentVariance);
+				float x;
+
+				float gaggleFactor = 1;
+				if (rowIndex == 0 && columnIndex == 0)
+					gaggleFactor = 0;
+				if (rowIndex == lastRowIndex)
+				{
+					if (minisInLastRow == 1)
+						x = startingX + normalRowLength / 2f + gaggleFactor * GetGaggleVariance(spacingFeet, percentVariance);
+					else
+					{
+						float lastRowStretchFactor = normalRowLength / lengthLastRow;
+						x = startingX + columnIndex * GetSpaceTiles(spacingFeet, baseDiameterFeet) * lastRowStretchFactor + gaggleFactor * GetGaggleVariance(spacingFeet, percentVariance);
+					}
+				}
+				else
+					x = startingX + columnIndex * GetSpaceTiles(spacingFeet, baseDiameterFeet) + gaggleFactor * GetGaggleVariance(spacingFeet, percentVariance);
+
+				float z = startingZ + rowIndex * GetSpaceTiles(spacingFeet, baseDiameterFeet) + gaggleFactor * GetGaggleVariance(spacingFeet, percentVariance);
 				Vector3 newPosition = new Vector3(x, leaderAsset.PlacedPosition.y, z);
+
+				if (rotationDegrees != 0)
+				{
+					Vector3 offset = centerPoint - newPosition;
+					Vector3 newOffset = Quaternion.Euler(0, rotationDegrees + 180, 0) * offset; // rotate it
+					newPosition = centerPoint + newOffset; // calculate rotated point
+				}
+
 				Vector3 delta = newPosition - memberLocation.Position;
 				Talespire.Minis.MoveRelative(memberLocation.Asset.CreatureId.ToString(), delta);
-				columnCount++;
-				if (columnCount >= columns)
+				columnIndex++;
+				if (columnIndex >= columns)
 				{
-					columnCount = 0;
-					rowCount++;
+					columnIndex = 0;
+					rowIndex++;
 				}
 			}
+
+			CacheLastMemberLocations(memberLocations, leaderAsset);
 		}
 
 		private static float GetLargestBaseDiameterFeet(List<MemberLocation> memberLocations)
@@ -601,13 +654,18 @@ namespace TaleSpireCore
 			return largestBaseDiameter;
 		}
 
-		private static float GetSpaceTiles(int spacingFeet, float baseDiameter, float percentVariance = 0)
+		private static float GetSpaceTiles(int spacingFeet, float baseDiameter)
+		{
+			return Talespire.Convert.FeetToTiles(baseDiameter + spacingFeet);
+		}
+
+		private static float GetGaggleVariance(int spacingFeet, float percentVariance)
 		{
 			float spaceBetweenMinisFeet;
-			if (percentVariance == 0)
-				spaceBetweenMinisFeet = baseDiameter + spacingFeet;
+			if (percentVariance == 0 || spacingFeet == 0)
+				return 0;
 			else
-				spaceBetweenMinisFeet = baseDiameter + UnityEngine.Random.Range(spacingFeet * (1 - percentVariance), spacingFeet * (1 + percentVariance));
+				spaceBetweenMinisFeet = UnityEngine.Random.Range(spacingFeet * -percentVariance, spacingFeet * percentVariance);
 			return Talespire.Convert.FeetToTiles(spaceBetweenMinisFeet);
 		}
 
@@ -617,6 +675,8 @@ namespace TaleSpireCore
 		{
 			Vector3 delta = totalDeltaMove * offset / totalDeltaMove.magnitude;
 			Vector3 newPosition = referencePosition - delta;
+			if (Data.Look == LookTowardMode.Movement)
+				memberLocation.Asset.RotateTowardsNow(newPosition);
 			memberLocation.Asset.MoveCreatureTo(newPosition);
 			offset += Talespire.Convert.FeetToTiles(memberLocation.Asset.GetBaseDiameterFeet() + Data.Spacing);
 		}
@@ -626,12 +686,57 @@ namespace TaleSpireCore
 			int indexHead = 0;
 			for (int i = startIndex; i < memberLocations.Count; i++)
 			{
-				memberLocations[i].Asset.MoveCreatureTo(memberLocations[indexHead].Position);
+				Vector3 newPosition = memberLocations[indexHead].Position;
+				if (Data.Look == LookTowardMode.Movement)
+					memberLocations[i].Asset.RotateTowardsNow(newPosition);
+				memberLocations[i].Asset.MoveCreatureTo(newPosition);
 				indexHead++;
 			}
 		}
 
 		Vector3 previousDeltaMove = Vector3.zero;
+		List<MemberLocation> followTheLeaderMemberLocations;
+		List<MemberLocation> lastMemberLocations;
+
+		public void RefreshFollowTheLeaderLine()
+		{
+			CreatureBoardAsset leaderAsset = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
+			if (Guard.IsNull(leaderAsset, "leaderAsset")) return;
+			if (Guard.IsNull(followTheLeaderMemberLocations, "followTheLeaderMemberLocations")) return;
+			LayoutFollowTheLeaderLine(leaderAsset, followTheLeaderMemberLocations);
+		}
+
+		public void ReverseFollowTheLeaderLine()
+		{
+			CreatureBoardAsset leaderAsset = Talespire.Minis.GetCreatureBoardAsset(OwnerID);
+			if (Guard.IsNull(leaderAsset, "leaderAsset")) return;
+			if (Guard.IsNull(followTheLeaderMemberLocations, "followTheLeaderMemberLocations")) return;
+
+			List<MemberLocation> followTheLeaderMemberLocationsPlusLeader = new List<MemberLocation>(followTheLeaderMemberLocations);
+			followTheLeaderMemberLocationsPlusLeader.Add(new MemberLocation() { Asset = leaderAsset, DistanceToLeader = 0, Name = "Leader", Position = leaderAsset.PlacedPosition });
+			LayoutFollowTheLeaderLine(leaderAsset, followTheLeaderMemberLocationsPlusLeader);
+
+			followTheLeaderMemberLocations.Reverse();
+			List<MemberLocation> saveFollowTheLeaderMemberLocations = followTheLeaderMemberLocations;
+			ClearLeaderMovementCache();
+			followTheLeaderMemberLocations = saveFollowTheLeaderMemberLocations;
+
+
+			UpdateMemberLocations(followTheLeaderMemberLocations, leaderAsset);
+
+			if (Data.Look == LookTowardMode.Movement)
+				foreach (MemberLocation member in followTheLeaderMemberLocations)
+					member.Asset.Rotator.Rotate(Vector3.forward, 180);
+		}
+
+		void UpdateMemberLocations(List<MemberLocation> memberLocations, CreatureBoardAsset leaderAsset)
+		{
+			foreach (MemberLocation memberLocation in memberLocations)
+			{
+				memberLocation.DistanceToLeader = (leaderAsset.PlacedPosition - memberLocation.Asset.PlacedPosition).magnitude;
+				memberLocation.Position = memberLocation.Asset.PlacedPosition;
+			}
+		}
 
 		void FollowTheLeader(Vector3 deltaMove)
 		{
@@ -649,30 +754,9 @@ namespace TaleSpireCore
 
 			followTheLeaderMovementCache.Add(deltaMove);
 
-			List<MemberLocation> memberLocations = GetMemberLocationsSortedByQueue(leaderAsset.PlacedPosition - deltaMove, GetMemberLocations(leaderAsset));
+			List<MemberLocation> memberLocations = GetFollowTheLeaderMemberLocations(deltaMove, leaderAsset);
 
-			float offset = Talespire.Convert.FeetToTiles(leaderAsset.GetBaseDiameterFeet());
-			Vector3 referencePosition = leaderAsset.PlacedPosition;
-			int cacheIndex = followTheLeaderMovementCache.Count - 1;
-			Vector3 cachedDeltaMove = followTheLeaderMovementCache[cacheIndex];
-			for (int i = 0; i < memberLocations.Count; i++)
-			{
-				PositionMember(memberLocations[i], referencePosition, cachedDeltaMove, ref offset);
-				if (offset > cachedDeltaMove.magnitude)
-				{
-					offset -= cachedDeltaMove.magnitude;  // To maintain the spacing.
-																								// Now we need the next position in the cache!!!
-					referencePosition -= cachedDeltaMove;
-					cacheIndex--;
-					if (cacheIndex < 0)
-					{
-						// We are out of cached locations!!!
-						MoveMembersToPreviousMemberPosition(memberLocations, i + 1);
-						break;
-					}
-					cachedDeltaMove = followTheLeaderMovementCache[cacheIndex];
-				}
-			}
+			LayoutFollowTheLeaderLine(leaderAsset, memberLocations);
 
 			// memberLocations now has the members in the order they need to be positioned.
 
@@ -696,11 +780,70 @@ namespace TaleSpireCore
 			 */
 		}
 
+		private void LayoutFollowTheLeaderLine(CreatureBoardAsset leaderAsset, List<MemberLocation> memberLocations)
+		{
+			float offset = Talespire.Convert.FeetToTiles(leaderAsset.GetBaseDiameterFeet());
+			Vector3 referencePosition = leaderAsset.PlacedPosition;
+			int cacheIndex = followTheLeaderMovementCache.Count - 1;
+			if (cacheIndex < 0)
+			{
+				Talespire.Log.Error($"cacheIndex < 0 !!!");
+				MoveMembersToPreviousMemberPosition(memberLocations, 0);
+				return;
+			}
+
+			Vector3 cachedDeltaMove = followTheLeaderMovementCache[cacheIndex];
+			bool outOfCachedLocations = false;
+			int startIndex = 0;
+			for (int i = 0; i < memberLocations.Count; i++)
+			{
+				if (i >= memberLocations.Count)
+				{
+					Talespire.Log.Error($"Index {i} exceeds memberLocations.Count ({memberLocations.Count})");
+					return;
+				}
+				PositionMember(memberLocations[i], referencePosition, cachedDeltaMove, ref offset);
+				while (offset > cachedDeltaMove.magnitude)
+				{
+					offset -= cachedDeltaMove.magnitude;  // To maintain the spacing.
+
+					// Now we need the next position in the cache!!!
+					referencePosition -= cachedDeltaMove;
+					cacheIndex--;
+					if (cacheIndex < 0)
+					{
+						outOfCachedLocations = true;
+						startIndex = i + 1;
+						break;
+					}
+					cachedDeltaMove = followTheLeaderMovementCache[cacheIndex];
+				}
+
+				if (outOfCachedLocations)
+					break;
+			}
+			if (outOfCachedLocations)
+				MoveMembersToPreviousMemberPosition(memberLocations, startIndex);
+		}
+
+		private List<MemberLocation> GetFollowTheLeaderMemberLocations(Vector3 deltaMove, CreatureBoardAsset leaderAsset)
+		{
+			if (followTheLeaderMemberLocations == null)
+				followTheLeaderMemberLocations = GetMemberLocationsSortedByQueue(leaderAsset.PlacedPosition - deltaMove, GetMemberLocations(leaderAsset));
+			return followTheLeaderMemberLocations;
+		}
+
+		public void ClearLastMemberLocationCache()
+		{
+			lastMemberLocations = null;
+		}
+
 		public void ClearLeaderMovementCache()
 		{
 			if (OwnerCreature != null)
 				lastGroupPosition = OwnerCreature.PlacedPosition;
 			followTheLeaderMovementCache.Clear();
+			followTheLeaderMemberLocations = null;
 			previousDeltaMove = Vector3.zero;
 		}
 	}

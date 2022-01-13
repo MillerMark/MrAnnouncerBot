@@ -14,6 +14,12 @@ namespace TaleSpireCore
 		[DefaultValue(false)]
 		public bool Flying { get; set; }
 
+		[DefaultValue(FormationStyle.FreeForm)]
+		public FormationStyle FormationStyle { get; set; } = FormationStyle.FreeForm;
+
+		[DefaultValue(1)]
+		public int ColumnRadius { get; set; } = 1;
+
 		[DefaultValue(GroupMovementMode.Formation)]
 		public GroupMovementMode Movement { get; set; } = GroupMovementMode.Formation;
 
@@ -30,7 +36,7 @@ namespace TaleSpireCore
 
 		[DefaultValue(0)]
 		public int Spacing { get; set; }
-		
+
 		public MiniGrouperData()
 		{
 

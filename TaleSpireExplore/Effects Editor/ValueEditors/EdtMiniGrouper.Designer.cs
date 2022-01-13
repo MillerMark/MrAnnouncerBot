@@ -80,6 +80,8 @@
 			this.rbLookTowardSpecificCreature = new System.Windows.Forms.RadioButton();
 			this.rbLookTowardNearestMember = new System.Windows.Forms.RadioButton();
 			this.rbLookTowardNearestOutsider = new System.Windows.Forms.RadioButton();
+			this.btnDestroyGroup = new System.Windows.Forms.Button();
+			this.btnReverseLine = new System.Windows.Forms.Button();
 			this.lblRotationValue = new System.Windows.Forms.Label();
 			this.lblColumnRadiusValue = new System.Windows.Forms.Label();
 			this.lblSpacingValue = new System.Windows.Forms.Label();
@@ -87,7 +89,7 @@
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label5 = new System.Windows.Forms.Label();
-			this.btnDestroyGroup = new System.Windows.Forms.Button();
+			this.rbFreeform = new System.Windows.Forms.RadioButton();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSpacing)).BeginInit();
@@ -293,7 +295,7 @@
 			// rbRectangular
 			// 
 			this.rbRectangular.AutoSize = true;
-			this.rbRectangular.Location = new System.Drawing.Point(18, 575);
+			this.rbRectangular.Location = new System.Drawing.Point(18, 611);
 			this.rbRectangular.Name = "rbRectangular";
 			this.rbRectangular.Size = new System.Drawing.Size(74, 17);
 			this.rbRectangular.TabIndex = 24;
@@ -305,7 +307,7 @@
 			// label6
 			// 
 			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(7, 533);
+			this.label6.Location = new System.Drawing.Point(7, 545);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(91, 13);
 			this.label6.TabIndex = 25;
@@ -314,7 +316,7 @@
 			// rbCircular
 			// 
 			this.rbCircular.AutoSize = true;
-			this.rbCircular.Location = new System.Drawing.Point(18, 598);
+			this.rbCircular.Location = new System.Drawing.Point(18, 634);
 			this.rbCircular.Name = "rbCircular";
 			this.rbCircular.Size = new System.Drawing.Size(51, 17);
 			this.rbCircular.TabIndex = 26;
@@ -326,7 +328,7 @@
 			// rbSemiCircle
 			// 
 			this.rbSemiCircle.AutoSize = true;
-			this.rbSemiCircle.Location = new System.Drawing.Point(18, 621);
+			this.rbSemiCircle.Location = new System.Drawing.Point(18, 657);
 			this.rbSemiCircle.Name = "rbSemiCircle";
 			this.rbSemiCircle.Size = new System.Drawing.Size(73, 17);
 			this.rbSemiCircle.TabIndex = 27;
@@ -337,7 +339,7 @@
 			// 
 			// trkSpacing
 			// 
-			this.trkSpacing.Location = new System.Drawing.Point(147, 551);
+			this.trkSpacing.Location = new System.Drawing.Point(147, 563);
 			this.trkSpacing.Maximum = 20;
 			this.trkSpacing.Name = "trkSpacing";
 			this.trkSpacing.Size = new System.Drawing.Size(175, 45);
@@ -346,12 +348,13 @@
 			this.toolTip1.SetToolTip(this.trkSpacing, "Changes the spacing among group members.");
 			this.trkSpacing.Value = 2;
 			this.trkSpacing.Scroll += new System.EventHandler(this.trkSpacing_Scroll);
+			this.trkSpacing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkSpacing_MouseUp);
 			// 
 			// lblSpacing
 			// 
 			this.lblSpacing.AutoSize = true;
 			this.lblSpacing.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblSpacing.Location = new System.Drawing.Point(137, 533);
+			this.lblSpacing.Location = new System.Drawing.Point(137, 545);
 			this.lblSpacing.Name = "lblSpacing";
 			this.lblSpacing.Size = new System.Drawing.Size(49, 13);
 			this.lblSpacing.TabIndex = 29;
@@ -360,7 +363,7 @@
 			// lblColumnsRadius
 			// 
 			this.lblColumnsRadius.AutoSize = true;
-			this.lblColumnsRadius.Location = new System.Drawing.Point(137, 596);
+			this.lblColumnsRadius.Location = new System.Drawing.Point(137, 608);
 			this.lblColumnsRadius.Name = "lblColumnsRadius";
 			this.lblColumnsRadius.Size = new System.Drawing.Size(50, 13);
 			this.lblColumnsRadius.TabIndex = 31;
@@ -368,7 +371,7 @@
 			// 
 			// trkColumnsRadius
 			// 
-			this.trkColumnsRadius.Location = new System.Drawing.Point(147, 614);
+			this.trkColumnsRadius.Location = new System.Drawing.Point(147, 626);
 			this.trkColumnsRadius.Maximum = 1;
 			this.trkColumnsRadius.Minimum = 1;
 			this.trkColumnsRadius.Name = "trkColumnsRadius";
@@ -382,7 +385,7 @@
 			// rbTriangle
 			// 
 			this.rbTriangle.AutoSize = true;
-			this.rbTriangle.Location = new System.Drawing.Point(18, 644);
+			this.rbTriangle.Location = new System.Drawing.Point(18, 680);
 			this.rbTriangle.Name = "rbTriangle";
 			this.rbTriangle.Size = new System.Drawing.Size(63, 17);
 			this.rbTriangle.TabIndex = 32;
@@ -418,7 +421,7 @@
 			// lblRotation
 			// 
 			this.lblRotation.AutoSize = true;
-			this.lblRotation.Location = new System.Drawing.Point(137, 659);
+			this.lblRotation.Location = new System.Drawing.Point(137, 671);
 			this.lblRotation.Name = "lblRotation";
 			this.lblRotation.Size = new System.Drawing.Size(50, 13);
 			this.lblRotation.TabIndex = 36;
@@ -426,7 +429,7 @@
 			// 
 			// trkFormationRotation
 			// 
-			this.trkFormationRotation.Location = new System.Drawing.Point(147, 677);
+			this.trkFormationRotation.Location = new System.Drawing.Point(147, 689);
 			this.trkFormationRotation.Maximum = 359;
 			this.trkFormationRotation.Name = "trkFormationRotation";
 			this.trkFormationRotation.Size = new System.Drawing.Size(175, 45);
@@ -439,7 +442,7 @@
 			// lblOutOf
 			// 
 			this.lblOutOf.AutoSize = true;
-			this.lblOutOf.Location = new System.Drawing.Point(119, 410);
+			this.lblOutOf.Location = new System.Drawing.Point(119, 404);
 			this.lblOutOf.Name = "lblOutOf";
 			this.lblOutOf.Size = new System.Drawing.Size(34, 13);
 			this.lblOutOf.TabIndex = 40;
@@ -449,7 +452,7 @@
 			// 
 			this.btnSetHp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnSetHp.ForeColor = System.Drawing.Color.White;
-			this.btnSetHp.Location = new System.Drawing.Point(10, 400);
+			this.btnSetHp.Location = new System.Drawing.Point(10, 394);
 			this.btnSetHp.Name = "btnSetHp";
 			this.btnSetHp.Size = new System.Drawing.Size(62, 32);
 			this.btnSetHp.TabIndex = 39;
@@ -464,7 +467,7 @@
 			// 
 			this.tbxSetHp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(37)))));
 			this.tbxSetHp.ForeColor = System.Drawing.Color.White;
-			this.tbxSetHp.Location = new System.Drawing.Point(78, 407);
+			this.tbxSetHp.Location = new System.Drawing.Point(78, 401);
 			this.tbxSetHp.Name = "tbxSetHp";
 			this.tbxSetHp.Size = new System.Drawing.Size(37, 20);
 			this.tbxSetHp.TabIndex = 38;
@@ -475,7 +478,7 @@
 			// 
 			this.tbxMaxHp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(37)))));
 			this.tbxMaxHp.ForeColor = System.Drawing.Color.White;
-			this.tbxMaxHp.Location = new System.Drawing.Point(159, 407);
+			this.tbxMaxHp.Location = new System.Drawing.Point(159, 401);
 			this.tbxMaxHp.Name = "tbxMaxHp";
 			this.tbxMaxHp.Size = new System.Drawing.Size(37, 20);
 			this.tbxMaxHp.TabIndex = 41;
@@ -486,7 +489,7 @@
 			// 
 			this.btnDamage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnDamage.ForeColor = System.Drawing.Color.White;
-			this.btnDamage.Location = new System.Drawing.Point(10, 437);
+			this.btnDamage.Location = new System.Drawing.Point(10, 429);
 			this.btnDamage.Name = "btnDamage";
 			this.btnDamage.Size = new System.Drawing.Size(62, 32);
 			this.btnDamage.TabIndex = 43;
@@ -501,7 +504,7 @@
 			// 
 			this.tbxDamage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(37)))));
 			this.tbxDamage.ForeColor = System.Drawing.Color.White;
-			this.tbxDamage.Location = new System.Drawing.Point(78, 444);
+			this.tbxDamage.Location = new System.Drawing.Point(78, 436);
 			this.tbxDamage.Name = "tbxDamage";
 			this.tbxDamage.Size = new System.Drawing.Size(37, 20);
 			this.tbxDamage.TabIndex = 42;
@@ -511,7 +514,7 @@
 			// lbHP1
 			// 
 			this.lbHP1.AutoSize = true;
-			this.lbHP1.Location = new System.Drawing.Point(119, 447);
+			this.lbHP1.Location = new System.Drawing.Point(119, 439);
 			this.lbHP1.Name = "lbHP1";
 			this.lbHP1.Size = new System.Drawing.Size(22, 13);
 			this.lbHP1.TabIndex = 44;
@@ -520,7 +523,7 @@
 			// lbHP2
 			// 
 			this.lbHP2.AutoSize = true;
-			this.lbHP2.Location = new System.Drawing.Point(257, 447);
+			this.lbHP2.Location = new System.Drawing.Point(257, 439);
 			this.lbHP2.Name = "lbHP2";
 			this.lbHP2.Size = new System.Drawing.Size(22, 13);
 			this.lbHP2.TabIndex = 47;
@@ -530,7 +533,7 @@
 			// 
 			this.btnHeal.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnHeal.ForeColor = System.Drawing.Color.White;
-			this.btnHeal.Location = new System.Drawing.Point(159, 437);
+			this.btnHeal.Location = new System.Drawing.Point(159, 429);
 			this.btnHeal.Name = "btnHeal";
 			this.btnHeal.Size = new System.Drawing.Size(51, 32);
 			this.btnHeal.TabIndex = 46;
@@ -543,7 +546,7 @@
 			// 
 			this.tbxHealth.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(37)))));
 			this.tbxHealth.ForeColor = System.Drawing.Color.White;
-			this.tbxHealth.Location = new System.Drawing.Point(216, 444);
+			this.tbxHealth.Location = new System.Drawing.Point(216, 436);
 			this.tbxHealth.Name = "tbxHealth";
 			this.tbxHealth.Size = new System.Drawing.Size(37, 20);
 			this.tbxHealth.TabIndex = 45;
@@ -553,12 +556,10 @@
 			// rbGaggle
 			// 
 			this.rbGaggle.AutoSize = true;
-			this.rbGaggle.Checked = true;
-			this.rbGaggle.Location = new System.Drawing.Point(18, 552);
+			this.rbGaggle.Location = new System.Drawing.Point(18, 588);
 			this.rbGaggle.Name = "rbGaggle";
 			this.rbGaggle.Size = new System.Drawing.Size(59, 17);
 			this.rbGaggle.TabIndex = 48;
-			this.rbGaggle.TabStop = true;
 			this.rbGaggle.Text = "Gaggle";
 			this.toolTip1.SetToolTip(this.rbGaggle, "Creates a loosely-formed rectangular formation.");
 			this.rbGaggle.UseVisualStyleBackColor = true;
@@ -665,11 +666,37 @@
 			this.rbLookTowardNearestOutsider.UseVisualStyleBackColor = true;
 			this.rbLookTowardNearestOutsider.CheckedChanged += new System.EventHandler(this.rbLookToward_CheckedChanged);
 			// 
+			// btnDestroyGroup
+			// 
+			this.btnDestroyGroup.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+			this.btnDestroyGroup.ForeColor = System.Drawing.Color.White;
+			this.btnDestroyGroup.Location = new System.Drawing.Point(10, 702);
+			this.btnDestroyGroup.Name = "btnDestroyGroup";
+			this.btnDestroyGroup.Size = new System.Drawing.Size(101, 32);
+			this.btnDestroyGroup.TabIndex = 61;
+			this.btnDestroyGroup.Text = "Destroy Group";
+			this.toolTip1.SetToolTip(this.btnDestroyGroup, "Shows all members of the group.");
+			this.btnDestroyGroup.UseVisualStyleBackColor = false;
+			this.btnDestroyGroup.Click += new System.EventHandler(this.btnDestroyGroup_Click);
+			// 
+			// btnReverseLine
+			// 
+			this.btnReverseLine.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+			this.btnReverseLine.ForeColor = System.Drawing.Color.White;
+			this.btnReverseLine.Location = new System.Drawing.Point(174, 504);
+			this.btnReverseLine.Name = "btnReverseLine";
+			this.btnReverseLine.Size = new System.Drawing.Size(92, 32);
+			this.btnReverseLine.TabIndex = 62;
+			this.btnReverseLine.Text = "Reverse Line";
+			this.toolTip1.SetToolTip(this.btnReverseLine, "Shows all members of the group.");
+			this.btnReverseLine.UseVisualStyleBackColor = false;
+			this.btnReverseLine.Click += new System.EventHandler(this.btnReverseLine_Click);
+			// 
 			// lblRotationValue
 			// 
 			this.lblRotationValue.AutoSize = true;
 			this.lblRotationValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblRotationValue.Location = new System.Drawing.Point(183, 659);
+			this.lblRotationValue.Location = new System.Drawing.Point(183, 671);
 			this.lblRotationValue.Name = "lblRotationValue";
 			this.lblRotationValue.Size = new System.Drawing.Size(19, 13);
 			this.lblRotationValue.TabIndex = 54;
@@ -679,7 +706,7 @@
 			// 
 			this.lblColumnRadiusValue.AutoSize = true;
 			this.lblColumnRadiusValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblColumnRadiusValue.Location = new System.Drawing.Point(185, 596);
+			this.lblColumnRadiusValue.Location = new System.Drawing.Point(185, 608);
 			this.lblColumnRadiusValue.Name = "lblColumnRadiusValue";
 			this.lblColumnRadiusValue.Size = new System.Drawing.Size(14, 13);
 			this.lblColumnRadiusValue.TabIndex = 53;
@@ -689,7 +716,7 @@
 			// 
 			this.lblSpacingValue.AutoSize = true;
 			this.lblSpacingValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblSpacingValue.Location = new System.Drawing.Point(183, 533);
+			this.lblSpacingValue.Location = new System.Drawing.Point(183, 545);
 			this.lblSpacingValue.Name = "lblSpacingValue";
 			this.lblSpacingValue.Size = new System.Drawing.Size(22, 13);
 			this.lblSpacingValue.TabIndex = 52;
@@ -698,7 +725,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(7, 495);
+			this.label4.Location = new System.Drawing.Point(7, 484);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(60, 13);
 			this.label4.TabIndex = 56;
@@ -708,9 +735,9 @@
 			// 
 			this.panel1.Controls.Add(this.rbFollowTheLeader);
 			this.panel1.Controls.Add(this.rbFormation);
-			this.panel1.Location = new System.Drawing.Point(69, 489);
+			this.panel1.Location = new System.Drawing.Point(69, 478);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(253, 26);
+			this.panel1.Size = new System.Drawing.Size(210, 26);
 			this.panel1.TabIndex = 57;
 			// 
 			// panel2
@@ -736,23 +763,25 @@
 			this.label5.TabIndex = 61;
 			this.label5.Text = "Look Toward:";
 			// 
-			// btnDestroyGroup
+			// rbFreeform
 			// 
-			this.btnDestroyGroup.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
-			this.btnDestroyGroup.ForeColor = System.Drawing.Color.White;
-			this.btnDestroyGroup.Location = new System.Drawing.Point(10, 690);
-			this.btnDestroyGroup.Name = "btnDestroyGroup";
-			this.btnDestroyGroup.Size = new System.Drawing.Size(101, 32);
-			this.btnDestroyGroup.TabIndex = 61;
-			this.btnDestroyGroup.Text = "Destroy Group";
-			this.toolTip1.SetToolTip(this.btnDestroyGroup, "Shows all members of the group.");
-			this.btnDestroyGroup.UseVisualStyleBackColor = false;
-			this.btnDestroyGroup.Click += new System.EventHandler(this.btnDestroyGroup_Click);
+			this.rbFreeform.AutoSize = true;
+			this.rbFreeform.Checked = true;
+			this.rbFreeform.Location = new System.Drawing.Point(18, 565);
+			this.rbFreeform.Name = "rbFreeform";
+			this.rbFreeform.Size = new System.Drawing.Size(66, 17);
+			this.rbFreeform.TabIndex = 63;
+			this.rbFreeform.Text = "Freeform";
+			this.toolTip1.SetToolTip(this.rbFreeform, "Creates a loosely-formed rectangular formation.");
+			this.rbFreeform.UseVisualStyleBackColor = true;
+			this.rbFreeform.CheckedChanged += new System.EventHandler(this.rbFreeform_CheckedChanged);
 			// 
 			// EdtMiniGrouper
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.rbFreeform);
+			this.Controls.Add(this.btnReverseLine);
 			this.Controls.Add(this.btnDestroyGroup);
 			this.Controls.Add(this.panel2);
 			this.Controls.Add(this.lblColumnRadiusValue);
@@ -802,7 +831,7 @@
 			this.Controls.Add(this.lblNewCreatureName);
 			this.Controls.Add(this.lblSelectedCreatureName);
 			this.Name = "EdtMiniGrouper";
-			this.Size = new System.Drawing.Size(335, 729);
+			this.Size = new System.Drawing.Size(335, 740);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSpacing)).EndInit();
@@ -876,5 +905,7 @@
 		private System.Windows.Forms.RadioButton rbLookTowardNearestOutsider;
 		private System.Windows.Forms.RadioButton rbLookTowardNearestMember;
 		private System.Windows.Forms.Button btnDestroyGroup;
+		private System.Windows.Forms.Button btnReverseLine;
+		private System.Windows.Forms.RadioButton rbFreeform;
 	}
 }

@@ -173,6 +173,7 @@
     <Compile Include="DTOs\SayTextData.cs" />
     <Compile Include="DTOs\SlabData.cs" />
     <Compile Include="Color\HueSatLight.cs" />
+    <Compile Include="FormationStyle.cs" />
     <Compile Include="GroupMovementMode.cs" />
     <Compile Include="KnownScripts.cs" />
     <Compile Include="LookTowardMode.cs" />

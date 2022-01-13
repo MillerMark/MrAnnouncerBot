@@ -16,7 +16,7 @@ namespace TaleSpireExplore
 {
 	public partial class EdtMiniGrouper : UserControl, IValueEditor, IScriptEditor
 	{
-		const float GaggleVariance = 0.4f;
+		const float GaggleVariance = 0.3f;
 		System.Timers.Timer updateMemberListTimer;
 		System.Timers.Timer updateGroupNameTimer;
 		bool initializing;
@@ -33,6 +33,62 @@ namespace TaleSpireExplore
 			updateGroupNameTimer.Interval = 1500;
 			updateGroupNameTimer.Elapsed += UpdateGroupNameTimer_Elapsed;
 			initializing = false;
+		}
+
+		public void InitializeInstance(MonoBehaviour script)
+		{
+			MiniGrouperScript = script as MiniGrouper;
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
+				Talespire.Log.Warning($"InitializeInstance - MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;");
+				MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;
+			}
+			else
+				Talespire.Log.Error($"InitializeInstance - MiniGrouperScript is null!");
+
+			RefreshMemberList();
+			RefreshTrackHue();
+			changingInternally = true;
+			try
+			{
+				UpdateGroupControls();
+				UpdateFormationControls();
+				UpdateLookControls();
+				UpdateFormationStyleControls();
+				if (MiniGrouperScript != null)
+				{
+					trkSpacing.Value = MiniGrouperScript.Data.Spacing;
+					lblSpacingValue.Text = $"{MiniGrouperScript.Data.Spacing}ft";
+
+					trkColumnsRadius.Maximum = 1000;
+					trkColumnsRadius.Value = MiniGrouperScript.Data.ColumnRadius;
+
+					lastColumnCount = MiniGrouperScript.Data.ColumnRadius;
+					lastRadius = MiniGrouperScript.Data.ColumnRadius;
+
+					switch (MiniGrouperScript.Data.FormationStyle)
+					{
+						case FormationStyle.FreeForm:
+						case FormationStyle.Triangle:
+							EditingNeitherColumnsNorCircular();
+							break;
+						case FormationStyle.Gaggle:
+						case FormationStyle.Rectangle:
+							EditingColumns();
+							break;
+						case FormationStyle.Circle:
+						case FormationStyle.Semicircle:
+							EditingCircular();
+							break;
+					}
+				}
+			}
+			finally
+			{
+				changingInternally = false;
+			}
+			MiniGrouperScript?.RefreshIndicators();
 		}
 
 		private void OnDispose(object sender, EventArgs e)
@@ -150,12 +206,17 @@ namespace TaleSpireExplore
 			EnableControlsBasedOnMemberCount();
 		}
 
+		bool alreadyShowedDiscoverabilityHint = false;
 		private void StartEditMode()
 		{
 			MiniGrouperScript?.ClearLeaderMovementCache();
 			MiniGrouperScript?.StartEditing();
-			if (MiniGrouperScript != null)
+			if (MiniGrouperScript != null && !alreadyShowedDiscoverabilityHint)
+			{
+				alreadyShowedDiscoverabilityHint = true;
 				Talespire.Minis.Speak(MiniGrouperScript.OwnerID, "Click minis to include/exclude. Move me (to position the leader).");
+			}
+
 			btnMatchAltitude.Visible = false;
 			editing = true;
 			PersistentEffectsManager.SuppressPersistentEffectUI = true;  // So we no longer show or hide the PE UI when selecting minis.
@@ -187,34 +248,22 @@ namespace TaleSpireExplore
 
 		bool changingInternally;
 
-		public void InitializeInstance(MonoBehaviour script)
+		void UpdateFormationStyleControls()
 		{
-			MiniGrouperScript = script as MiniGrouper;
-			if (MiniGrouperScript != null)
-			{
-				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
-				Talespire.Log.Warning($"InitializeInstance - MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;");
-				MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;
-			}
-			else
-				Talespire.Log.Error($"InitializeInstance - MiniGrouperScript is null!");
-
-			RefreshMemberList();
-			RefreshTrackHue();
 			changingInternally = true;
 			try
 			{
-				UpdateGroupControls();
-				UpdateFormationControls();
-				UpdateLookControls();
-				trkSpacing.Value = MiniGrouperScript.Data.Spacing;
-				lblSpacingValue.Text = $"{trkSpacing.Value}ft";
+				rbCircular.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Circle;
+				rbRectangular.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Rectangle;
+				rbGaggle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Gaggle;
+				rbFreeform.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.FreeForm;
+				rbTriangle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Triangle;
+				rbSemiCircle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Semicircle;
 			}
 			finally
 			{
 				changingInternally = false;
 			}
-			MiniGrouperScript?.RefreshIndicators();
 		}
 
 		private void UpdateGroupControls()
@@ -323,23 +372,29 @@ namespace TaleSpireExplore
 		FormationEditingMode formationEditingMode = FormationEditingMode.Columns;
 		int lastRadius = 3;
 		int lastColumnCount = 1;
-		
+
 		private void EditingCircular()
 		{
-			trkColumnsRadius.Minimum = 3;
-			trkColumnsRadius.Maximum = 150;
+			SetColumnRadiusTrackbarVisibility(true);
+			SetCircularRange();
+			KeepValueInBounds();
 			formationEditingMode = FormationEditingMode.Radius;
-			SetVisibilityColumnsRadiusTracker(true);
 			lblColumnsRadius.Text = "Radius:";
 			toolTip1.SetToolTip(trkColumnsRadius, "Changes the radius in circular formations.");
 			UpdateColumnRadiusLabel();
 		}
 
+		private void KeepValueInBounds()
+		{
+			if (trkColumnsRadius.Value > trkColumnsRadius.Maximum)
+				trkColumnsRadius.Value = trkColumnsRadius.Maximum;
+		}
+
 		private void EditingColumns()
 		{
+			SetColumnRadiusTrackbarVisibility(true);
 			formationEditingMode = FormationEditingMode.Columns;
 			SetColumnRange();
-			SetVisibilityColumnsRadiusTracker(true);
 			lblColumnsRadius.Text = "Columns:";
 			toolTip1.SetToolTip(trkColumnsRadius, "Changes the number of columns in rectangular formations.");
 			UpdateColumnRadiusLabel();
@@ -349,61 +404,151 @@ namespace TaleSpireExplore
 		{
 			trkColumnsRadius.Minimum = 1;
 			trkColumnsRadius.Maximum = lstMembers.Items.Count;
+			KeepValueInBounds();
+		}
+		private void SetCircularRange()
+		{
+			trkColumnsRadius.Minimum = 1;
+			trkColumnsRadius.Maximum = 150;
+			KeepValueInBounds();
+		}
+
+		private void NewFormationSelected()
+		{
+			ResetRotationToZero();
+			MiniGrouperScript?.ClearLastMemberLocationCache();
 		}
 
 		private void rbRectangular_CheckedChanged(object sender, EventArgs e)
 		{
-			ResetRotationToZero();
+			if (!rbRectangular.Checked)
+				return;
+
+			if (changingInternally)
+				return; 
+			
+			SetFormationStyle(FormationStyle.Rectangle);
+			NewFormationSelected();
 			EditingColumns();
 			ArrangeInRectangle(0);
 		}
 
 		private void rbCircular_CheckedChanged(object sender, EventArgs e)
 		{
-			ResetRotationToZero();
+			if (!rbCircular.Checked)
+				return;
+
+			if (changingInternally)
+				return;
+			
+			SetFormationStyle(FormationStyle.Circle);
+			NewFormationSelected();
 			EditingCircular();
 		}
 
 		private void rbSemiCircle_CheckedChanged(object sender, EventArgs e)
 		{
-			ResetRotationToZero();
+			if (!rbSemiCircle.Checked)
+				return;
+
+			if (changingInternally)
+				return; 
+			
+			SetFormationStyle(FormationStyle.Semicircle);
+			NewFormationSelected();
 			EditingCircular();
 		}
 
 		private void rbTriangle_CheckedChanged(object sender, EventArgs e)
 		{
-			ResetRotationToZero();
-			formationEditingMode = FormationEditingMode.None;
-			SetVisibilityColumnsRadiusTracker(false);
-		}
+			if (!rbTriangle.Checked)
+				return;
 
-		void ArrangeInRectangle(float percentVariance)
-		{
-			MiniGrouperScript?.ArrangeInRectangle(trkColumnsRadius.Value, trkSpacing.Value, percentVariance);
+			if (changingInternally)
+				return;
+
+			SetFormationStyle(FormationStyle.Triangle);
+			NewFormationSelected();
+			EditingNeitherColumnsNorCircular();
 		}
 
 		private void rbGaggle_CheckedChanged(object sender, EventArgs e)
 		{
-			ResetRotationToZero();
+			if (!rbGaggle.Checked)
+				return;
+
+			if (changingInternally)
+				return;
+
+			SetFormationStyle(FormationStyle.Gaggle);
+			Talespire.Log.Warning($"rbGaggle_CheckedChanged!");
+			NewFormationSelected();
 			EditingColumns();
 			ArrangeInRectangle(GaggleVariance);
 		}
 
-		private void SetVisibilityColumnsRadiusTracker(bool isVisible)
+		private void rbFreeform_CheckedChanged(object sender, EventArgs e)
 		{
-			lblColumnsRadius.Visible = isVisible;
-			lblColumnRadiusValue.Visible = isVisible;
-			trkColumnsRadius.Visible = isVisible;
+			if (!rbFreeform.Checked)
+				return;
 
+			if (changingInternally)
+				return;
+
+			SetFormationStyle(FormationStyle.FreeForm);
+			EditingNeitherColumnsNorCircular();
+			NewFormationSelected();
+		}
+
+		private void EditingNeitherColumnsNorCircular()
+		{
+			formationEditingMode = FormationEditingMode.None;
+			SetColumnRadiusTrackbarVisibility(false);
+		}
+
+		private void SetColumnRadiusTrackbarVisibility(bool visible)
+		{
+			trkColumnsRadius.Visible = visible;
+			lblColumnRadiusValue.Visible = visible;
+			lblColumnsRadius.Visible = visible;
+		}
+
+		private void SetFormationStyle(FormationStyle formationStyle)
+		{
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.Data.FormationStyle = formationStyle;
+				MiniGrouperScript.DataChanged();
+			}
+		}
+
+		void ArrangeInRectangle(float percentVariance)
+		{
+			MiniGrouperScript?.ArrangeInRectangle(trkColumnsRadius.Value, trkSpacing.Value, percentVariance, trkFormationRotation.Value);
 		}
 
 		private void trkColumnsRadius_Scroll(object sender, EventArgs e)
 		{
+			if (formationEditingMode == FormationEditingMode.None)
+				return;
+
 			if (formationEditingMode == FormationEditingMode.Radius)
+			{
 				lastRadius = trkColumnsRadius.Value;
+			}
 			else
+			{
 				lastColumnCount = trkColumnsRadius.Value;
-			ResetRotationToZero();
+				MiniGrouperScript?.ClearLastMemberLocationCache();
+			}
+
+			if (MiniGrouperScript != null)
+			{
+				MiniGrouperScript.Data.ColumnRadius = trkColumnsRadius.Value;
+				MiniGrouperScript.DataChanged();
+			}
+
+			//ResetRotationToZero();
 			UpdateColumnRadiusLabel();
 			UpdateFormation();
 		}
@@ -414,6 +559,7 @@ namespace TaleSpireExplore
 			try
 			{
 				trkFormationRotation.Value = 0;
+				UpdateRotationValue();
 			}
 			finally
 			{
@@ -436,13 +582,13 @@ namespace TaleSpireExplore
 			if (changingInternally || initializing)
 				return;
 
+			if (MiniGrouperScript != null)
+				MiniGrouperScript.Data.Spacing = trkSpacing.Value;
+
 			if (rbFormation.Checked)
 				UpdateFormation();
-			if (MiniGrouperScript != null)
-			{
-				MiniGrouperScript.Data.Spacing = trkSpacing.Value;
-				MiniGrouperScript.DataChanged();
-			}
+			else
+				MiniGrouperScript?.RefreshFollowTheLeaderLine();
 		}
 
 		private void UpdateFormation()
@@ -567,6 +713,7 @@ namespace TaleSpireExplore
 		}
 		private void rbFormation_CheckedChanged(object sender, EventArgs e)
 		{
+			MiniGrouperScript?.ClearLastMemberLocationCache();
 			UpdateMovementMode();
 		}
 
@@ -599,10 +746,25 @@ namespace TaleSpireExplore
 
 		private void trkFormationRotation_Scroll(object sender, EventArgs e)
 		{
-			lblRotationValue.Text = $"{trkFormationRotation.Value}°";
+			UpdateRotationValue();
 			if (changingInternally)
 				return;
 			MiniGrouperScript?.RotateFormation(trkFormationRotation.Value);
+		}
+
+		private void UpdateRotationValue()
+		{
+			lblRotationValue.Text = $"{trkFormationRotation.Value}°";
+		}
+
+		private void trkSpacing_MouseUp(object sender, MouseEventArgs e)
+		{
+			MiniGrouperScript?.DataChanged();
+		}
+
+		private void btnReverseLine_Click(object sender, EventArgs e)
+		{
+			MiniGrouperScript?.ReverseFollowTheLeaderLine();
 		}
 	}
 }

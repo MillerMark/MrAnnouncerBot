@@ -529,6 +529,25 @@ namespace TaleSpireCore
 
 		public static void RotateTowards(this CreatureBoardAsset creature, Vector3 targetPosition, float multiplier = 15f)
 		{
+			float correctAngle = creature.GetRotationAngleToPosition(targetPosition);
+			if (correctAngle == 0)
+				return;
+
+			float zAngle = correctAngle * Mathf.Min(Time.deltaTime, 0.08f) * multiplier;
+			creature.Rotator.Rotate(0f, 0f, zAngle, Space.Self);
+		}
+
+		public static void RotateTowardsNow(this CreatureBoardAsset creature, Vector3 targetPosition)
+		{
+			float correctAngle = creature.GetRotationAngleToPosition(targetPosition);
+			if (correctAngle == 0)
+				return;
+
+			creature.Rotator.Rotate(0f, 0f, correctAngle, Space.Self);
+		}
+
+		private static float GetRotationAngleToPosition(this CreatureBoardAsset creature, Vector3 targetPosition)
+		{
 			Vector3 targetFloor = new Vector3(targetPosition.x, 0f, targetPosition.z);
 			Vector3 creaturePosition = creature.transform.position;
 			Vector3 creaturePositionFloor = new Vector3(creaturePosition.x, 0f, creaturePosition.z);
@@ -536,16 +555,15 @@ namespace TaleSpireCore
 			float angle = Vector3.Angle(new Vector3(-creature.Rotator.right.x, 0f, -creature.Rotator.right.z), to);
 			float dotProduct = Vector3.Dot(-creature.Rotator.up, to);
 
-			if (Vector3.Distance(creaturePositionFloor, targetFloor) <= 0.0002f)
-				return;
-
 			float correctAngle;
-			if (dotProduct < 0f)
+
+			if (Vector3.Distance(creaturePositionFloor, targetFloor) <= 0.0002f)
+				correctAngle = 0;
+			else if (dotProduct < 0f)
 				correctAngle = -angle;
 			else
 				correctAngle = angle;
-			float zAngle = correctAngle * Mathf.Min(Time.deltaTime, 0.08f) * multiplier;
-			creature.Rotator.Rotate(0f, 0f, zAngle, Space.Self);
+			return correctAngle;
 		}
 	}
 }
