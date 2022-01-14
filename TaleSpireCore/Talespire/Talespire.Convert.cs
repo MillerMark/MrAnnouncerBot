@@ -107,6 +107,14 @@ namespace TaleSpireCore
 				Log.Error($"Unable to convert \"{str}\" to a number.");
 				return 0;
 			}
+
+			public static float HoursToNormalizedTime(double totalHours)
+			{
+				float normalizedTime = (float)(totalHours / 24.0 + 0.25);
+				if (normalizedTime > 1)
+					normalizedTime -= 1;
+				return normalizedTime;
+			}
 		}
 	}
 }

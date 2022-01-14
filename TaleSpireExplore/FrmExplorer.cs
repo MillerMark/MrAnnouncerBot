@@ -85,20 +85,19 @@ namespace TaleSpireExplore
 				MessageBox.Show(ex.Message, "Exception!");
 			}
 		}
-
-		void LogCreatureAsset(CreatureBoardAsset creatureAsset)
+		
+		void LogAsset(CreatureBoardAsset creatureAsset)
 		{
 			tbxLog.Text += "--------------" + Environment.NewLine;
-			tbxLog.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: \n";
-			tbxLog.Text += $"  BoardAssetId: {creatureAsset.BoardAssetId}\n";
+			tbxLog.Text += $"{creatureAsset.GetOnlyCreatureName()} at ({creatureAsset.PlacedPosition}): \n";
+			//tbxLog.Text += $"  BoardAssetId: {creatureAsset.BoardAssetId}\n";
 			tbxLog.Text += $"  CreatureId: {creatureAsset.Creature.CreatureId.Value}\n";
-			tbxLog.Text += $"  Position: {creatureAsset.PlacedPosition}\n";
-			tbxLog.Text += $"  Scale: {creatureAsset.CreatureScale}\n";
-			if (creatureAsset.IsGrounded)
-				tbxLog.Text += $"  IsGrounded: true\n";
+			//tbxLog.Text += $"  Scale: {creatureAsset.CreatureScale}\n";
+			//if (creatureAsset.IsGrounded)
+			//	tbxLog.Text += $"  IsGrounded: true\n";
 			if (creatureAsset.FlyingIndicator != null && creatureAsset.FlyingIndicator.ElevationAmount != 0)
 				tbxLog.Text += $"  Flying altitude: {creatureAsset.FlyingIndicator.ElevationAmount} feet\n";
-			tbxLog.Text += $"  IsVisible: {creatureAsset.IsVisible}\n";
+			//tbxLog.Text += $"  IsVisible: {creatureAsset.IsVisible}\n";
 			tbxLog.Text += Environment.NewLine;
 			//tbxLog.Text += $"  HookSpellCast: {creatureAsset.HookSpellCast}\n";
 		}
@@ -144,12 +143,17 @@ namespace TaleSpireExplore
 			InGameCompass.OnCompassEnabledChanged += InGameCompass_OnCompassEnabledChanged;
 			CreatureManager.CreatureOwnershipChanged += CreatureManager_CreatureOwnershipChanged;
 			CreatureManager.OnLineOfSightUpdated += CreatureManager_OnLineOfSightUpdated;
-			CreatureManager.OnRequiresSyncStatusChanged += CreatureManager_OnRequiresSyncStatusChanged;
+			
+			if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+				CreatureManager.OnRequiresSyncStatusChanged += CreatureManager_OnRequiresSyncStatusChanged;
+			
 			CutsceneManager.OnCutscenesChanged += CutsceneManager_OnCutscenesChanged;
 			CutsceneManager.OnGMBlockChanged += CutsceneManager_OnGMBlockChanged;
 			GUIManager.OnGUIManagerInitalized += GUIManager_OnGUIManagerInitialized;
+			
 			//GameSettings.OnScreenResolutionChange += GameSettings_OnScreenResolutionChange;
 			//GameSettings.OnUIScaleChange += GameSettings_OnUIScaleChange;
+			
 			InitiativeManager.OnTurnQueueEditUpdate += InitiativeManager_OnTurnQueueEditUpdate;
 			InitiativeManager.OnTurnQueueUpdate += InitiativeManager_OnTurnQueueUpdate;
 			InitiativeManager.OnTurnSwitch += InitiativeManager_OnTurnSwitch;
@@ -213,12 +217,16 @@ namespace TaleSpireExplore
 			InGameCompass.OnCompassEnabledChanged -= InGameCompass_OnCompassEnabledChanged;
 			CreatureManager.CreatureOwnershipChanged -= CreatureManager_CreatureOwnershipChanged;
 			CreatureManager.OnLineOfSightUpdated -= CreatureManager_OnLineOfSightUpdated;
+			
 			CreatureManager.OnRequiresSyncStatusChanged -= CreatureManager_OnRequiresSyncStatusChanged;
+			
 			CutsceneManager.OnCutscenesChanged -= CutsceneManager_OnCutscenesChanged;
 			CutsceneManager.OnGMBlockChanged -= CutsceneManager_OnGMBlockChanged;
 			GUIManager.OnGUIManagerInitalized -= GUIManager_OnGUIManagerInitialized;
+			
 			//GameSettings.OnScreenResolutionChange -= GameSettings_OnScreenResolutionChange;
 			//GameSettings.OnUIScaleChange -= GameSettings_OnUIScaleChange;
+			
 			InitiativeManager.OnTurnQueueEditUpdate -= InitiativeManager_OnTurnQueueEditUpdate;
 			InitiativeManager.OnTurnQueueUpdate -= InitiativeManager_OnTurnQueueUpdate;
 			InitiativeManager.OnTurnSwitch -= InitiativeManager_OnTurnSwitch;
@@ -373,8 +381,8 @@ namespace TaleSpireExplore
 
 		private void CreatureManager_OnLineOfSightUpdated(CreatureGuid arg1, LineOfSightManager.LineOfSightResult arg2)
 		{
-			if (CreaturePresenter.TryGetAsset(arg1, out CreatureBoardAsset creatureAsset))
-				LogCreatureAsset(creatureAsset);
+			//if (CreaturePresenter.TryGetAsset(arg1, out CreatureBoardAsset creatureAsset))
+			//	LogAsset(creatureAsset);
 			LogEvent($"CreatureManager.OnLineOfSightUpdated(arg1: {arg1}, arg2: {arg2})");
 		}
 
@@ -514,6 +522,8 @@ namespace TaleSpireExplore
 		private void BoardSessionManager_OnClientSelectedCreatureChange(ClientGuid arg1, CreatureGuid arg2)
 		{
 			LogEvent($"BoardSessionManager.OnClientSelectedCreatureChange(arg1: {arg1}, arg2: {arg2})");
+			if (CreaturePresenter.TryGetAsset(arg2, out CreatureBoardAsset creatureAsset))
+				LogAsset(creatureAsset);
 		}
 
 		private void BoardSessionManager_OnClientListChange()
@@ -590,7 +600,7 @@ namespace TaleSpireExplore
 					if (creatureAsset.Creature.IsUnique)
 						uniqueIdStr = $" UniqueId: {creatureAsset.Creature.UniqueId},";
 
-					tbxScratch.Text += $"{TaleSpireUtils.GetName(creatureAsset)}: {creatureAsset.PlacedPosition},{uniqueIdStr} BoardAssetId: {creatureAsset.BoardAssetId} CreatureId: {creatureAsset.Creature.CreatureId}\n"; // , Scale: {creatureAsset.CreatureScale}
+					tbxScratch.Text += $"{creatureAsset.GetOnlyCreatureName()}: {creatureAsset.PlacedPosition},{uniqueIdStr} BoardAssetId: {creatureAsset.BoardAssetId} CreatureId: {creatureAsset.Creature.CreatureId}\n"; // , Scale: {creatureAsset.CreatureScale}
 				}
 			}
 			catch (Exception ex)

@@ -7,7 +7,7 @@ namespace TaleSpireCore
 	{
 		Movement,
 		Leader,
-		SpecificCreature,
+		Creature,
 		NearestMember,
 		NearestOutsider
 	}

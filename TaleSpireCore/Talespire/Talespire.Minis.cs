@@ -34,7 +34,7 @@ namespace TaleSpireCore
 				if (ea.Mini == null)
 					Log.Error($"OnMiniSelected - ea.Mini is null!");
 				else
-					Log.Warning($"OnMiniSelected - {ea.Mini.GetOnlyCreatureName()} selected!");
+					Log.Debug($"OnMiniSelected - {ea.Mini.GetOnlyCreatureName()} selected!");
 				MiniSelected?.Invoke(null, ea);
 			}
 
@@ -84,6 +84,9 @@ namespace TaleSpireCore
 
 			public static CreatureBoardAsset GetCreatureBoardAsset(string id)
 			{
+				if (string.IsNullOrWhiteSpace(id))
+					return null;
+
 				CreatureBoardAsset[] allCreatureAssets = GetAll();
 				if (allCreatureAssets == null)
 					return null;

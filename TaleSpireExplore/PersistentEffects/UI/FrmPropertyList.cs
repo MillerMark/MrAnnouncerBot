@@ -31,23 +31,23 @@ namespace TaleSpireExplore
 			ValueEditors.Register(STR_PersistentEffectsEditorKey);
 			foreach (IValueEditor valueEditor in ValueEditors.GetAll(STR_PersistentEffectsEditorKey))
 			{
-				Talespire.Log.Debug($"valueEditor ({valueEditor.GetType().Name}).Initialize(this);");
+				//Talespire.Log.Debug($"valueEditor ({valueEditor.GetType().Name}).Initialize(this);");
 				valueEditor.Initialize(this);
 			}
 
 			if (frmPersistentEffectPropertyEditor == null)
 			{
-				Talespire.Log.Debug($"frmPersistentEffectPropertyEditor = new FrmPersistentEffectPropertyEditor();");
+				//Talespire.Log.Debug($"frmPersistentEffectPropertyEditor = new FrmPersistentEffectPropertyEditor();");
 				frmPersistentEffectPropertyEditor = new FrmPersistentEffectPropertyEditor();
 			}
 
-			Talespire.Log.Debug($"ValueEditors.ValueChanged += ValueEditors_ValueChanged;");
+			//Talespire.Log.Debug($"ValueEditors.ValueChanged += ValueEditors_ValueChanged;");
 			ValueEditors.ValueChanged += ValueEditors_ValueChanged;
 		}
 
 		private void ValueEditors_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
-			Talespire.Log.Indent();
+			//Talespire.Log.Indent();
 
 			try
 			{
@@ -67,13 +67,12 @@ namespace TaleSpireExplore
 			}
 			finally
 			{
-				Talespire.Log.Unindent();
+				//Talespire.Log.Unindent();
 			}
 		}
 
 		private void UpdateInstance(IValueEditor editor, object valueOverride, bool committedChange)
 		{
-			Talespire.Log.Indent();
 			if (lstProperties.SelectedItem is EffectProperty effectProperty)
 			{
 				// Store this change in the Mini.
@@ -102,11 +101,11 @@ namespace TaleSpireExplore
 										IOldPersistentEffect persistentEffect = Mini.GetPersistentEffect();
 										if (editor is IScriptEditor scriptEditor)
 										{
-											Talespire.Log.Debug($"");
-											Talespire.Log.Warning($"editor is IScriptEditor scriptEditor!!!");
-											Talespire.Log.Warning($"effectProperty.Type = {effectProperty.Type?.FullName}");
-											Talespire.Log.Warning($"scriptEditor.LastSerializedData = \"{scriptEditor.LastSerializedData}\"");
-											Talespire.Log.Debug($"");
+											//Talespire.Log.Debug($"");
+											//Talespire.Log.Warning($"editor is IScriptEditor scriptEditor!!!");
+											//Talespire.Log.Warning($"effectProperty.Type = {effectProperty.Type?.FullName}");
+											//Talespire.Log.Warning($"scriptEditor.LastSerializedData = \"{scriptEditor.LastSerializedData}\"");
+											//Talespire.Log.Debug($"");
 											if (persistentEffect is SuperPersistentEffect superPersistentEffect)
 												if (effectProperty.Type != null)
 												{
@@ -155,8 +154,6 @@ namespace TaleSpireExplore
 			}
 			else
 				Talespire.Log.Error($"effectProperty is NULL!!!");
-
-			Talespire.Log.Unindent();
 		}
 
 		/// <summary>
@@ -241,31 +238,33 @@ namespace TaleSpireExplore
 					if (valueEditor is IScriptEditor scriptEditor)
 					{
 
-						Talespire.Log.Warning($"Instance = \"{Instance}\"");
+						//Talespire.Log.Warning($"Instance = \"{Instance}\"");
 						if (effectProperty.Paths.StartsWith("<") && effectProperty.Paths.EndsWith(">"))
 						{
 							// Could be a script!
-							Talespire.Log.Debug($"Could be a script!");
+							//Talespire.Log.Debug($"Could be a script!");
 							Type scriptType = KnownScripts.GetType(effectProperty.Paths.Substring(1, effectProperty.Paths.Length - 2));
 							if (scriptType != null)
 							{
-								Talespire.Log.Debug($"scriptType found {scriptType.FullName}");
+								//Talespire.Log.Debug($"scriptType found {scriptType.FullName}");
 								UnityEngine.Component script = Instance.GetComponent(scriptType.FullName);
 								scriptEditor.InitializeInstance(script as MonoBehaviour);
 							}
 							else
-								Talespire.Log.Debug($"{effectProperty.Paths} is not a Script!");
+							{
+								//Talespire.Log.Debug($"{effectProperty.Paths} is not a Script!");
+							}
 						}
 					}
 
 					if (valueEditor is IValueEditor iValueEditor)
 					{
 						iValueEditor.EditingProperty(effectProperty.Name, effectProperty.Paths);
-						Talespire.Log.Warning($"effectProperty.Paths = \"{effectProperty.Paths}\"");
-						
+						//Talespire.Log.Warning($"effectProperty.Paths = \"{effectProperty.Paths}\"");
 						
 						PropertyModDetails propertyModDetails = BasePropertyChanger.GetPropertyModDetails(Instance, effectProperty.Paths);
-						Talespire.Log.Warning($"iValueEditor.SetValue(\"{propertyModDetails.GetValue()}\");");
+
+						//Talespire.Log.Warning($"iValueEditor.SetValue(\"{propertyModDetails.GetValue()}\");");
 						object newValue = propertyModDetails.GetValue();
 						if (newValue == null)
 						{
@@ -280,7 +279,6 @@ namespace TaleSpireExplore
 				else
 					Talespire.Log.Error($"value editor NOT found!!!");
 
-				Talespire.Log.Warning($"frmPersistentEffectPropertyEditor.Show();");
 				frmPersistentEffectPropertyEditor.Show();
 			}
 			catch (Exception ex)

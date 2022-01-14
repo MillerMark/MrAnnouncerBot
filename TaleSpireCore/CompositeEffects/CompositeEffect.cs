@@ -134,8 +134,8 @@ namespace TaleSpireCore
 		/// </summary>
 		public void RebuildProperties()
 		{
-			Talespire.Log.Indent();
-			LogThis();
+			//Talespire.Log.Indent();
+			//LogThis();
 
 			if (Props != null)
 			{
@@ -164,7 +164,7 @@ namespace TaleSpireCore
 				foreach (CompositeEffect compositeEffect in Children)
 					compositeEffect.RebuildProperties();
 
-			Talespire.Log.Unindent();
+			//Talespire.Log.Unindent();
 		}
 
 		private void LogThis()
@@ -212,7 +212,6 @@ namespace TaleSpireCore
 		{
 			if (properties == null)
 				return;
-			Talespire.Log.Indent();
 			foreach (var basePropertyDto in properties)
 			{
 				if (string.IsNullOrWhiteSpace(basePropertyDto.FullPropertyPath))
@@ -233,7 +232,6 @@ namespace TaleSpireCore
 
 				basePropertyDto.ModifyProperty(effect);
 			}
-			Talespire.Log.Unindent();
 		}
 
 		public GameObject CreateOrFindSafe(string instanceId = null, CharacterPosition sourcePosition = null, CharacterPosition targetPosition = null, GameObject parentInstance = null)
@@ -367,7 +365,7 @@ namespace TaleSpireCore
 		
 		public static CompositeEffect CreateFrom(string json, string instanceId = null)
 		{
-			Talespire.Log.Indent("CompositeEffect.CreateFrom");
+			//Talespire.Log.Indent("CompositeEffect.CreateFrom");
 			try
 			{
 				CompositeEffect compositeEffect = JsonConvert.DeserializeObject<CompositeEffect>(json);
@@ -377,7 +375,7 @@ namespace TaleSpireCore
 			}
 			finally
 			{
-				Talespire.Log.Unindent();
+				//Talespire.Log.Unindent();
 			}
 		}
 

@@ -90,7 +90,7 @@ namespace TaleSpireCore
 					return null;
 				}
 
-				Log.Indent("Spells.AttachEffect");
+				//Log.Indent("Spells.AttachEffect");
 
 				spell.name = GetAttachedEffectName(spellId, prefix);
 
@@ -120,7 +120,7 @@ namespace TaleSpireCore
 				else if (enlargeTime > 0)
 					Instances.EnlargeSoon(spell, enlargeTime);
 
-				Log.Unindent("Spells.AttachEffect");
+				//Log.Unindent("Spells.AttachEffect");
 				return spell;
 			}
 

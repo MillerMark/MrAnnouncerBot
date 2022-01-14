@@ -25,7 +25,7 @@ namespace TaleSpireExplore
 			initializing = true;
 			InitializeComponent();
 			Disposed += OnDispose;
-			Talespire.Minis.MiniSelected += PersistentEffectsManager_MiniSelected;
+			Talespire.Minis.MiniSelected += Talespire_MiniSelected;
 			updateMemberListTimer = new System.Timers.Timer();
 			updateMemberListTimer.Interval = 500;
 			updateMemberListTimer.Elapsed += UpdateMemberListTimer_Elapsed;
@@ -41,7 +41,6 @@ namespace TaleSpireExplore
 			if (MiniGrouperScript != null)
 			{
 				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
-				Talespire.Log.Warning($"InitializeInstance - MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;");
 				MiniGrouperScript.StateChanged += MiniGrouperScript_StateChanged;
 			}
 			else
@@ -93,12 +92,9 @@ namespace TaleSpireExplore
 
 		private void OnDispose(object sender, EventArgs e)
 		{
-			Talespire.Minis.MiniSelected -= PersistentEffectsManager_MiniSelected;
+			Talespire.Minis.MiniSelected -= Talespire_MiniSelected;
 			if (MiniGrouperScript != null)
-			{
-				Talespire.Log.Warning($"OnDispose / MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;");
 				MiniGrouperScript.StateChanged -= MiniGrouperScript_StateChanged;
-			}
 		}
 
 		void RefreshMemberList()
@@ -120,18 +116,24 @@ namespace TaleSpireExplore
 			MiniGrouperScript.RemoveMembers(notFoundCreatures);
 		}
 
-		private void PersistentEffectsManager_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
+		private void Talespire_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
 		{
-			if (!editing)
-				return;
-
 			if (Guard.IsNull(MiniGrouperScript, "Script")) return;
+			if (Guard.IsNull(ea?.Mini, "Mini")) return;
 
-			if (ea.Mini.Creature.CreatureId.ToString() == MiniGrouperScript.OwnerID)
-				return;
+			Talespire.Log.Warning($"EdtMiniGrouper / Mini Selected - {ea.Mini.GetOnlyCreatureName()}");
 
-			MiniGrouperScript.ToggleMember(ea.Mini);
-			RefreshMemberList();
+			if (editing)
+				ToggleGroupMembership(ea.Mini);
+		}
+
+		private void ToggleGroupMembership(CreatureBoardAsset mini)
+		{
+			if (mini.CreatureId.ToString() != MiniGrouperScript.OwnerID)
+			{
+				MiniGrouperScript.ToggleMember(mini);
+				RefreshMemberList();
+			}
 		}
 
 		public IValueChangedListener ValueChangedListener { get; set; }
@@ -144,7 +146,7 @@ namespace TaleSpireExplore
 
 		public BasePropertyChanger GetPropertyChanger()
 		{
-			Talespire.Log.Debug($"EdtMiniGrouper.GetPropertyChanger() -- lastSerializedData = \"{LastSerializedData}\"");
+			//Talespire.Log.Debug($"EdtMiniGrouper.GetPropertyChanger() -- lastSerializedData = \"{LastSerializedData}\"");
 			ChangeString result = new ChangeString();
 			result.SetValue(LastSerializedData);
 			return result;
@@ -152,10 +154,8 @@ namespace TaleSpireExplore
 
 		public void ValueChanged(object newValue, bool committedChange = true)
 		{
-			Talespire.Log.Indent();
 			if (ValueChangedListener != null)
 				ValueChangedListener.ValueHasChanged(this, newValue, committedChange);
-			Talespire.Log.Unindent();
 		}
 
 		public Type GetValueType()
@@ -165,15 +165,15 @@ namespace TaleSpireExplore
 
 		public void SetValue(object newValue)
 		{
-			Talespire.Log.Indent($"EdtMiniGrouper.SetValue - \"{newValue}\"");
-			try
-			{
+			//Talespire.Log.Indent($"EdtMiniGrouper.SetValue - \"{newValue}\"");
+			//try
+			//{
 
-			}
-			finally
-			{
-				Talespire.Log.Unindent();
-			}
+			//}
+			//finally
+			//{
+			//	Talespire.Log.Unindent();
+			//}
 		}
 
 		public void EditingProperty(string name, string paths)
@@ -283,28 +283,20 @@ namespace TaleSpireExplore
 			rbLookTowardMovement.Checked = MiniGrouperScript.Data.Look == LookTowardMode.Movement;
 			rbLookTowardNearestOutsider.Checked = MiniGrouperScript.Data.Look == LookTowardMode.NearestOutsider;
 			rbLookTowardNearestMember.Checked = MiniGrouperScript.Data.Look == LookTowardMode.NearestMember;
-			rbLookTowardSpecificCreature.Checked = MiniGrouperScript.Data.Look == LookTowardMode.SpecificCreature;
+			rbLookTowardSpecificCreature.Checked = MiniGrouperScript.Data.Look == LookTowardMode.Creature;
 		}
 
 		private void MiniGrouperScript_StateChanged(object sender, object e)
 		{
-			Talespire.Log.Indent();
 			if (MiniGrouperScript != null)
 			{
-				Talespire.Log.Warning($"MiniGrouperScript.Data.RingHue = {MiniGrouperScript.Data.RingHue}");
-				if (sender is MiniGrouper miniGrouper)
-				{
-					if (miniGrouper.Data?.RingHue != MiniGrouperScript.Data.RingHue)
-						Talespire.Log.Error($"miniGrouper.Data?.RingHue != MiniGrouperScript.Data.RingHue");
-				}
 				LastSerializedData = JsonConvert.SerializeObject(MiniGrouperScript.Data);
-				Talespire.Log.Warning($"MiniGrouperScript.Data = {LastSerializedData}");
+				//Talespire.Log.Warning($"MiniGrouperScript.Data = {LastSerializedData}");
 
 				ValueChanged("");
 			}
 			else
 				Talespire.Log.Error($"MiniGrouperScript is null!!!");
-			Talespire.Log.Unindent();
 		}
 
 		private void RefreshTrackHue()
@@ -372,7 +364,7 @@ namespace TaleSpireExplore
 		FormationEditingMode formationEditingMode = FormationEditingMode.Columns;
 		int lastRadius = 3;
 		int lastColumnCount = 1;
-
+		
 		private void EditingCircular()
 		{
 			SetColumnRadiusTrackbarVisibility(true);
@@ -707,9 +699,10 @@ namespace TaleSpireExplore
 			else if (rbLookTowardNearestMember.Checked)
 				MiniGrouperScript.Data.Look = LookTowardMode.NearestMember;
 			else if (rbLookTowardSpecificCreature.Checked)
-				MiniGrouperScript.Data.Look = LookTowardMode.SpecificCreature;
+				MiniGrouperScript.Data.Look = LookTowardMode.Creature;
 			
 			MiniGrouperScript.DataChanged();
+			MiniGrouperScript.UpdateLook();
 		}
 		private void rbFormation_CheckedChanged(object sender, EventArgs e)
 		{
@@ -765,6 +758,14 @@ namespace TaleSpireExplore
 		private void btnReverseLine_Click(object sender, EventArgs e)
 		{
 			MiniGrouperScript?.ReverseFollowTheLeaderLine();
+		}
+
+		private void btnLookAt_Click(object sender, EventArgs e)
+		{
+			if (editing)
+				StopEditMode();
+
+			MiniGrouperScript?.SetLookTarget();
 		}
 	}
 }

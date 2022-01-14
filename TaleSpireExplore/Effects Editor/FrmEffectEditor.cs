@@ -529,13 +529,16 @@ namespace TaleSpireExplore
 		void RegisterValueEditors()
 		{
 			ValueEditors.Register(STR_EffectEditorKey);
-			Talespire.Log.Warning($"RegisterValueEditors()...");
+			//Talespire.Log.Warning($"RegisterValueEditors()...");
 			foreach (IValueEditor valueEditor in ValueEditors.GetAll(STR_EffectEditorKey))
 			{
 				if (valueEditor as UserControl == null)
 					Talespire.Log.Error($"valueEditor as UserControl == null");
 				else
-					Talespire.Log.Warning($"Editor for: {valueEditor.GetValueType().Name}");
+				{
+					//Talespire.Log.Warning($"Editor for: {valueEditor.GetValueType().Name}");
+				}
+
 				AddValueEditor(valueEditor as UserControl);
 			}
 

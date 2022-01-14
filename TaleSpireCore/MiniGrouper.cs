@@ -22,7 +22,7 @@ namespace TaleSpireCore
 		bool isFlying;
 		bool needToClearGroupIndicators;
 		bool editing;
-		string lastMemberSelected;
+		string lastCreatureSelected;
 		public Color IndicatorColor { get; set; } = Color.red;
 
 		public CreatureBoardAsset OwnerCreature
@@ -274,7 +274,14 @@ namespace TaleSpireCore
 					Talespire.Minis.RotateTo(memberId, rotationDegrees);
 			}
 
+			UpdateLook();
+
 			ClearLastMemberLocationCache();
+		}
+
+		private List<CreatureBoardAsset> GetMemberAssets()
+		{
+			return Data.Members.Select(id => Talespire.Minis.GetCreatureBoardAsset(id)).Where(z => z != null).ToList();
 		}
 
 		void RemoveMember(CreatureBoardAsset creatureBoardAsset)
@@ -282,12 +289,14 @@ namespace TaleSpireCore
 			string id = creatureBoardAsset.CreatureId.ToString();
 			Data.Members.Remove(creatureBoardAsset.CreatureId.ToString());
 			Talespire.Minis.IndicatorRingChangeColor(id, Color.black);
+			if (Data.BaseIndex > 0)
+				Talespire.Minis.SetBaseColorWithIndex(id, 0);
 			UpdateMiniColorsSoon();
 		}
 
-		void AddMember(CreatureBoardAsset creatureBoardAsset)
+		void AddMember(CreatureBoardAsset member)
 		{
-			string id = creatureBoardAsset.CreatureId.ToString();
+			string id = member.CreatureId.ToString();
 			Data.Members.Add(id);
 			UpdateMiniColors();
 			UpdateMiniColorsSoon();
@@ -309,7 +318,11 @@ namespace TaleSpireCore
 		private void UpdateMiniColors()
 		{
 			foreach (string memberId in Data.Members)
+			{
 				Talespire.Minis.IndicatorRingChangeColor(memberId, IndicatorColor);
+				if (Data.BaseIndex > 0)
+					Talespire.Minis.SetBaseColorWithIndex(memberId, Data.BaseIndex);
+			}
 
 			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
 
@@ -341,9 +354,9 @@ namespace TaleSpireCore
 		{
 			needToClearGroupIndicators = false;
 			foreach (string memberId in Data.Members)
-				if (memberId != lastMemberSelected)
+				if (memberId != lastCreatureSelected)
 					Talespire.Minis.IndicatorRingChangeColor(memberId, Color.black);
-			lastMemberSelected = null;
+			lastCreatureSelected = null;
 		}
 
 		void CheckAltitudeAgainSoon()
@@ -355,67 +368,102 @@ namespace TaleSpireCore
 		{
 			if (obj is CreatureMoveBoardTool || obj is CreatureKeyMoveBoardTool)
 			{
+				if (Data.Movement == GroupMovementMode.FollowTheLeader)
+				{
+					CreatureBoardAsset selectedMini = Talespire.Minis.GetSelected();
+					if (selectedMini == OwnerCreature)
+					{
+						Talespire.Log.Debug($"Owner selected and moving!");
+					}
+					else
+						Talespire.Log.Debug($"Owner NOT selected!");
+				}
 				moveToolActive = true;
 				// Something is moving!
+				return;
 			}
-			else if (obj is DefaultBoardTool)
-			{
-				if (OwnerCreature != null)
-				{
-					float newAltitude = OwnerCreature.GetFlyingAltitude();
 
-					if (newAltitude != lastAltitude)
-						Talespire.Log.Warning($"Altitude changed from {lastAltitude} to {newAltitude}!");
-
-					lastAltitude = newAltitude;
-					CheckAltitudeAgainSoon();
-
-					if (moveToolActive)
-					{
-						RefreshIndicators();
-						Vector3 newPosition = OwnerCreature.PlacedPosition;
-						Vector3 deltaMove = newPosition - lastGroupPosition;
-						MoveGroup(deltaMove);
-						lastGroupPosition = newPosition;
-					}
-				}
-
-				CreatureBoardAsset selected = Talespire.Minis.GetSelected();
-
-				if (selected?.Creature.CreatureId.ToString() != OwnerID)
-				{
-					if (selected == null)
-						lastMemberSelected = null;
-					else
-						lastMemberSelected = selected.CreatureId.ToString();
-
-					if (needToClearGroupIndicators)
-						ClearGroupIndicators();
-				}
-
-				moveToolActive = false;
-			}
-		}
-
-		private void CheckMiniAltitudeTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-		{
-			Talespire.Log.Indent();
-			checkMiniAltitudeTimer.Stop();
+			if (!(obj is DefaultBoardTool))
+				return;
 
 			if (OwnerCreature != null)
 			{
 				float newAltitude = OwnerCreature.GetFlyingAltitude();
 
 				if (newAltitude != lastAltitude)
-				{
 					Talespire.Log.Warning($"Altitude changed from {lastAltitude} to {newAltitude}!");
-					lastGroupPosition = OwnerCreature.PlacedPosition;
-				}
 
 				lastAltitude = newAltitude;
+				CheckAltitudeAgainSoon();
+
+				if (moveToolActive)
+				{
+					RefreshIndicators();
+					Vector3 newPosition = OwnerCreature.PlacedPosition;
+					Vector3 deltaMove = newPosition - lastGroupPosition;
+					MoveGroup(deltaMove);
+					lastGroupPosition = newPosition;
+				}
 			}
 
-			Talespire.Log.Unindent();
+			CreatureBoardAsset selected = Talespire.Minis.GetSelected();
+
+			if (selectingLookTarget && selected != null)
+			{
+				selectingLookTarget = false;
+				if (OwnerCreature != null)
+					OwnerCreature.Creature.Speak($"Now looking at {selected.GetOnlyCreatureName()}.");
+				Data.Target = selected.CreatureId.ToString();
+				DataChanged();
+			}
+
+			if (selected?.Creature.CreatureId.ToString() != OwnerID)
+			{
+				if (selected == null)
+					lastCreatureSelected = null;
+				else
+				{
+					lastCreatureSelected = selected.CreatureId.ToString();
+
+					if (Data.Look == LookTowardMode.NearestOutsider)
+						LookToNearestOutsiders(GetMemberAssets());
+					else if (Data.Look == LookTowardMode.NearestMember)
+					{
+						List<CreatureBoardAsset> assets = GetMemberAssets();
+						if (assets.Contains(selected)) // We just moved a member...
+							FaceClosest(assets, assets);
+					}
+					else if (Data.Look == LookTowardMode.Creature && lastCreatureSelected == Data.Target)
+					{
+						List<CreatureBoardAsset> assets = GetMemberAssets();
+						foreach (CreatureBoardAsset asset in assets)
+							asset.RotateToFacePosition(selected.PlacedPosition);
+					}
+				}
+
+				if (needToClearGroupIndicators)
+					ClearGroupIndicators();
+			}
+
+			moveToolActive = false;
+		}
+
+		private void CheckMiniAltitudeTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			checkMiniAltitudeTimer.Stop();
+
+			if (OwnerCreature == null)
+				return;
+
+			float newAltitude = OwnerCreature.GetFlyingAltitude();
+
+			if (newAltitude != lastAltitude)
+			{
+				//Talespire.Log.Warning($"Altitude changed from {lastAltitude} to {newAltitude}!");
+				lastGroupPosition = OwnerCreature.PlacedPosition;
+			}
+
+			lastAltitude = newAltitude;
 		}
 
 		public void MatchAltitude()
@@ -646,12 +694,21 @@ namespace TaleSpireCore
 
 		private static float GetLargestBaseDiameterFeet(List<MemberLocation> memberLocations)
 		{
-			float largestBaseDiameter = 0.5f;
+			float largestBaseDiameterFeet = 0;
 			foreach (MemberLocation memberLocation in memberLocations)
-				if (memberLocation.Asset.Creature.Scale > largestBaseDiameter)
-					largestBaseDiameter = memberLocation.Asset.GetBaseDiameterFeet();
+			{
+				float baseDiameterFeet = memberLocation.Asset.GetBaseDiameterFeet();
+				if (baseDiameterFeet > largestBaseDiameterFeet)
+					largestBaseDiameterFeet = baseDiameterFeet;
+			}
 
-			return largestBaseDiameter;
+			if (largestBaseDiameterFeet == 0)
+			{
+				Talespire.Log.Error($"Largest Base Diameter was 0ft???!!");
+				largestBaseDiameterFeet = 5;
+			}
+
+			return largestBaseDiameterFeet;
 		}
 
 		private static float GetSpaceTiles(int spacingFeet, float baseDiameter)
@@ -676,9 +733,9 @@ namespace TaleSpireCore
 			Vector3 delta = totalDeltaMove * offset / totalDeltaMove.magnitude;
 			Vector3 newPosition = referencePosition - delta;
 			if (Data.Look == LookTowardMode.Movement)
-				memberLocation.Asset.RotateTowardsNow(newPosition);
+				memberLocation.Asset.RotateToFacePosition(newPosition);
 			memberLocation.Asset.MoveCreatureTo(newPosition);
-			offset += Talespire.Convert.FeetToTiles(memberLocation.Asset.GetBaseDiameterFeet() + Data.Spacing);
+			offset += Talespire.Convert.FeetToTiles(memberLocation.Asset.GetBaseRadiusFeet() + Data.Spacing);
 		}
 
 		void MoveMembersToPreviousMemberPosition(List<MemberLocation> memberLocations, int startIndex)
@@ -688,7 +745,7 @@ namespace TaleSpireCore
 			{
 				Vector3 newPosition = memberLocations[indexHead].Position;
 				if (Data.Look == LookTowardMode.Movement)
-					memberLocations[i].Asset.RotateTowardsNow(newPosition);
+					memberLocations[i].Asset.RotateToFacePosition(newPosition);
 				memberLocations[i].Asset.MoveCreatureTo(newPosition);
 				indexHead++;
 			}
@@ -697,6 +754,7 @@ namespace TaleSpireCore
 		Vector3 previousDeltaMove = Vector3.zero;
 		List<MemberLocation> followTheLeaderMemberLocations;
 		List<MemberLocation> lastMemberLocations;
+		bool selectingLookTarget;
 
 		public void RefreshFollowTheLeaderLine()
 		{
@@ -760,24 +818,69 @@ namespace TaleSpireCore
 
 			// memberLocations now has the members in the order they need to be positioned.
 
+			/* 
+				We clean up any saved lines we don't need anymore.
+			*/
+		}
+
+		private static void ShowSortedMemberLocations(List<MemberLocation> memberLocations)
+		{
 			Talespire.Log.Debug($"Sorted member locations:");
 			foreach (MemberLocation memberLocation in memberLocations)
-			{
 				Talespire.Log.Debug($"  {memberLocation.DistanceToLeader * 5}ft - {memberLocation.Name}");
-			}
 			Talespire.Log.Debug($"");
-			/* 
-			There are lines of leader travel (points plus a delta) and there are previous member's positions (which are also safe).
+		}
 
-			So I think we need to first track all the previous member positions, and sort them by distance to the leader.
+		public void UpdateLook()
+		{
+			List<CreatureBoardAsset> assets = GetMemberAssets();
+			LookTowards(assets);
+		}
 
-			Next we try to position members along the line indicated by deltaMove.
-			If we run out of space, we next move to previously saved lines.
+		void LookTowards(List<CreatureBoardAsset> assets)
+		{
+			switch (Data.Look)
+			{
+				case LookTowardMode.Movement:
+					return;  // Already set by movement code.
 
-			If we run out of previously saved lines, we next move to all our previous member positions.
+				case LookTowardMode.Leader:
+					LookAt(assets, OwnerCreature);
+					break;
+				case LookTowardMode.Creature:
+					LookAt(assets, Talespire.Minis.GetCreatureBoardAsset(Data.Target));
+					break;
+				case LookTowardMode.NearestMember:
+					FaceClosest(assets, assets);
+					break;
+				case LookTowardMode.NearestOutsider:
+					LookToNearestOutsiders(assets);
+					break;
+			}
+		}
 
-			We clean up any saved lines we don't need anymore.
-			 */
+		private void LookAt(List<CreatureBoardAsset> assets, CreatureBoardAsset target)
+		{
+			if (target != null)
+				foreach (CreatureBoardAsset asset in assets)
+					asset.RotateToFacePosition(target.PlacedPosition);
+		}
+
+		private static void LookToNearestOutsiders(List<CreatureBoardAsset> assets)
+		{
+			CreatureBoardAsset[] allMinis = Talespire.Minis.GetAll();
+			List<CreatureBoardAsset> allOtherMinis = allMinis.FilterList(x => !x.IsPersistentEffect() && !assets.Contains(x));
+			FaceClosest(assets, allOtherMinis);
+		}
+
+		private static void FaceClosest(List<CreatureBoardAsset> assets, List<CreatureBoardAsset> targets)
+		{
+			foreach (CreatureBoardAsset asset in assets)
+			{
+				CreatureBoardAsset closestTarget = asset.GetClosest(targets);
+				if (closestTarget != null)
+					asset.RotateToFacePosition(closestTarget.PlacedPosition);
+			}
 		}
 
 		private void LayoutFollowTheLeaderLine(CreatureBoardAsset leaderAsset, List<MemberLocation> memberLocations)
@@ -803,6 +906,29 @@ namespace TaleSpireCore
 					return;
 				}
 				PositionMember(memberLocations[i], referencePosition, cachedDeltaMove, ref offset);
+
+				NextMember(i);
+
+				if (outOfCachedLocations)
+					break;
+			}
+			
+			if (outOfCachedLocations)
+				MoveMembersToPreviousMemberPosition(memberLocations, startIndex);
+
+			LookTowards(memberLocations.Select(x => x.Asset).ToList());
+
+			// ... 
+
+
+			void NextMember(int i)
+			{
+				if (i < memberLocations.Count - 1)
+				{
+					// Move down the line the radius of the next member...
+					offset += Talespire.Convert.FeetToTiles(memberLocations[i + 1].Asset.GetBaseRadiusFeet());
+				}
+
 				while (offset > cachedDeltaMove.magnitude)
 				{
 					offset -= cachedDeltaMove.magnitude;  // To maintain the spacing.
@@ -818,12 +944,7 @@ namespace TaleSpireCore
 					}
 					cachedDeltaMove = followTheLeaderMovementCache[cacheIndex];
 				}
-
-				if (outOfCachedLocations)
-					break;
 			}
-			if (outOfCachedLocations)
-				MoveMembersToPreviousMemberPosition(memberLocations, startIndex);
 		}
 
 		private List<MemberLocation> GetFollowTheLeaderMemberLocations(Vector3 deltaMove, CreatureBoardAsset leaderAsset)
@@ -845,6 +966,13 @@ namespace TaleSpireCore
 			followTheLeaderMovementCache.Clear();
 			followTheLeaderMemberLocations = null;
 			previousDeltaMove = Vector3.zero;
+		}
+
+		public void SetLookTarget()
+		{
+			selectingLookTarget = true;
+			if (OwnerCreature != null)
+				OwnerCreature.Creature.Speak("Select the creature to look at.");
 		}
 	}
 }

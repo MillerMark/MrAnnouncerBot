@@ -37,6 +37,30 @@ namespace TaleSpireCore
 			return _matBlock.GetInt(BaseIndex);
 		}
 
+		public static CreatureBoardAsset GetClosest(this CreatureBoardAsset asset, List<CreatureBoardAsset> assets)
+		{
+			if (assets == null || asset == null)
+				return null;
+
+			float minDistanceSoFar = float.MaxValue;
+			CreatureBoardAsset result = null;
+			
+			foreach (CreatureBoardAsset creature in assets)
+			{
+				if (creature == asset)
+					continue;
+
+				float distanceToCreature = (creature.PlacedPosition - asset.PlacedPosition).magnitude;
+				if (distanceToCreature < minDistanceSoFar)
+				{
+					result = creature;
+					minDistanceSoFar = distanceToCreature;
+				}
+			}
+
+			return result;
+		}
+
 		public static Vector3 MoveCreatureTo(this CreatureBoardAsset asset, Vector3 dropPosition)
 		{
 			if (dropPosition.y < 0)
@@ -58,6 +82,11 @@ namespace TaleSpireCore
 			const float BaseDiameterFactor = 4.5f;
 
 			return BaseDiameterFactor * asset.CreatureScale;
+		}
+
+		public static float GetBaseRadiusFeet(this CreatureBoardAsset asset)
+		{
+			return asset.GetBaseDiameterFeet() / 2f;
 		}
 
 		public static void Knockdown(this CreatureBoardAsset asset)
@@ -377,9 +406,10 @@ namespace TaleSpireCore
 
 		public static void SavePersistentEffect(this CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect)
 		{
-			Talespire.Log.Indent();
-			Talespire.Log.Warning($"Saving Persistent Effect....");
+			//Talespire.Log.Indent();
+			//Talespire.Log.Warning($"Saving Persistent Effect....");
 			string newEffectData = JsonConvert.SerializeObject(persistentEffect);
+
 			if (newEffectData.Contains(",'BaseIndex"))
 			{
 				Talespire.Log.Error($"Error - expecting ScriptData to have escaped slashes\\\\!");
@@ -389,11 +419,10 @@ namespace TaleSpireCore
 						Talespire.Log.Warning($"  ScriptData[{key}] == \"{superPersistentEffect.ScriptData[key]}\"");
 				}
 			}
-			Talespire.Log.Debug($"newEffectData: {newEffectData}");
+
+			//Talespire.Log.Debug($"newEffectData: {newEffectData}");
 			
 			StatMessaging.SetInfoNoGuard(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
-
-			Talespire.Log.Unindent();
 		}
 
 		public static GameObject GetChildNodeStartingWith(this GameObject gameObject, string prefix, bool includeInactive = false)
@@ -479,7 +508,7 @@ namespace TaleSpireCore
 			VectorDto creaturePosition = creatureAsset.GetPositionVectorDto();
 			CharacterPosition characterPosition = new CharacterPosition()
 			{
-				Name = TaleSpireUtils.GetName(creatureAsset),
+				Name = creatureAsset.Creature?.Name,
 				Position = creaturePosition,
 				ID = creatureAsset.Creature?.CreatureId.Value.ToString(),
 				FlyingAltitude = altitude
@@ -537,7 +566,7 @@ namespace TaleSpireCore
 			creature.Rotator.Rotate(0f, 0f, zAngle, Space.Self);
 		}
 
-		public static void RotateTowardsNow(this CreatureBoardAsset creature, Vector3 targetPosition)
+		public static void RotateToFacePosition(this CreatureBoardAsset creature, Vector3 targetPosition)
 		{
 			float correctAngle = creature.GetRotationAngleToPosition(targetPosition);
 			if (correctAngle == 0)

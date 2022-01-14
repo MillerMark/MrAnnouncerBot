@@ -16,7 +16,7 @@ namespace TaleSpireExplore
 		/// Separate multiple paths with a semicolon (";").</param>
 		public EffectProperty(string name, Type type, string paths)
 		{
-			Talespire.Log.Debug($"new EffectProperty (Name = \"{name}\", Type = \"{type}\", Path = \"{paths}\")");
+			//Talespire.Log.Debug($"new EffectProperty (Name = \"{name}\", Type = \"{type}\", Path = \"{paths}\")");
 			Name = name;
 			Type = type;
 			Paths = paths;

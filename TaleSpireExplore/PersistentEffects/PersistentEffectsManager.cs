@@ -194,8 +194,7 @@ namespace TaleSpireExplore
 			if (Guard.IsNull(ea.PersistentEffect, nameof(ea.PersistentEffect))) return;
 			if (Guard.IsNull(ea.CreatureAsset, nameof(ea.CreatureAsset))) return;
 			if (Guard.IsNull(ea.AttachedNode, nameof(ea.AttachedNode))) return;
-			Talespire.Log.Indent();
-			Talespire.Log.Debug($"All guarded data is good");
+			//Talespire.Log.Debug($"All guarded data is good");
 
 			Talespire.PersistentEffects.SetSpinLockVisible(ea.CreatureAsset, ea.PersistentEffect.RotationIsLocked && ea.CreatureAsset.IsVisible);
 			ea.PersistentEffect.Initialize(ea.CreatureAsset);
@@ -217,7 +216,7 @@ namespace TaleSpireExplore
 						originalCompositeEffect = CompositeEffect.GetFromGameObject(childNode);
 
 					if (originalCompositeEffect == null)
-						Talespire.Log.Error($"DID NOT FIND a CompositeEffect for \"{childNode}\"!!!");
+						Talespire.Log.Warning($"Did not find a CompositeEffect for \"{childNode}\"!!!");
 
 					EffectProperties effectProperties = superPersistentEffect.EffectProperties[i];
 
@@ -228,7 +227,7 @@ namespace TaleSpireExplore
 						{
 							if (originalCompositeEffect == null)
 							{
-								Talespire.Log.Error($"DID NOT FIND a CompositeEffect for {childNode}!!! Unable to get smart properties from it!");
+								//Talespire.Log.Error($"DID NOT FIND a CompositeEffect for {childNode}!!! Unable to get smart properties from it!");
 								break;
 							}
 							string smartPropertyName = propertyPath.Substring(1);
@@ -242,14 +241,14 @@ namespace TaleSpireExplore
 								foreach (string smartPropertyPath in smartProperty.PropertyPaths)
 								{
 									string propertyKey = propertyPath;
-									Talespire.Log.Debug($"ModifyProperty(ea, {smartPropertyPath}, {prefix}, {propertyKey});");
+									//Talespire.Log.Debug($"ModifyProperty(ea, {smartPropertyPath}, {prefix}, {propertyKey});");
 									ModifyProperty(ea, smartPropertyPath, prefix, propertyKey, true);
 								}
 							}
 						}
 						else
 						{
-							Talespire.Log.Debug($"ModifyProperty(ea, {propertyPath}, {prefix});");
+							//Talespire.Log.Debug($"ModifyProperty(ea, {propertyPath}, {prefix});");
 							ModifyProperty(ea, propertyPath, prefix, null, true);
 						}
 					}
@@ -258,8 +257,6 @@ namespace TaleSpireExplore
 			else
 				foreach (string propertyPath in ea.PersistentEffect.Properties.Keys)
 					ModifyProperty(ea, propertyPath, null, null, true);
-
-			Talespire.Log.Unindent();
 		}
 
 		static void RemoveCharacterMenu(string menuText)
@@ -345,7 +342,6 @@ namespace TaleSpireExplore
 
 		static void ShowPersistentEffectUI(CreatureBoardAsset mini)
 		{
-			Talespire.Log.Debug($"ShowPersistentEffectUI...");
 			if (mini == null)
 			{
 				Talespire.Log.Error($"mini is NULL! - exiting!");
@@ -379,7 +375,6 @@ namespace TaleSpireExplore
 				originalCompositeEffect = CompositeEffect.GetFromGameObject(child.gameObject);
 				if (originalCompositeEffect != null)
 				{
-					Talespire.Log.Warning($"We found the CompositeEffect!!!");
 					frmPropertyList.Instance = child.gameObject;
 					break;
 				}
@@ -424,10 +419,10 @@ namespace TaleSpireExplore
 
 				if (superPersistentEffect != null)
 				{
-					Talespire.Log.Debug($"Looking for scripts...");
+					//Talespire.Log.Debug($"Looking for scripts...");
 					foreach (string key in superPersistentEffect.ScriptData.Keys)
 					{
-						Talespire.Log.Warning($"  ScriptData[{key}] == \"{superPersistentEffect.ScriptData[key]}\"");
+						//Talespire.Log.Warning($"  ScriptData[{key}] == \"{superPersistentEffect.ScriptData[key]}\"");
 						Type scriptType = KnownScripts.GetType(key);
 						if (scriptType == null)
 						{

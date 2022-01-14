@@ -59,6 +59,10 @@
       <Item Id="{afd15232-7f55-41b1-aaa6-a92ad74f0a60}">
         <FilterName>T - Protected Internal/Friend</FilterName>
       </Item>
+      <Item Id="{2262b9b4-cbc8-4285-8b3e-117a8fa1964b}">
+        <FilterName>1 - Solution</FilterName>
+        <IsActive>False</IsActive>
+      </Item>
     </Items>
   </Options>
 </Root>

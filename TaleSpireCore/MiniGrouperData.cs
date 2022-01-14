@@ -26,6 +26,12 @@ namespace TaleSpireCore
 		[DefaultValue(LookTowardMode.Movement)]
 		public LookTowardMode Look { get; set; } = LookTowardMode.Movement;
 
+		/// <summary>
+		/// The target the group will look at if the Look property is set to LookTowardMode.Creature
+		/// </summary>
+		[DefaultValue(null)]
+		public string Target { get; set; }
+
 		[DefaultValue(-1)]
 		public int BaseIndex { get; set; } = -1;
 

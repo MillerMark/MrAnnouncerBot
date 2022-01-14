@@ -82,6 +82,7 @@
 			this.rbLookTowardNearestOutsider = new System.Windows.Forms.RadioButton();
 			this.btnDestroyGroup = new System.Windows.Forms.Button();
 			this.btnReverseLine = new System.Windows.Forms.Button();
+			this.rbFreeform = new System.Windows.Forms.RadioButton();
 			this.lblRotationValue = new System.Windows.Forms.Label();
 			this.lblColumnRadiusValue = new System.Windows.Forms.Label();
 			this.lblSpacingValue = new System.Windows.Forms.Label();
@@ -89,7 +90,6 @@
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label5 = new System.Windows.Forms.Label();
-			this.rbFreeform = new System.Windows.Forms.RadioButton();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSpacing)).BeginInit();
@@ -415,6 +415,7 @@
 			this.btnLookAt.Text = "Set...";
 			this.toolTip1.SetToolTip(this.btnLookAt, "Click to set the target creature (after clicking this button)");
 			this.btnLookAt.UseVisualStyleBackColor = false;
+			this.btnLookAt.Click += new System.EventHandler(this.btnLookAt_Click);
 			this.btnLookAt.MouseEnter += new System.EventHandler(this.btn_MouseEnter);
 			this.btnLookAt.MouseLeave += new System.EventHandler(this.btn_MouseLeave);
 			// 
@@ -692,6 +693,20 @@
 			this.btnReverseLine.UseVisualStyleBackColor = false;
 			this.btnReverseLine.Click += new System.EventHandler(this.btnReverseLine_Click);
 			// 
+			// rbFreeform
+			// 
+			this.rbFreeform.AutoSize = true;
+			this.rbFreeform.Checked = true;
+			this.rbFreeform.Location = new System.Drawing.Point(18, 565);
+			this.rbFreeform.Name = "rbFreeform";
+			this.rbFreeform.Size = new System.Drawing.Size(66, 17);
+			this.rbFreeform.TabIndex = 63;
+			this.rbFreeform.TabStop = true;
+			this.rbFreeform.Text = "Freeform";
+			this.toolTip1.SetToolTip(this.rbFreeform, "Creates a loosely-formed rectangular formation.");
+			this.rbFreeform.UseVisualStyleBackColor = true;
+			this.rbFreeform.CheckedChanged += new System.EventHandler(this.rbFreeform_CheckedChanged);
+			// 
 			// lblRotationValue
 			// 
 			this.lblRotationValue.AutoSize = true;
@@ -762,19 +777,6 @@
 			this.label5.Size = new System.Drawing.Size(73, 13);
 			this.label5.TabIndex = 61;
 			this.label5.Text = "Look Toward:";
-			// 
-			// rbFreeform
-			// 
-			this.rbFreeform.AutoSize = true;
-			this.rbFreeform.Checked = true;
-			this.rbFreeform.Location = new System.Drawing.Point(18, 565);
-			this.rbFreeform.Name = "rbFreeform";
-			this.rbFreeform.Size = new System.Drawing.Size(66, 17);
-			this.rbFreeform.TabIndex = 63;
-			this.rbFreeform.Text = "Freeform";
-			this.toolTip1.SetToolTip(this.rbFreeform, "Creates a loosely-formed rectangular formation.");
-			this.rbFreeform.UseVisualStyleBackColor = true;
-			this.rbFreeform.CheckedChanged += new System.EventHandler(this.rbFreeform_CheckedChanged);
 			// 
 			// EdtMiniGrouper
 			// 

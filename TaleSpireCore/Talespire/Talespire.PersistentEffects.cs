@@ -115,10 +115,10 @@ namespace TaleSpireCore
 				GameObject child = effectOrb.FindChild(childName, true);
 				if (child != null)
 				{
-					if (visible)
-						Log.Debug($"SetOrbIndicatorVisible -- Showing {childName}!");
-					else
-						Log.Debug($"SetOrbIndicatorVisible -- Hiding {childName}!");
+					//if (visible)
+					//	Log.Debug($"SetOrbIndicatorVisible -- Showing {childName}!");
+					//else
+					//	Log.Debug($"SetOrbIndicatorVisible -- Hiding {childName}!");
 
 					child.SetActive(visible);
 				}
@@ -133,7 +133,7 @@ namespace TaleSpireCore
 				if (creatureAsset == null)
 					return;
 
-				Log.Warning($"UpdatePersistentEffect for {GetDisplayName(creatureAsset)} - \"{value}\"");
+				//Log.Warning($"UpdatePersistentEffect for {GetDisplayName(creatureAsset)} - \"{value}\"");
 
 				if (InitializeMiniAsEffect(creatureAsset))
 				{
@@ -216,7 +216,7 @@ namespace TaleSpireCore
 
 			internal static bool InitializeMiniAsEffect(CreatureBoardAsset creatureAsset, string effectName = null, string newCreatureName = null)
 			{
-				Log.Indent($"InitializeMiniAsEffect({creatureAsset.CreatureId}, \"{effectName}\", \"{newCreatureName}\")");
+				//Log.Indent($"InitializeMiniAsEffect({creatureAsset.CreatureId}, \"{effectName}\", \"{newCreatureName}\")");
 				try
 				{
 					if (effectName == null)
@@ -235,7 +235,7 @@ namespace TaleSpireCore
 				}
 				finally
 				{
-					Log.Unindent();
+					//Log.Unindent();
 				}
 			}
 
@@ -247,11 +247,11 @@ namespace TaleSpireCore
 			// TODO: Refactor this. Hard to read.
 			internal static bool InitializeMiniFromPersistentEffect(CreatureBoardAsset creatureAsset, IOldPersistentEffect persistentEffect, string newCreatureName)
 			{
-				Log.Indent();
+				//Log.Indent();
 				try
 				{
 					GameObject assetLoader = creatureAsset.GetAssetLoader();
-					Log.Warning($"creatureAsset.Creature.Name = \"{creatureAsset.Creature.Name}\"");
+					//Log.Warning($"creatureAsset.Creature.Name = \"{creatureAsset.Creature.Name}\"");
 					if (assetLoader != null)
 					{
 						GameObject goatClone = assetLoader.FindChild(STR_UninitializedMiniMeshName);
@@ -292,12 +292,12 @@ namespace TaleSpireCore
 						{
 							if (assetLoader.FindChild(STR_EffectOrb) != null)
 							{
-								if (effectsToInitialize.Count > 0)
-									Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
-								if (updatedCreatures.Count > 0)
-									Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
+								//if (effectsToInitialize.Count > 0)
+								//	Log.Warning($"effectsToInitialize.Count = {effectsToInitialize.Count}");
+								//if (updatedCreatures.Count > 0)
+								//	Log.Warning($"updatedCreatures.Count = {updatedCreatures.Count}");
 
-								Log.Warning($"Already initialized. Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
+								//Log.Warning($"Already initialized. Adding {creatureAsset.CreatureId.ToString()} to updatedCreatures");
 
 								persistentEffect = creatureAsset.GetPersistentEffect();
 								GameObject effectOrb = GetEffectOrb(creatureAsset);
@@ -323,7 +323,7 @@ namespace TaleSpireCore
 				}
 				finally
 				{
-					Log.Unindent();
+					//Log.Unindent();
 				}
 			}
 
