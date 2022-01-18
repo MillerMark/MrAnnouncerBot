@@ -53,7 +53,6 @@ namespace DndUI
 
 		int modsCreated = 0;
 		public static readonly DependencyProperty WeaponCategoryProperty = DependencyProperty.Register("WeaponCategory", typeof(WeaponCategories), typeof(ItemBuilder), new FrameworkPropertyMetadata(WeaponCategories.None, new PropertyChangedCallback(OnWeaponCategoryChanged), new CoerceValueCallback(OnCoerceWeaponCategory)));
-		bool loading;
 
 		public WeaponCategories WeaponCategory
 		{
@@ -105,17 +104,7 @@ namespace DndUI
 			if (sender is EditableListBox editableListBox)
 				if (editableListBox.SelectedItem is ModViewModel entry)
 					if (modBuilder != null)
-					{
-						loading = true;
-						try
-						{
-							modBuilder.LoadFromMod(entry);
-						}
-						finally
-						{
-							loading = false;
-						}
-					}
+						modBuilder.LoadFromMod(entry);
 		}
 
 		private void LbModsList_ClickAdd(object sender, RoutedEventArgs e)

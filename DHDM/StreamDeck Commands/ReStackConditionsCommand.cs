@@ -6,7 +6,6 @@ namespace DHDM
 {
 	public class ReStackConditionsCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		string playerName, conditionStr;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			dungeonMasterApp.ReStackConditions();

@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
 using TwitchLib.Client;
+using OBSWebsocketDotNet.Types;
 
 namespace MrAnnouncerBot
 {
@@ -374,7 +375,7 @@ namespace MrAnnouncerBot
 					hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
 					obsWebsocket.SetCurrentScene(sceneName);
 				}
-				catch (Exception ex)
+				catch 
 				{
 					Console.WriteLine("Unable to play fanfare: " + sceneName);
 					Debugger.Break();
@@ -434,7 +435,7 @@ namespace MrAnnouncerBot
 		static void WriteFanfareData(string dataFileName, List<FanfareDto> records)
 		{
 			using (var writer = new StreamWriter(dataFileName))
-			using (var csv = new CsvWriter(writer))
+			using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.CurrentCulture))
 			{
 				csv.WriteRecords(records);
 			}
@@ -516,7 +517,7 @@ namespace MrAnnouncerBot
 				{
 					showStartURL = await Twitch.GetActiveShowPointURL(mrAnnouncerGuyClientId, mrAnnouncerGuyAccessToken, STR_CodeRushedUserId, backTrackStr);
 				}
-				catch (Exception ex)
+				catch 
 				{
 					showStartURL = startTimeURL;
 					Debugger.Break();
@@ -551,7 +552,7 @@ namespace MrAnnouncerBot
 								// What is going on here?
 								zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
 							}
-							catch (Exception ex1)
+							catch 
 							{
 								try
 								{
@@ -570,6 +571,8 @@ namespace MrAnnouncerBot
 					}
 					attachedFiles.Add(fullPathToZipFile);
 				}
+
+#pragma warning disable CS0168 // Used for diagnostics and debugging.
 				catch (Exception ex)
 				{
 					Debugger.Break();
@@ -599,7 +602,7 @@ namespace MrAnnouncerBot
 				//if (sendPrz)
 				//	message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPrz"]));
 				//if (sendAlex)
-				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAlex"]));
+				//message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAlex"]));
 				//if (sendPerf)
 				//	message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPerf"]));
 				//if (sendAllDevs)

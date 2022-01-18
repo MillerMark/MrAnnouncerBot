@@ -76,6 +76,7 @@ namespace GoogleHelper
 						value += (int)Enum.Parse(enumProperty.PropertyType, part.Trim());
 					}
 				}
+#pragma warning disable CS0168  // Used for diagnostics/debugging.
 				catch (Exception ex)
 				{
 					System.Diagnostics.Debugger.Break();
@@ -282,7 +283,7 @@ namespace GoogleHelper
 				// automatically when the authorization flow completes for the first time.
 				string credentialPath = "token.json";
 				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-						GoogleClientSecrets.Load(stream).Secrets,
+						GoogleClientSecrets.FromStream(stream).Secrets,
 						Scopes,
 						"user",
 						CancellationToken.None,

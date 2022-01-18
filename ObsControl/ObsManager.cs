@@ -66,8 +66,6 @@ namespace ObsControl
 			}
 		}
 
-		static bool hookedEvents;
-
 		public static void Connect()
 		{
 			if (obsWebsocket.IsConnected)
@@ -77,7 +75,6 @@ namespace ObsControl
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
 				obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
 				obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
-				hookedEvents = true;
 			}
 			catch (AuthFailureException)
 			{
@@ -180,7 +177,12 @@ namespace ObsControl
 					flipMultiplier *= -1;
 				}
 
-				obsWebsocket.SetSceneItemTransform(e.ItemName, (float)rotation, flipMultiplier * (float)scale, (float)scale, e.SceneName);
+				// TODO: See if commenting this out still animates the video sources correctly. And it looks like it still works!!!
+				//obsWebsocket.SetSceneItemTransform(e.ItemName, (float)rotation, flipMultiplier * (float)scale, (float)scale, e.SceneName);
+				//sceneItemProperties;
+				//SceneItemProperties  = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
+				//WTF???
+				//obsWebsocket.SetSceneItemProperties(props)
 
 			}
 			catch //(Exception ex)

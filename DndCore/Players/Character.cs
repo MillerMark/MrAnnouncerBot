@@ -94,6 +94,10 @@ namespace DndCore
 			}
 		}
 
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
 
 		CarriedWeapon readiedWeapon;
 		[JsonIgnore]

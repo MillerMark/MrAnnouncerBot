@@ -370,6 +370,7 @@ namespace TaleSpireCore
 						if (string.IsNullOrWhiteSpace(persistentEffect.EffectName))
 							persistentEffect = ConvertOldToNewPersistentEffect(effectData);
 				}
+#pragma warning disable CS0168  // Used for diagnostics/debugging.
 				catch (Exception ex)
 				{
 					persistentEffect = null;

@@ -59,7 +59,9 @@ namespace DHDM
 		public static int AddCharge(string viewerName, string chargeName, int chargeCount)
 		{
 			if (DndViewer.TestingSayAnything)
+#pragma warning disable CS0162 // Used for testing.
 				viewerName = "SayAnythingTester";
+
 			DndViewer viewer = Get(viewerName);
 			return viewer.AddCharge(chargeName, chargeCount);
 		}

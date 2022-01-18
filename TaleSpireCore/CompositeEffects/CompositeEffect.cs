@@ -219,6 +219,7 @@ namespace TaleSpireCore
 					Talespire.Log.Error($"basePropertyDto.FullPropertyPath is null or empty.");
 					continue;
 				}
+#pragma warning disable CS0253  // Intentional reference comparison.
 				if (basePropertyDto.ValueOverride != null && basePropertyDto.Value != basePropertyDto.ValueOverride)
 				{
 					Talespire.Log.Error($"ValueOverride == \"{basePropertyDto.ValueOverride}\", but Value == \"{basePropertyDto.Value}\"");

@@ -58,6 +58,7 @@ namespace DndTests
 					Assert.IsFalse(System.IO.File.Exists(fullPathToFile));
 				}
 			}
+#pragma warning disable CS0168 // Used for diagnostics.
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debugger.Break();

@@ -13,9 +13,9 @@ namespace BotCore
 			List<T> result = new List<T>();
 			try
 			{
-				var textReader = File.OpenText(dataFileName);
+				StreamReader textReader = File.OpenText(dataFileName);
 
-				using (var csvReader = new CsvReader(textReader))
+				using (var csvReader = new CsvReader(textReader, new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.CurrentCulture)))
 					result = csvReader.GetRecords<T>().ToList();
 			}
 			catch (Exception ex)

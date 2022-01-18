@@ -8,8 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using TwitchLib.Api;
-using TwitchLib.Api.V5.Models.Channels;
-using TwitchLib.Api.V5.Models.Users;
+using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -110,16 +109,8 @@ namespace BotCore
 
 		async public static Task<User> GetUser(string userName)
 		{
-			List<string> userNames = new List<string>
-			{
-				userName
-			};
-			var results = await Api.V5.Users.GetUsersByNameAsync(userNames);
-			var userList = results.Matches;
-			if (userList.Length > 0)
-				return userList[0];
-
-			return null;
+			GetUsersResponse results = await Api.Helix.Users.GetUsersAsync();
+			return results.Users.FirstOrDefault(x => x.Login == userName);
 		}
 
 		async public static Task<string> GetUserId(string userName)

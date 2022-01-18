@@ -10,6 +10,14 @@ namespace TaleSpireCore
 {
 	public static class TaleSpireUtils
 	{
+		public static float HoursToNormalizedTime(double totalHours)
+		{
+			float normalizedTime = (float)(totalHours / 24.0 + 0.25);
+			if (normalizedTime > 1)
+				normalizedTime -= 1;
+			return normalizedTime;
+		}
+
 		public static byte[] ReceiveAll(this Socket socket)
 		{
 			List<byte> buffer = new List<byte>();

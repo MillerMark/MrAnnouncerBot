@@ -35,20 +35,8 @@ namespace DHDM
 		{
 			if (sender is EditableListBox editableListBox)
 				if (editableListBox.SelectedItem is AttackViewModel attackViewModel)
-				{
 					if (attackBuilder != null)
-					{
-						loading = true;
-						try
-						{
-							attackBuilder.LoadFromItem(attackViewModel);
-						}
-						finally
-						{
-							loading = false;
-						}
-					}
-				}
+						attackBuilder.LoadFromItem(attackViewModel);
 		}
 
 		private void EditableListBox_ClickAdd(object sender, RoutedEventArgs e)

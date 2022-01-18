@@ -14,7 +14,6 @@ namespace CardMaker
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
 		public const string SubLayerNameStr = "SubLayerName";
-		double scaledWidth;
 		Dictionary<string, int> groups = new Dictionary<string, int>();
 		static Dictionary<char, string> propertyMap = new Dictionary<char, string>();
 		static CardImageLayer()

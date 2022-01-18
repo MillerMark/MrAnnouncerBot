@@ -8,7 +8,6 @@ namespace DHDM
 	public class SetPropertyCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string valueAsStr;
-		object valueStr;
 		string propertyName;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
@@ -24,7 +23,9 @@ namespace DHDM
 				if (previousValue == newValue)
 				{
 					if (verbose)
+#pragma warning disable CS0162 // Used for testing.
 						dungeonMasterApp.TellDungeonMaster($"{firstName}'s {propertyName} is already {valueAsStr.Trim()}.");
+
 					return;
 				}
 
@@ -33,6 +34,7 @@ namespace DHDM
 				if (newlySetValue == previousValue)
 					dungeonMasterApp.TellDungeonMaster($"Error. Unable to set {firstName}'s {propertyName} to {valueAsStr.Trim()}.");
 				else if (verbose)
+#pragma warning disable CS0162 // Used for testing.
 					dungeonMasterApp.TellDungeonMaster($"{firstName}'s {propertyName} = {valueAsStr.Trim()}.");
 			}
 			//bool GetBoolProperty(int playerId, string propertyName);

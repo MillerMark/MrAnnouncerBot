@@ -300,14 +300,14 @@ namespace DHDM
 		private void CreateDhPubSub()
 		{
 			dhPubSub = new TwitchPubSub();
-			dhPubSub.OnRewardRedeemed += DhPubSub_OnRewardRedeemed;
-			dhPubSub.ListenToRewards("CodeRushed");
+			dhPubSub.OnChannelPointsRewardRedeemed += DhPubSub_OnChannelPointsRewardRedeemed;
+			dhPubSub.ListenToChannelPoints("CodeRushed");
 			dhPubSub.Connect();
 		}
 
-		private void DhPubSub_OnRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnRewardRedeemedArgs e)
+		private void DhPubSub_OnChannelPointsRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnChannelPointsRewardRedeemedArgs e)
 		{
-
+			
 		}
 
 		// ResendExistingData
@@ -1790,7 +1790,9 @@ namespace DHDM
 		void UseViewerCharge(string username)
 		{
 			if (DndViewer.TestingSayAnything)
+#pragma warning disable CS0162 // Can be reachable if we flip the TestingSayAnything bool.
 				username = "SayAnythingTester";
+
 			DndViewer viewer = AllViewers.Get(username);
 			int remainingCharges = viewer.UseCharge("Say Anything");
 			if (remainingCharges == 0)
@@ -1885,8 +1887,11 @@ namespace DHDM
 		{
 			if (username == "dragonhumpersdm")
 				return false;
+
 			if (DndViewer.TestingSayAnything)
+#pragma warning disable CS0162 // Can be reachable if we flip the TestingSayAnything bool.
 				username = "SayAnythingTester";
+
 			DndViewer viewer = AllViewers.Get(username);
 			return viewer.HasCharges("Say Anything");
 		}
@@ -3300,6 +3305,7 @@ namespace DHDM
 
 		}
 
+#pragma warning disable CS0649 // Used for testing..
 		bool rollInspirationAfterwards;
 
 
@@ -3575,6 +3581,8 @@ namespace DHDM
 		}
 
 		bool waitingToClearPlayerDice;
+
+#pragma warning disable CS0414 // Used for testing.
 		bool waitingToClearViewerDice;
 
 		void ActivatePendingPlayerShortcutsIn(int seconds)
@@ -6981,7 +6989,6 @@ namespace DHDM
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		DiceRoll lastRoll;
 		DiceRoll secondToLastRoll;
-		DateTime lastChatMessageSent;
 		bool uiThreadSleepingWhileWaitingForAnswerToQuestion;
 
 		void CheckAllPlayers()
@@ -11359,7 +11366,6 @@ namespace DHDM
 		}
 
 		string lastIdOverwriteId;
-		PlayerActionShortcut repeatSpellShortcut;
 
 		void BindCreature(ApiResponse response)
 		{

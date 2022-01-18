@@ -5,8 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TwitchLib.Api.V5.Models.Users;
 using TwitchLib.Client.Models;
+using TwitchLib.Api.Helix.Models.Users.GetUsers;
 
 namespace BotCore
 {
@@ -153,10 +153,12 @@ namespace BotCore
 				return;
 			try
 			{
-				var results = await Twitch.Api.V5.Users.GetUsersByNameAsync(viewers.ToList());
-				var userList = results.Matches;
+				//Users results = await Twitch.Api.V5.Users.GetUsersByNameAsync(viewers.ToList());
+				GetUsersResponse usersResponse = await Twitch.Api.Helix.Users.GetUsersAsync();
+				
+				//User[] userList = results.Matches;
 
-				foreach (User user in userList)
+				foreach (User user in usersResponse.Users)
 					CheckViewer(user);
 			}
 			catch (Exception ex)
@@ -172,7 +174,7 @@ namespace BotCore
 				return;
 			Viewer viewer = GetViewerById(user.Id);
 			if (viewer == null)
-				viewer = CreateNewViewer(user.Id, user.Name, user.DisplayName);
+				viewer = CreateNewViewer(user.Id, user.Login, user.DisplayName);
 
 			if (WatchingNewShow(viewer))
 			{
