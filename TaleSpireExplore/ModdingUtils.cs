@@ -588,7 +588,7 @@ namespace TaleSpireExplore
 			//	bool.Parse(torch),
 			//	default(NGuid),
 			//	bool.Parse(hidden));
-			spawnCreature = CreaturePreviewBoardAsset.Spawn(data, pos, quaternion.identity);
+			spawnCreature = CreaturePreviewBoardAsset.Spawn(data, pos, quaternion.identity, false);
 			spawnCreature.Drop(math.float3(float.Parse(x), float.Parse(y), float.Parse(z)), float.Parse(y));
 
 			return new ApiResponse("Creature Added").ToString();
@@ -623,7 +623,7 @@ namespace TaleSpireExplore
 		public static string GetCameraLocation()
 		{
 			return JsonConvert.SerializeObject(
-				new VectorDto(CameraController.Position.x, CameraController.CameraHeight, CameraController.Position.z));
+				new VectorDto(CameraController.Position.x, CameraController.CameraPlaneHeight, CameraController.Position.z));
 		}
 
 		public static string GetCreatureAssets()
@@ -821,13 +821,12 @@ namespace TaleSpireExplore
 				var slabToPaste = slabSizeSlab;// slabQueue.Dequeue();
 				slabSizeSlab = string.Empty;
 
-				if (BoardSessionManager.Board.PushStringToTsClipboard(slabToPaste) == PushStringToTsClipboardResult.Success)
+				if (BoardSessionManager.Board.PushStringToTsClipboard(slabToPaste, 0, slabToPaste.Length, out Copied copied) == PushStringToTsClipboardResult.Success)
 				{
-					Copied mostRecentCopied_LocalOnly = BoardSessionManager.Board.GetMostRecentCopied_LocalOnly();
-					if (mostRecentCopied_LocalOnly != null)
+					if (copied != null)
 					{
 						//slabSize = mostRecentCopied_LocalOnly.Bounds.size;
-						slabSize = mostRecentCopied_LocalOnly.RoughBoundsInfo.CombinedBounds.size;
+						slabSize = copied.RoughBoundsInfo.CombinedBounds.size;
 
 						slabSizeResponse = true;
 					}
@@ -1161,7 +1160,7 @@ namespace TaleSpireExplore
 			}
 			else
 			{
-				CameraController.MoveToHeight(float.Parse(height) + CameraController.CameraHeight, true);
+				CameraController.MoveToHeight(float.Parse(height) + CameraController.CameraPlaneHeight, true);
 			}
 			return new ApiResponse("Camera Move successful").ToString();
 		}
@@ -1264,11 +1263,10 @@ namespace TaleSpireExplore
 				var slabToPaste = slabQueue.Dequeue();
 				Debug.Log("Slab:");
 				Debug.Log(slabToPaste);
-				if (BoardSessionManager.Board.PushStringToTsClipboard(slabToPaste.SlabText) ==
+				if (BoardSessionManager.Board.PushStringToTsClipboard(slabToPaste.SlabText, 0, slabToPaste.SlabText.Length, out Copied copied) ==
 					PushStringToTsClipboardResult.Success)
 				{
-					Copied mostRecentCopied_LocalOnly = BoardSessionManager.Board.GetMostRecentCopied_LocalOnly();
-					if (mostRecentCopied_LocalOnly != null)
+					if (copied != null)
 					{
 						Debug.Log(
 							"X:" +

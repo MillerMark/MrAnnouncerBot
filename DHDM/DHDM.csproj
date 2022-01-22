@@ -386,6 +386,9 @@
     <None Include="LiveVideoAnimation\Data\CodingGorilla.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="LiveVideoAnimation\Data\Dance5.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LiveVideoAnimation\Data\Drone Failure.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

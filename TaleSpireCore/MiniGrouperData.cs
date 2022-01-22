@@ -8,6 +8,11 @@ namespace TaleSpireCore
 {
 	public class MiniGrouperData
 	{
+		private const int MaxFollowTheLeaderSavedEntries = 25;
+
+		[DefaultValue(null)]
+		public List<SerializableVector3> followTheLeaderMovementCache { get; set; }
+
 		[DefaultValue(false)]
 		public bool Hidden { get; set; }
 
@@ -43,9 +48,49 @@ namespace TaleSpireCore
 		[DefaultValue(0)]
 		public int Spacing { get; set; }
 
+		[DefaultValue(360)]
+		public int ArcAngle { get; set; } = 360;
+
+		public int NumFollowTheLeaderCacheEntries
+		{
+			get
+			{
+				if (followTheLeaderMovementCache == null)
+					return 0;
+				return followTheLeaderMovementCache.Count;
+			}
+		}
+		
+
 		public MiniGrouperData()
 		{
 
+		}
+
+		public void AddFollowTheLeaderPoint(Vector3 deltaMove)
+		{
+			if (followTheLeaderMovementCache == null)
+				followTheLeaderMovementCache = new List<SerializableVector3>();
+
+			followTheLeaderMovementCache.Add(deltaMove);
+			while (followTheLeaderMovementCache.Count > MaxFollowTheLeaderSavedEntries)
+				followTheLeaderMovementCache.RemoveAt(0);
+		}
+
+		public Vector3 GetFollowTheLeaderEntryByIndex(int cacheIndex)
+		{
+			if (followTheLeaderMovementCache == null || cacheIndex < 0 || cacheIndex >= followTheLeaderMovementCache.Count)
+				return Vector3.zero;
+
+			return followTheLeaderMovementCache[cacheIndex];
+		}
+
+		public void ClearFollowTheLeaderCache()
+		{
+			if (followTheLeaderMovementCache == null)
+				return;
+
+			followTheLeaderMovementCache.Clear();
 		}
 	}
 }

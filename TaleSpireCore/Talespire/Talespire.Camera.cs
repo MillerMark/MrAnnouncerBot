@@ -50,7 +50,7 @@ namespace TaleSpireCore
 						{
 							GameObject baseGO = creatureBoardAsset.GetBase();
 							if (baseGO != null && doLook)
-								CameraController.CameraTransform.LookAt(baseGO.transform);
+								CameraController.LookAtTarget(baseGO.transform.position);
 						}
 					}
 
@@ -142,33 +142,29 @@ namespace TaleSpireCore
 				}
 				else
 				{
-					if (CameraController.CameraTransform == null)
-						return;
-
-					position = CameraController.CameraTransform.position;
+					position = CameraController.CameraPosition;
 					label = "CameraController";
 				}
 
 				if (position == null)
 					return;
 
-				float zoomTransition = (float)Math.Round(CameraController.GetZoomTransition(), 4);
+				//float zoomTransition = (float)Math.Round(CameraController.GetZoomTransition(), 4);
 				float zoomLerpValue = (float)Math.Round(CameraController.ZoomLerpValue, 4);
 
 				if (lastX == position.x && lastY == position.y && lastZ == position.z &&
-					lastZoomLerpValue == zoomLerpValue && lastZoomTransition == zoomTransition)
+					lastZoomLerpValue == zoomLerpValue)
 					return;
 
 				float x = (float)Math.Round(position.x, 2);
 				float y = (float)Math.Round(position.y, 2);
 				float z = (float)Math.Round(position.z, 2);
 
-				Log.Debug($"{label} - ({x:N}, {y:N}, {z:N}) - Zoom value = {zoomLerpValue} / transition = {zoomTransition}");
+				Log.Debug($"{label} - ({x:N}, {y:N}, {z:N}) - Zoom value = {zoomLerpValue}");
 				lastX = position.x;
 				lastY = position.y;
 				lastZ = position.z;
 				lastZoomLerpValue = zoomLerpValue;
-				lastZoomTransition = zoomTransition;
 			}
 
 			//static Vector3 saveCameraPosition;

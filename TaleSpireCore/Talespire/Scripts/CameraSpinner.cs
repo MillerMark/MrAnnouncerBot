@@ -130,7 +130,7 @@ namespace TaleSpireCore.Scripts
 			if (heightAdjust != 0)
 			{
 				float deltaHeight = heightAdjust * secondsSinceLastUpdate;
-				float newHeight = CameraController.CameraHeight + deltaHeight;
+				float newHeight = CameraController.CameraPlaneHeight + deltaHeight;
 				if (newHeight > 60f)
 				{
 					newHeight = 60f;

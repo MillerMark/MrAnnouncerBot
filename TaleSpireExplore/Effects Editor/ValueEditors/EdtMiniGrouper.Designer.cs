@@ -50,12 +50,10 @@
 			this.rbRectangular = new System.Windows.Forms.RadioButton();
 			this.label6 = new System.Windows.Forms.Label();
 			this.rbCircular = new System.Windows.Forms.RadioButton();
-			this.rbSemiCircle = new System.Windows.Forms.RadioButton();
 			this.trkSpacing = new System.Windows.Forms.TrackBar();
 			this.lblSpacing = new System.Windows.Forms.Label();
 			this.lblColumnsRadius = new System.Windows.Forms.Label();
 			this.trkColumnsRadius = new System.Windows.Forms.TrackBar();
-			this.rbTriangle = new System.Windows.Forms.RadioButton();
 			this.tbxGroupName = new System.Windows.Forms.TextBox();
 			this.btnLookAt = new System.Windows.Forms.Button();
 			this.lblRotation = new System.Windows.Forms.Label();
@@ -90,6 +88,9 @@
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label5 = new System.Windows.Forms.Label();
+			this.lblArcAngleValue = new System.Windows.Forms.Label();
+			this.lblArcAngle = new System.Windows.Forms.Label();
+			this.trkArcAngle = new System.Windows.Forms.TrackBar();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSpacing)).BeginInit();
@@ -97,6 +98,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.trkFormationRotation)).BeginInit();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trkArcAngle)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -192,7 +194,7 @@
 			// 
 			this.btnHideAll.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnHideAll.ForeColor = System.Drawing.Color.White;
-			this.btnHideAll.Location = new System.Drawing.Point(177, 346);
+			this.btnHideAll.Location = new System.Drawing.Point(177, 347);
 			this.btnHideAll.Name = "btnHideAll";
 			this.btnHideAll.Size = new System.Drawing.Size(70, 32);
 			this.btnHideAll.TabIndex = 14;
@@ -207,7 +209,7 @@
 			// 
 			this.btnShowAll.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnShowAll.ForeColor = System.Drawing.Color.White;
-			this.btnShowAll.Location = new System.Drawing.Point(252, 346);
+			this.btnShowAll.Location = new System.Drawing.Point(252, 347);
 			this.btnShowAll.Name = "btnShowAll";
 			this.btnShowAll.Size = new System.Drawing.Size(70, 32);
 			this.btnShowAll.TabIndex = 15;
@@ -222,7 +224,7 @@
 			// 
 			this.btnMatchAltitude.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnMatchAltitude.ForeColor = System.Drawing.Color.White;
-			this.btnMatchAltitude.Location = new System.Drawing.Point(230, 92);
+			this.btnMatchAltitude.Location = new System.Drawing.Point(230, 93);
 			this.btnMatchAltitude.Name = "btnMatchAltitude";
 			this.btnMatchAltitude.Size = new System.Drawing.Size(92, 32);
 			this.btnMatchAltitude.TabIndex = 3;
@@ -247,7 +249,7 @@
 			// 
 			this.btnRenameAll.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnRenameAll.ForeColor = System.Drawing.Color.White;
-			this.btnRenameAll.Location = new System.Drawing.Point(230, 134);
+			this.btnRenameAll.Location = new System.Drawing.Point(230, 135);
 			this.btnRenameAll.Name = "btnRenameAll";
 			this.btnRenameAll.Size = new System.Drawing.Size(92, 32);
 			this.btnRenameAll.TabIndex = 19;
@@ -273,7 +275,7 @@
 			// 
 			this.btnAdd.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnAdd.ForeColor = System.Drawing.Color.White;
-			this.btnAdd.Location = new System.Drawing.Point(65, 346);
+			this.btnAdd.Location = new System.Drawing.Point(65, 347);
 			this.btnAdd.Name = "btnAdd";
 			this.btnAdd.Size = new System.Drawing.Size(92, 32);
 			this.btnAdd.TabIndex = 21;
@@ -295,7 +297,7 @@
 			// rbRectangular
 			// 
 			this.rbRectangular.AutoSize = true;
-			this.rbRectangular.Location = new System.Drawing.Point(18, 611);
+			this.rbRectangular.Location = new System.Drawing.Point(18, 631);
 			this.rbRectangular.Name = "rbRectangular";
 			this.rbRectangular.Size = new System.Drawing.Size(74, 17);
 			this.rbRectangular.TabIndex = 24;
@@ -307,7 +309,7 @@
 			// label6
 			// 
 			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(7, 545);
+			this.label6.Location = new System.Drawing.Point(7, 563);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(91, 13);
 			this.label6.TabIndex = 25;
@@ -316,7 +318,7 @@
 			// rbCircular
 			// 
 			this.rbCircular.AutoSize = true;
-			this.rbCircular.Location = new System.Drawing.Point(18, 634);
+			this.rbCircular.Location = new System.Drawing.Point(18, 654);
 			this.rbCircular.Name = "rbCircular";
 			this.rbCircular.Size = new System.Drawing.Size(51, 17);
 			this.rbCircular.TabIndex = 26;
@@ -324,18 +326,6 @@
 			this.toolTip1.SetToolTip(this.rbCircular, "Creates a circular formation.");
 			this.rbCircular.UseVisualStyleBackColor = true;
 			this.rbCircular.CheckedChanged += new System.EventHandler(this.rbCircular_CheckedChanged);
-			// 
-			// rbSemiCircle
-			// 
-			this.rbSemiCircle.AutoSize = true;
-			this.rbSemiCircle.Location = new System.Drawing.Point(18, 657);
-			this.rbSemiCircle.Name = "rbSemiCircle";
-			this.rbSemiCircle.Size = new System.Drawing.Size(73, 17);
-			this.rbSemiCircle.TabIndex = 27;
-			this.rbSemiCircle.Text = "Semicircle";
-			this.toolTip1.SetToolTip(this.rbSemiCircle, "Creates a semicircular formation.");
-			this.rbSemiCircle.UseVisualStyleBackColor = true;
-			this.rbSemiCircle.CheckedChanged += new System.EventHandler(this.rbSemiCircle_CheckedChanged);
 			// 
 			// trkSpacing
 			// 
@@ -382,18 +372,6 @@
 			this.trkColumnsRadius.Value = 1;
 			this.trkColumnsRadius.Scroll += new System.EventHandler(this.trkColumnsRadius_Scroll);
 			// 
-			// rbTriangle
-			// 
-			this.rbTriangle.AutoSize = true;
-			this.rbTriangle.Location = new System.Drawing.Point(18, 680);
-			this.rbTriangle.Name = "rbTriangle";
-			this.rbTriangle.Size = new System.Drawing.Size(63, 17);
-			this.rbTriangle.TabIndex = 32;
-			this.rbTriangle.Text = "Triangle";
-			this.toolTip1.SetToolTip(this.rbTriangle, "Creates a triangular formation.");
-			this.rbTriangle.UseVisualStyleBackColor = true;
-			this.rbTriangle.CheckedChanged += new System.EventHandler(this.rbTriangle_CheckedChanged);
-			// 
 			// tbxGroupName
 			// 
 			this.tbxGroupName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(37)))));
@@ -422,7 +400,7 @@
 			// lblRotation
 			// 
 			this.lblRotation.AutoSize = true;
-			this.lblRotation.Location = new System.Drawing.Point(137, 671);
+			this.lblRotation.Location = new System.Drawing.Point(7, 734);
 			this.lblRotation.Name = "lblRotation";
 			this.lblRotation.Size = new System.Drawing.Size(50, 13);
 			this.lblRotation.TabIndex = 36;
@@ -430,10 +408,11 @@
 			// 
 			// trkFormationRotation
 			// 
-			this.trkFormationRotation.Location = new System.Drawing.Point(147, 689);
-			this.trkFormationRotation.Maximum = 359;
+			this.trkFormationRotation.Location = new System.Drawing.Point(17, 752);
+			this.trkFormationRotation.Maximum = 360;
+			this.trkFormationRotation.Minimum = -360;
 			this.trkFormationRotation.Name = "trkFormationRotation";
-			this.trkFormationRotation.Size = new System.Drawing.Size(175, 45);
+			this.trkFormationRotation.Size = new System.Drawing.Size(300, 45);
 			this.trkFormationRotation.TabIndex = 35;
 			this.trkFormationRotation.TickFrequency = 10;
 			this.toolTip1.SetToolTip(this.trkFormationRotation, "Rotates the formation around the leader mini.");
@@ -453,7 +432,7 @@
 			// 
 			this.btnSetHp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnSetHp.ForeColor = System.Drawing.Color.White;
-			this.btnSetHp.Location = new System.Drawing.Point(10, 394);
+			this.btnSetHp.Location = new System.Drawing.Point(10, 395);
 			this.btnSetHp.Name = "btnSetHp";
 			this.btnSetHp.Size = new System.Drawing.Size(62, 32);
 			this.btnSetHp.TabIndex = 39;
@@ -490,7 +469,7 @@
 			// 
 			this.btnDamage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnDamage.ForeColor = System.Drawing.Color.White;
-			this.btnDamage.Location = new System.Drawing.Point(10, 429);
+			this.btnDamage.Location = new System.Drawing.Point(10, 430);
 			this.btnDamage.Name = "btnDamage";
 			this.btnDamage.Size = new System.Drawing.Size(62, 32);
 			this.btnDamage.TabIndex = 43;
@@ -534,7 +513,7 @@
 			// 
 			this.btnHeal.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnHeal.ForeColor = System.Drawing.Color.White;
-			this.btnHeal.Location = new System.Drawing.Point(159, 429);
+			this.btnHeal.Location = new System.Drawing.Point(159, 430);
 			this.btnHeal.Name = "btnHeal";
 			this.btnHeal.Size = new System.Drawing.Size(51, 32);
 			this.btnHeal.TabIndex = 46;
@@ -557,7 +536,7 @@
 			// rbGaggle
 			// 
 			this.rbGaggle.AutoSize = true;
-			this.rbGaggle.Location = new System.Drawing.Point(18, 588);
+			this.rbGaggle.Location = new System.Drawing.Point(18, 608);
 			this.rbGaggle.Name = "rbGaggle";
 			this.rbGaggle.Size = new System.Drawing.Size(59, 17);
 			this.rbGaggle.TabIndex = 48;
@@ -583,7 +562,7 @@
 			// 
 			this.rbFormation.AutoSize = true;
 			this.rbFormation.Checked = true;
-			this.rbFormation.Location = new System.Drawing.Point(4, 4);
+			this.rbFormation.Location = new System.Drawing.Point(4, 26);
 			this.rbFormation.Name = "rbFormation";
 			this.rbFormation.Size = new System.Drawing.Size(71, 17);
 			this.rbFormation.TabIndex = 58;
@@ -596,7 +575,7 @@
 			// rbFollowTheLeader
 			// 
 			this.rbFollowTheLeader.AutoSize = true;
-			this.rbFollowTheLeader.Location = new System.Drawing.Point(91, 4);
+			this.rbFollowTheLeader.Location = new System.Drawing.Point(4, 3);
 			this.rbFollowTheLeader.Name = "rbFollowTheLeader";
 			this.rbFollowTheLeader.Size = new System.Drawing.Size(109, 17);
 			this.rbFollowTheLeader.TabIndex = 59;
@@ -671,7 +650,7 @@
 			// 
 			this.btnDestroyGroup.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnDestroyGroup.ForeColor = System.Drawing.Color.White;
-			this.btnDestroyGroup.Location = new System.Drawing.Point(10, 702);
+			this.btnDestroyGroup.Location = new System.Drawing.Point(9, 685);
 			this.btnDestroyGroup.Name = "btnDestroyGroup";
 			this.btnDestroyGroup.Size = new System.Drawing.Size(101, 32);
 			this.btnDestroyGroup.TabIndex = 61;
@@ -684,7 +663,7 @@
 			// 
 			this.btnReverseLine.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
 			this.btnReverseLine.ForeColor = System.Drawing.Color.White;
-			this.btnReverseLine.Location = new System.Drawing.Point(174, 504);
+			this.btnReverseLine.Location = new System.Drawing.Point(146, 494);
 			this.btnReverseLine.Name = "btnReverseLine";
 			this.btnReverseLine.Size = new System.Drawing.Size(92, 32);
 			this.btnReverseLine.TabIndex = 62;
@@ -697,7 +676,7 @@
 			// 
 			this.rbFreeform.AutoSize = true;
 			this.rbFreeform.Checked = true;
-			this.rbFreeform.Location = new System.Drawing.Point(18, 565);
+			this.rbFreeform.Location = new System.Drawing.Point(18, 585);
 			this.rbFreeform.Name = "rbFreeform";
 			this.rbFreeform.Size = new System.Drawing.Size(66, 17);
 			this.rbFreeform.TabIndex = 63;
@@ -711,7 +690,7 @@
 			// 
 			this.lblRotationValue.AutoSize = true;
 			this.lblRotationValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblRotationValue.Location = new System.Drawing.Point(183, 671);
+			this.lblRotationValue.Location = new System.Drawing.Point(60, 734);
 			this.lblRotationValue.Name = "lblRotationValue";
 			this.lblRotationValue.Size = new System.Drawing.Size(19, 13);
 			this.lblRotationValue.TabIndex = 54;
@@ -721,7 +700,7 @@
 			// 
 			this.lblColumnRadiusValue.AutoSize = true;
 			this.lblColumnRadiusValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblColumnRadiusValue.Location = new System.Drawing.Point(185, 608);
+			this.lblColumnRadiusValue.Location = new System.Drawing.Point(192, 608);
 			this.lblColumnRadiusValue.Name = "lblColumnRadiusValue";
 			this.lblColumnRadiusValue.Size = new System.Drawing.Size(14, 13);
 			this.lblColumnRadiusValue.TabIndex = 53;
@@ -731,7 +710,7 @@
 			// 
 			this.lblSpacingValue.AutoSize = true;
 			this.lblSpacingValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblSpacingValue.Location = new System.Drawing.Point(183, 545);
+			this.lblSpacingValue.Location = new System.Drawing.Point(190, 545);
 			this.lblSpacingValue.Name = "lblSpacingValue";
 			this.lblSpacingValue.Size = new System.Drawing.Size(22, 13);
 			this.lblSpacingValue.TabIndex = 52;
@@ -740,7 +719,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(7, 484);
+			this.label4.Location = new System.Drawing.Point(7, 482);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(60, 13);
 			this.label4.TabIndex = 56;
@@ -750,9 +729,9 @@
 			// 
 			this.panel1.Controls.Add(this.rbFollowTheLeader);
 			this.panel1.Controls.Add(this.rbFormation);
-			this.panel1.Location = new System.Drawing.Point(69, 478);
+			this.panel1.Location = new System.Drawing.Point(18, 498);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(210, 26);
+			this.panel1.Size = new System.Drawing.Size(127, 51);
 			this.panel1.TabIndex = 57;
 			// 
 			// panel2
@@ -778,17 +757,55 @@
 			this.label5.TabIndex = 61;
 			this.label5.Text = "Look Toward:";
 			// 
+			// lblArcAngleValue
+			// 
+			this.lblArcAngleValue.AutoSize = true;
+			this.lblArcAngleValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblArcAngleValue.Location = new System.Drawing.Point(190, 674);
+			this.lblArcAngleValue.Name = "lblArcAngleValue";
+			this.lblArcAngleValue.Size = new System.Drawing.Size(19, 13);
+			this.lblArcAngleValue.TabIndex = 67;
+			this.lblArcAngleValue.Text = "0°";
+			this.lblArcAngleValue.Visible = false;
+			// 
+			// lblArcAngle
+			// 
+			this.lblArcAngle.AutoSize = true;
+			this.lblArcAngle.Location = new System.Drawing.Point(137, 674);
+			this.lblArcAngle.Name = "lblArcAngle";
+			this.lblArcAngle.Size = new System.Drawing.Size(56, 13);
+			this.lblArcAngle.TabIndex = 66;
+			this.lblArcAngle.Text = "Arc Angle:";
+			this.lblArcAngle.Visible = false;
+			// 
+			// trkArcAngle
+			// 
+			this.trkArcAngle.Location = new System.Drawing.Point(147, 692);
+			this.trkArcAngle.Maximum = 360;
+			this.trkArcAngle.Name = "trkArcAngle";
+			this.trkArcAngle.Size = new System.Drawing.Size(175, 45);
+			this.trkArcAngle.TabIndex = 65;
+			this.trkArcAngle.TickFrequency = 10;
+			this.toolTip1.SetToolTip(this.trkArcAngle, "Rotates the formation around the leader mini.");
+			this.trkArcAngle.Visible = false;
+			this.trkArcAngle.Scroll += new System.EventHandler(this.trkArcAngle_Scroll);
+			this.trkArcAngle.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trkArcAngle_MouseUp);
+			// 
 			// EdtMiniGrouper
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.lblSpacingValue);
+			this.Controls.Add(this.lblSpacing);
+			this.Controls.Add(this.lblArcAngleValue);
+			this.Controls.Add(this.lblArcAngle);
+			this.Controls.Add(this.trkArcAngle);
 			this.Controls.Add(this.rbFreeform);
 			this.Controls.Add(this.btnReverseLine);
 			this.Controls.Add(this.btnDestroyGroup);
 			this.Controls.Add(this.panel2);
 			this.Controls.Add(this.lblColumnRadiusValue);
 			this.Controls.Add(this.lblRotationValue);
-			this.Controls.Add(this.lblSpacingValue);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.lblColumnsRadius);
@@ -805,9 +822,6 @@
 			this.Controls.Add(this.tbxSetHp);
 			this.Controls.Add(this.lblRotation);
 			this.Controls.Add(this.tbxGroupName);
-			this.Controls.Add(this.rbTriangle);
-			this.Controls.Add(this.lblSpacing);
-			this.Controls.Add(this.rbSemiCircle);
 			this.Controls.Add(this.rbCircular);
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.rbRectangular);
@@ -833,7 +847,7 @@
 			this.Controls.Add(this.lblNewCreatureName);
 			this.Controls.Add(this.lblSelectedCreatureName);
 			this.Name = "EdtMiniGrouper";
-			this.Size = new System.Drawing.Size(335, 740);
+			this.Size = new System.Drawing.Size(335, 801);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkHue)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trkSpacing)).EndInit();
@@ -843,6 +857,7 @@
 			this.panel1.PerformLayout();
 			this.panel2.ResumeLayout(false);
 			this.panel2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trkArcAngle)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -869,12 +884,10 @@
 		private System.Windows.Forms.RadioButton rbRectangular;
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.RadioButton rbCircular;
-		private System.Windows.Forms.RadioButton rbSemiCircle;
 		private System.Windows.Forms.TrackBar trkSpacing;
 		private System.Windows.Forms.Label lblSpacing;
 		private System.Windows.Forms.Label lblColumnsRadius;
 		private System.Windows.Forms.TrackBar trkColumnsRadius;
-		private System.Windows.Forms.RadioButton rbTriangle;
 		private System.Windows.Forms.TextBox tbxGroupName;
 		private System.Windows.Forms.Button btnLookAt;
 		private System.Windows.Forms.Label lblRotation;
@@ -909,5 +922,8 @@
 		private System.Windows.Forms.Button btnDestroyGroup;
 		private System.Windows.Forms.Button btnReverseLine;
 		private System.Windows.Forms.RadioButton rbFreeform;
+		private System.Windows.Forms.Label lblArcAngleValue;
+		private System.Windows.Forms.Label lblArcAngle;
+		private System.Windows.Forms.TrackBar trkArcAngle;
 	}
 }

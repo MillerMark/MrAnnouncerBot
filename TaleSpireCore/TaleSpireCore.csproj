@@ -149,7 +149,6 @@
     <Compile Include="CompositeEffects\SmartProperty.cs" />
     <Compile Include="CompositeEffects\UnityMainThreadDispatcher.cs" />
     <Compile Include="ConvertUtils.cs" />
-    <Compile Include="Decompiles\AssetDb2.cs" />
     <Compile Include="DndControllerAppClient.cs" />
     <Compile Include="DTOs\ApiResponse.cs" />
     <Compile Include="DTOs\CharacterPosition.cs" />
@@ -180,6 +179,7 @@
     <Compile Include="MemberLocation.cs" />
     <Compile Include="MiniGrouper.cs" />
     <Compile Include="MiniGrouperData.cs" />
+    <Compile Include="SerializableVector3.cs" />
     <Compile Include="PersistentEffects\EffectProperties.cs" />
     <Compile Include="PersistentEffects\IOldPersistentEffect.cs" />
     <Compile Include="PersistentEffects\SuperPersistentEffect.cs" />

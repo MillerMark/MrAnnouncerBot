@@ -73,7 +73,8 @@ namespace TaleSpireCore
 				dropOffset = 0.5f;
 			}
 
-			asset.Drop(dropPosition, dropPosition.y + dropOffset);
+			float height = dropPosition.y + dropOffset;
+			asset.Drop(dropPosition, height);
 			return dropPosition;
 		}
 
@@ -423,7 +424,7 @@ namespace TaleSpireCore
 
 			//Talespire.Log.Debug($"newEffectData: {newEffectData}");
 			
-			StatMessaging.SetInfoNoGuard(creatureAsset.CreatureId, Talespire.PersistentEffects.STR_PersistentEffect, newEffectData);
+			StatMessaging.SetInfo(creatureAsset.CreatureId, PersistentEffects.STR_PersistentEffect, newEffectData);
 		}
 
 		public static GameObject GetChildNodeStartingWith(this GameObject gameObject, string prefix, bool includeInactive = false)

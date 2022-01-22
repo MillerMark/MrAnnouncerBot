@@ -164,8 +164,6 @@ namespace TaleSpireExplore
 			LocalClient.OnIsGmStatusChange += LocalClient_OnIsGmStatusChange;
 			LocalPlayer.OnRightsUpdated += LocalPlayer_OnRightsUpdated;
 			PartyManager.OnPartyGmSet += PartyManager_OnPartyGmSet;
-			PhotoMode.OnPhotoModeChangeFromTo += PhotoMode_OnPhotoModeChangeFromTo;
-			PhotoMode.OnPhotoModeToggle += PhotoMode_OnPhotoModeToggle;
 			PublishedBoardManager.OnPublishedBoardListChanged += PublishedBoardManager_OnPublishedBoardListChanged;
 			WaterPlane.BuildDisplayToggleEvent += WaterPlane_BuildDisplayToggleEvent;
 			WaterPlane.EnterWaterEvent += WaterPlane_EnterWaterEvent;
@@ -237,8 +235,6 @@ namespace TaleSpireExplore
 			LocalClient.OnIsGmStatusChange -= LocalClient_OnIsGmStatusChange;
 			LocalPlayer.OnRightsUpdated -= LocalPlayer_OnRightsUpdated;
 			PartyManager.OnPartyGmSet -= PartyManager_OnPartyGmSet;
-			PhotoMode.OnPhotoModeChangeFromTo -= PhotoMode_OnPhotoModeChangeFromTo;
-			PhotoMode.OnPhotoModeToggle -= PhotoMode_OnPhotoModeToggle;
 			PublishedBoardManager.OnPublishedBoardListChanged -= PublishedBoardManager_OnPublishedBoardListChanged;
 			WaterPlane.BuildDisplayToggleEvent -= WaterPlane_BuildDisplayToggleEvent;
 			WaterPlane.EnterWaterEvent -= WaterPlane_EnterWaterEvent;
@@ -287,16 +283,6 @@ namespace TaleSpireExplore
 		private void PublishedBoardManager_OnPublishedBoardListChanged()
 		{
 			LogEvent($"PublishedBoardManager.OnPublishedBoardListChanged()");
-		}
-
-		private void PhotoMode_OnPhotoModeToggle(bool obj)
-		{
-			LogEvent($"PhotoMode.OnPhotoModeToggle(obj: {obj})");
-		}
-
-		private void PhotoMode_OnPhotoModeChangeFromTo(PhotoMode.CameraControlStyle arg1, PhotoMode.CameraControlStyle arg2)
-		{
-			LogEvent($"PhotoMode.OnPhotoModeChangeFromTo(arg1: {arg1}, arg2: {arg2})");
 		}
 
 		private void PartyManager_OnPartyGmSet(ClientGuid obj)

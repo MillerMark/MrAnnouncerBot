@@ -8,8 +8,6 @@ namespace TaleSpireCore
 		FreeForm,
 		Gaggle,
 		Rectangle,
-		Circle,
-		Semicircle,
-		Triangle
+		Circle
 	}
 }

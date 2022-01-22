@@ -11,6 +11,7 @@ using static UnityEngine.ParticleSystem;
 using UnityEngine;
 using TaleSpireCore;
 using Newtonsoft.Json;
+using Bounce.Unmanaged;
 
 namespace TaleSpireExplore
 {
@@ -19,6 +20,7 @@ namespace TaleSpireExplore
 		const float GaggleVariance = 0.3f;
 		System.Timers.Timer updateMemberListTimer;
 		System.Timers.Timer updateGroupNameTimer;
+		System.Timers.Timer updateNewlySpawnedCreaturesTimer;
 		bool initializing;
 		public EdtMiniGrouper()
 		{
@@ -32,6 +34,9 @@ namespace TaleSpireExplore
 			updateGroupNameTimer = new System.Timers.Timer();
 			updateGroupNameTimer.Interval = 1500;
 			updateGroupNameTimer.Elapsed += UpdateGroupNameTimer_Elapsed;
+			updateNewlySpawnedCreaturesTimer = new System.Timers.Timer();
+			updateNewlySpawnedCreaturesTimer.Interval = 500;
+			updateNewlySpawnedCreaturesTimer.Elapsed += UpdateNewlySpawnedCreaturesTimer_Elapsed;
 			initializing = false;
 		}
 
@@ -60,6 +65,9 @@ namespace TaleSpireExplore
 					trkSpacing.Value = MiniGrouperScript.Data.Spacing;
 					lblSpacingValue.Text = $"{MiniGrouperScript.Data.Spacing}ft";
 
+					trkArcAngle.Value = MiniGrouperScript.Data.ArcAngle;
+					lblArcAngleValue.Text = $"{MiniGrouperScript.Data.ArcAngle}°";
+
 					trkColumnsRadius.Maximum = 1000;
 					trkColumnsRadius.Value = MiniGrouperScript.Data.ColumnRadius;
 
@@ -69,7 +77,6 @@ namespace TaleSpireExplore
 					switch (MiniGrouperScript.Data.FormationStyle)
 					{
 						case FormationStyle.FreeForm:
-						case FormationStyle.Triangle:
 							EditingNeitherColumnsNorCircular();
 							break;
 						case FormationStyle.Gaggle:
@@ -77,7 +84,6 @@ namespace TaleSpireExplore
 							EditingColumns();
 							break;
 						case FormationStyle.Circle:
-						case FormationStyle.Semicircle:
 							EditingCircular();
 							break;
 					}
@@ -99,6 +105,7 @@ namespace TaleSpireExplore
 
 		void RefreshMemberList()
 		{
+			Talespire.Log.Indent();
 			lstMembers.Items.Clear();
 
 			if (Guard.IsNull(MiniGrouperScript, "Script")) return;
@@ -114,6 +121,7 @@ namespace TaleSpireExplore
 			}
 
 			MiniGrouperScript.RemoveMembers(notFoundCreatures);
+			Talespire.Log.Unindent();
 		}
 
 		private void Talespire_MiniSelected(object sender, CreatureBoardAssetEventArgs ea)
@@ -257,8 +265,6 @@ namespace TaleSpireExplore
 				rbRectangular.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Rectangle;
 				rbGaggle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Gaggle;
 				rbFreeform.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.FreeForm;
-				rbTriangle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Triangle;
-				rbSemiCircle.Checked = MiniGrouperScript.Data.FormationStyle == FormationStyle.Semicircle;
 			}
 			finally
 			{
@@ -364,9 +370,14 @@ namespace TaleSpireExplore
 		FormationEditingMode formationEditingMode = FormationEditingMode.Columns;
 		int lastRadius = 3;
 		int lastColumnCount = 1;
-		
+		object newlySpawnedCreatureLock = new object();
+		List<string> newlySpawnedCreatureIds = new List<string>();
+
 		private void EditingCircular()
 		{
+			trkArcAngle.Visible = true;
+			lblArcAngle.Visible = true;
+			lblArcAngleValue.Visible = true;
 			SetColumnRadiusTrackbarVisibility(true);
 			SetCircularRange();
 			KeepValueInBounds();
@@ -428,7 +439,12 @@ namespace TaleSpireExplore
 		private void rbCircular_CheckedChanged(object sender, EventArgs e)
 		{
 			if (!rbCircular.Checked)
+			{
+				trkArcAngle.Visible = false;
+				lblArcAngle.Visible = false;
+				lblArcAngleValue.Visible = false;
 				return;
+			}
 
 			if (changingInternally)
 				return;
@@ -436,32 +452,7 @@ namespace TaleSpireExplore
 			SetFormationStyle(FormationStyle.Circle);
 			NewFormationSelected();
 			EditingCircular();
-		}
-
-		private void rbSemiCircle_CheckedChanged(object sender, EventArgs e)
-		{
-			if (!rbSemiCircle.Checked)
-				return;
-
-			if (changingInternally)
-				return; 
-			
-			SetFormationStyle(FormationStyle.Semicircle);
-			NewFormationSelected();
-			EditingCircular();
-		}
-
-		private void rbTriangle_CheckedChanged(object sender, EventArgs e)
-		{
-			if (!rbTriangle.Checked)
-				return;
-
-			if (changingInternally)
-				return;
-
-			SetFormationStyle(FormationStyle.Triangle);
-			NewFormationSelected();
-			EditingNeitherColumnsNorCircular();
+			ArrangeInCircle();
 		}
 
 		private void rbGaggle_CheckedChanged(object sender, EventArgs e)
@@ -473,7 +464,6 @@ namespace TaleSpireExplore
 				return;
 
 			SetFormationStyle(FormationStyle.Gaggle);
-			Talespire.Log.Warning($"rbGaggle_CheckedChanged!");
 			NewFormationSelected();
 			EditingColumns();
 			ArrangeInRectangle(GaggleVariance);
@@ -507,6 +497,14 @@ namespace TaleSpireExplore
 
 		private void SetFormationStyle(FormationStyle formationStyle)
 		{
+			if (formationStyle != FormationStyle.FreeForm && !rbFormation.Checked)
+			{
+				bool saveChangingInternally = changingInternally;
+				changingInternally = true;
+				rbFormation.Checked = true;
+				changingInternally = saveChangingInternally;
+			}
+
 			if (MiniGrouperScript != null)
 			{
 				MiniGrouperScript.Data.FormationStyle = formationStyle;
@@ -519,10 +517,17 @@ namespace TaleSpireExplore
 			MiniGrouperScript?.ArrangeInRectangle(trkColumnsRadius.Value, trkSpacing.Value, percentVariance, trkFormationRotation.Value);
 		}
 
+		void ArrangeInCircle()
+		{
+			MiniGrouperScript?.ArrangeInCircle(trkColumnsRadius.Value, trkArcAngle.Value, trkSpacing.Value, trkFormationRotation.Value);
+		}
+
 		private void trkColumnsRadius_Scroll(object sender, EventArgs e)
 		{
 			if (formationEditingMode == FormationEditingMode.None)
 				return;
+
+			EnsureFormationMode();
 
 			if (formationEditingMode == FormationEditingMode.Radius)
 			{
@@ -583,10 +588,55 @@ namespace TaleSpireExplore
 				MiniGrouperScript?.RefreshFollowTheLeaderLine();
 		}
 
+		private void trkArcAngle_Scroll(object sender, EventArgs e)
+		{
+			lblArcAngleValue.Text = $"{trkArcAngle.Value}°";
+
+			if (changingInternally || initializing)
+				return;
+
+			EnsureFormationMode();
+
+			if (MiniGrouperScript != null)
+				MiniGrouperScript.Data.ArcAngle = trkArcAngle.Value;
+
+			if (rbFormation.Checked)
+				UpdateFormation();
+		}
+
+		private void EnsureFormationMode()
+		{
+			if (MiniGrouperScript == null)
+				return;
+
+			changingInternally = true;
+			try
+			{
+				rbFormation.Checked = true;
+			}
+			finally
+			{
+				changingInternally = false;
+			}
+
+			if (MiniGrouperScript.Data.Movement == GroupMovementMode.Formation)
+				return;
+
+			MiniGrouperScript.Data.Movement = GroupMovementMode.Formation;
+			MiniGrouperScript.DataChanged();
+		}
+
+		private void trkArcAngle_MouseUp(object sender, MouseEventArgs e)
+		{
+			MiniGrouperScript?.DataChanged();
+		}
+
 		private void UpdateFormation()
 		{
 			if (rbRectangular.Checked)
 				ArrangeInRectangle(0);
+			else if (rbCircular.Checked)
+				ArrangeInCircle();
 			else if (rbGaggle.Checked)
 				ArrangeInRectangle(GaggleVariance);
 		}
@@ -594,7 +644,84 @@ namespace TaleSpireExplore
 		private void btnAdd_Click(object sender, EventArgs e)
 		{
 			GroupMember groupMember = lstMembers.SelectedItem as GroupMember;
-			// TODO: Create more members.
+			List<NGuid> boardAssetIds = new List<NGuid>();
+			if (groupMember != null)
+				boardAssetIds.Add(groupMember.CreatureBoardAsset.BoardAssetId);
+			else
+				foreach (GroupMember member in lstMembers.Items)
+					boardAssetIds.Add(member.CreatureBoardAsset.BoardAssetId);
+
+			if (!int.TryParse(tbxNumCreatures.Text, out int numCreaturesToSpawn))
+			{
+				numCreaturesToSpawn = 1;
+				tbxNumCreatures.Text = "1";
+			}
+
+			List<string> spawnedCreatureIds = MiniGrouperScript?.SpawnMoreMembers(numCreaturesToSpawn, boardAssetIds);
+
+			lock (newlySpawnedCreatureLock)
+				newlySpawnedCreatureIds.AddRange(spawnedCreatureIds);
+
+			UpdateNewCreaturesSoon();
+		}
+
+		private void UpdateNewlySpawnedCreaturesTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			updateNewlySpawnedCreaturesTimer.Stop();
+
+			if (MiniGrouperScript == null)
+				return;
+
+			List<string> foundCreatureIds = new List<string>();
+			List<CreatureBoardAsset> foundCreatureBoardAssets = new List<CreatureBoardAsset>();
+
+			bool readyToInitializePlayers = false;
+			lock (newlySpawnedCreatureLock)
+			{
+				foreach (string newlySpawnedCreatureId in newlySpawnedCreatureIds)
+				{
+					CreatureBoardAsset creatureBoardAsset = Talespire.Minis.GetCreatureBoardAsset(newlySpawnedCreatureId);
+					if (creatureBoardAsset != null)
+					{
+						foundCreatureIds.Add(newlySpawnedCreatureId);
+						foundCreatureBoardAssets.Add(creatureBoardAsset);
+					}
+				}
+
+				foreach (string foundCreatureId in foundCreatureIds)
+					newlySpawnedCreatureIds.Remove(foundCreatureId);
+
+				readyToInitializePlayers = newlySpawnedCreatureIds.Count == 0;
+			}
+
+			foreach (CreatureBoardAsset creatureBoardAsset in foundCreatureBoardAssets)
+				MiniGrouperScript.AddMemberToGroup(creatureBoardAsset);
+
+			if (readyToInitializePlayers)
+			{
+				InitializeNewlySpawnedCreatures();
+			}
+			else
+				updateNewlySpawnedCreaturesTimer.Start();  // Try again in a moment.
+		}
+
+		void InitializeNewlySpawnedCreatures()
+		{
+			Talespire.Log.Indent();
+			UnityMainThreadDispatcher.ExecuteOnMainThread(() =>
+			{
+				RefreshMemberList();
+				MiniGrouperScript.RefreshIndicators();
+				UpdateFormation();
+			});
+
+			MiniGrouperScript.DataChanged();
+			Talespire.Log.Unindent();
+		}
+
+		void UpdateNewCreaturesSoon()
+		{
+			updateNewlySpawnedCreaturesTimer.Start();
 		}
 
 		private void tbxGroupName_TextChanged(object sender, EventArgs e)
@@ -704,16 +831,29 @@ namespace TaleSpireExplore
 			MiniGrouperScript.DataChanged();
 			MiniGrouperScript.UpdateLook();
 		}
+
 		private void rbFormation_CheckedChanged(object sender, EventArgs e)
 		{
-			MiniGrouperScript?.ClearLastMemberLocationCache();
-			UpdateMovementMode();
+			if (changingInternally)
+				return;
+
+			if (rbFormation.Checked)
+			{
+				MiniGrouperScript?.ClearLastMemberLocationCache();
+				UpdateMovementMode();
+			}
 		}
 
 		private void rbFollowTheLeader_CheckedChanged(object sender, EventArgs e)
 		{
-			MiniGrouperScript?.ClearLeaderMovementCache();
-			UpdateMovementMode();
+			if (changingInternally)
+				return;
+
+			if (rbFollowTheLeader.Checked)
+			{
+				MiniGrouperScript?.ClearLeaderMovementCache();
+				UpdateMovementMode();
+			}
 		}
 
 		private void rbLookToward_CheckedChanged(object sender, EventArgs e)

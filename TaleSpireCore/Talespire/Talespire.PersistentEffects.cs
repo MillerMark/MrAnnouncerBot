@@ -442,7 +442,7 @@ namespace TaleSpireCore
 				if (!creatureAsset.HasAttachedData(STR_PersistentEffect))
 				{
 					Log.Warning($"SavePersistentEffect -- StatMessaging.SetInfo({creatureAsset.CreatureId}, {defaultNewEffect})");
-					StatMessaging.SetInfoNoGuard(creatureAsset.CreatureId, STR_PersistentEffect, defaultNewEffect);
+					StatMessaging.SetInfo(creatureAsset.CreatureId, STR_PersistentEffect, defaultNewEffect);
 				}
 				else
 				{

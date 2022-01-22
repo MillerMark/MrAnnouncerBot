@@ -171,3 +171,19 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 |---|---|---|
 | party3 | DH.Party3 | Good | 
 
+### Level 12
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| party4 | DH.Party4 | Good | 
+
+### Level 14
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| party5 | DH.Party5 | Good | 
+
