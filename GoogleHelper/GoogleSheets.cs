@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace GoogleHelper
 {
@@ -76,6 +77,7 @@ namespace GoogleHelper
 						value += (int)Enum.Parse(enumProperty.PropertyType, part.Trim());
 					}
 				}
+				// TODO: Consider re-throwing the error before publishing.
 #pragma warning disable CS0168  // Used for diagnostics/debugging.
 				catch (Exception ex)
 				{
@@ -471,13 +473,13 @@ namespace GoogleHelper
 		/// <param name="tabName"></param>
 		/// <param name="instances"></param>
 		/// <param name="instanceType"></param>
-		/// <param name="saveOnlyTheseMembersStr">Comma-separated list of names of member properties to save.</param>
+		/// <param name="saveOnlyTheseMembersStr">Comma-separated list of the names of the member properties to save.</param>
 		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string saveOnlyTheseMembersStr = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
 
-			ValidateDocAndTabNames(docName, tabName, true);
+			ValidateSheetAndTabNames(docName, tabName, true);
 
 			string[] saveOnlyTheseMembers = null;
 			if (saveOnlyTheseMembersStr != null)
@@ -507,15 +509,20 @@ namespace GoogleHelper
 			ExecuteRequest(spreadsheetId, requestBody);
 		}
 
-		private static void ValidateDocAndTabNames(string docName, string tabName, bool trackTabIfMissing = false)
+		private static void ValidateSheetAndTabNames(string sheetName, string tabName, bool trackTabIfMissing = false)
 		{
-			if (!spreadsheetIDs.ContainsKey(docName))
-				throw new InvalidDataException($"docName (\"{docName}\") not found!");
+			ValidateSheetName(sheetName);
 
 			if (trackTabIfMissing)
-				Track(docName, tabName);
-			else if (sheetTabMap[docName].IndexOf(tabName) < 0)
+				Track(sheetName, tabName);
+			else if (sheetTabMap[sheetName].IndexOf(tabName) < 0)
 				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
+		}
+
+		private static void ValidateSheetName(string sheetName)
+		{
+			if (!spreadsheetIDs.ContainsKey(sheetName))
+				throw new InvalidDataException($"docName (\"{sheetName}\") not found!");
 		}
 
 		private static void UpdateRow(string tabName, object[] instances, string[] saveOnlyTheseMembers, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex, BatchUpdateValuesRequest requestBody)
@@ -614,13 +621,19 @@ namespace GoogleHelper
 
 		private static void GetSheetTabAttributes(Type instanceType, out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute)
 		{
-			sheetNameAttribute = instanceType.GetCustomAttribute<SheetNameAttribute>();
-			if (sheetNameAttribute == null)
-				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"SheetName\" attribute.");
+			sheetNameAttribute = GetSheetAttributes(instanceType);
 
 			tabNameAttribute = instanceType.GetCustomAttribute<TabNameAttribute>();
 			if (tabNameAttribute == null)
 				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
+		}
+
+		private static SheetNameAttribute GetSheetAttributes(Type instanceType)
+		{
+			SheetNameAttribute sheetNameAttribute = instanceType.GetCustomAttribute<SheetNameAttribute>();
+			if (sheetNameAttribute == null)
+				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"SheetName\" attribute.");
+			return sheetNameAttribute;
 		}
 
 		public static void SaveChanges(object instance, string filterMember = null)
@@ -669,14 +682,14 @@ namespace GoogleHelper
 			batchUpdate.Execute();
 		}
 
-		static void DeleteRowInSheet(object instance, string docName, string tabName)
+		static void DeleteRowInSheet(object instance, string sheetName, string tabName)
 		{
 			Type instanceType = instance.GetType();
-			ValidateDocAndTabNames(docName, tabName);
-			string spreadsheetId = spreadsheetIDs[docName];
+			ValidateSheetAndTabNames(sheetName, tabName);
+			string spreadsheetId = spreadsheetIDs[sheetName];
 			List<string> headerRow;
 			IList<IList<object>> allRows;
-			GetHeaderRow(docName, tabName, out headerRow, out allRows);
+			GetHeaderRow(sheetName, tabName, out headerRow, out allRows);
 
 			MemberInfo[] indexFields = GetSerializableFields<IndexerAttribute>(instanceType);
 
@@ -688,6 +701,128 @@ namespace GoogleHelper
 		{
 			GetSheetTabAttributes(instance.GetType(), out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
 			DeleteRowInSheet(instance, sheetNameAttribute.SheetName, tabNameAttribute.TabName);
+		}
+
+		static void ExecuteAppendRow(string spreadsheetId, string tabName, IList<IList<object>> values)
+		{
+			SpreadsheetsResource.ValuesResource.AppendRequest request =
+									 service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
+			request.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
+			request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+			var response = request.Execute();
+		}
+
+		public static void AppendRow<T>(T instance, string tabNameOverride = null, string sheetNameOverride = null)
+		{
+			T[] instances = { instance };
+			AppendRows<T>(instances, tabNameOverride, sheetNameOverride);
+		}
+
+		public static void AppendRows<T>(T[] instances, string tabNameOverride = null, string sheetNameOverride = null)
+		{
+			if (instances == null || instances.Length == 0)
+				return;
+
+			GetSheetTabAttributes(typeof(T), out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
+
+			string sheetName;
+			string tabName;
+			if (sheetNameOverride != null)
+				sheetName = sheetNameOverride;
+			else
+				sheetName = sheetNameAttribute.SheetName;
+
+			if (tabNameOverride != null)
+				tabName = tabNameOverride;
+			else
+				tabName = tabNameAttribute.TabName;
+
+			Track(sheetName, tabName);
+			ValidateSheetAndTabNames(sheetName, tabName);
+			string spreadsheetId = spreadsheetIDs[sheetName];
+
+			IList<IList<Object>> values = new List<IList<Object>>();
+			foreach (object instance in instances)
+			{
+				IList<Object> row = new List<Object>();
+				MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
+				foreach (MemberInfo memberInfo in serializableFields)
+					row.Add(GetValue(instance, memberInfo));
+				values.Add(row);
+			}
+
+			ExecuteAppendRow(spreadsheetId, tabName, values);
+		}
+
+		public static void MakeSureTabExists<T>(string tabName)
+		{
+			if (!TabExists<T>(tabName))
+				AddTab<T>(tabName);
+		}
+
+		private static string GetSheetName<T>()
+		{
+			SheetNameAttribute sheetNameAttribute = GetSheetAttributes(typeof(T));
+			return sheetNameAttribute.SheetName;
+		}
+
+		public static bool TabExists<T>(string tabName)
+		{
+			return TabExists(GetSheetName<T>(), tabName);
+		}
+
+		public static bool TabExists(string sheetName, string tabName)
+		{
+			ValidateSheetName(sheetName);
+			return GetTabId(spreadsheetIDs[sheetName], tabName) != null;
+		}
+
+		/// <summary>
+		/// Adds a new specified tab to the spreadsheet connected with this element.
+		/// </summary>
+		/// <param name="tabName"></param>
+		public static void AddTab<T>(string tabName)
+		{
+			string sheetName = GetSheetName<T>();
+			AddSheetRequest addSheetRequest = new AddSheetRequest();
+			SheetProperties sheetProperties = new SheetProperties() { Title = tabName };
+			
+			addSheetRequest.Properties = sheetProperties;
+			
+			BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+
+			//Create requestList and set it on the batchUpdateSpreadsheetRequest
+			List<Request> requestsList = new List<Request>();
+			batchUpdateSpreadsheetRequest.Requests = requestsList;
+
+			//Create a new request with containing the addSheetRequest and add it to the requestList
+			Request request = new Request();
+			request.AddSheet = addSheetRequest;
+			requestsList.Add(request);
+
+			//Add the requestList to the batchUpdateSpreadsheetRequest
+			batchUpdateSpreadsheetRequest.Requests = requestsList;
+
+			//Call the sheets API to execute the batchUpdate
+			string spreadsheetId = spreadsheetIDs[sheetName];
+			service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadsheetId).Execute();
+
+			// TODO: To optimize for performance, consider rolling this next ExecuteAppendRow call into the previous batch update.
+
+			List<object> columns = new List<object>();
+			MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
+			foreach (MemberInfo memberInfo in serializableFields)
+			{
+				ColumnAttribute columnAttribute = memberInfo.GetCustomAttribute<ColumnAttribute>();
+				if (columnAttribute != null && !string.IsNullOrEmpty(columnAttribute.ColumnName))
+					columns.Add(columnAttribute.ColumnName);
+				else
+					columns.Add(memberInfo.Name);
+			}
+
+			List<IList<object>> rows = new List<IList<object>>();
+			rows.Add(columns);
+			ExecuteAppendRow(spreadsheetId, tabName, rows);
 		}
 	}
 }
