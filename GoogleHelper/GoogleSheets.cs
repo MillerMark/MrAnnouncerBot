@@ -4,9 +4,9 @@ using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using System;
+using System.Reflection;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Threading;
 using Newtonsoft.Json.Linq;
@@ -715,7 +715,7 @@ namespace GoogleHelper
 		public static void AppendRow<T>(T instance, string tabNameOverride = null, string sheetNameOverride = null)
 		{
 			T[] instances = { instance };
-			AppendRows<T>(instances, tabNameOverride, sheetNameOverride);
+			AppendRows(instances, tabNameOverride, sheetNameOverride);
 		}
 
 		public static void AppendRows<T>(T[] instances, string tabNameOverride = null, string sheetNameOverride = null)

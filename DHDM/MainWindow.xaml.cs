@@ -102,14 +102,18 @@ namespace DHDM
 			{
 				InitializeGame();
 				SpellManager.Initialize(Game);
-				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				//`! !!!                                                                                      !!!
-				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-				//`! !!!                                                                                      !!!
-				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				StreamlootsBackgroundTask.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
+				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				// !!!                                                                                      !!!
+				// !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+				// !!!                                                                                      !!!
+				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+				//StreamlootsBackgroundTask.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
+
 				dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchClientId"]);
 				dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchAccessToken"]);
+				
 				//dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
 				//dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
 			}
