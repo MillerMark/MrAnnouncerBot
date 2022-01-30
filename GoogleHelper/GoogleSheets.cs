@@ -10,6 +10,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace GoogleHelper
 {
@@ -60,7 +61,7 @@ namespace GoogleHelper
 			else
 				range = $"{tabName}!{cellRange}";
 
-			SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(spreadsheetId, range);
+			SpreadsheetsResource.ValuesResource.GetRequest request = Service.Spreadsheets.Values.Get(spreadsheetId, range);
 			ValueRange response = request.Execute();
 			return response.Values;
 		}
@@ -179,20 +180,20 @@ namespace GoogleHelper
 			switch (property.PropertyType.FullName)
 			{
 				case "System.Int32":
-					return  default(int);
+					return default(int);
 				case "System.String":
-					return  string.Empty;
+					return string.Empty;
 				case "System.Boolean":
-					return  default(bool);
+					return default(bool);
 				case "System.Decimal":
-					return  default(decimal);
+					return default(decimal);
 				case "System.Double":
 					return default(double);
 				case "System.DateTime":
-					return  default(DateTime);
+					return default(DateTime);
 				default:
 					if (property.PropertyType.BaseType.FullName == "System.Enum")
-						return  0;
+						return 0;
 					else
 						System.Diagnostics.Debugger.Break();
 					break;
@@ -262,11 +263,6 @@ namespace GoogleHelper
 
 		static SheetsService service;
 
-		static GoogleSheets()
-		{
-			InitialService(GetUserCredentials());
-		}
-
 		private static void InitialService(UserCredential credential)
 		{
 			service = new SheetsService(new BaseClientService.Initializer()
@@ -284,13 +280,11 @@ namespace GoogleHelper
 				// The file token.json stores the user's access and refresh tokens, and is created
 				// automatically when the authorization flow completes for the first time.
 				string credentialPath = "token.json";
-				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-						GoogleClientSecrets.FromStream(stream).Secrets,
-						Scopes,
-						"user",
-						CancellationToken.None,
-						new FileDataStore(credentialPath, true)).Result;
-				Console.WriteLine("Credential file saved to: " + credentialPath);
+				ClientSecrets secrets = GoogleClientSecrets.FromStream(stream).Secrets;
+				FileDataStore dataStore = new FileDataStore(credentialPath, true);
+				Debug.WriteLine("GoogleWebAuthorizationBroker.AuthorizeAsync...");
+				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(secrets, Scopes, "user", CancellationToken.None, dataStore).Result;
+				Debug.WriteLine("Credential file saved to: " + credentialPath);
 			}
 
 			return credential;
@@ -298,7 +292,7 @@ namespace GoogleHelper
 
 		public static void RegisterSpreadsheetID(string sheetName, string sheetID)
 		{
-			spreadsheetIDs.Add(sheetName, sheetID);
+			spreadsheetIDs[sheetName] = sheetID;
 		}
 
 		static MemberInfo[] GetSerializableFields<TAttribute>(Type instanceType) where TAttribute : Attribute
@@ -311,7 +305,7 @@ namespace GoogleHelper
 			return memberInfo.ToArray();
 		}
 
-		static string GetColumnName<TColumnAttribute>(MemberInfo memberInfo) where TColumnAttribute: ColumnNameAttribute
+		static string GetColumnName<TColumnAttribute>(MemberInfo memberInfo) where TColumnAttribute : ColumnNameAttribute
 		{
 			TColumnAttribute customAttribute = memberInfo.GetCustomAttribute<TColumnAttribute>();
 			if (customAttribute == null || string.IsNullOrEmpty(customAttribute.ColumnName))
@@ -452,9 +446,9 @@ namespace GoogleHelper
 			return body;
 		}
 
-		private static void ExecuteRequest(string spreadsheetId, BatchUpdateValuesRequest requestBody)
+		private static void ExecuteBatchUpdate(string spreadsheetId, BatchUpdateValuesRequest requestBody)
 		{
-			SpreadsheetsResource.ValuesResource.BatchUpdateRequest request = service.Spreadsheets.Values.BatchUpdate(requestBody, spreadsheetId);
+			SpreadsheetsResource.ValuesResource.BatchUpdateRequest request = Service.Spreadsheets.Values.BatchUpdate(requestBody, spreadsheetId);
 			Execute(request);
 		}
 
@@ -506,7 +500,7 @@ namespace GoogleHelper
 					UpdateRow(tabName, instances, saveOnlyTheseMembers, headerRow, allRows, serializableFields, i, rowIndex, requestBody);
 			}
 
-			ExecuteRequest(spreadsheetId, requestBody);
+			ExecuteBatchUpdate(spreadsheetId, requestBody);
 		}
 
 		private static void ValidateSheetAndTabNames(string sheetName, string tabName, bool trackTabIfMissing = false)
@@ -644,7 +638,7 @@ namespace GoogleHelper
 
 		static int? GetTabId(string spreadsheetId, string tabName)
 		{
-			Spreadsheet spreadsheet = service.Spreadsheets.Get(spreadsheetId).Execute();
+			Spreadsheet spreadsheet = Service.Spreadsheets.Get(spreadsheetId).Execute();
 
 			foreach (Sheet sheet in spreadsheet.Sheets)
 				if (sheet.Properties.Title == tabName)
@@ -678,7 +672,7 @@ namespace GoogleHelper
 			BatchUpdateSpreadsheetRequest deleteRequest = new BatchUpdateSpreadsheetRequest();
 			deleteRequest.Requests = RequestContainer;
 
-			SpreadsheetsResource.BatchUpdateRequest batchUpdate = service.Spreadsheets.BatchUpdate(deleteRequest, spreadsheetId);
+			SpreadsheetsResource.BatchUpdateRequest batchUpdate = Service.Spreadsheets.BatchUpdate(deleteRequest, spreadsheetId);
 			batchUpdate.Execute();
 		}
 
@@ -703,55 +697,49 @@ namespace GoogleHelper
 			DeleteRowInSheet(instance, sheetNameAttribute.SheetName, tabNameAttribute.TabName);
 		}
 
-		static void ExecuteAppendRow(string spreadsheetId, string tabName, IList<IList<object>> values)
+		static void ExecuteAppendRows(string spreadsheetId, string tabName, IList<IList<object>> values)
+		{
+			SpreadsheetsResource.ValuesResource.AppendRequest request = GetAppendRequest(spreadsheetId, tabName, values);
+			try
+			{
+				var response = request.Execute();
+			}
+			catch (Exception ex)
+			{
+
+			}
+		}
+
+		private static SpreadsheetsResource.ValuesResource.AppendRequest GetAppendRequest(string spreadsheetId, string tabName, IList<IList<object>> values)
 		{
 			SpreadsheetsResource.ValuesResource.AppendRequest request =
-									 service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
+												 Service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
 			request.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
 			request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
-			var response = request.Execute();
+			return request;
 		}
 
-		public static void AppendRow<T>(T instance, string tabNameOverride = null, string sheetNameOverride = null)
+		static void ExecuteInsertRows(string spreadsheetId, string tabName, IList<IList<object>> values, int rowStartIndex = 0)
 		{
-			T[] instances = { instance };
-			AppendRows(instances, tabNameOverride, sheetNameOverride);
-		}
-
-		public static void AppendRows<T>(T[] instances, string tabNameOverride = null, string sheetNameOverride = null)
-		{
-			if (instances == null || instances.Length == 0)
-				return;
-
-			GetSheetTabAttributes(typeof(T), out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
-
-			string sheetName;
-			string tabName;
-			if (sheetNameOverride != null)
-				sheetName = sheetNameOverride;
-			else
-				sheetName = sheetNameAttribute.SheetName;
-
-			if (tabNameOverride != null)
-				tabName = tabNameOverride;
-			else
-				tabName = tabNameAttribute.TabName;
-
-			Track(sheetName, tabName);
-			ValidateSheetAndTabNames(sheetName, tabName);
-			string spreadsheetId = spreadsheetIDs[sheetName];
-
-			IList<IList<Object>> values = new List<IList<Object>>();
-			foreach (object instance in instances)
+			// TODO: Untested. Test this.
+			BatchUpdateValuesRequest requestBody = GetBatchUpdateRequest();
+			InsertDimensionRequest insertDimensionRequest = new InsertDimensionRequest();
+			insertDimensionRequest.InheritFromBefore = false;
+			insertDimensionRequest.Range.StartIndex = rowStartIndex;
+			insertDimensionRequest.Range.StartIndex = rowStartIndex + values.Count;
+			insertDimensionRequest.Range.Dimension = "ROWS";
+			SpreadsheetsResource.ValuesResource.AppendRequest appendRequest =
+									 Service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
+			appendRequest.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
+			appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+			try
 			{
-				IList<Object> row = new List<Object>();
-				MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
-				foreach (MemberInfo memberInfo in serializableFields)
-					row.Add(GetValue(instance, memberInfo));
-				values.Add(row);
+				var response = appendRequest.Execute();
 			}
-
-			ExecuteAppendRow(spreadsheetId, tabName, values);
+			catch (Exception ex)
+			{
+				ExecuteBatchUpdate(spreadsheetId, requestBody);
+			}
 		}
 
 		public static void MakeSureTabExists<T>(string tabName)
@@ -786,9 +774,9 @@ namespace GoogleHelper
 			string sheetName = GetSheetName<T>();
 			AddSheetRequest addSheetRequest = new AddSheetRequest();
 			SheetProperties sheetProperties = new SheetProperties() { Title = tabName };
-			
+
 			addSheetRequest.Properties = sheetProperties;
-			
+
 			BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
 
 			//Create requestList and set it on the batchUpdateSpreadsheetRequest
@@ -805,7 +793,7 @@ namespace GoogleHelper
 
 			//Call the sheets API to execute the batchUpdate
 			string spreadsheetId = spreadsheetIDs[sheetName];
-			service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadsheetId).Execute();
+			Service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadsheetId).Execute();
 
 			// TODO: To optimize for performance, consider rolling this next ExecuteAppendRow call into the previous batch update.
 
@@ -822,7 +810,163 @@ namespace GoogleHelper
 
 			List<IList<object>> rows = new List<IList<object>>();
 			rows.Add(columns);
-			ExecuteAppendRow(spreadsheetId, tabName, rows);
+			Console.WriteLine("ExecuteAppendRows(spreadsheetId, tabName, rows);");
+			ExecuteAppendRows(spreadsheetId, tabName, rows);
+			Console.WriteLine("AddColumnComments(spreadsheetId, tabName, serializableFields);");
+			AddColumnComments(spreadsheetId, tabName, serializableFields);
+			Console.WriteLine("Done!");
+		}
+
+		private static void AddColumnComments(string spreadsheetId, string tabName, MemberInfo[] serializableFields)
+		{
+			int columnIndex = 0;
+			IList<Request> requests = new List<Request>();
+
+			foreach (MemberInfo memberInfo in serializableFields)
+			{
+				NoteAttribute commentAttribute = memberInfo.GetCustomAttribute<NoteAttribute>();
+				if (commentAttribute != null && !string.IsNullOrEmpty(commentAttribute.ColumnNote))
+					AddNote(requests, columnIndex, commentAttribute.ColumnNote, spreadsheetId, tabName);
+				columnIndex++;
+			}
+
+			if (requests != null && requests.Count > 0)
+			{
+				BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest();
+				body.Requests = requests;
+
+				SpreadsheetsResource.BatchUpdateRequest batchUpdateRequest = Service.Spreadsheets.BatchUpdate(body, spreadsheetId);
+				if (batchUpdateRequest != null)
+				{
+					BatchUpdateSpreadsheetResponse response = batchUpdateRequest.Execute();
+				}
+			}
+		}
+
+		private static void AddNote(IList<Request> requests, int columnIndex, string comment, string spreadsheetId, string tabName)
+		{
+			Request commentRequest = new Request();
+			commentRequest.UpdateCells = new UpdateCellsRequest();
+			commentRequest.UpdateCells.Range = new GridRange();
+			commentRequest.UpdateCells.Range.SheetId = GetTabId(spreadsheetId, tabName);
+			commentRequest.UpdateCells.Range.StartRowIndex = 0;
+			commentRequest.UpdateCells.Range.EndRowIndex = 1;
+			commentRequest.UpdateCells.Range.StartColumnIndex = columnIndex;
+			commentRequest.UpdateCells.Range.EndColumnIndex = columnIndex + 1;
+			commentRequest.UpdateCells.Rows = new List<RowData>();
+			commentRequest.UpdateCells.Rows.Add(new RowData());
+			commentRequest.UpdateCells.Rows[0].Values = new List<CellData>();
+			commentRequest.UpdateCells.Rows[0].Values.Add(new CellData());
+			commentRequest.UpdateCells.Rows[0].Values[0].Note = comment;
+			commentRequest.UpdateCells.Fields = "note";
+
+			//CellData cellData = new CellData();
+			//cellData.Note = comment;
+			//commentRequest.RepeatCell.Cell = cellData;
+			//commentRequest.RepeatCell.Fields = "note";
+			requests.Add(commentRequest);
+
+
+			//// Building a request for update cells.
+			//request.UpdateCells = new Google.Apis.Sheets.v4.Data.UpdateCellsRequest();
+			//request.UpdateCells.Range = gridRange;
+			//request.UpdateCells.Fields = "note";
+			//request.UpdateCells.Rows = new List<Google.Apis.Sheets.v4.Data.RowData>();
+			//request.UpdateCells.Rows.Add(new Google.Apis.Sheets.v4.Data.RowData());
+			//request.UpdateCells.Rows[0].Values = new List<Google.Apis.Sheets.v4.Data.CellData>();
+			//request.UpdateCells.Rows[0].Values.Add(new Google.Apis.Sheets.v4.Data.CellData());
+			//request.UpdateCells.Rows[0].Values[0].Note = noteMessage;
+		}
+
+		/// <summary>
+		/// Appends a row representing the specified instance, writing its field values out to the spreadsheet. Make sure 
+		/// your instance class has the [SheetName] attribute (and that sheet has been registered with <cref>RegisterSpreadsheetID</cref>), 
+		/// and add the [Column] attribute to any members that you want to write out to the spreadsheet.
+		/// Messages sent here are throttled so as not to exceed the Google sheets per-minute usage limits. The time to wait 
+		/// between message bursts is determined by the <cref>TimeBetweenThrottledUpdates</cref> property.
+		/// </summary>
+		/// <typeparam name="T">The type to append</typeparam>
+		/// <param name="instance">The instance of the type containing the writable data (in its public fields and properties marked with the [Column] attribute).</param>
+		/// <param name="tabNameOverride">An optional override for the tab name.</param>
+		public static void AppendRow<T>(T instance, string tabNameOverride = null) where T : class
+		{
+			if (!messageThrottlers.ContainsKey(typeof(T)))
+				messageThrottlers[typeof(T)] = new MessageThrottler<T>(TimeBetweenThrottledUpdates);
+
+			if (messageThrottlers[typeof(T)] is MessageThrottler<T> throttler)
+				throttler.AppendRow(instance, tabNameOverride);
+		}
+
+		/// <summary>
+		/// Sends any throttled messages at once to GoogleSheets. Call when shutting down to make sure any messages in the 
+		/// queue are written to the spreadsheet.
+		/// </summary>
+		public static void FlushAllMessages()
+		{
+			foreach (Type type in messageThrottlers.Keys)
+			{
+				Type throttlerType = messageThrottlers[type].GetType();
+				MethodInfo methodDefinition = throttlerType.GetMethod(nameof(MessageThrottler<object>.FlushAllMessages), new Type[] { });
+				methodDefinition.Invoke(messageThrottlers[type], new object[] { });
+			}
+		}
+
+		static GoogleSheets()
+		{
+			InitialService(GetUserCredentials());
+		}
+
+		public static TimeSpan TimeBetweenThrottledUpdates { get; set; } = TimeSpan.FromSeconds(5);
+		public static SheetsService Service
+		{
+			get
+			{
+				if (service == null)
+				{
+					InitialService(GetUserCredentials());
+				}
+				return service;
+			}
+		}
+
+		static Dictionary<Type, object> messageThrottlers = new Dictionary<Type, object>();
+
+
+		internal static void InternalAppendRows<T>(T[] instances, string tabNameOverride = null, string sheetNameOverride = null) where T : class
+		{
+			if (instances == null || instances.Length == 0)
+				return;
+
+			GetSheetTabAttributes(typeof(T), out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
+
+			string sheetName;
+			string tabName;
+			if (sheetNameOverride != null)
+				sheetName = sheetNameOverride;
+			else
+				sheetName = sheetNameAttribute.SheetName;
+
+			if (tabNameOverride != null)
+				tabName = tabNameOverride;
+			else
+				tabName = tabNameAttribute.TabName;
+
+			Track(sheetName, tabName);
+			ValidateSheetAndTabNames(sheetName, tabName);
+			string spreadsheetId = spreadsheetIDs[sheetName];
+
+			IList<IList<Object>> values = new List<IList<Object>>();
+			foreach (object instance in instances)
+			{
+				IList<Object> row = new List<Object>();
+				MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
+				foreach (MemberInfo memberInfo in serializableFields)
+					row.Add(GetValue(instance, memberInfo));
+				values.Add(row);
+			}
+
+			ExecuteAppendRows(spreadsheetId, tabName, values);
 		}
 	}
 }
+

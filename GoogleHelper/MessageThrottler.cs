@@ -54,7 +54,7 @@ namespace GoogleHelper
 					}
 
 					if (messages[tabName].Any())
-						GoogleSheets.AppendRows<T>(messages[tabName].ToArray(), tabName);
+						GoogleSheets.InternalAppendRows<T>(messages[tabName].ToArray(), tabName);
 					messages[tabName].Clear();
 				}
 			}
@@ -62,8 +62,6 @@ namespace GoogleHelper
 
 		public void AppendRow(T t, string tabName = null)
 		{
-			// ![](51A66B8E14E5482732D8778BFA4B00EC.png)
-
 			if (tabName == null)
 				tabName = defaultTabName;
 			
@@ -73,6 +71,8 @@ namespace GoogleHelper
 					messages[tabName] = new Queue<T>();
 				messages[tabName].Enqueue(t);
 			}
+
+			// ![](BAEDF4D24FB1C180CE95B77D1FF1A93C.png)
 
 			DateTime now = DateTime.Now;
 			TimeSpan timeSinceLastBurst = now - lastBurstTime;
