@@ -5,7 +5,7 @@ using DndCore;
 using CodingSeb.ExpressionEvaluator;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class SelectionIsCommented : BaseContext
 	{

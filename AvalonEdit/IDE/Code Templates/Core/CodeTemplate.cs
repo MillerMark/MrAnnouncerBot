@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using GoogleHelper;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	[SheetName("IDE")]
 	[TabName("Templates")]

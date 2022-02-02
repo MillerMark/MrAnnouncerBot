@@ -4,7 +4,7 @@ using System.Linq;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public abstract class CompletionProvider : ICompletionProvider
 	{

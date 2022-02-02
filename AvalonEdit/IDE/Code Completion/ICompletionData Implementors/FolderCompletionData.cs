@@ -3,7 +3,7 @@ using System;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class FolderCompletionData : ICompletionData
 	{

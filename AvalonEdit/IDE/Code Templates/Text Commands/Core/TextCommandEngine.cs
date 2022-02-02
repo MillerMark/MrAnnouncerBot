@@ -5,7 +5,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public static class TextCommandEngine
 	{

@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class TextAreaEventArgs : EventArgs
 	{

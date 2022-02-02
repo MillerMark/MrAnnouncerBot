@@ -5,7 +5,7 @@ using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using DndCore;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class TableColumnCompletionProvider : CharacterTriggerProvider
 	{

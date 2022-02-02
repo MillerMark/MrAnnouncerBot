@@ -5,7 +5,7 @@ using System.Windows;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Document;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	[TextCommandName("ShowTooltip")]
 	public class ShowTooltipCommand : ITextCommand

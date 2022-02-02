@@ -4,7 +4,7 @@ using System.Linq;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public abstract class CharacterTriggerProvider : CompletionProvider
 	{

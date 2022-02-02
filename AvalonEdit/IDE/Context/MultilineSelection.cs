@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 using DndCore;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class MultilineSelection : BaseContext
 	{

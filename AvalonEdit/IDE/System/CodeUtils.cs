@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public static class CodeUtils
 	{

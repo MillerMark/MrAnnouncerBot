@@ -5,7 +5,7 @@ using System.Windows;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	[TextCommandName("CodeCompletion")]
 	public class CodeCompletionCommand : PositionSaverCommand

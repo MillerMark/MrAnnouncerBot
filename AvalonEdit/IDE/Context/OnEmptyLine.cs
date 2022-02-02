@@ -4,7 +4,7 @@ using System.Linq;
 using CodingSeb.ExpressionEvaluator;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class OnEmptyLine : BaseContext
 	{

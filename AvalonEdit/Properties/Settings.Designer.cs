@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AvalonEdit.Properties
+namespace SuperAvalonEdit.Properties
 {
     
     

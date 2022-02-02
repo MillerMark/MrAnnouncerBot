@@ -5,7 +5,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Document;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class ExpansionSegment
 	{

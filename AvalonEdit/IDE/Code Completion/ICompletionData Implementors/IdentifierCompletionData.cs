@@ -5,7 +5,7 @@ using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using DndCore;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	/// <summary>
 	/// Implements AvalonEdit ICompletionData interface to provide the entries in the

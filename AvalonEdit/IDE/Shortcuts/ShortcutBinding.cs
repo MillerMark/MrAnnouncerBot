@@ -9,7 +9,7 @@ using GoogleHelper;
 using SharedCore;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	[SheetName("IDE")]
 	[TabName("Shortcuts")]
@@ -53,7 +53,7 @@ namespace AvalonEdit
 			{
 				if (command == null)
 				{
-					Type typeToCreate = Type.GetType($"{nameof(AvalonEdit)}.{CommandTypeName}");
+					Type typeToCreate = Type.GetType($"{nameof(SuperAvalonEdit)}.{CommandTypeName}");
 					if (typeToCreate == null)
 						return null;
 

@@ -6,7 +6,7 @@ using System.Linq;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public static class TextDocumentExtensions
 	{

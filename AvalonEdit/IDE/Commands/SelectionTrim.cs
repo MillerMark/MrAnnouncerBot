@@ -1,6 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class SelectionTrim : CodeEditorCommand
 	{

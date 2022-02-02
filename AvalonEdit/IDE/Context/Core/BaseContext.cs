@@ -7,7 +7,7 @@ using CodingSeb.ExpressionEvaluator;
 using DndCore;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public abstract class BaseContext : DndVariable
 	{

@@ -17,7 +17,7 @@ using System.Reflection;
 using System.Windows.Threading;
 using GoogleHelper;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	public class TextCompletionEngine
 	{

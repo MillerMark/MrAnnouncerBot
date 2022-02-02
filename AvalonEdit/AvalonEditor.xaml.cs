@@ -20,7 +20,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	/// <summary>
 	/// Interaction logic for AvalonEditor.xaml
@@ -334,7 +334,7 @@ namespace AvalonEdit
 		void LoadAvalonSyntaxHighlighter()
 		{
 			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = $"{nameof(AvalonEdit)}.CSharp.xml";
+			var resourceName = $"{nameof(SuperAvalonEdit)}.CSharp.xml";
 
 			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
 			using (System.Xml.XmlReader reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings()))

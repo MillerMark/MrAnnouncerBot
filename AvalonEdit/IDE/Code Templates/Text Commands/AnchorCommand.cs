@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Editing;
 
-namespace AvalonEdit
+namespace SuperAvalonEdit
 {
 	[TextCommandName("Anchor")]
 	public class AnchorCommand : PositionSaverCommand
