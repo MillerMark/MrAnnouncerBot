@@ -1,19 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28721.148
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHDM", "DHDM\DHDM.csproj", "{F5FE9F83-00A9-42DA-B81E-8D64BD456029}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DHDM", "DHDM\DHDM.csproj", "{F5FE9F83-00A9-42DA-B81E-8D64BD456029}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DndCore", "DndCore\DndCore.csproj", "{A953618E-82D1-4837-A568-5BB75CC6BCC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndTests", "DndTests\DndTests.csproj", "{34C708AC-F445-4479-8B66-57CFBF67FD2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DndTests", "DndTests\DndTests.csproj", "{34C708AC-F445-4479-8B66-57CFBF67FD2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndUI", "DndUI\DndUI.csproj", "{82A18721-EDD9-4E9D-B875-DA216A82209C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DndUI", "DndUI\DndUI.csproj", "{82A18721-EDD9-4E9D-B875-DA216A82209C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeLineControl", "..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj", "{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndQuality", "DndQuality\DndQuality.csproj", "{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DndQuality", "DndQuality\DndQuality.csproj", "{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotCoreNet", "BotCoreNet\BotCoreNet.csproj", "{7F1F032D-49C2-433B-8006-AD5B617B11EF}"
 EndProject
@@ -25,26 +25,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoogleHelper", "GoogleHelpe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapTools", "..\LeapMotion\LeapTools\LeapTools.csproj", "{22520EF1-8CB9-45B0-B541-1893A16114DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardMaker", "CardMaker\CardMaker.csproj", "{2078406F-0887-4DB6-8584-7C773D1C9199}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardMaker", "CardMaker\CardMaker.csproj", "{2078406F-0887-4DB6-8584-7C773D1C9199}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imaging", "Imaging\Imaging.csproj", "{A514DE46-AA88-471B-81A8-2C387DC629F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streamloots", "Streamloots\Streamloots.csproj", "{F7623E7A-2D21-420C-95FB-406D8D7F50CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamloots", "Streamloots\Streamloots.csproj", "{F7623E7A-2D21-420C-95FB-406D8D7F50CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvalonEdit", "AvalonEdit\AvalonEdit.csproj", "{652CB48A-BDDB-409B-A76C-D2093B5F3D17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperAvalonEdit", "AvalonEdit\SuperAvalonEdit.csproj", "{652CB48A-BDDB-409B-A76C-D2093B5F3D17}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCore", "SharedCore\SharedCore.csproj", "{28556802-C1A9-41F6-A600-4EBDD0232446}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaleSpireCore", "TaleSpireCore\TaleSpireCore.csproj", "{08C85A94-9B3C-4F94-A8CD-0132C8F21AEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaleSpireExplore", "TaleSpireExplore\TaleSpireExplore.csproj", "{425D72BF-D995-4980-8BE7-60610705AFAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaleSpireExplore", "TaleSpireExplore\TaleSpireExplore.csproj", "{425D72BF-D995-4980-8BE7-60610705AFAD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{774BCD89-0C96-46BA-898F-685FC5C4ED53}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsControl", "ObsControl\ObsControl.csproj", "{80D1267F-9610-4E01-A656-A27DC0634EB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObsControl", "ObsControl\ObsControl.csproj", "{80D1267F-9610-4E01-A656-A27DC0634EB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonCore", "CommonCore\CommonCore.csproj", "{0BB2DC67-E76B-4BAA-8CDD-1C311351514D}"
 EndProject

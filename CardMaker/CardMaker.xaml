@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:CardMaker"
-		xmlns:AvalonEdit="clr-namespace:AvalonEdit;assembly=AvalonEdit"
+        xmlns:SuperAvalonEdit="clr-namespace:SuperAvalonEdit;assembly=SuperAvalonEdit"
 		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Card Maker" Height="569" Width="1800" MinHeight="795" >
@@ -805,15 +805,15 @@
 						</StackPanel>
 						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
 							<TextBlock Text="OnCardReceived:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="550">
+							<SuperAvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="550">
 
-							</AvalonEdit:AvalonEditor>
+							</SuperAvalonEdit:AvalonEditor>
 						</StackPanel>
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="OnCardPlayed:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="550" >
+							<SuperAvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="550" >
 
-							</AvalonEdit:AvalonEditor>
+							</SuperAvalonEdit:AvalonEditor>
 						</StackPanel>
 					</StackPanel>
 				</TabItem>

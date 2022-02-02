@@ -643,6 +643,7 @@ namespace GoogleHelper
 			foreach (Sheet sheet in spreadsheet.Sheets)
 				if (sheet.Properties.Title == tabName)
 					return sheet.Properties.SheetId;
+
 			return null;
 		}
 
@@ -715,7 +716,7 @@ namespace GoogleHelper
 			SpreadsheetsResource.ValuesResource.AppendRequest request =
 												 Service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
 			request.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
-			request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+			request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
 			return request;
 		}
 
@@ -731,7 +732,7 @@ namespace GoogleHelper
 			SpreadsheetsResource.ValuesResource.AppendRequest appendRequest =
 									 Service.Spreadsheets.Values.Append(new ValueRange() { Values = values }, spreadsheetId, tabName);
 			appendRequest.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
-			appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+			appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
 			try
 			{
 				var response = appendRequest.Execute();
@@ -810,26 +811,17 @@ namespace GoogleHelper
 
 			List<IList<object>> rows = new List<IList<object>>();
 			rows.Add(columns);
-			Console.WriteLine("ExecuteAppendRows(spreadsheetId, tabName, rows);");
+
 			ExecuteAppendRows(spreadsheetId, tabName, rows);
-			Console.WriteLine("AddColumnComments(spreadsheetId, tabName, serializableFields);");
-			AddColumnComments(spreadsheetId, tabName, serializableFields);
-			Console.WriteLine("Done!");
+
+			IList<Request> requests = new List<Request>();
+			AddColumnNotes(requests, spreadsheetId, tabName, serializableFields);
+			AddFormatting(requests, spreadsheetId, tabName, serializableFields);
+			ExecuteRequests(spreadsheetId, requests);
 		}
 
-		private static void AddColumnComments(string spreadsheetId, string tabName, MemberInfo[] serializableFields)
+		private static void ExecuteRequests(string spreadsheetId, IList<Request> requests)
 		{
-			int columnIndex = 0;
-			IList<Request> requests = new List<Request>();
-
-			foreach (MemberInfo memberInfo in serializableFields)
-			{
-				NoteAttribute commentAttribute = memberInfo.GetCustomAttribute<NoteAttribute>();
-				if (commentAttribute != null && !string.IsNullOrEmpty(commentAttribute.ColumnNote))
-					AddNote(requests, columnIndex, commentAttribute.ColumnNote, spreadsheetId, tabName);
-				columnIndex++;
-			}
-
 			if (requests != null && requests.Count > 0)
 			{
 				BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest();
@@ -843,7 +835,64 @@ namespace GoogleHelper
 			}
 		}
 
+		private static void AddColumnNotes(IList<Request> requests, string spreadsheetId, string tabName, MemberInfo[] serializableFields)
+		{
+			int columnIndex = 0;
+
+			foreach (MemberInfo memberInfo in serializableFields)
+			{
+				NoteAttribute commentAttribute = memberInfo.GetCustomAttribute<NoteAttribute>();
+				if (commentAttribute != null && !string.IsNullOrEmpty(commentAttribute.ColumnNote))
+					AddNote(requests, columnIndex, commentAttribute.ColumnNote, spreadsheetId, tabName);
+
+				columnIndex++;
+			}
+		}
+
+		private static void AddFormatting(IList<Request> requests, string spreadsheetId, string tabName, MemberInfo[] serializableFields)
+		{
+			int columnIndex = 0;
+
+			foreach (MemberInfo memberInfo in serializableFields)
+			{
+				FormatNumberAttribute formatNumberAttribute = memberInfo.GetCustomAttribute<FormatNumberAttribute>();
+				if (formatNumberAttribute != null && !string.IsNullOrEmpty(formatNumberAttribute.Pattern))
+					AddFormatting(requests, columnIndex, formatNumberAttribute.Pattern, "NUMBER", spreadsheetId, tabName);
+
+				FormatDateAttribute formatDateAttribute = memberInfo.GetCustomAttribute<FormatDateAttribute>();
+				if (formatDateAttribute != null && !string.IsNullOrEmpty(formatDateAttribute.Pattern))
+					AddFormatting(requests, columnIndex, formatDateAttribute.Pattern, "DATE", spreadsheetId, tabName);
+
+				FormatCurrencyAttribute formatCurrencyAttribute = memberInfo.GetCustomAttribute<FormatCurrencyAttribute>();
+				if (formatCurrencyAttribute != null && !string.IsNullOrEmpty(formatCurrencyAttribute.Pattern))
+					AddFormatting(requests, columnIndex, formatCurrencyAttribute.Pattern, "CURRENCY", spreadsheetId, tabName);
+
+				columnIndex++;
+			}
+		}
+
 		private static void AddNote(IList<Request> requests, int columnIndex, string comment, string spreadsheetId, string tabName)
+		{
+			Request commentRequest = GetUpdateRequestForCellInTopRow(columnIndex, spreadsheetId, tabName);
+			commentRequest.UpdateCells.Rows[0].Values[0].Note = comment;
+			commentRequest.UpdateCells.Fields = "note";
+
+			requests.Add(commentRequest);
+		}
+
+		private static void AddFormatting(IList<Request> requests, int columnIndex, string pattern, string type, string spreadsheetId, string tabName)
+		{
+			Request formatRequest = GetRepeatCellRequestForEntireColumn(columnIndex, spreadsheetId, tabName);
+			// TODO: Figure out how to indicate the entire column
+			formatRequest.RepeatCell.Cell = new CellData();
+			formatRequest.RepeatCell.Cell.UserEnteredFormat = new CellFormat();
+			formatRequest.RepeatCell.Cell.UserEnteredFormat.NumberFormat = new NumberFormat() { Pattern = pattern, Type = type };
+			formatRequest.RepeatCell.Fields = "userEnteredFormat.numberFormat";
+
+			requests.Add(formatRequest);
+		}
+
+		private static Request GetUpdateRequestForCellInTopRow(int columnIndex, string spreadsheetId, string tabName)
 		{
 			Request commentRequest = new Request();
 			commentRequest.UpdateCells = new UpdateCellsRequest();
@@ -857,25 +906,20 @@ namespace GoogleHelper
 			commentRequest.UpdateCells.Rows.Add(new RowData());
 			commentRequest.UpdateCells.Rows[0].Values = new List<CellData>();
 			commentRequest.UpdateCells.Rows[0].Values.Add(new CellData());
-			commentRequest.UpdateCells.Rows[0].Values[0].Note = comment;
-			commentRequest.UpdateCells.Fields = "note";
+			return commentRequest;
+		}
 
-			//CellData cellData = new CellData();
-			//cellData.Note = comment;
-			//commentRequest.RepeatCell.Cell = cellData;
-			//commentRequest.RepeatCell.Fields = "note";
-			requests.Add(commentRequest);
-
-
-			//// Building a request for update cells.
-			//request.UpdateCells = new Google.Apis.Sheets.v4.Data.UpdateCellsRequest();
-			//request.UpdateCells.Range = gridRange;
-			//request.UpdateCells.Fields = "note";
-			//request.UpdateCells.Rows = new List<Google.Apis.Sheets.v4.Data.RowData>();
-			//request.UpdateCells.Rows.Add(new Google.Apis.Sheets.v4.Data.RowData());
-			//request.UpdateCells.Rows[0].Values = new List<Google.Apis.Sheets.v4.Data.CellData>();
-			//request.UpdateCells.Rows[0].Values.Add(new Google.Apis.Sheets.v4.Data.CellData());
-			//request.UpdateCells.Rows[0].Values[0].Note = noteMessage;
+		private static Request GetRepeatCellRequestForEntireColumn(int columnIndex, string spreadsheetId, string tabName)
+		{
+			Request commentRequest = new Request();
+			commentRequest.RepeatCell = new RepeatCellRequest();
+			commentRequest.RepeatCell.Range = new GridRange();
+			commentRequest.RepeatCell.Range.SheetId = GetTabId(spreadsheetId, tabName);
+			commentRequest.RepeatCell.Range.StartRowIndex = 0;
+			commentRequest.RepeatCell.Range.EndRowIndex = null;
+			commentRequest.RepeatCell.Range.StartColumnIndex = columnIndex;
+			commentRequest.RepeatCell.Range.EndColumnIndex = columnIndex + 1;
+			return commentRequest;
 		}
 
 		/// <summary>
@@ -956,12 +1000,16 @@ namespace GoogleHelper
 			string spreadsheetId = spreadsheetIDs[sheetName];
 
 			IList<IList<Object>> values = new List<IList<Object>>();
+
+
+			MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
+
 			foreach (object instance in instances)
 			{
 				IList<Object> row = new List<Object>();
-				MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(typeof(T));
 				foreach (MemberInfo memberInfo in serializableFields)
 					row.Add(GetValue(instance, memberInfo));
+
 				values.Add(row);
 			}
 

@@ -1,251 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{82A18721-EDD9-4E9D-B875-DA216A82209C}</ProjectGuid>
-    <OutputType>library</OutputType>
-    <RootNamespace>DndUI</RootNamespace>
-    <AssemblyName>DndUI</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <Deterministic>true</Deterministic>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAudio, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.1.8.5\lib\net35\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
+    <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj" />
+    <ProjectReference Include="..\DndCore\DndCore.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnumBindingSourceExtension.cs" />
-    <Compile Include="Event Args\ChargesChangedEventArgs.cs" />
-    <Compile Include="User Controls\RechargeableBoxes.xaml.cs">
-      <DependentUpon>RechargeableBoxes.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EffectEvent.cs" />
-    <Compile Include="User Controls\FrmPickOne.xaml.cs">
-      <DependentUpon>FrmPickOne.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\GroupEffectBuilder.xaml.cs">
-      <DependentUpon>GroupEffectBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\DamageConditionsEdit.xaml.cs">
-      <DependentUpon>DamageConditionsEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\DamageEdit.xaml.cs">
-      <DependentUpon>DamageEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Event Args\FocusedControlsChangedEventArgs.cs" />
-    <Compile Include="Event Args\PageChangeEventArgs.cs" />
-    <Compile Include="FocusHelper.cs" />
-    <Compile Include="Event Args\AbilityEventArgs.cs" />
-    <Compile Include="User Controls\CharacterSheets.xaml.cs">
-      <DependentUpon>CharacterSheets.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Event Args\SkillCheckEventArgs.cs" />
-    <Compile Include="User Controls\Support\AnimationSprites.cs" />
-    <Compile Include="User Controls\AttackBuilder.xaml.cs">
-      <DependentUpon>AttackBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ConditionEdit.xaml.cs">
-      <DependentUpon>ConditionEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\DamageKindEdit.xaml.cs">
-      <DependentUpon>DamageKindEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EditableListBox.xaml.cs">
-      <DependentUpon>EditableListBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EffectBuilder.xaml.cs">
-      <DependentUpon>EffectBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EnumCheckBox.cs" />
-    <Compile Include="User Controls\GridSheet.cs" />
-    <Compile Include="User Controls\GroupBackground.xaml.cs">
-      <DependentUpon>GroupBackground.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ItemBuilder.xaml.cs">
-      <DependentUpon>ItemBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ModsList.xaml.cs">
-      <DependentUpon>ModsList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\NumEdit.xaml.cs">
-      <DependentUpon>NumEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\NumTextBox.cs" />
-    <Compile Include="User Controls\RoundCheck.cs" />
-    <Compile Include="User Controls\StatBox.xaml.cs">
-      <DependentUpon>StatBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\StatBoxState.cs" />
-    <Compile Include="User Controls\TargetValueEdit.xaml.cs">
-      <DependentUpon>TargetValueEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\WeaponBuilder.xaml.cs">
-      <DependentUpon>WeaponBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
-      <DependentUpon>TimeSpanEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\Support\VisualHelper.cs" />
-    <Page Include="User Controls\RechargeableBoxes.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\FrmPickOne.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\GroupEffectBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\DamageConditionsEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\DamageEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\AttackBuilder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\ConditionEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\DamageKindEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\EditableListBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\EffectBuilder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\GroupBackground.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\ItemBuilder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\ModBuilder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\ModsList.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\CharacterSheets.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\NumEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\StatBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\TargetValueEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\TimeSpanEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="User Controls\WeaponBuilder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="NAudio" Version="1.10.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="User Controls\ModBuilder.xaml.cs">
-      <DependentUpon>ModBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
+    <Compile Remove="User Controls\CharacterSheets_old.xaml.cs" />
+    <Page Remove="User Controls\CharacterSheets_old.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj">
-      <Project>{df1e9df3-204a-4dbf-8b8d-60ca5c0a5bc3}</Project>
-      <Name>TimeLineControl</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DndCore\DndCore.csproj">
-      <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
-      <Name>DndCore</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

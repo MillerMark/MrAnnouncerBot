@@ -1,104 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F7623E7A-2D21-420C-95FB-406D8D7F50CD}</ProjectGuid>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Streamloots</RootNamespace>
-    <AssemblyName>Streamloots</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
+    <ProjectReference Include="..\DndCore\DndCore.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cards\CardBaseCommandDto.cs" />
-    <Compile Include="Cards\CardDto.cs" />
-    <Compile Include="CardEventArgs.cs" />
-    <Compile Include="ViewModels\AlertViewModel.cs" />
-    <Compile Include="ViewModels\CardStatus.cs" />
-    <Compile Include="ViewModels\CollectionPaginatedResult.cs" />
-    <Compile Include="ViewModels\CollectionViewModel.cs" />
-    <Compile Include="ViewModels\CreateSetLootViewModel.cs" />
-    <Compile Include="ViewModels\CreateSetViewModel.cs" />
-    <Compile Include="ViewModels\Currency.cs" />
-    <Compile Include="ViewModels\CursorsViewModel.cs" />
-    <Compile Include="ViewModels\FileViewModel.cs" />
-    <Compile Include="IStreamlootsService.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModels\OwnerType.cs" />
-    <Compile Include="ViewModels\OwnerViewModel.cs" />
-    <Compile Include="ViewModels\PageViewModel.cs" />
-    <Compile Include="ViewModels\PaginationViewModel.cs" />
-    <Compile Include="ViewModels\ProfileViewModel.cs" />
-    <Compile Include="ViewModels\OwnerProfileViewModel.cs" />
-    <Compile Include="ViewModels\RarityViewModel.cs" />
-    <Compile Include="ViewModels\RedeemFieldsViewModel.cs" />
-    <Compile Include="ViewModels\RedemptionConfiguration.cs" />
-    <Compile Include="ViewModels\RedemptionLimit.cs" />
-    <Compile Include="ViewModels\RewardFieldsViewModel.cs" />
-    <Compile Include="ViewModels\SetCardUpdateViewModel.cs" />
-    <Compile Include="ViewModels\SetCardViewModel.cs" />
-    <Compile Include="StreamlootsBackgroundTask.cs" />
-    <Compile Include="StreamlootsCard.cs" />
-    <Compile Include="StreamlootsCardData.cs" />
-    <Compile Include="StreamlootsDataField.cs" />
-    <Compile Include="StreamlootsPurchase.cs" />
-    <Compile Include="StreamlootsPurchaseData.cs" />
-    <Compile Include="StreamlootsService.cs" />
-    <Compile Include="ViewModels\SetCardWithImageViewModel.cs" />
-    <Compile Include="ViewModels\SetCollectionResult.cs" />
-    <Compile Include="ViewModels\SetLootViewModel.cs" />
-    <Compile Include="ViewModels\SetViewModel.cs" />
-    <Compile Include="ViewModels\Statistics.cs" />
-    <Compile Include="ViewModels\UpdateExistingCardViewModel.cs" />
-    <Compile Include="ViewModels\UpdateSetViewModel.cs" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj">
-      <Project>{7f1f032d-49c2-433b-8006-ad5b617b11ef}</Project>
-      <Name>BotCoreNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DndCore\DndCore.csproj">
-      <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
-      <Name>DndCore</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

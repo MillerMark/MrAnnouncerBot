@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
-using AvalonEdit;
+using SuperAvalonEdit;
 using SharedCore;
 using Streamloots;
 using DndCore;
