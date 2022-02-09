@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace CardMaker
 {
 
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("Random Gen Rules")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("Random Gen Rules")]
 	public class LayerGenerationOptions : TrackPropertyChanges
 	{
 		bool syncStretch = true;

@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
 	[HasDndEvents]
-	[SheetName("DnD")]
-	[TabName("Features")]
+	[DocumentName("DnD")]
+	[SheetName("Features")]
 	public class Feature
 	{
 		public static event FeatureEventHandler FeatureActivated;

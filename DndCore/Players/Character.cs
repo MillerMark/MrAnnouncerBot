@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using System.Reflection;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
-	[SheetName("DnD")]
-	[TabName("Players")]
+	[DocumentName("DnD")]
+	[SheetName("Players")]
 	public class Character : Creature
 	{
 		public override int IntId { get => playerID; }

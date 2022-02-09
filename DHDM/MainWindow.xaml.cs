@@ -30,7 +30,7 @@ using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 using Newtonsoft.Json;
 using System.IO;
-using GoogleHelper;
+using SheetsPersist;
 using TaleSpireCore;
 using System.Reflection;
 using System.Windows.Controls.Primitives;
@@ -292,13 +292,13 @@ namespace DHDM
 
 		void RegisterSpreadsheetIDs()
 		{
-			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
-			GoogleSheets.RegisterSpreadsheetID("Live Video Animation", "1_axdPNFXyWqGkdwGtLkmqHWdgTFLq4nMbacKHa0b5mQ");
-			GoogleSheets.RegisterSpreadsheetID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
-			GoogleSheets.RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
-			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
-			GoogleSheets.RegisterSpreadsheetID("DndViewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
-			GoogleSheets.RegisterSpreadsheetID("D&D Deck Data", "1vk8ov_AltA9RUdiXFXrwJTQO96lZdMMbKAy-hoFoGmw");
+			GoogleSheets.RegisterDocumentID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			GoogleSheets.RegisterDocumentID("Live Video Animation", "1_axdPNFXyWqGkdwGtLkmqHWdgTFLq4nMbacKHa0b5mQ");
+			GoogleSheets.RegisterDocumentID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+			GoogleSheets.RegisterDocumentID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
+			GoogleSheets.RegisterDocumentID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+			GoogleSheets.RegisterDocumentID("DndViewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
+			GoogleSheets.RegisterDocumentID("D&D Deck Data", "1vk8ov_AltA9RUdiXFXrwJTQO96lZdMMbKAy-hoFoGmw");
 		}
 
 		private void CreateDhPubSub()

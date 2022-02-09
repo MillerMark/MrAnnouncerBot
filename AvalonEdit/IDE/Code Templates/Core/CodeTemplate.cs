@@ -1,12 +1,12 @@
 ﻿//#define profiling
 using System;
 using System.Linq;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace SuperAvalonEdit
 {
-	[SheetName("IDE")]
-	[TabName("Templates")]
+	[DocumentName("IDE")]
+	[SheetName("Templates")]
 	public class CodeTemplate
 	{
 		[Indexer]

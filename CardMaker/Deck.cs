@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.ObjectModel;
-using GoogleHelper;
+using SheetsPersist;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace CardMaker
 {
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("Decks")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("Decks")]
 	public class Deck : BaseNameId
 	{
 		public ObservableCollection<Card> Cards { get; set; } = new ObservableCollection<Card>();

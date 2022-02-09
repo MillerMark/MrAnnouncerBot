@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -153,7 +153,7 @@ namespace DndCore
 
 		public static List<PlayerActionShortcutDto> LoadData(string dataFile)
 		{
-			return GoogleSheets.Get<PlayerActionShortcutDto>(dataFile);
+			return CsvToSheetsHelper.Get<PlayerActionShortcutDto>(dataFile);
 		}
 
 		public static List<PlayerActionShortcut> Get(int playerId)

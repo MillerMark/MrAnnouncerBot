@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -9,7 +9,7 @@ namespace DndCore
 	{
 		static void LoadData()
 		{
-			Properties = GoogleSheets.Get<PropertyDto>(Folders.InCoreData("DnD - Properties.csv"));
+			Properties = CsvToSheetsHelper.Get<PropertyDto>(Folders.InCoreData("DnD - Properties.csv"));
 		}
 		static List<PropertyDto> properties;
 

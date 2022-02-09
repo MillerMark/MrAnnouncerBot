@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
+using System.IO;
 
 namespace DndCore
 {
@@ -10,7 +11,7 @@ namespace DndCore
 		static void LoadData()
 		{
 			spellEffects = new List<ItemEffect>();
-			List<ItemEffectDto> spellEffectDtos = GoogleSheets.Get<ItemEffectDto>(Folders.InCoreData("DnD - SpellEffects.csv"), false);
+			List<ItemEffectDto> spellEffectDtos = CsvToSheetsHelper.Get<ItemEffectDto>(Folders.InCoreData("DnD - SpellEffects.csv"));
 			foreach (ItemEffectDto itemEffect in spellEffectDtos)
 			{
 				SpellEffects.Add(ItemEffect.From(itemEffect));

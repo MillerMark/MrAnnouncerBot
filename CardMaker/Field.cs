@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using Streamloots;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace CardMaker
 {
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("Fields")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("Fields")]
 	public class Field : BaseNameId
 	{
 		Card parentCard;

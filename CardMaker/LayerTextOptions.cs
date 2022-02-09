@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace CardMaker
 {
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("LayerTextOptions")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("LayerTextOptions")]
 	public class LayerTextOptions : TrackPropertyChanges
 	{
 		string colorStr;

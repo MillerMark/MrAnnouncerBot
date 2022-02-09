@@ -222,8 +222,8 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\..\MrAnnouncerBot\TaleSpireCore\TaleSpireCore.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Decompiles\Effect.cs" />

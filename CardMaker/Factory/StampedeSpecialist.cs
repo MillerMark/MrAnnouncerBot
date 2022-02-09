@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace CardMaker
 {
-	[SheetName("D&D Deck Data")]
-	[TabName("StampedeCards")]
+	[DocumentName("D&D Deck Data")]
+	[SheetName("StampedeCards")]
 	public class StampedeSpecialist
 	{
 		[Column]

@@ -12,7 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
     <ProjectReference Include="..\DndQuality\DndQuality.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">

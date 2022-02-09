@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -15,7 +15,7 @@ namespace DndCore
 
 		public static void LoadData()
 		{
-			LoadData(GoogleSheets.Get<FeatureDto>(Folders.InCoreData("DnD - Features.csv")));
+			LoadData(CsvToSheetsHelper.Get<FeatureDto>(Folders.InCoreData("DnD - Features.csv")));
 		}
 
 		private static void Instance_PlayerStateChanged(object sender, PlayerStateEventArgs ea)

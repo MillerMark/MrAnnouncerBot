@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DHDM
 {
@@ -12,7 +12,7 @@ namespace DHDM
 		public static List<DndViewer> KnownViewers { get; set; }
 		static AllViewers()
 		{
-			GoogleSheets.RegisterSpreadsheetID("D&D Viewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
+			GoogleSheets.RegisterDocumentID("D&D Viewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
 			//LoadViewers();
 		}
 

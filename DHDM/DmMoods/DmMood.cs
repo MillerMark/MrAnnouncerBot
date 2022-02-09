@@ -2,12 +2,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DHDM
 {
-	[SheetName("DnD")]
-	[TabName("DmMood")]
+	[DocumentName("DnD")]
+	[SheetName("DmMood")]
 	public class DmMood
 	{
 		[Column]

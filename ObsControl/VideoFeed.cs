@@ -1,5 +1,5 @@
 ﻿using System;
-using GoogleHelper;
+using SheetsPersist;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ObsControl
 {
-  [SheetName("Live Video Animation")]
-	[TabName("VideoFeeds")]
+  [DocumentName("Live Video Animation")]
+	[SheetName("VideoFeeds")]
 	public class VideoFeed
 	{
 		[Indexer]

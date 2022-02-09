@@ -13,7 +13,7 @@ namespace DHDM
 			get
 			{
 				if (allLightData == null)
-					allLightData = GoogleHelper.GoogleSheets.Get<SceneLightData>();
+					allLightData = SheetsPersist.GoogleSheets.Get<SceneLightData>();
 
 				return allLightData;
 			}

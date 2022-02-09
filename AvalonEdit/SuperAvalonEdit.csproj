@@ -11,9 +11,9 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
     <ProjectReference Include="..\ExpressionEngine\CodingSeb.ExpressionEvaluator\CodingSeb.ExpressionEvaluator.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
     <ProjectReference Include="..\SharedCore\SharedCore.csproj" />
   </ItemGroup>
   <ItemGroup>

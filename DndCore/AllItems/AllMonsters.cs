@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -26,7 +26,7 @@ namespace DndCore
 
 		public static List<MonsterDto> LoadData(string dataFile)
 		{
-			return GoogleSheets.Get<MonsterDto>(dataFile);
+			return CsvToSheetsHelper.Get<MonsterDto>(dataFile);
 		}
 
 		public static Monster GetByKind(string monsterKind)

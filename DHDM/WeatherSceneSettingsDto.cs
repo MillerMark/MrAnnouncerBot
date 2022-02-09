@@ -1,12 +1,12 @@
 ﻿//#define profiling
 using System;
-using GoogleHelper;
+using SheetsPersist;
 using System.Linq;
 
 namespace DHDM
 {
-	[SheetName("DnD")]
-	[TabName("Weather")]
+	[DocumentName("DnD")]
+	[SheetName("Weather")]
 	public class WeatherSceneSettingsDto
 	{
 		public string Keyword { get; set; }

@@ -59,6 +59,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\..\LeapMotion\LeapTools\LeapTools.csproj" />
     <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj" />
     <ProjectReference Include="..\AvalonEdit\SuperAvalonEdit.csproj" />
@@ -67,7 +68,6 @@
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
     <ProjectReference Include="..\DndUI\DndUI.csproj" />
     <ProjectReference Include="..\ExpressionEngine\CodingSeb.ExpressionEvaluator\CodingSeb.ExpressionEvaluator.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
     <ProjectReference Include="..\Imaging\Imaging.csproj" />
     <ProjectReference Include="..\ObsControl\ObsControl.csproj" />
     <ProjectReference Include="..\SharedCore\SharedCore.csproj" />

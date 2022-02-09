@@ -2,12 +2,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DHDM
 {
-	[SheetName("D&D Deck Data")]
-	[TabName("Cards")]
+	[DocumentName("D&D Deck Data")]
+	[SheetName("Cards")]
 	public class RedemptionEventsDto
 	{
 		[Indexer]

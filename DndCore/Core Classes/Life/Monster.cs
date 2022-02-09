@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 using Newtonsoft.Json;
 
 namespace DndCore
 {
-	[SheetName("DnD")]
-	[TabName("Monsters")]
+	[DocumentName("DnD")]
+	[SheetName("Monsters")]
 	public class Monster : Creature
 	{
 		public override int Level { get => (int)Math.Min(21, Math.Ceiling(challengeRating)); }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -13,7 +13,7 @@ namespace DndCore
 		}
 		static void LoadData()
 		{
-			Spells = GoogleSheets.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
+			Spells = CsvToSheetsHelper.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
 		}
 
 		static List<SpellDto> spells;

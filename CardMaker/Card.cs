@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
-using GoogleHelper;
+using SheetsPersist;
 using System.Windows.Media;
 using Imaging;
 using Streamloots;
@@ -14,8 +14,8 @@ using Newtonsoft.Json;
 
 namespace CardMaker
 {
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("Cards")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("Cards")]
 	public class Card : BaseNameId
 	{
 		string streamlootsCardId;

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 using Imaging;
 
 namespace DHDM
 {
-	[SheetName("Live Video Animation")]
-	[TabName("Lights")]
+	[DocumentName("Live Video Animation")]
+	[SheetName("Lights")]
 	public class SceneLightData
 	{
 		public string LeftLight { get; set; }

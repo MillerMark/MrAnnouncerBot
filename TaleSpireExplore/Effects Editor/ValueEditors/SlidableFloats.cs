@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace TaleSpireExplore
 {
@@ -9,7 +9,7 @@ namespace TaleSpireExplore
 	{
 		static List<SlidableFloat> allSlidableFloats = null;
 
-		static SlidableFloats() => GoogleSheets.RegisterSpreadsheetID("TaleSpire UI Controls", "1kik_yixNgjFVgdpG2Re3sLV4KZpMId9UEc49kwMpQ3E");
+		static SlidableFloats() => GoogleSheets.RegisterDocumentID("TaleSpire UI Controls", "1kik_yixNgjFVgdpG2Re3sLV4KZpMId9UEc49kwMpQ3E");
 
 		public static void Invalidate()
 		{

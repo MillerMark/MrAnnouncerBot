@@ -60,7 +60,7 @@ using System.Collections.Generic;
 using TaleSpireCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace TaleSpireExplore
 {
@@ -309,7 +309,7 @@ namespace TaleSpireExplore
 
 		static TaleSpireExplorePlugin()
 		{
-			GoogleSheets.RegisterSpreadsheetID("TaleSpire Effects", "1bF3zEg4c1YUv6BvZ8ru-JhfUn0tFu1HVpe6F267SQvI");
+			GoogleSheets.RegisterDocumentID("TaleSpire Effects", "1bF3zEg4c1YUv6BvZ8ru-JhfUn0tFu1HVpe6F267SQvI");
 		}
 
 		public static void LoadKnownEffects()

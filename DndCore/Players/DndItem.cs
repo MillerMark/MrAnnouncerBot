@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
 
-	[SheetName("DnD")]
-	[TabName("Items")]
+	[DocumentName("DnD")]
+	[SheetName("Items")]
 	public class DndItem
 	{
 		[Column]

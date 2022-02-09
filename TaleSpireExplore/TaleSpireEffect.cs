@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace TaleSpireExplore
 {
-	[SheetName("TaleSpire Effects")]
-	[TabName("Effects")]
+	[DocumentName("TaleSpire Effects")]
+	[SheetName("Effects")]
 	public class TaleSpireEffect
 	{
 		[Column]

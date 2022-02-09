@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -21,7 +21,7 @@ namespace DndCore
 
 		public static List<WeaponDto> LoadData(string dataFile)
 		{
-			return GoogleSheets.Get<WeaponDto>(dataFile);
+			return CsvToSheetsHelper.Get<WeaponDto>(dataFile);
 		}
 
 		public static Weapon Get(string weaponName)

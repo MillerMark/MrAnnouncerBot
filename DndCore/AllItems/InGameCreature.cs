@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
-	[SheetName("DnD Game")]
-	[TabName("Creatures")]
+	[DocumentName("DnD Game")]
+	[SheetName("Creatures")]
 	public class InGameCreature
 	{
 		[Column]

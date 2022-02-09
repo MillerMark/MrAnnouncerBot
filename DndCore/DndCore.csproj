@@ -35,8 +35,8 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj" />
     <ProjectReference Include="..\ExpressionEngine\CodingSeb.ExpressionEvaluator\CodingSeb.ExpressionEvaluator.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
   </ItemGroup>
 </Project>

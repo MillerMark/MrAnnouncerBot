@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using DndCore;
 using ICSharpCode.AvalonEdit.Document;
-using GoogleHelper;
+using SheetsPersist;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
 

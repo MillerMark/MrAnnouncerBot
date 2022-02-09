@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 using Newtonsoft.Json;
 
 namespace DndCore
 {
 	[HasDndEvents]
-	[SheetName("DnD")]
-	[TabName("Spells")]
+	[DocumentName("DnD")]
+	[SheetName("Spells")]
 	[DebuggerDisplay("{Name,nq}")]
 	public class Spell
 	{

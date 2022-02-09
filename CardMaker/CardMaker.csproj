@@ -18,10 +18,10 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\AvalonEdit\SuperAvalonEdit.csproj" />
     <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
-    <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj" />
     <ProjectReference Include="..\Imaging\Imaging.csproj" />
     <ProjectReference Include="..\Streamloots\Streamloots.csproj" />
   </ItemGroup>

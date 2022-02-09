@@ -15,7 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
 using System.Windows.Threading;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace SuperAvalonEdit
 {

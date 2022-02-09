@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
@@ -56,7 +56,7 @@ namespace DndCore
 
 		public static List<T> LoadTable<T>(string tableName) where T : new()
 		{
-			return GoogleSheets.Get<T>(Folders.InCoreData($"DnD Table - {tableName}.csv"));
+			return CsvToSheetsHelper.Get<T>(Folders.InCoreData($"DnD Table - {tableName}.csv"));
 		}
 		static object GetValue(object entry, string fieldLookup)
 		{

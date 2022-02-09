@@ -5,14 +5,14 @@ using System.Windows.Input;
 using System.Collections.Generic;
 using CodingSeb.ExpressionEvaluator;
 using DndCore;
-using GoogleHelper;
+using SheetsPersist;
 using SharedCore;
 using ICSharpCode.AvalonEdit.Editing;
 
 namespace SuperAvalonEdit
 {
-	[SheetName("IDE")]
-	[TabName("Shortcuts")]
+	[DocumentName("IDE")]
+	[SheetName("Shortcuts")]
 	public class ShortcutBinding
 	{
 		[Column]

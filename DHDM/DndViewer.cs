@@ -1,13 +1,13 @@
 ﻿using System;
-using GoogleHelper;
+using SheetsPersist;
 using System.Linq;
 using System.Collections.Generic;
 using Imaging;
 
 namespace DHDM
 {
-	[SheetName("D&D Viewers")]
-	[TabName("Viewers")]
+	[DocumentName("D&D Viewers")]
+	[SheetName("Viewers")]
 	public class DndViewer: TrackPropertyChanges
 	{
 		public bool AlreadySeen { get; set; }

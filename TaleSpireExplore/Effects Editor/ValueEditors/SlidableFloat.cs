@@ -1,11 +1,11 @@
 ﻿using System;
-using GoogleHelper;
+using SheetsPersist;
 using System.Linq;
 
 namespace TaleSpireExplore
 {
-	[SheetName("TaleSpire UI Controls")]
-	[TabName("SlidableFloats")]
+	[DocumentName("TaleSpire UI Controls")]
+	[SheetName("SlidableFloats")]
 	public class SlidableFloat
 	{
 		[Indexer]

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -22,7 +22,7 @@ namespace CardMaker
 		static int numFieldsCreated = 0;
 		static CardData()
 		{
-			GoogleSheets.RegisterSpreadsheetID(Constants.SheetName_DeckData, Constants.SheetId_DeckData);
+			GoogleSheets.RegisterDocumentID(Constants.DocumentName_DeckData, Constants.DocumentId_DeckData);
 		}
 
 		Deck GetParentDeck(Card card)

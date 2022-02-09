@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DHDM
 {
-	[SheetName("Live Video Animation")]
-	[TabName("Bindings")]
+	[DocumentName("Live Video Animation")]
+	[SheetName("Bindings")]
 	public class VideoAnimationBinding
 	{
 		public string SceneName { get; set; }

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace CardMaker
 {
-	[SheetName(Constants.SheetName_DeckData)]
-	[TabName("SavedStyles")]
+	[DocumentName(Constants.DocumentName_DeckData)]
+	[SheetName("SavedStyles")]
 	public class SavedCardStyle
 	{
 		[Indexer]

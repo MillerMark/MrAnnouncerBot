@@ -13,7 +13,7 @@ using Imaging;
 using Microsoft.Extensions.Configuration;
 using Streamloots;
 using SysPath = System.IO.Path;
-using GoogleHelper;
+using SheetsPersist;
 using System.Threading.Tasks;
 using BotCore;
 
@@ -1155,7 +1155,7 @@ namespace CardMaker
 
 			options.ChancesVisible = percentVisible / 100.0;
 
-			GoogleHelper.GoogleSheets.SaveChanges(options);
+			SheetsPersist.GoogleSheets.SaveChanges(options);
 		}
 
 		private void SetDetailsIsSelected(CardImageLayer newAlternateImageLayer)
@@ -1576,8 +1576,8 @@ namespace CardMaker
 
 		void RegisterSpreadsheetIDs()
 		{
-			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
-			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+			GoogleSheets.RegisterDocumentID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			GoogleSheets.RegisterDocumentID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 		}
 
 		private void SaveSelectedCardStyle_Click(object sender, RoutedEventArgs e)

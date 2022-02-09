@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using GoogleHelper;
+using SheetsPersist;
 
 namespace DndCore
 {
-	[SheetName("DnD")]
-	[TabName("Magic")]
+	[DocumentName("DnD")]
+	[SheetName("Magic")]
 	public class MagicItem
 	{
 		string parameterStr;
