@@ -6,8 +6,8 @@ using Imaging;
 
 namespace DHDM
 {
-	[DocumentName("D&D Viewers")]
-	[SheetName("Viewers")]
+	[Document("D&D Viewers")]
+	[Sheet("Viewers")]
 	public class DndViewer: TrackPropertyChanges
 	{
 		public bool AlreadySeen { get; set; }

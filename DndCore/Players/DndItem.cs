@@ -6,8 +6,8 @@ using SheetsPersist;
 namespace DndCore
 {
 
-	[DocumentName("DnD")]
-	[SheetName("Items")]
+	[Document("DnD")]
+	[Sheet("Items")]
 	public class DndItem
 	{
 		[Column]

@@ -6,8 +6,8 @@ using Newtonsoft.Json;
 
 namespace DndCore
 {
-	[DocumentName("DnD")]
-	[SheetName("Monsters")]
+	[Document("DnD")]
+	[Sheet("Monsters")]
 	public class Monster : Creature
 	{
 		public override int Level { get => (int)Math.Min(21, Math.Ceiling(challengeRating)); }

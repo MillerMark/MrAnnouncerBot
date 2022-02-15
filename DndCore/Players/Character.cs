@@ -11,8 +11,8 @@ using SheetsPersist;
 
 namespace DndCore
 {
-	[DocumentName("DnD")]
-	[SheetName("Players")]
+	[Document("DnD")]
+	[Sheet("Players")]
 	public class Character : Creature
 	{
 		public override int IntId { get => playerID; }

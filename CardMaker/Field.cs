@@ -6,8 +6,8 @@ using SheetsPersist;
 
 namespace CardMaker
 {
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("Fields")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("Fields")]
 	public class Field : BaseNameId
 	{
 		Card parentCard;

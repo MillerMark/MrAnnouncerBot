@@ -4,8 +4,8 @@ using SheetsPersist;
 
 namespace CardMaker
 {
-	[DocumentName("D&D Deck Data")]
-	[SheetName("StampedeCards")]
+	[Document("D&D Deck Data")]
+	[Sheet("StampedeCards")]
 	public class StampedeSpecialist
 	{
 		[Column]

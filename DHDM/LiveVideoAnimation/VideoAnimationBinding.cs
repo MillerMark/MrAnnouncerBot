@@ -4,8 +4,8 @@ using SheetsPersist;
 
 namespace DHDM
 {
-	[DocumentName("Live Video Animation")]
-	[SheetName("Bindings")]
+	[Document("Live Video Animation")]
+	[Sheet("Bindings")]
 	public class VideoAnimationBinding
 	{
 		public string SceneName { get; set; }

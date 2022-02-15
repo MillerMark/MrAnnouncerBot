@@ -6,8 +6,8 @@ using SheetsPersist;
 
 namespace DHDM
 {
-	[DocumentName("DnD")]
-	[SheetName("DmMood")]
+	[Document("DnD")]
+	[Sheet("DmMood")]
 	public class DmMood
 	{
 		[Column]

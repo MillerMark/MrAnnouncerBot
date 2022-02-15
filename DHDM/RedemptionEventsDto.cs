@@ -6,8 +6,8 @@ using SheetsPersist;
 
 namespace DHDM
 {
-	[DocumentName("D&D Deck Data")]
-	[SheetName("Cards")]
+	[Document("D&D Deck Data")]
+	[Sheet("Cards")]
 	public class RedemptionEventsDto
 	{
 		[Indexer]

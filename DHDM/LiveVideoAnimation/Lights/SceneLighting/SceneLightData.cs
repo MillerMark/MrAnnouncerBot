@@ -6,8 +6,8 @@ using Imaging;
 
 namespace DHDM
 {
-	[DocumentName("Live Video Animation")]
-	[SheetName("Lights")]
+	[Document("Live Video Animation")]
+	[Sheet("Lights")]
 	public class SceneLightData
 	{
 		public string LeftLight { get; set; }

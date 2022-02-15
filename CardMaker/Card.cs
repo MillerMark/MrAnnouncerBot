@@ -14,8 +14,8 @@ using Newtonsoft.Json;
 
 namespace CardMaker
 {
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("Cards")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("Cards")]
 	public class Card : BaseNameId
 	{
 		string streamlootsCardId;

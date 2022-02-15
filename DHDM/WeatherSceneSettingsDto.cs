@@ -5,8 +5,8 @@ using System.Linq;
 
 namespace DHDM
 {
-	[DocumentName("DnD")]
-	[SheetName("Weather")]
+	[Document("DnD")]
+	[Sheet("Weather")]
 	public class WeatherSceneSettingsDto
 	{
 		public string Keyword { get; set; }

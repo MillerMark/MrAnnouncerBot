@@ -8,8 +8,8 @@ using Newtonsoft.Json;
 namespace DndCore
 {
 	[HasDndEvents]
-	[DocumentName("DnD")]
-	[SheetName("Spells")]
+	[Document("DnD")]
+	[Sheet("Spells")]
 	[DebuggerDisplay("{Name,nq}")]
 	public class Spell
 	{

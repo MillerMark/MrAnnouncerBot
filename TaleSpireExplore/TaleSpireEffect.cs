@@ -4,8 +4,8 @@ using SheetsPersist;
 
 namespace TaleSpireExplore
 {
-	[DocumentName("TaleSpire Effects")]
-	[SheetName("Effects")]
+	[Document("TaleSpire Effects")]
+	[Sheet("Effects")]
 	public class TaleSpireEffect
 	{
 		[Column]

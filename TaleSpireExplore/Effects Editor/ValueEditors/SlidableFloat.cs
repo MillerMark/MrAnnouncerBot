@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace TaleSpireExplore
 {
-	[DocumentName("TaleSpire UI Controls")]
-	[SheetName("SlidableFloats")]
+	[Document("TaleSpire UI Controls")]
+	[Sheet("SlidableFloats")]
 	public class SlidableFloat
 	{
 		[Indexer]

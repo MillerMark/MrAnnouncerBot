@@ -5,8 +5,8 @@ using SheetsPersist;
 
 namespace DndCore
 {
-	[DocumentName("DnD")]
-	[SheetName("Magic")]
+	[Document("DnD")]
+	[Sheet("Magic")]
 	public class MagicItem
 	{
 		string parameterStr;

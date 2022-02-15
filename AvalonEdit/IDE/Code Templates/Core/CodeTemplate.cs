@@ -5,8 +5,8 @@ using SheetsPersist;
 
 namespace SuperAvalonEdit
 {
-	[DocumentName("IDE")]
-	[SheetName("Templates")]
+	[Document("IDE")]
+	[Sheet("Templates")]
 	public class CodeTemplate
 	{
 		[Indexer]

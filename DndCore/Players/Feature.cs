@@ -7,8 +7,8 @@ using SheetsPersist;
 namespace DndCore
 {
 	[HasDndEvents]
-	[DocumentName("DnD")]
-	[SheetName("Features")]
+	[Document("DnD")]
+	[Sheet("Features")]
 	public class Feature
 	{
 		public static event FeatureEventHandler FeatureActivated;

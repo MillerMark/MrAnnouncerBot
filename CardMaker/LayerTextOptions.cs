@@ -6,8 +6,8 @@ using SheetsPersist;
 
 namespace CardMaker
 {
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("LayerTextOptions")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("LayerTextOptions")]
 	public class LayerTextOptions : TrackPropertyChanges
 	{
 		string colorStr;

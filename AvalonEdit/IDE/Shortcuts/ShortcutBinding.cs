@@ -11,8 +11,8 @@ using ICSharpCode.AvalonEdit.Editing;
 
 namespace SuperAvalonEdit
 {
-	[DocumentName("IDE")]
-	[SheetName("Shortcuts")]
+	[Document("IDE")]
+	[Sheet("Shortcuts")]
 	public class ShortcutBinding
 	{
 		[Column]

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ObsControl
 {
-  [DocumentName("Live Video Animation")]
-	[SheetName("VideoFeeds")]
+  [Document("Live Video Animation")]
+	[Sheet("VideoFeeds")]
 	public class VideoFeed
 	{
 		[Indexer]

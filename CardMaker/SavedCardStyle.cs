@@ -4,8 +4,8 @@ using SheetsPersist;
 
 namespace CardMaker
 {
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("SavedStyles")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("SavedStyles")]
 	public class SavedCardStyle
 	{
 		[Indexer]

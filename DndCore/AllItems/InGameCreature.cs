@@ -6,8 +6,8 @@ using SheetsPersist;
 
 namespace DndCore
 {
-	[DocumentName("DnD Game")]
-	[SheetName("Creatures")]
+	[Document("DnD Game")]
+	[Sheet("Creatures")]
 	public class InGameCreature
 	{
 		[Column]

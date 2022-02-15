@@ -6,8 +6,8 @@ using SheetsPersist;
 namespace CardMaker
 {
 
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("Random Gen Rules")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("Random Gen Rules")]
 	public class LayerGenerationOptions : TrackPropertyChanges
 	{
 		bool syncStretch = true;

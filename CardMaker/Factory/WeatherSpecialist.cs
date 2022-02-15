@@ -4,8 +4,8 @@ using SheetsPersist;
 
 namespace CardMaker
 {
-	[DocumentName("D&D Deck Data")]
-	[SheetName("WeatherCards")]
+	[Document("D&D Deck Data")]
+	[Sheet("WeatherCards")]
 	public class WeatherSpecialist : BaseWeatherSpecialist
 	{
 		[Column]

@@ -7,8 +7,8 @@ using System.Runtime.CompilerServices;
 
 namespace CardMaker
 {
-	[DocumentName(Constants.DocumentName_DeckData)]
-	[SheetName("Decks")]
+	[Document(Constants.DocumentName_DeckData)]
+	[Sheet("Decks")]
 	public class Deck : BaseNameId
 	{
 		public ObservableCollection<Card> Cards { get; set; } = new ObservableCollection<Card>();
