@@ -130,7 +130,7 @@
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
+    <ProjectReference Include="..\BotCore\BotCore.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />

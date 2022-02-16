@@ -102,7 +102,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
+    <ProjectReference Include="..\BotCore\BotCore.csproj" />
   </ItemGroup>
 
 </Project>

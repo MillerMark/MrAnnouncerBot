@@ -13,6 +13,7 @@
     <Compile Include="..\BotCoreNet\AppData.cs" Link="AppData.cs" />
     <Compile Include="..\BotCoreNet\BotCommand.cs" Link="BotCommand.cs" />
     <Compile Include="..\BotCoreNet\BotCommands.cs" Link="BotCommands.cs" />
+    <Compile Include="..\BotCoreNet\CsvData.cs" Link="CsvData.cs" />
     <Compile Include="..\BotCoreNet\MySecureString.cs" Link="MySecureString.cs" />
     <Compile Include="..\BotCoreNet\Twitch.cs" Link="Twitch.cs" />
     <Compile Include="..\BotCoreNet\Twitch\Chatters.cs" Link="Twitch\Chatters.cs" />
@@ -26,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="27.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />

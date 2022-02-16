@@ -166,7 +166,8 @@ class UserInfo {
 	}
 }
 
-function executeCommand(command: string, params: string, userInfo: UserInfo) {
+function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, showsWatched: number) {
+	let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, showsWatched);
 	if (activeBackGame) {
 		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
 	}

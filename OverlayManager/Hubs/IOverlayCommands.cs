@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
+using System.Drawing;
 
 namespace OverlayManager.Hubs
 {
@@ -13,8 +14,8 @@ namespace OverlayManager.Hubs
 	/// Commands we send down to the Overlay.
 	/// </summary>
 	public interface IOverlayCommands
-	{
-		Task ExecuteCommand(string command, string args, UserInfo userInfo);
+{
+		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color, int showsWatched);
 		Task UserHasCoins(string userID, int amount);
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);

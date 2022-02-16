@@ -68,7 +68,10 @@ namespace OverlayManager
 				args = cmdText;
 			string targetCommand = Translate(cmdText);
 			if (targetCommand != null)
-				hub.Clients.All.ExecuteCommand(targetCommand, args, UserInfo.FromChatMessage(chatMessage, showsWatched));
+			{
+				UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, showsWatched);
+				hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+			}
 
 			if (chatBackMessage != null)
 				Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);

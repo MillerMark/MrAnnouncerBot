@@ -393,7 +393,7 @@ class Sprites {
 			//}
 
 			if (insideSegments) {
-				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;
+				const segmentStartIndex: number = Sprites.GetSegmentStartIndex(frameIndex, startOffset, segmentSize);
 
 				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;0,0,1349,519;0.03114,0.03214)
 
@@ -408,8 +408,12 @@ class Sprites {
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, reverse, frameInterval, this.baseAnimation.fileName);
 
 
-			if (saveFrameIndex !== sprite.frameIndex)
+			if (saveFrameIndex !== sprite.frameIndex) {
+				if (insideSegments) {
+					//console.log(`sprite.frameIndex = ${sprite.frameIndex} (saveFrameIndex was ${saveFrameIndex})`);
+        }
 				sprite.frameAdvanced(returnFrameIndex, reverse, nowMs);
+			}
 
 			this.cleanupFinishedAnimations(i, sprite);
 
@@ -421,6 +425,10 @@ class Sprites {
 
 		this.lastTimeWeAdvancedTheFrame = nowMs;
 	}
+
+	public static GetSegmentStartIndex(frameIndex: number, startOffset: number, segmentSize: number): number {
+    return Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;
+  }
 
 	private getReturnIndex(frameCount: number, reverse: boolean) {
 		let returnFrameIndex = this.returnFrameIndex;

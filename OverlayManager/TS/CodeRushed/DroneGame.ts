@@ -1074,7 +1074,7 @@ class DroneGame extends GamePlusQuiz {
 
 	//` ![](F8F205C07F3FCE8EEA5341ED98A92B36.png)  ![](77833405FDDE3ACB175756288F7BE0F8.png)
 	loadDrones(color: string): Sprites {
-		const drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
+		const drones = new Sprites(`Drones/${color}/Drone`, 30, fps30, AnimationStyle.Loop);
 		drones.segmentSize = 2;
 		drones.removeOnHitFloor = false;
 		drones.moves = true;

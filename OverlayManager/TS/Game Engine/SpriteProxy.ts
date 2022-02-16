@@ -105,7 +105,13 @@
 			this.frameIndex -= numFramesToAdvance;
 		}
 		else {
-			this.frameIndex += numFramesToAdvance;
+			let segmentSize: number = endBounds - startIndex;
+			if (segmentSize > 0) {
+				this.frameIndex += numFramesToAdvance % segmentSize;
+			}
+			else {
+				this.frameIndex += numFramesToAdvance;
+			}
 		}
 
 		if (endBounds !== 0) {

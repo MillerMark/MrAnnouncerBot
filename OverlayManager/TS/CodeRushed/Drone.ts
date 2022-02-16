@@ -59,6 +59,7 @@ class Drone extends ColorShiftingSpriteProxy {
 			color = '#49357b';
 		myDrone.color = color;
 	}
+
 	coinCount = 0;
 	health = 4;
 	meteor: Meteor;
@@ -365,7 +366,11 @@ class Drone extends ColorShiftingSpriteProxy {
 				rollIndex = 3;
 		else
 			rollIndex = 5;
-		this.frameIndex = pitchIndex * 10 + rollIndex;
+		const segmentStartIndex: number = Sprites.GetSegmentStartIndex(this.frameIndex, 0, 2);
+		const newFrameIndex: number = pitchIndex * 10 + rollIndex;
+		const newSegmentStartIndex: number = Sprites.GetSegmentStartIndex(newFrameIndex, 0, 2);
+		if (segmentStartIndex !== newSegmentStartIndex)
+			this.frameIndex = newFrameIndex;
 	}
 
 	HorizontalThrust = 2;

@@ -138,12 +138,15 @@ namespace OverlayManager
 		
 		void AnswerQuiz(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
+			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, 0);
+			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+				
 		}
 
 		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
+			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, 0);
+			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
