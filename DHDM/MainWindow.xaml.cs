@@ -10500,6 +10500,7 @@ namespace DHDM
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+			Dmx.ShutDown();
 			leapDevice.ShuttingDown();
 			AllViewers.Save();
 		}

@@ -122,18 +122,27 @@ namespace DHDM
 				}
 
 				LightSequenceData lightData = light.SequenceData[frameAnimator.FrameIndex];
-				BluetoothLight bluetoothLight;
+
+				DmxLight dmxLight = null;
 
 				if (light.ID == BluetoothLights.Left_ID)
 				{
-					bluetoothLight = BluetoothLights.Left;
-					//log.Add($"{lightData.Duration}s: Hue {lightData.Hue} at {lightData.Lightness} lightness ({(DateTime.Now - frameAnimator.StartTime).TotalSeconds}s passed since start.");
+					dmxLight = DmxLight.Left;
 				}
-				else
-					bluetoothLight = BluetoothLights.Right;
+				else if (light.ID == BluetoothLights.Center_ID)
+				{
+					dmxLight = DmxLight.Center;
+				}
+				else if (light.ID == BluetoothLights.Right_ID)
+				{
+					dmxLight = DmxLight.Right;
+				}
 
-				
-				Task.Run(async () => await bluetoothLight.SetAsync(lightData.Hue, lightData.Saturation, lightData.Lightness) );
+				if (dmxLight == null)
+					return;
+
+				dmxLight.SetColor(lightData);
+				//Task.Run(async () => await bluetoothLight.SetAsync(lightData.Hue, lightData.Saturation, lightData.Lightness));
 				ea.Duration = lightData.Duration;
 			}
 		}
@@ -207,13 +216,14 @@ namespace DHDM
 			ChangeLightsBasedOnScene(sceneName);
 		}
 
-		static async void ChangeLightsBasedOnScene(string sceneName)
+		static void ChangeLightsBasedOnScene(string sceneName)
 		{
 			SceneLightData sceneLightData = AllSceneLightData.Get(sceneName);
 			if (sceneLightData == null)
 			{
-				await BluetoothLights.Left.SetAsync(0, 0, 0);
-				await BluetoothLights.Right.SetAsync(0, 0, 0);
+				DmxLight.Left.SetColor("#000000");
+				DmxLight.Center.SetColor("#000000");
+				DmxLight.Right.SetColor("#000000");
 				return;
 			}
 

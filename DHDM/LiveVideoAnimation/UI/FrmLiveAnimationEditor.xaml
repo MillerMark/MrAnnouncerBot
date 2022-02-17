@@ -6,9 +6,10 @@
         xmlns:local="clr-namespace:DHDM"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Live Animation Editor" Height="450" Width="1270" Closed="Window_Closed">
+        Title="Live Animation Editor" Height="486" Width="1270" Closed="Window_Closed">
 	<Grid>
 		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
@@ -20,6 +21,7 @@
         <Grid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="Copy Colors" Click="CopyColors_Click"/>
+                <MenuItem Header="Paste Colors" Click="PasteColors_Click"/>
             </ContextMenu>
         </Grid.ContextMenu>
 		<Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
@@ -131,7 +133,10 @@
 			</Button>
             <local:FrmColorPicker x:Name="rightLight" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
 		</StackPanel>
-        <StackPanel x:Name="spButtons" Orientation="Horizontal" Grid.Row="5" Margin="4" >
+        <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Center" Margin="8" >
+            <local:FrmColorPicker x:Name="centerLight" Margin="0, 0, 20, 0" ColorChanged="centerLight_ColorChanged"></local:FrmColorPicker>
+        </StackPanel>
+        <StackPanel x:Name="spButtons" Orientation="Horizontal" Grid.Row="6" Margin="4" >
             <Button x:Name="btnCopyLightsForward" Width="136" Height="30" Click="btnCopyLightsForward_Click">
          		Copy Lights Forward >>
          </Button>

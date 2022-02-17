@@ -17,6 +17,7 @@ using ObsControl;
 using InTheHand.Bluetooth;
 using System.Security.Policy;
 using Newtonsoft.Json;
+using System.Windows.Media.Media3D;
 
 namespace DHDM
 {
@@ -350,12 +351,8 @@ namespace DHDM
 		private void UpdateLights()
 		{
 			foreach (Light light in LightingSequence.Lights)
-			{
 				if (frameIndex < light.SequenceData.Count)
-				{
 					SetLightColor(light.ID, light.SequenceData[frameIndex]);
-				}
-			}
 		}
 
 		private bool FramesAreNotGood()
@@ -739,6 +736,11 @@ namespace DHDM
 			}
 		}
 
+		bool HasLight(List<Light> lights, string id)
+		{
+			return lights.Any(x => x.ID == id);
+		}
+
 		LightingSequence LoadLightingSequence(string sceneName, int totalFrameCount)
 		{
 			string fullPathToLightsFile = VideoAnimationManager.GetFullPathToLightsFile(sceneName);
@@ -746,16 +748,27 @@ namespace DHDM
 			{
 				string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
 				LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
-				// TODO: Load lights.
-				return lightingSequence.Decompress();
+
+				LightingSequence decompressedLightingSequence = lightingSequence.Decompress();
+
+				AddCenterLightIfNeeded(totalFrameCount, decompressedLightingSequence);
+
+				return decompressedLightingSequence;
 			}
 			else
 			{
 				LightingSequence lightingSequence = new LightingSequence();
 				lightingSequence.Lights.Add(NewLight(BluetoothLights.Left_ID, totalFrameCount));
+				lightingSequence.Lights.Add(NewLight(BluetoothLights.Center_ID, totalFrameCount));
 				lightingSequence.Lights.Add(NewLight(BluetoothLights.Right_ID, totalFrameCount));
 				return lightingSequence;
 			}
+		}
+
+		private void AddCenterLightIfNeeded(int totalFrameCount, LightingSequence decompressedLightingSequence)
+		{
+			if (!HasLight(decompressedLightingSequence.Lights, BluetoothLights.Center_ID))
+				decompressedLightingSequence.Lights.Add(NewLight(BluetoothLights.Center_ID, totalFrameCount));
 		}
 
 		private static Light NewLight(string lightId, int totalFrameCount)
@@ -807,12 +820,32 @@ namespace DHDM
 			return LightingSequence.Lights.Find(x => x.ID == id);
 		}
 
-		private async void leftLight_ColorChanged(object sender, RoutedEventArgs e)
+		private void leftLight_ColorChanged(object sender, RoutedEventArgs e)
 		{
 			if (changingInternally || settingColorInternally)
 				return;
-			await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
+
+			DmxLight.Left.SetColor(leftLight.Hue, leftLight.Saturation, leftLight.Lightness);
+			//await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
 			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight);
+		}
+
+		private void centerLight_ColorChanged(object sender, RoutedEventArgs e)
+		{
+			if (changingInternally || settingColorInternally)
+				return;
+
+			DmxLight.Center.SetColor(centerLight.Hue, centerLight.Saturation, centerLight.Lightness);
+			SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight);
+		}
+
+		private void rightLight_ColorChanged(object sender, RoutedEventArgs e)
+		{
+			if (changingInternally || settingColorInternally)
+				return;
+
+			DmxLight.Right.SetColor(rightLight.Hue, rightLight.Saturation, rightLight.Lightness);
+			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight);
 		}
 
 		private void SetLightFrame(Light light, FrmColorPicker colorPicker)
@@ -831,27 +864,24 @@ namespace DHDM
 			light.SequenceData[frameIndex].Lightness = (int)colorPicker.Lightness;
 		}
 
-		private async void rightLight_ColorChanged(object sender, RoutedEventArgs e)
-		{
-			if (changingInternally || settingColorInternally)
-				return;
-			await BluetoothLights.Right.SetAsync((int)rightLight.Hue, (int)rightLight.Saturation, (int)rightLight.Lightness);
-			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight);
-		}
-
 		async void SetLightColor(string iD, LightSequenceData lightSequenceData)
 		{
 			if (settingColorInternally || dragStarted)
 				return;
 			if (iD == BluetoothLights.Left_ID)
 			{
-				await BluetoothLights.Left.SetAsync(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+				DmxLight.Left.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
 				SetColorPicker(lightSequenceData, leftLight);
 			}
 			else if (iD == BluetoothLights.Right_ID)
 			{
-				await BluetoothLights.Right.SetAsync(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+				DmxLight.Right.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
 				SetColorPicker(lightSequenceData, rightLight);
+			}
+			else if (iD == BluetoothLights.Center_ID)
+			{
+				DmxLight.Center.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+				SetColorPicker(lightSequenceData, centerLight);
 			}
 			else
 				System.Diagnostics.Debugger.Break();  // What Light is this?
@@ -877,6 +907,7 @@ namespace DHDM
 			if (backFiles == null || FrameIndex >= backFiles.Length - 1)
 				return;
 			SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
+			SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight, FrameIndex + 1);
 			SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
 			FrameIndex++;
 		}
@@ -894,8 +925,23 @@ namespace DHDM
 
 		private void CopyColors_Click(object sender, RoutedEventArgs e)
 		{
-			string colorStr = $"{leftLight.Color.AsHtml}\t{rightLight.Color.AsHtml}";
+			string colorStr = $"{leftLight.Color.AsHtml}\t{centerLight.Color.AsHtml}\t{rightLight.Color.AsHtml}";
 			System.Windows.Clipboard.SetText(colorStr);
+		}
+
+		private void PasteColors_Click(object sender, RoutedEventArgs e)
+		{
+			string clipboardText = System.Windows.Clipboard.GetText();
+			if (string.IsNullOrEmpty(clipboardText))
+				return;
+
+			string[] parts = clipboardText.Split('\t');
+			if (parts.Length != 3)
+				return;
+
+			leftLight.Color = new HueSatLight(parts[0]);
+			centerLight.Color = new HueSatLight(parts[1]);
+			rightLight.Color = new HueSatLight(parts[2]);
 		}
 	}
 }

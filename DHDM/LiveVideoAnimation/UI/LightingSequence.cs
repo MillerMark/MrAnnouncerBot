@@ -26,6 +26,7 @@ namespace DHDM
 			LightingSequence result = new LightingSequence();
 			foreach (Light light in Lights)
 				result.Lights.Add(light.Decompress());
+
 			return result;
 		}
 	}
