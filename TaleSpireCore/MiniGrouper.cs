@@ -1111,10 +1111,11 @@ namespace TaleSpireCore
 			CreatureBoardAsset ownerCreature = OwnerCreature;
 			if (Guard.IsNull(ownerCreature, "ownerCreature")) return null;
 
-			int feetFromLeader = 1;
+			float radiusFeetFromLeader = 5;
 			float degreesToRotate = 0;
-			const float degreesDelta = 33;
-			const int feetDelta = 5;
+			float degreesDelta = 33;
+			float feetDelta = 5;
+			const float distanceBetweenMinisFeet = 5;
 			while (numCreaturesToSpawn > 0)
 			{
 				NGuid boardAssetId = boardAssetIds[boardAssetIndex];
@@ -1123,9 +1124,13 @@ namespace TaleSpireCore
 					boardAssetIndex = 0;
 
 				degreesToRotate += degreesDelta;
-				float distanceFromCenterFeet = Talespire.Convert.FeetToTiles(feetFromLeader);
-				feetFromLeader += feetDelta;
-				Vector3 offset = new Vector3(-distanceFromCenterFeet, 0, 0);
+				float distanceFromCenterTiles = Talespire.Convert.FeetToTiles(radiusFeetFromLeader);
+				radiusFeetFromLeader += feetDelta;
+				float circumferenceFeet = (float)Math.PI * 2f * radiusFeetFromLeader;
+				float numMinisWeCanFitAtThisRadius = circumferenceFeet / distanceBetweenMinisFeet;
+				feetDelta = distanceBetweenMinisFeet / numMinisWeCanFitAtThisRadius;
+				degreesDelta = 360f / numMinisWeCanFitAtThisRadius;
+				Vector3 offset = new Vector3(-distanceFromCenterTiles, 0, 0);
 				Vector3 rotatedOffset = Quaternion.Euler(0, degreesToRotate, 0) * offset; // rotate it
 				Vector3 newPosition = ownerCreature.PlacedPosition + rotatedOffset; // calculate rotated point
 

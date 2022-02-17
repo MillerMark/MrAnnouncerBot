@@ -18,6 +18,7 @@ namespace TaleSpireExplore
 	public partial class EdtMiniGrouper : UserControl, IValueEditor, IScriptEditor
 	{
 		const float GaggleVariance = 0.3f;
+		const int MaxCreaturesToSpawnAtOnce = 300;
 		System.Timers.Timer updateMemberListTimer;
 		System.Timers.Timer updateGroupNameTimer;
 		System.Timers.Timer updateNewlySpawnedCreaturesTimer;
@@ -655,6 +656,16 @@ namespace TaleSpireExplore
 			{
 				numCreaturesToSpawn = 1;
 				tbxNumCreatures.Text = "1";
+			}
+			else
+			{
+				// TODO: Confirm with the user if this number is high.
+				if (numCreaturesToSpawn > MaxCreaturesToSpawnAtOnce)
+				{
+					Talespire.Log.Warning($"{numCreaturesToSpawn} is too many creatures to spawn at once. Dropping to {MaxCreaturesToSpawnAtOnce}.");
+					numCreaturesToSpawn = MaxCreaturesToSpawnAtOnce;
+				}
+				numCreaturesToSpawn = Math.Min(numCreaturesToSpawn, MaxCreaturesToSpawnAtOnce);
 			}
 
 			List<string> spawnedCreatureIds = MiniGrouperScript?.SpawnMoreMembers(numCreaturesToSpawn, boardAssetIds);
