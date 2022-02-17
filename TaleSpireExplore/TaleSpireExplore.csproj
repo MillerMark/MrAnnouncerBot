@@ -1,13 +1,33 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{425D72BF-D995-4980-8BE7-60610705AFAD}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <RootNamespace>TaleSpireExplore</RootNamespace>
+    <AssemblyName>TaleSpireExplore</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>C:\Program Files %28x86%29\Steam\steamapps\common\TaleSpire\BepInEx\plugins\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx">
@@ -58,6 +78,24 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_CoreSpells\CoreEffects.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Google.Apis, Version=1.55.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.55.0\lib\net45\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth, Version=1.55.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.55.0\lib\net461\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.55.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.55.0\lib\net461\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core, Version=1.55.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Core.1.55.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.55.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.55.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Sheets.v4, Version=1.55.0.2371, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Sheets.v4.1.55.0.2371\lib\net45\Google.Apis.Sheets.v4.dll</HintPath>
+    </Reference>
     <Reference Include="MagicEffects">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_Magic1\DH_Magic1\MagicEffects.dll</HintPath>
       <Private>False</Private>
@@ -74,6 +112,9 @@
     <Reference Include="MultiMod.Shared">
       <HintPath>..\DLLs\MultiMod\MultiMod.Shared.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="RadialUI">
       <HintPath>..\RadialMenus\RadialUIPlugin\bin\Debug\RadialUI.dll</HintPath>
     </Reference>
@@ -81,10 +122,23 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\TaleSpire\BepInEx\plugins\multimod\mods\DH_Realistic4\DH_Realistic4\RealisticEffects4.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SheetsPersist, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\SheetsPersist.1.2.0-alpha\lib\netstandard2.0\SheetsPersist.dll</HintPath>
+    </Reference>
     <Reference Include="StatMessaging, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\StatMessaging\TaleSpireStatMessaging\bin\Debug\StatMessaging.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="Unity.Animation.Rigging">
       <HintPath>..\DLLs\Unity.Animation.Rigging.dll</HintPath>
       <Private>False</Private>
@@ -166,79 +220,258 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Decompiles\Effect.cs" />
     <None Include="Decompiles\EffectManager.cs" />
     <None Include="Decompiles\FactoryItemBehaviour.cs" />
     <None Include="Decompiles\VisualEffect.cs" />
-    <Compile Update="Effects Editor\ValueEditors\EdtMiniGrouper.cs">
+    <Compile Include="Decompiles\LineRuler\BezierPath.cs" />
+    <Compile Include="Decompiles\LineRuler\LineIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\LineRulerMode.cs" />
+    <Compile Include="Decompiles\LineRuler\RulerBoardTool.cs" />
+    <Compile Include="Decompiles\LineRuler\RulerIndicator.cs" />
+    <Compile Include="Decompiles\LineRuler\Ruler.cs" />
+    <Compile Include="Effects Editor\CustomNodes\ComponentNode.cs" />
+    <Compile Include="Effects Editor\CustomNodes\MaterialColorPropertyNode.cs" />
+    <Compile Include="Effects Editor\SelectionType.cs" />
+    <Compile Include="Effects Editor\ValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\IScriptEditor.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtEnum.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtMiniGrouper.Designer.cs">
+      <DependentUpon>EdtMiniGrouper.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\FormationEditingMode.cs" />
+    <Compile Include="Effects Editor\ValueEditors\GroupMember.cs" />
+    <Compile Include="Effects Editor\ValueEditors\SlidableFloats.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\ValueChangedEventArgs.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtEnum.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtMesh.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtEnum.Designer.cs">
+      <DependentUpon>EdtEnum.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMesh.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtMaterial.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtMesh.Designer.cs">
+      <DependentUpon>EdtMesh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMaterial.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtNGuid.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtMaterial.Designer.cs">
+      <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtNGuid.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtString.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtNGuid.Designer.cs">
+      <DependentUpon>EdtNGuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtString.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtColor.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtString.Designer.cs">
+      <DependentUpon>EdtString.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtColor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtNone.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtColor.Designer.cs">
+      <DependentUpon>EdtColor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtNone.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtBool.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtNone.Designer.cs">
+      <DependentUpon>EdtNone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtBool.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtVector3.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtBool.Designer.cs">
+      <DependentUpon>EdtBool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtVector3.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtInt.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtVector3.Designer.cs">
+      <DependentUpon>EdtVector3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtInt.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtMinMaxGradient.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtInt.Designer.cs">
+      <DependentUpon>EdtInt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtMinMaxGradient.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Effects Editor\ValueEditors\EdtFloat.cs">
+    <Compile Include="Effects Editor\ValueEditors\EdtMinMaxGradient.Designer.cs">
+      <DependentUpon>EdtMinMaxGradient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\FrmAddNode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmAddNode.Designer.cs">
+      <DependentUpon>FrmAddNode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\FrmEffectEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmEffectEditor.Designer.cs">
+      <DependentUpon>FrmEffectEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\Core\AllValueEditors.cs" />
+    <Compile Include="Effects Editor\ValueEditors\EdtFloat.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\EdtFloat.Designer.cs">
+      <DependentUpon>EdtFloat.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Effects Editor\ValueEditors\Core\IValueChangedListener.cs" />
+    <Compile Include="Effects Editor\ValueEditors\Core\IValueEditor.cs" />
+    <Compile Include="Effects Editor\ValueEditors\SlidableFloat.cs" />
+    <Compile Include="FrmExplorer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmExplorer.Designer.cs">
+      <DependentUpon>FrmExplorer.cs</DependentUpon>
     </Compile>
     <None Include="Decompiles\ParticleEmitterVisualEffect.cs" />
+    <Compile Include="Effects Editor\FrmSelectItem.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Effects Editor\FrmSelectItem.Designer.cs">
+      <DependentUpon>FrmSelectItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PersistentEffects\TypeLookup.cs" />
+    <Compile Include="PersistentEffects\UI\FrmNameEffect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmNameEffect.Designer.cs">
+      <DependentUpon>FrmNameEffect.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.Designer.cs">
+      <DependentUpon>FrmPersistentEffectPropertyEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KnownEffects.cs" />
+    <Compile Include="KnownEffectsFactory.cs" />
+    <Compile Include="ModdingUtils.cs" />
+    <Compile Include="Effects Editor\CustomNodes\GameObjectNode.cs" />
+    <Compile Include="PersistentEffects\PersistentEffectsManager.cs" />
+    <Compile Include="PersistentEffects\UI\EffectProperty.cs" />
+    <Compile Include="PersistentEffects\UI\FrmEffectList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmEffectList.Designer.cs">
+      <DependentUpon>FrmEffectList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPropertyList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\FrmPropertyList.Designer.cs">
+      <DependentUpon>FrmPropertyList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PersistentEffects\UI\WindowHelper.cs" />
+    <Compile Include="Unmanaged\RECT.cs" />
+    <Compile Include="Unmanaged\Native.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Effects Editor\CustomNodes\PropertyNode.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TaleSpireEffect.cs" />
+    <Compile Include="TaleSpireExplorePlugin.cs" />
     <None Include="Decompiles\VFXMissile.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
-    <ProjectReference Include="..\..\MrAnnouncerBot\TaleSpireCore\TaleSpireCore.csproj" />
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMiniGrouper.resx">
+      <DependentUpon>EdtMiniGrouper.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtEnum.resx">
+      <DependentUpon>EdtEnum.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtFloat.resx">
+      <DependentUpon>EdtFloat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtInt.resx">
+      <DependentUpon>EdtInt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMesh.resx">
+      <DependentUpon>EdtMesh.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMaterial.resx">
+      <DependentUpon>EdtMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtNGuid.resx">
+      <DependentUpon>EdtNGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtString.resx">
+      <DependentUpon>EdtString.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtColor.resx">
+      <DependentUpon>EdtColor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtNone.resx">
+      <DependentUpon>EdtNone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtBool.resx">
+      <DependentUpon>EdtBool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtVector3.resx">
+      <DependentUpon>EdtVector3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmAddNode.resx">
+      <DependentUpon>FrmAddNode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmEffectEditor.resx">
+      <DependentUpon>FrmEffectEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\ValueEditors\EdtMinMaxGradient.resx">
+      <DependentUpon>EdtMinMaxGradient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmExplorer.resx">
+      <DependentUpon>FrmExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Effects Editor\FrmSelectItem.resx">
+      <DependentUpon>FrmSelectItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmNameEffect.resx">
+      <DependentUpon>FrmNameEffect.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmPersistentEffectPropertyEditor.resx">
+      <DependentUpon>FrmPersistentEffectPropertyEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmEffectList.resx">
+      <DependentUpon>FrmEffectList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PersistentEffects\UI\FrmPropertyList.resx">
+      <DependentUpon>FrmPropertyList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Decompiles\Effect.cs" />
-    <Compile Remove="Decompiles\EffectManager.cs" />
-    <Compile Remove="Decompiles\FactoryItemBehaviour.cs" />
-    <Compile Remove="Decompiles\ParticleEmitterVisualEffect.cs" />
-    <Compile Remove="Decompiles\VFXMissile.cs" />
-    <Compile Remove="Decompiles\VisualEffect.cs" />
-    <Compile Remove="Effects Editor\ValueEditors\Backup\EdtFloat.cs" />
-    <Compile Remove="Effects Editor\ValueEditors\Backup\EdtFloat.Designer.cs" />
-    <Compile Remove="Effects Editor\ValueEditors\Backup\EdtMinMaxGradient.cs" />
-    <Compile Remove="Effects Editor\ValueEditors\Backup\EdtMinMaxGradient.Designer.cs" />
-    <EmbeddedResource Remove="Effects Editor\ValueEditors\Backup\EdtFloat.resx" />
-    <EmbeddedResource Remove="Effects Editor\ValueEditors\Backup\EdtMinMaxGradient.resx" />
+    <ProjectReference Include="..\..\MrAnnouncerBot\TaleSpireCore\TaleSpireCore.csproj">
+      <Project>{08c85a94-9b3c-4f94-a8cd-0132c8f21aef}</Project>
+      <Name>TaleSpireCore</Name>
+    </ProjectReference>
   </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>ECHO ON
 ECHO.
