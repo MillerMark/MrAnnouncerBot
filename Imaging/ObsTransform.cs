@@ -65,6 +65,13 @@ namespace Imaging
 			int cyanCount = intermediateResults.Cyan.Count;
 			int magentaCount = intermediateResults.Magenta.Count;
 
+			if (cyanCount == 0 && yellowCount == 0 && greenCount == 0 && magentaCount == 0)
+			{
+				Camera = INT_Camera0Green;
+				HeadPoint = new Point2d(-1920, 0);
+				return;
+			}
+
 			if (greenCount > yellowCount)
 			{
 				if (greenCount > cyanCount)

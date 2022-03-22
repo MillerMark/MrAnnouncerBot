@@ -33,13 +33,14 @@ namespace AnimatedLiveVideoPngProcessor
 			this.btnConvertToMovementFile = new System.Windows.Forms.Button();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+			this.prgConvertingFiles = new System.Windows.Forms.ProgressBar();
 			this.SuspendLayout();
 			// 
 			// btnSelectFiles
 			// 
 			this.btnSelectFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnSelectFiles.Location = new System.Drawing.Point(0, 0);
-			this.btnSelectFiles.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnSelectFiles.Margin = new System.Windows.Forms.Padding(2);
 			this.btnSelectFiles.Name = "btnSelectFiles";
 			this.btnSelectFiles.Size = new System.Drawing.Size(113, 32);
 			this.btnSelectFiles.TabIndex = 0;
@@ -51,7 +52,7 @@ namespace AnimatedLiveVideoPngProcessor
 			// 
 			this.btnConvertToMovementFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnConvertToMovementFile.Location = new System.Drawing.Point(130, 0);
-			this.btnConvertToMovementFile.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnConvertToMovementFile.Margin = new System.Windows.Forms.Padding(2);
 			this.btnConvertToMovementFile.Name = "btnConvertToMovementFile";
 			this.btnConvertToMovementFile.Size = new System.Drawing.Size(206, 36);
 			this.btnConvertToMovementFile.TabIndex = 1;
@@ -61,10 +62,10 @@ namespace AnimatedLiveVideoPngProcessor
 			// 
 			// panel1
 			// 
-			this.panel1.Location = new System.Drawing.Point(0, 41);
-			this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.panel1.Location = new System.Drawing.Point(0, 78);
+			this.panel1.Margin = new System.Windows.Forms.Padding(2);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(494, 315);
+			this.panel1.Size = new System.Drawing.Size(494, 278);
 			this.panel1.TabIndex = 2;
 			// 
 			// openFileDialog
@@ -74,15 +75,24 @@ namespace AnimatedLiveVideoPngProcessor
 			this.openFileDialog.InitialDirectory = "D:\\Dropbox\\DX\\Twitch\\Assets\\AnimatedLiveVideo";
 			this.openFileDialog.Title = "Open Animation";
 			// 
+			// prgConvertingFiles
+			// 
+			this.prgConvertingFiles.Location = new System.Drawing.Point(0, 41);
+			this.prgConvertingFiles.Name = "prgConvertingFiles";
+			this.prgConvertingFiles.Size = new System.Drawing.Size(588, 20);
+			this.prgConvertingFiles.TabIndex = 8;
+			this.prgConvertingFiles.Visible = false;
+			// 
 			// FrmMovementFileBuilder
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(600, 366);
+			this.Controls.Add(this.prgConvertingFiles);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.btnConvertToMovementFile);
 			this.Controls.Add(this.btnSelectFiles);
-			this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "FrmMovementFileBuilder";
 			this.Text = "Png To Movement";
 			this.ResumeLayout(false);
@@ -95,6 +105,7 @@ namespace AnimatedLiveVideoPngProcessor
 		private System.Windows.Forms.Button btnConvertToMovementFile;
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.OpenFileDialog openFileDialog;
+		private System.Windows.Forms.ProgressBar prgConvertingFiles;
 	}
 }
 

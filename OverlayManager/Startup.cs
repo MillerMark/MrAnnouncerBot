@@ -34,6 +34,7 @@ namespace OverlayManager
 				options.MinimumSameSitePolicy = SameSiteMode.None;
 			});
 
+			services.AddDirectoryBrowser();
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 			services.AddSignalR(o => o.EnableDetailedErrors = true);
 			services.AddHostedService<BackgroundWorker>();

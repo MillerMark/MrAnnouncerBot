@@ -55,9 +55,11 @@ namespace BotCore
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
 				HookEvents(DroneCommandsClient);
 			}
-			catch //(Exception ex)
+			catch (Exception ex)
 			{
-				System.Diagnostics.Debugger.Break();
+				Console.WriteLine(ex.Message);
+				Console.WriteLine(ex.StackTrace);
+				Console.WriteLine();
 			}
 
 		}
@@ -104,7 +106,7 @@ namespace BotCore
 		public static TwitchAPI Api { get; private set; }
 		public static TwitchClient CodeRushedClient { get; private set; }
 		public static TwitchClient DroneCommandsClient { get; private set; }
-		public static bool Logging { get; set; }
+		public static bool Logging { get; set; } = true;
 		public static string CodeRushedBotApiClientId { get; set; }
 
 		async public static Task<User> GetUser(string userName)

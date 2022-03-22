@@ -186,6 +186,7 @@ namespace MrAnnouncerBot
 
 		void HookupTwitchEvents(TwitchClient client)
 		{
+			client.OnError += Client_OnError;
 			client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
 			client.OnMessageReceived += TwitchClient_OnMessageReceived;
@@ -193,7 +194,6 @@ namespace MrAnnouncerBot
 			client.OnUserLeft += TwitchClient_OnUserLeft;
 			client.OnChannelStateChanged += Client_OnChannelStateChanged;
 			client.OnDisconnected += Client_OnDisconnected;
-			client.OnError += Client_OnError;
 			client.OnHostingStopped += Client_OnHostingStopped;
 			client.OnLog += Client_OnLog;
 		}

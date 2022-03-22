@@ -40,8 +40,21 @@ namespace AnimatedLiveVideoPngProcessor
 			}
 		}
 
+		void ShowProgress(int progressPercent)
+		{
+			if (InvokeRequired)
+			{
+				Invoke(new MethodInvoker(() => ShowProgress(progressPercent)));
+			}
+			else
+			{
+				prgConvertingFiles.Value = progressPercent;
+			}
+		}
+
 		private void btnConvertToMovementFile_Click(object sender, EventArgs e)
 		{
+			prgConvertingFiles.Visible = true;
 			if (filesToProcess == null)
 			{
 				MessageBox.Show("Select files first!");
@@ -54,11 +67,13 @@ namespace AnimatedLiveVideoPngProcessor
 			
 			ObsTransform lastProcessImageResults = null;
 			int frameIndex = 0;
+			int totalFilesToProcess = filesToProcess.Count;
 			foreach (string file in filesToProcess)
 			{
 				ObsTransform processImageResults = TestImageHelper.ProcessImage(file);
 				processImageResults.FrameIndex = frameIndex;
 				frameIndex++;
+				ShowProgress(100 * frameIndex / totalFilesToProcess);
 
 				if (processImageResults.Matches(lastProcessImageResults))
 				{
@@ -78,6 +93,7 @@ namespace AnimatedLiveVideoPngProcessor
 			// Save the movement data...
 			string serializedObject = JsonConvert.SerializeObject(results, Formatting.Indented);
 			System.IO.File.WriteAllText(movementFileName, serializedObject);
+			prgConvertingFiles.Visible = false;
 		}
 	}
 }

@@ -114,6 +114,7 @@
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.9.1" />
+    <PackageReference Include="SheetsPersist" Version="1.2.0-alpha" />
     <PackageReference Include="TwitchLib" Version="3.3.0" />
     <PackageReference Include="TwitchLib.Api" Version="3.4.1" />
     <PackageReference Include="TwitchLib.Api.Core" Version="3.4.1" />

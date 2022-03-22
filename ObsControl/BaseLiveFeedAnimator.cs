@@ -5,6 +5,7 @@ namespace ObsControl
 	public class BaseLiveFeedAnimator
 	{
 		public double VideoAnchorHorizontal => videoFeeds[camera].videoAnchorHorizontal;
+		
 		public double VideoAnchorVertical => videoFeeds[camera].videoAnchorVertical;
 		public double VideoWidth => videoFeeds[camera].videoWidth;
 		public double VideoHeight => videoFeeds[camera].videoHeight;
@@ -13,6 +14,7 @@ namespace ObsControl
 		public string LastSceneName => videoFeeds[lastCamera].sceneName;
 		public string SceneName => videoFeeds[camera].sceneName;
 
+		
 		/// <summary>
 		/// The left point on the screen around which the video will rotate, scale, etc.
 		/// </summary>
@@ -46,6 +48,10 @@ namespace ObsControl
 					return;
 				lastCamera = camera;
 				camera = value;
+				if (videoFeeds[camera] == null)
+				{
+					System.Diagnostics.Debugger.Break();
+				}
 			}
 		}
 
