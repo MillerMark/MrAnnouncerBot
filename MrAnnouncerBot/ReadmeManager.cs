@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SheetsPersist;
 using System;
 using BotCore;
 using System.Collections.Generic;
@@ -33,7 +34,8 @@ namespace MrAnnouncerBot
 
 			bool needToAddScenes = false;
 
-			var scenes = CsvData.Get<SceneDto>(FileName.SceneData);
+			//var scenes = CsvData.Get<SceneDto>(FileName.SceneData);
+			var scenes = GoogleSheets.Get<SceneDto>();
 			foreach (var level in levels)
 			{
 				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level && x.LimitToUser == "")
@@ -69,35 +71,35 @@ namespace MrAnnouncerBot
 		}
 		public static bool NeedToGenerateNewReadme()
 		{
-			const int numFilesTracked = 4;  // Change this if we ever add more files to track.
+			//const int numFilesTracked = 4;  // Change this if we ever add more files to track.
 
-			TimeStampChecker timeStampChecker = TimeStampChecker.Load();
-			if (timeStampChecker != null && timeStampChecker.TimeStamps.Count == numFilesTracked)
-			{
-				if (timeStampChecker.NoChanges())
-					return false;
-			}
-			else
-			{
-				timeStampChecker = BuildTimeStampCheckers();
+			//TimeStampChecker timeStampChecker = TimeStampChecker.Load();
+			//if (timeStampChecker != null && timeStampChecker.TimeStamps.Count == numFilesTracked)
+			//{
+			//	if (timeStampChecker.NoChanges())
+			//		return false;
+			//}
+			//else
+			//{
+			//	timeStampChecker = BuildTimeStampCheckers();
 
-				if (timeStampChecker.TimeStamps.Count != numFilesTracked)
-				{
-					throw new Exception($"timeStampChecker.TimeStamps.Count ({timeStampChecker.TimeStamps.Count}) != numFilesTracked ({numFilesTracked})");
-				}
-			}
+			//	if (timeStampChecker.TimeStamps.Count != numFilesTracked)
+			//	{
+			//		throw new Exception($"timeStampChecker.TimeStamps.Count ({timeStampChecker.TimeStamps.Count}) != numFilesTracked ({numFilesTracked})");
+			//	}
+			//}
 			return true;
 		}
 
-		private static TimeStampChecker BuildTimeStampCheckers()
-		{
-			TimeStampChecker timeStampChecker = new TimeStampChecker();
-			timeStampChecker.Add(FileName.ReadmeTemplate);
-			timeStampChecker.Add(FileName.SceneData);
-			timeStampChecker.Add(FileName.LevelTemplate);
-			timeStampChecker.Add(FileName.SceneLevels);
-			return timeStampChecker;
-		}
+		//private static TimeStampChecker BuildTimeStampCheckers()
+		//{
+		//	TimeStampChecker timeStampChecker = new TimeStampChecker();
+		//	timeStampChecker.Add(FileName.ReadmeTemplate);
+		//	timeStampChecker.Add(FileName.SceneData);
+		//	timeStampChecker.Add(FileName.LevelTemplate);
+		//	timeStampChecker.Add(FileName.SceneLevels);
+		//	return timeStampChecker;
+		//}
 
 		public static void GenerateNewReadme()
 		{
@@ -114,8 +116,8 @@ namespace MrAnnouncerBot
 
 			File.WriteAllText(@"..\..\..\..\README.md", finalReadme.ToString());
 
-			var timeStampChecker = BuildTimeStampCheckers();
-			timeStampChecker.Save();
+			//var timeStampChecker = BuildTimeStampCheckers();
+			//timeStampChecker.Save();
 		}
 	}
 }

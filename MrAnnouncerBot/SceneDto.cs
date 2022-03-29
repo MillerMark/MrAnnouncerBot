@@ -1,16 +1,33 @@
-﻿using System;
+﻿using SheetsPersist;
+using System;
 
 namespace MrAnnouncerBot
 {
+	[Document("Mr. Announcer Guy")]
+	[Sheet("Scenes")]
 	public class SceneDto
 	{
 		double? minMinutesToSame;
+
+		[Column]
 		public string ChatShortcut { get; set; }
+		
+		[Column]
 		public string AlternateShortcut { get; set; }
+		
+		[Column]
 		public string Category { get; set; }
+		
+		[Column]
 		public string SceneName { get; set; }
+		
+		[Column]
 		public string LevelStr { get; set; }
+		
+		[Column]
 		public string MinSpanToSameStr { get; set; }
+		
+		[Column]
 		public string LimitToUser { get; set; }
 
 		public double MinMinutesToSame

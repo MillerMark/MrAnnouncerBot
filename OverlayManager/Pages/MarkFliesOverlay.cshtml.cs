@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace OverlayManager.Pages
 {
-    public class DroneOverlayModel : PageModel
+    public class MarkFliesModel : PageModel
     {
         public void OnGet()
         {
 
         }
-	}
+    }
 }

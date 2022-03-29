@@ -8,7 +8,7 @@ namespace TaleSpireCore
 {
 	public static class DndControllerAppClient
 	{
-		private const string DndMachine = "192.168.1.137";
+		private const string MarkMachine = "192.168.1.136";
 
 		public static void SendEventToServer(string command, string[] msgparams)
 		{
@@ -16,7 +16,7 @@ namespace TaleSpireCore
 			try
 			{
 				int port = 998;
-				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(DndMachine), port);
+				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(MarkMachine), port);
 
 				// Create a TCP/IP  socket.  
 				Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);

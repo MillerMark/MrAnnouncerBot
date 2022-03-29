@@ -13,12 +13,15 @@ using BotCore;
 using CsvHelper;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
+using TwitchLib.PubSub.Models.Responses.Messages;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
 using TwitchLib.Client;
+using TwitchLib.PubSub;
 using OBSWebsocketDotNet.Types;
+using SheetsPersist;
 
 namespace MrAnnouncerBot
 {
@@ -40,8 +43,9 @@ namespace MrAnnouncerBot
 		const string STR_Ellipsis = "...";
 		const string STR_CodeRushedUserId = "237584851";
 
-		private static List<SceneDto> scenes = new List<SceneDto>();
-		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
+		private static List<SceneDto> scenes;
+		private static List<RestrictedSceneDto> restrictedScenes;
+		private static List<ChannelPointAction> channelPointActions;
 		private string activeSceneName;
 		private Timer checkChatRoomTimer;
 		private Timer autoSaveTimer;
@@ -54,11 +58,13 @@ namespace MrAnnouncerBot
 
 		public MrAnnouncerBot()
 		{
+			RegisterSpreadsheets();
 			CheckDocs();
 			InitChatRoomTimer();
 			LoadPersistentData();
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
+			new BotCommand("reload", ReloadCommand);
 			new BotCommand("help", HandleQuestionCommand);
 			new BotCommand("commands", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
@@ -149,9 +155,7 @@ namespace MrAnnouncerBot
 
 		private void LoadPersistentData()
 		{
-			scenes = CsvData.Get<SceneDto>(FileName.SceneData);
 			fanfares = CsvData.Get<FanfareDto>(FileName.FanfareData);
-			restrictedScenes = CsvData.Get<RestrictedSceneDto>(FileName.SceneRestrictions);
 			try
 			{
 				allViewers.Load();
@@ -182,6 +186,67 @@ namespace MrAnnouncerBot
 			if (useObs)
 				InitializeObsWebSocket();
 			HookupTwitchEvents(Twitch.CodeRushedClient);
+			HookupPubSubEvents(Twitch.CodeRushedPubSub);
+		}
+		
+		void HookupPubSubEvents(TwitchPubSub codeRushedPubSub)
+		{
+			codeRushedPubSub.OnPubSubServiceError += CodeRushedPubSub_OnPubSubServiceError;
+			codeRushedPubSub.OnChannelPointsRewardRedeemed += CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+		}
+
+		void UnhookPubSubEvents(TwitchPubSub codeRushedPubSub)
+		{
+			codeRushedPubSub.OnPubSubServiceError -= CodeRushedPubSub_OnPubSubServiceError;
+			codeRushedPubSub.OnChannelPointsRewardRedeemed -= CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+		}
+
+		private void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
+		{
+			// TODO: Reconnect on error?
+			System.Diagnostics.Debugger.Break();
+		}
+
+		void QueueSceneToPlay(string sceneToPlay)
+		{
+			obsWebsocket.SetCurrentScene(sceneToPlay);
+		}
+
+		void SetState(string stateToSet)
+		{
+			
+		}
+
+		void ExecuteChannelPointAction(ChannelPointAction channelPointAction, User user)
+		{
+			if (channelPointAction == null)
+				return;
+			if (!string.IsNullOrWhiteSpace(channelPointAction.SceneToPlay))
+				QueueSceneToPlay(channelPointAction.SceneToPlay);
+			else if (!string.IsNullOrWhiteSpace(channelPointAction.StateToSet))
+				SetState(channelPointAction.StateToSet);
+		}
+
+		private void CodeRushedPubSub_OnChannelPointsRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnChannelPointsRewardRedeemedArgs e)
+		{
+			// e.RewardRedeemed.Redemption.Status??? "UNFULFILLED", "FULFILLED", "CANCELED"
+			// We may be able to update the status with a call.
+			//user.Id;
+			//user.DisplayName
+			string id = e.RewardRedeemed.Redemption.Reward.Id;
+			string title = e.RewardRedeemed.Redemption.Reward.Title;
+			ExecuteChannelPointAction(GetChannelPointAction(id, title), e.RewardRedeemed.Redemption.User);
+		}
+
+		ChannelPointAction GetChannelPointAction(string id, string title)
+		{
+			if (!string.IsNullOrWhiteSpace(id))
+			{
+				ChannelPointAction channelPointAction = ChannelPointActions.FirstOrDefault(x => x.ID == id);
+				if (channelPointAction != null)
+					return channelPointAction;
+			}
+			return ChannelPointActions.FirstOrDefault(x => string.Compare(x.Title, title, true) == 0);
 		}
 
 		void HookupTwitchEvents(TwitchClient client)
@@ -698,11 +763,14 @@ namespace MrAnnouncerBot
 			if (newSceneName == "EventReset")
 			{
 				Debugger.Break();
+
+				UnhookPubSubEvents(Twitch.CodeRushedPubSub);
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
 				UnHookTwitchEvents(Twitch.DroneCommandsClient);
 				Twitch.InitializeConnections();
 				HookupTwitchEvents(Twitch.CodeRushedClient);
 				HookupTwitchEvents(Twitch.DroneCommandsClient);
+				HookupPubSubEvents(Twitch.CodeRushedPubSub);
 			}
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
@@ -751,7 +819,7 @@ namespace MrAnnouncerBot
 
 		private SceneDto GetScene(string command)
 		{
-			return useObs ? scenes.FirstOrDefault(m => m.Matches(command)) : null;
+			return useObs ? Scenes.FirstOrDefault(m => m.Matches(command)) : null;
 		}
 
 		string SelectRandomScene(string sceneName)
@@ -963,11 +1031,42 @@ namespace MrAnnouncerBot
 
 		private bool RestrictedSceneIsActive()
 		{
-			return restrictedScenes.Any(x => x.SceneName == activeSceneName);
+			return RestrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}
 
 		private const int minUserLevelForSpeechBubbles = 4;
-		
+
+		public static List<SceneDto> Scenes
+		{
+			get
+			{
+				if (scenes == null)
+					scenes = GoogleSheets.Get<SceneDto>();
+				return scenes;
+			}
+		}
+
+		public static List<RestrictedSceneDto> RestrictedScenes {
+			get
+			{
+				if (restrictedScenes == null)
+				{
+					restrictedScenes = GoogleSheets.Get<RestrictedSceneDto>();
+				}
+				return restrictedScenes;
+			}
+		}
+
+		public static List<ChannelPointAction> ChannelPointActions
+		{
+			get
+			{
+				if (channelPointActions == null)
+					channelPointActions = GoogleSheets.Get<ChannelPointAction>();
+				return channelPointActions;
+			}
+		}
+
 		// TODO: remove ChatMessage param
 		void SayIt(ChatMessage chatMessage, int playerId, string phrase)
 		{
@@ -1081,14 +1180,19 @@ namespace MrAnnouncerBot
 				return chatShortcut;
 		}
 
+		void ReloadCommand(OnChatCommandReceivedArgs obj)
+		{
+			scenes = null;
+			restrictedScenes = null;
+			channelPointActions = null;
+		}
+
 		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
 		{
 			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
 
-			List<string> accessibleScenes = scenes.Where(m => m.Level <= userLevel)
-																																									.Select(m => QuotedIfSpace(m.ChatShortcut))
-																																									.ToList();
-
+			List<string> accessibleScenes = Scenes.Where(m => m.Level <= userLevel).Select(x => x.SceneName).ToList();
+																																									
 			string sceneList = string.Join(", ", accessibleScenes);
 
 			//Whisper(obj.Command.ChatMessage.Username, $"{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
@@ -1204,6 +1308,11 @@ namespace MrAnnouncerBot
 				return;
 			kidzCodeClient.OnDisconnected -= KidzCodeClient_OnDisconnected;
 			kidzCodeClient.OnChatCommandReceived -= TwitchClient_OnChatCommandReceived;
+		}
+
+		void RegisterSpreadsheets()
+		{
+			GoogleSheets.RegisterDocumentID("Mr. Announcer Guy", "1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g");
 		}
 	}
 }

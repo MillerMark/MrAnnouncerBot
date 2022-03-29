@@ -157,6 +157,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 |---|---|---|
 | chatRoomOnFire | Chat Room On Fire | Good | 
 | fail | Fail! | Bad | 
+| frogs | FrogsInCars | Good | 
 | marksick | Mark is sick! | Bad | 
 | mdkwhd | Disclaimer - Mark doesn't know what he's doing! | Disclaimer | 
 | noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
@@ -170,6 +171,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | Shortcut | Scene | Category |
 |---|---|---|
 | party3 | DH.Party3 | Good | 
+| ufo | UFO Crash | Good | 
 
 ### Level 11
 
@@ -194,6 +196,17 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | Shortcut | Scene | Category |
 |---|---|---|
 | party5 | DH.Party5 | Good | 
+
+### Level 15
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| droneFail | Drone Failure | Bad | 
+| oops | Oops! | Sorry | 
+| sorry | Sorry-ish | Sorry | 
+| urWelcome | you're welcome! | Conversation | 
 
 ### Level 16
 

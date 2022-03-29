@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using TwitchLib.Client.Models;
+using SheetsPersist;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace OverlayManager
 		{
 			this.hub = hub;
 			Configuration = configuration;
+			//OldInitializeChatCommands();
 			InitializeChatCommands();
 		}
 
@@ -160,12 +162,19 @@ namespace OverlayManager
 		private void HandleCommand(string cmdText, string args, ChatMessage chatMessage)
 		{
 			ChatCommand command = FindCommand(cmdText);
-			if (command != null)
+
+			if (command == null)
+				return;
+
+			if (command.Command == "reload")
 			{
-				// TODO: Add shows watched - allViewers.GetUserLevel(chatMessage)
-				command.Execute(hub, chatMessage, cmdText, args, 0);
+				chatCommands = GoogleSheets.Get<ChatCommand>();
 				return;
 			}
+
+			// TODO: Add shows watched - allViewers.GetUserLevel(chatMessage)
+			command.Execute(hub, chatMessage, cmdText, args, 0);
+			return;
 		}
 
 		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
@@ -189,11 +198,11 @@ namespace OverlayManager
 			return null;
 		}
 
-		void InitializeChatCommands()
+		void OldInitializeChatCommands()
 		{
 			// Changing planets:
 			chatCommands.Add(new ChatCommand("planet", "ChangePlanet"));
-			chatCommands.Add(new ChatCommand("earth", "ChangePlanet").AddAliases("jupiter", "mars", "mercury", "moon", "neptune", "pluto", "saturn", "sun", "uranus", "venus").CommandBecomesArg());
+			chatCommands.Add(new ChatCommand("earth", "ChangePlanet").AddAliases("jupiter", "mars", "mercury", "moon", "neptune", "pluto", "saturn", "sun", "uranus", "venus").SetCommandBecomesArg());
 
 			// Color splotches:
 			chatCommands.Add(new ChatCommand("red").AddAliases("black", "white", "orange", "amber", "yellow", "green", "cyan", "blue", "indigo", "violet", "magenta"));
@@ -232,11 +241,11 @@ namespace OverlayManager
 			chatCommands.Add(new ChatCommand("poll", "StartQuiz").AddAliases("quiz"));
 			chatCommands.Add(new ChatCommand("test", "TestCommand"));
 			chatCommands.Add(new ChatCommand("clearquiz", "ClearQuiz"));
-			chatCommands.Add(new ChatCommand("1", "AnswerQuiz").AddAliases("2", "3", "4", "5", "6", "7", "8", "9", "y", "Y", "n", "N").CommandBecomesArg());
+			chatCommands.Add(new ChatCommand("1", "AnswerQuiz").AddAliases("2", "3", "4", "5", "6", "7", "8", "9", "y", "Y", "n", "N").SetCommandBecomesArg());
 			chatCommands.Add(new ChatCommand("vote", "AnswerQuiz"));
 
 			// Get chat commands:
-			chatCommands.Add(new ChatCommand("cmd", null).AddAliases("?").ChatBack($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, right, & drone. Drone controls: u, d, l, r, t {{x,y}}. Paint splat: {{color}}."));
+			chatCommands.Add(new ChatCommand("cmd", null).AddAliases("?").SetChatBack($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, right, & drone. Drone controls: u, d, l, r, t {{x,y}}. Paint splat: {{color}}."));
 
 			// Diagnostics:
 			chatCommands.Add(new ChatCommand("cross", "Cross"));
@@ -246,12 +255,21 @@ namespace OverlayManager
 		ChatCommand FindCommand(string cmdText)
 		{
 			foreach (ChatCommand chatCommand in chatCommands)
-			{
 				if (chatCommand.Matches(cmdText))
 					return chatCommand;
-			}
 			return null;
 		}
+
+		void InitializeChatCommands()
+		{
+			chatCommands = GoogleSheets.Get<ChatCommand>();
+		}
+
+		static BackgroundWorker()
+		{
+			ChatCommand.RegisterSheet();
+		}
+
 		public IConfiguration Configuration { get; set; }
 	}
 }

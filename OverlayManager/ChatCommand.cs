@@ -2,38 +2,76 @@ using BotCore;
 using Microsoft.AspNetCore.SignalR;
 using OverlayManager.Hubs;
 using System;
+using SheetsPersist;
 using System.Collections.Generic;
 using System.Linq;
 using TwitchLib.Client.Models;
 
 namespace OverlayManager
 {
+	[Document("Mr. Announcer Guy")]
+	[Sheet("Commands")]
 	public class ChatCommand
 	{
-		List<string> commands = new List<string>();
-		readonly string translatedCommand;
+		public string CommandStr { get; set; }
+
+		List<string> commands;
 		bool commandBecomesArgs;
 		string chatBackMessage;
 
+		[Column]
+		public string Command { get; set; }
+
+		[Column]
+		public string TranslatedCommand { get; set; }
+
+		[Column]
+		public string Aliases { get; set; }
+
+		[Column]
+		public bool CommandBecomesArg { get => commandBecomesArgs; set => commandBecomesArgs = value; }
+
+		[Column("ChatBack")]
+		// TODO: Rename ChatBack2 to ChatBack
+		public string ChatBack2 { get => chatBackMessage; set => chatBackMessage = value; }
+
 		public ChatCommand(string command, string translatedCommand): this(command)
 		{
-			this.translatedCommand = translatedCommand;
+			TranslatedCommand = translatedCommand;
 		}
 
 		public ChatCommand(string command)
 		{
+			commands = new List<string>();
 			commands.Add(command);
+		}
+
+		public ChatCommand()
+		{
+		}
+
+		void InitializeCommands()
+		{
+			commands = new List<string>();
+			commands.Add(Command);
+			if (string.IsNullOrWhiteSpace(Aliases))
+				return;
+			string[] aliases = Aliases.Split(',');
+			foreach (string alias in aliases)
+				commands.Add(alias.Trim(' ').Trim('"'));
 		}
 
 		public bool Matches(string cmdText)
 		{
+			if (commands == null)
+				InitializeCommands();
 			foreach (string command in commands)
 				if (string.Compare(command, cmdText, true) == 0)
 					return true;
 			return false;
 		}
 
-		public ChatCommand CommandBecomesArg()
+		public ChatCommand SetCommandBecomesArg()
 		{
 			commandBecomesArgs = true;
 			return this;
@@ -42,13 +80,11 @@ namespace OverlayManager
 		public ChatCommand AddAliases(params string[] aliases)
 		{
 			foreach (string alias in aliases)
-			{
 				commands.Add(alias);
-			}
 			return this;
 		}
 
-		public ChatCommand ChatBack(string chatMessage)
+		public ChatCommand SetChatBack(string chatMessage)
 		{
 			chatBackMessage = chatMessage;
 			return this;
@@ -56,8 +92,8 @@ namespace OverlayManager
 
 		public virtual string Translate(string cmdText)
 		{
-			if (translatedCommand != null)
-				return translatedCommand;
+			if (!string.IsNullOrWhiteSpace(TranslatedCommand))
+				return TranslatedCommand;
 
 			return cmdText;
 		}
@@ -75,6 +111,11 @@ namespace OverlayManager
 
 			if (chatBackMessage != null)
 				Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);
+		}
+
+		public static void RegisterSheet()
+		{
+			GoogleSheets.RegisterDocumentID("Mr. Announcer Guy", "1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g");
 		}
 	}
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using TwitchLib.PubSub;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,12 +13,14 @@ using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
+using TwitchLib.Communication.Interfaces;
 
 namespace BotCore
 {
 	public static class Twitch
 	{
 		private const string STR_CodeRushedChannelName = "CodeRushed";
+		private const string STR_CodeRushedChannelId = "237584851";
 		private const string STR_DroneCommandsChannelName = "DroneCommands";
 		private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
 		private const string STR_DroneCommandsChannelUserName = "DroneCommands";
@@ -93,6 +96,10 @@ namespace BotCore
 		{
 			//Logging = true;
 			CodeRushedClient = new TwitchClient();
+			CodeRushedPubSub = new TwitchPubSub();
+			CodeRushedPubSub.OnPubSubServiceConnected += CodeRushedPubSub_OnPubSubServiceConnected;
+			CodeRushedPubSub.ListenToChannelPoints(STR_CodeRushedChannelId);
+			CodeRushedPubSub.Connect();
 			DroneCommandsClient = new TwitchClient();
 			var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
@@ -105,6 +112,7 @@ namespace BotCore
 		public static IConfigurationRoot Configuration { get => configuration; }
 		public static TwitchAPI Api { get; private set; }
 		public static TwitchClient CodeRushedClient { get; private set; }
+		public static TwitchPubSub CodeRushedPubSub { get; private set; }
 		public static TwitchClient DroneCommandsClient { get; private set; }
 		public static bool Logging { get; set; } = true;
 		public static string CodeRushedBotApiClientId { get; set; }
@@ -142,6 +150,7 @@ namespace BotCore
 		{
 			try
 			{
+				CodeRushedPubSub.Disconnect();
 				CodeRushedClient.Disconnect();
 				DroneCommandsClient.Disconnect();
 			}
@@ -149,6 +158,11 @@ namespace BotCore
 			{
 				Log(ex);
 			}
+		}
+
+		static void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
+		{
+			Authenticate(CodeRushedPubSub);
 		}
 
 		static void Log(Exception ex)
@@ -316,6 +330,11 @@ namespace BotCore
 			}
 
 			return null;
+		}
+
+		public static void Authenticate(TwitchPubSub codeRushedPubSub)
+		{
+			codeRushedPubSub.SendTopics(Configuration["Secrets:PubSubAccessToken"]);
 		}
 	}
 }

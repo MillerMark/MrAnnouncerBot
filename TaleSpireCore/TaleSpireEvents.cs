@@ -9,7 +9,7 @@ namespace TaleSpireCore
 {
 	public static class TaleSpireEvents
 	{
-		const string MarkMachine = "192.168.1.137";
+		const string MarkMachine = "192.168.1.136";
 		static bool serverStarted;
 		static void HandleEvent(string data)
 		{

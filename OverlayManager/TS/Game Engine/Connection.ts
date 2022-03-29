@@ -171,6 +171,9 @@ function executeCommand(command: string, params: string, userId: string, userNam
 	if (activeBackGame) {
 		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
 	}
+	if (activeMarkFliesGame) {
+		activeMarkFliesGame.executeCommand(command, params, userInfo, activeMarkFliesGame.nowMs);
+	}
 	if (activeFrontGame) {
 		activeFrontGame.executeCommand(command, params, userInfo, activeFrontGame.nowMs);
 	}

@@ -56,6 +56,7 @@
     <None Remove="TS\DragonH\WorkerDice.ts" />
     <None Remove="TS\DragonH\WorkerFront.ts" />
     <None Remove="TS\Drone.ts" />
+    <None Remove="TS\DroneMain - Copy.ts" />
     <None Remove="TS\DroneProxy.ts" />
     <None Remove="TS\FrontMain.ts" />
     <None Remove="TS\Game Engine\CircularParticleGenerator.ts" />
@@ -114,7 +115,6 @@
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.9.1" />
-    <PackageReference Include="SheetsPersist" Version="1.2.0-alpha" />
     <PackageReference Include="TwitchLib" Version="3.3.0" />
     <PackageReference Include="TwitchLib.Api" Version="3.4.1" />
     <PackageReference Include="TwitchLib.Api.Core" Version="3.4.1" />
@@ -131,6 +131,7 @@
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\BotCore\BotCore.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +177,7 @@
     <TypeScriptCompile Include="TS\DragonH\TimeSpan.ts" />
     <TypeScriptCompile Include="TS\DragonH\VisualEffect.ts" />
     <TypeScriptCompile Include="TS\DragonH\VisualEffectTarget.ts" />
+    <TypeScriptCompile Include="TS\DroneMain - Copy.ts" />
     <TypeScriptCompile Include="TS\Game Engine\MusicPlayer.ts" />
     <TypeScriptCompile Include="TS\MapMain.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Emitter\CircularParticleGenerator.ts" />
@@ -199,11 +201,17 @@
     <Content Update="Pages\DragonMap.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Pages\MarkFliesOverlay.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Pages\DroneOverlay.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Pages\DieRoller.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TS\NewFolder\" />
   </ItemGroup>
 </Project>
