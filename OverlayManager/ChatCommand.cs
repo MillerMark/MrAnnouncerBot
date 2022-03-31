@@ -35,10 +35,16 @@ namespace OverlayManager
 		// TODO: Rename ChatBack2 to ChatBack
 		public string ChatBack2 { get => chatBackMessage; set => chatBackMessage = value; }
 
-		public ChatCommand(string command, string translatedCommand): this(command)
+		public ChatCommand(string command, string translatedCommand) : this(command)
 		{
 			TranslatedCommand = translatedCommand;
 		}
+
+		[Column]
+		public string MarkFliesCommand { get; set; }
+
+		[Column]
+		public string MarkFliesData { get; set; }
 
 		public ChatCommand(string command)
 		{
@@ -105,12 +111,25 @@ namespace OverlayManager
 			string targetCommand = Translate(cmdText);
 			if (targetCommand != null)
 			{
-				UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, showsWatched);
-				hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+				ExecuteChatCommand(hub, chatMessage, args, showsWatched, targetCommand);
 			}
 
 			if (chatBackMessage != null)
 				Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);
+		}
+
+		private void ExecuteChatCommand(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string args, int showsWatched, string targetCommand)
+		{
+			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, showsWatched);
+
+			if (string.IsNullOrWhiteSpace(MarkFliesCommand))
+				hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+			else
+			{
+				if (!string.IsNullOrWhiteSpace(args))
+					MarkFliesData = args;
+				hub.Clients.All.ControlSpaceship(MarkFliesCommand, MarkFliesData, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+			}
 		}
 
 		public static void RegisterSheet()

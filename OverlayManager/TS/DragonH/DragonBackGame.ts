@@ -128,15 +128,6 @@ class DragonBackGame extends DragonGame {
 		this.sunMoonDial.frameIndex = 2;
 	}
 
-	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
-		let degreesToMove: number = targetRotation - sprite.rotation;
-		if (degreesToMove < 0) {
-			degreesToMove += 360;
-		}
-
-		return degreesToMove;
-	}
-
 	protected updateClockFromDto(dto: any) {
 		super.updateClockFromDto(dto);
 

@@ -30,6 +30,19 @@
 			this.playToEndOnExpire = true;
 	}
 
+	bounceBack(nowMs: number, orientation: Orientation, minBounceBackVelocity = 1.2, maxBounceVelocity = 15, bounceAmplification = 1) {
+		this.changingDirection(nowMs);
+		this.x = this.lastX;
+		this.y = this.lastY;
+		this.startX = this.lastX;
+		this.startY = this.lastY;
+
+		if (orientation === Orientation.Horizontal)
+			this.velocityY = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(this.velocityY), maxBounceVelocity)) * Math.sign(this.velocityY);
+		else
+			this.velocityX = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(this.velocityX), maxBounceVelocity)) * Math.sign(this.velocityX);
+ }
+
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);
 		this.frameIndex = Math.floor(startingFrameNumber);

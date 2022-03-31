@@ -171,6 +171,13 @@ class Game {
 		return false;
 	}
 
+	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
+		return (targetRotation - sprite.rotation) % 360;
+	}
+
+	controlSpaceship(command: string, data: string, userInfo: UserInfo, nowMs: number) {
+	}
+
 	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
 		return false;
 	}

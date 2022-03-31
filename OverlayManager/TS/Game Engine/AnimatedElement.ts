@@ -45,7 +45,7 @@
 	fadeOutAfter(delayMs: number, fadeOutTimeMs = -1) {
 		if (fadeOutTimeMs >= 0)
 			this.fadeOutTime = fadeOutTimeMs;
-		this.expirationDate = performance.now() + delayMs + fadeOutTimeMs;
+		this.expirationDate = performance.now() + delayMs + this.fadeOutTime;
 	}
 
 	private _x: number;
@@ -154,7 +154,7 @@
 		// Do nothing. Allow descendants to override.
 	}
 
-	rotateTo(targetRotation: number, degreesToMove: number, timeToRotate: number): void {
+	rotateTo(targetRotation: number, degreesToMovePerTime: number, timeToRotate: number): void {
 		if (timeToRotate === 0)
 			return;
 
@@ -167,7 +167,7 @@
 		this.timeToRotate = timeToRotate;
 		this.targetRotation = targetRotation;
 		this.lastRotationUpdate = this.rotationStartTime;
-		this.degreesPerMs = degreesToMove / timeToRotate;
+		this.degreesPerMs = degreesToMovePerTime / timeToRotate;
 	}
 
 	easePointStillActive(now: number) {
@@ -259,7 +259,7 @@
 		return this.expirationDate === undefined || this.getLifeRemainingMs(now) > 0;
 	}
 
-	getLifeRemainingMs(now: number) {
+	getLifeRemainingMs(now: number): number {
 		let lifeRemaining = 0;
 		if (this.expirationDate) {
 			lifeRemaining = this.expirationDate - now;
@@ -282,6 +282,7 @@
 	}
 
 	logData: boolean;
+	alreadyFadedIn: boolean;
 
 	getAlpha(now: number): number {
 		const msAlive: number = now - this.timeStart;
@@ -289,9 +290,10 @@
 		if (msAlive < 0)   // Not yet alive!!!
 			return 0;
 
-
-		if (msAlive < this.fadeInTime)
+		if (msAlive < this.fadeInTime && !this.alreadyFadedIn)
 			return this.opacity * msAlive / this.fadeInTime;
+
+		this.alreadyFadedIn = true;
 
 		if (!this.expirationDate)
 			return this.opacity;

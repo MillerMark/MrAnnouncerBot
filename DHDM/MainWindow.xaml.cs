@@ -97,6 +97,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
+			MarkFliesManager.Initialize();
 			ChangingInternally = true;
 			try
 			{
@@ -7393,6 +7394,17 @@ namespace DHDM
 					if (dungeonMasterClient == null)
 						CreateDungeonMasterClient();
 					dungeonMasterClient.JoinChannel(channel);
+					// TODO: Implement protection againt this exception!
+					/* 
+  TwitchLib.Client.Exceptions.ClientNotConnectedException
+  HResult=0x80131500
+  Message=In order to perform this action, the client must be connected to Twitch. To confirm connection, try performing this action in or after the OnConnected event has been fired.
+  Source=TwitchLib.Client
+  StackTrace:
+   at TwitchLib.Client.TwitchClient.HandleNotConnected()
+
+					 */
+
 					dungeonMasterClient.SendMessage(channel, message);
 				}
 				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using ObsControl;
 
 namespace DHDM
 {
@@ -14,6 +15,8 @@ namespace DHDM
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
 		public delegate void QuestionAnswerMapEventHandler(object sender, QuestionAnswerMapEventArgs ea);
 		public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
+
+		public static event EventHandler<VideoFeedDto> UpdateVideoFeed;
 
 		static readonly object hubConnectionLock = new object();
 		static HubConnection hubConnection;
@@ -57,8 +60,14 @@ namespace DHDM
 
 
 		static DiceEventArgs diceEventArgs;
+
+		static void OnUpdateVideoFeed(string videoFeedData)
+		{
+			VideoFeedDto videoFeedDto = JsonConvert.DeserializeObject<VideoFeedDto>(videoFeedData);
+			UpdateVideoFeed?.Invoke(null, videoFeedDto);
+		}
+
 		static void DiceHaveStoppedRolling(string diceData)
-		
 		{
 			if (diceEventArgs == null)
 				diceEventArgs = new DiceEventArgs();
@@ -100,6 +109,7 @@ namespace DHDM
 								hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
+								hubConnection.On<string>("UpdateVideoFeed", OnUpdateVideoFeed);
 								hubConnection.On<string>("AllDiceHaveBeenDestroyed", AllDiceHaveBeenDestroyed);
 								hubConnection.On<string>("InGameUIResponse", InGameUIResponse);
 								hubConnection.On<string>("TellDM", TellTheDungeonMaster);

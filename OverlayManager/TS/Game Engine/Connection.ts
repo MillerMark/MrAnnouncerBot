@@ -165,6 +165,12 @@ class UserInfo {
 
 	}
 }
+function controlSpaceship(command: string, data: string, userId: string, userName: string, displayName: string, color: string, showsWatched: number) {
+	let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, showsWatched);
+	if (activeMarkFliesGame) {
+		activeMarkFliesGame.controlSpaceship(command, data, userInfo, activeMarkFliesGame.nowMs);
+	}
+}
 
 function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, showsWatched: number) {
 	let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, showsWatched);
@@ -350,6 +356,13 @@ function diceHaveStoppedRolling(diceData: string) {
 	}
 }
 
+function updateVideoFeed(videoFeedData: string) {
+	if (connection.connectionState === 1) {
+		//console.log(videoFeedData);
+		connection.invoke("UpdateVideoFeed", videoFeedData);
+	}
+}
+
 function allDiceHaveBeenDestroyed(diceData: string) {
 	if (connection.connectionState === 1)
 		connection.invoke("AllDiceHaveBeenDestroyed", diceData);
@@ -384,6 +397,7 @@ function connectToSignalR(signalR) {
 		console.log('signalR loaded...');
 		connection.start().catch(err => console.error(err.toString()));
 		connection.on("ExecuteCommand", executeCommand);
+		connection.on("ControlSpaceship", controlSpaceship);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
 		connection.on("ChangePlayerStats", changePlayerStats);
 		connection.on("changePlayerWealth", changePlayerWealth);

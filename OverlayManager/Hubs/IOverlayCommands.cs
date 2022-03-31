@@ -14,8 +14,9 @@ namespace OverlayManager.Hubs
 	/// Commands we send down to the Overlay.
 	/// </summary>
 	public interface IOverlayCommands
-{
+	{
 		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color, int showsWatched);
+		Task ControlSpaceship(string command, string data, string userId, string userName, string displayName, string color, int showsWatched);
 		Task UserHasCoins(string userID, int amount);
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);

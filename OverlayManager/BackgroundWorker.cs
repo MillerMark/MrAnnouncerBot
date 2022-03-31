@@ -142,7 +142,6 @@ namespace OverlayManager
 		{
 			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, 0);
 			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
-				
 		}
 
 		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)

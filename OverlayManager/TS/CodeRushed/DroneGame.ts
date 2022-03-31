@@ -714,26 +714,26 @@ class DroneGame extends GamePlusQuiz {
 	moveRelative(now: number, params: string, userId: string) {
 	}
 
-	wallBounce(now: number): void {
+	wallBounce(nowMs: number): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
 			drones.spriteProxies.forEach(function (drone: Drone) {
-				this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-				this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-				this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-				this.verticalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-				this.horizontalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-				this.verticalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+				this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
+				this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
+				this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
+				this.verticalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
+				this.horizontalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
+				this.verticalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
 			}, this);
 		}, this);
 
 		this.allMeteors.allSprites.forEach(function (meteors: Sprites) {
 			meteors.spriteProxies.forEach(function (meteor: Meteor) {
-				this.horizontalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-				this.verticalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-				this.horizontalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-				this.verticalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-				this.horizontalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-				this.verticalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+				this.horizontalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
+				this.verticalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
+				this.horizontalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
+				this.verticalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
+				this.horizontalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
+				this.verticalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, nowMs);
 			}, this);
 		}, this);
 		// TODO: Check for meteors as well.

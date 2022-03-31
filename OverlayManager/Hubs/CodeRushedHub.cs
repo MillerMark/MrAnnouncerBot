@@ -35,6 +35,11 @@ namespace OverlayManager.Hubs
 			mrAnnouncerBotHub.Clients.All.DiceHaveStoppedRolling(diceData);
 		}
 
+		public void UpdateVideoFeed(string videoFeedData)
+		{
+			mrAnnouncerBotHub.Clients.All.UpdateVideoFeed(videoFeedData);
+		}
+
 		public void TellDM(string message)
 		{
 			mrAnnouncerBotHub.Clients.All.TellDM(message);

@@ -101,7 +101,6 @@ namespace ObsControl
 		{
 			if (e.HasLastCamera())
 			{
-				// TODO: Hide that sourceItem...
 				SetSourceVisibility(e.LastSceneName, e.LastItemName, false);
 				e.ClearLastCamera();
 			}
