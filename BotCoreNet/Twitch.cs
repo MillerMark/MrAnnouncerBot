@@ -119,8 +119,17 @@ namespace BotCore
 
 		async public static Task<User> GetUser(string userName)
 		{
-			GetUsersResponse results = await Api.Helix.Users.GetUsersAsync();
-			return results.Users.FirstOrDefault(x => x.Login == userName);
+			try
+			{
+				GetUsersResponse results = await Api.Helix.Users.GetUsersAsync();
+				return results?.Users?.FirstOrDefault(x => x.Login == userName);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"await Api.Helix.Users.GetUsersAsync();");
+				return null;
+			}
+			
 		}
 
 		async public static Task<string> GetUserId(string userName)

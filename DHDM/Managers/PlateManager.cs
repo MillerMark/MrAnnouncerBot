@@ -24,6 +24,8 @@ namespace DHDM
 		const string TheVoid_Lava = "TheVoid_Lava.mov";
 		const string TheVoid_Rainbow = "TheVoid_Rainbow.mov";
 		const string TopMonitor = "TopMonitor";
+		const string BigBeastMonitor = "BigBeastMonitor";
+		const string DeskOverhead = "DeskOverhead";
 		const string BothComputers = "CR.BothComputers";
 		
 		List<string> voidItems;
@@ -49,6 +51,8 @@ namespace DHDM
 			allBackgroundItems.Add(Nebula);
 			allBackgroundItems.Add(TaleSpireNdi);
 			allBackgroundItems.Add(TopMonitor);
+			allBackgroundItems.Add(BigBeastMonitor);
+			allBackgroundItems.Add(DeskOverhead);
 			allBackgroundItems.Add(BothComputers);
 		}
 

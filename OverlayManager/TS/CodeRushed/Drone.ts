@@ -247,8 +247,7 @@ class Drone extends ColorShiftingSpriteProxy {
 
 		const hAccel = this.getHorizontalThrust(now);
 		const vAccel = this.getVerticalThrust(now);
-		// TODO: null out targetPosition if we've arrived...
-
+		
 		this.clearTargetPositionIfWeHaveArrived();
 
 		this.updateFrameIndex(now, hAccel, vAccel);
@@ -410,7 +409,7 @@ class Drone extends ColorShiftingSpriteProxy {
 	}
 
 	private closeEnoughToShutDown(delta: number) {
-		const minThresholdForThrust = 20;
+		const minThresholdForThrust = 20; // pixels
 
 		return Math.abs(delta) <= minThresholdForThrust;
 	}

@@ -10437,6 +10437,7 @@ namespace DHDM
 		{
 			obsManager.ShowPlateBackground(sourceName);
 		}
+		
 		public void ShowForeground(string sourceName)
 		{
 			obsManager.ShowPlateForeground(sourceName);
@@ -11676,6 +11677,11 @@ namespace DHDM
 		private void btnReloadSceneLightData_Click(object sender, RoutedEventArgs e)
 		{
 			AllSceneLightData.Invalidate();
+		}
+
+		public void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility)
+		{
+			obsManager.SetObsSourceVisibility(sceneName, sourceName, sourceVisibility);
 		}
 	}
 }

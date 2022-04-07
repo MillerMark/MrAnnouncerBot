@@ -203,6 +203,7 @@ namespace MrAnnouncerBot
 
 		private void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
 		{
+			log.Add(new ErrorEntry() { Exception = e.Exception });
 			// TODO: Reconnect on error?
 			System.Diagnostics.Debugger.Break();
 		}
@@ -1068,10 +1069,14 @@ namespace MrAnnouncerBot
 		}
 
 		// TODO: remove ChatMessage param
-		void SayIt(ChatMessage chatMessage, int playerId, string phrase)
+		async void SayIt(ChatMessage chatMessage, int playerId, string phrase)
 		{
 			string quotedPhrase = phrase.Trim('"').Trim();
-			hubConnection.InvokeAsync("SpeechBubble", $"{playerId} says: {quotedPhrase}");
+			if (hubConnection.State != HubConnectionState.Connected)
+			{
+				await hubConnection.StartAsync();
+			}
+			await hubConnection.InvokeAsync("SpeechBubble", $"{playerId} says: {quotedPhrase}");
 		}
 
 		void ThinkIt(ChatMessage chatMessage, int playerId, string phrase)

@@ -89,5 +89,6 @@ namespace DHDM
 		void TaleSpireCamera(string cameraCommand);
 		void TaleSpireFlashlight(string flashlightCommand);
 		void SetDamageSide(string direction);
+		void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility);
 	}
 }

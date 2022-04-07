@@ -10,6 +10,9 @@ class MarkFliesGame extends GamePlusQuiz {
   animations: Animations = new Animations();
   spaceshipProxy: SpriteProxy;
   flameProxy: SpriteProxy;
+  targetX: number;
+  targetY: number;
+  targetScale: number;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -31,6 +34,26 @@ class MarkFliesGame extends GamePlusQuiz {
 
     this.updateThrustFromTilt();
     this.updateVideoFeedFromShip();
+
+    this.updateThrust();
+
+    //this.drawDiagnostics(context, nowMs);
+  }
+    updateThrust() {
+      if (this.lastThrust === this.thrust)
+        return;
+      this.lastThrust = this.thrust;
+      this.setScale(this.spaceshipProxy.scale);
+    }
+
+  drawDiagnostics(context: CanvasRenderingContext2D, nowMs: number) {
+    if (!this.spaceshipProxy)
+      return;
+    context.beginPath();
+    context.strokeStyle = "#ff0000";
+    context.lineWidth = 2;
+    context.rect(this.markHeadLeft, this.markHeadTop, this.markHeadRight - this.markHeadLeft, this.markHeadBottom - this.markHeadTop);
+    context.stroke();
   }
 
   updateThrustFromTilt() {
@@ -67,8 +90,8 @@ class MarkFliesGame extends GamePlusQuiz {
     }
 
     const scale: number = this.spaceshipProxy.scale;
-    const horizontalThrust: number = horizontalFactor * MarkFliesGame.engineThrust * scale;
-    const verticalThrust: number = verticalFactor * MarkFliesGame.engineThrust * scale;
+    const horizontalThrust: number = horizontalFactor * MarkFliesGame.engineThrust * scale * this.thrust;
+    const verticalThrust: number = verticalFactor * MarkFliesGame.engineThrust * scale * this.thrust;
     this.spaceshipProxy.horizontalThrustOverride = horizontalThrust;
     this.flameProxy.horizontalThrustOverride = horizontalThrust;
     this.spaceshipProxy.verticalThrustOverride = verticalThrust;
@@ -97,20 +120,24 @@ class MarkFliesGame extends GamePlusQuiz {
 
     this.flameSprites = new Sprites(`Spaceships/Donut/Flames`, 301, fps30, AnimationStyle.Loop, true);
     this.flameSprites.originX = 332;
-    this.flameSprites.originY = -79;
+    this.flameSprites.originY = -29;
 
     this.spaceshipSprites.moves = true;
     this.flameSprites.moves = true;
   }
 
   controlSpaceship(command: string, data: string, userInfo: UserInfo, nowMs: number) {
-    if (command === "TestDeploy")
+    if (command === 'TestDeploy')
       this.testDeploy(data);
-    if (command === "Deploy")
+    if (command === 'Deploy')
       this.deploy(userInfo, data);
-    if (command === "Tilt")
+    if (command === 'Tilt')
       this.tilt(userInfo, data, nowMs);
-    else if (command === "ResetMark")
+    if (command === 'Thrust')
+      this.setThrust(userInfo, data, nowMs);
+    if (command === 'Goto')
+      this.goto(userInfo, data, nowMs);
+    else if (command === 'ResetMark')
       this.resetMark();
     //Tilt
     //Thrusters(Up / Down)
@@ -123,6 +150,67 @@ class MarkFliesGame extends GamePlusQuiz {
     //Seeds
   }
 
+  goto(userInfo: UserInfo, data: string, nowMs) {
+    let x: number;
+    let y: number;
+    let z: number;
+    if (data.length == 3) {
+      x = parseFloat(data[0]);
+      y = parseFloat(data[1]);
+      z = parseFloat(data[2]);
+    }
+    else if (data.length == 6) {
+      x = parseFloat(data[0] + '.' + data[1]);
+      y = parseFloat(data[2] + '.' + data[3]);
+      z = parseFloat(data[4] + '.' + data[5]);
+    }
+    else
+      return;
+    this.targetXYZ(x, y, z);
+  }
+
+  targetXYZ(x: number, y: number, z: number) {
+    this.targetScale = this.mapTarget(z, 0.25, 1.1);
+
+    this.targetX = this.mapTarget(x, 0, 1919);
+    this.targetY = this.mapTarget(y, 0, 1079) + this.getMarkHeight(this.targetScale);
+    console.log(`this.targetX = ${this.targetX}`);
+
+    this.setScale(this.targetScale);
+    this.moveImmediate(this.targetX, this.targetY);
+  }
+
+  getMarkHeight(scale: number): number {
+    return this.markHeight * scale;
+  }
+
+  moveImmediate(targetX: number, targetY: number) {
+    const shipCenterX: number = this.spaceshipProxy.x + this.spaceshipSprites.originX;
+    const shipCenterY: number = this.spaceshipProxy.y + this.spaceshipSprites.originY;
+    const deltaX: number = targetX - shipCenterX;
+    const deltaY: number = targetY - shipCenterY;
+
+    this.moveImmediateDelta(deltaX, deltaY, performance.now());
+  }
+
+  setScale(targetScale: number) {
+    this.spaceshipProxy.scale = targetScale;
+    this.flameProxy.scale = targetScale * this.thrust / 6;
+  }
+
+  mapTarget(value: number, start: number, end: number): number {
+    const percentComplete: number = Math.min(Math.max(value / 9.9, 0), 1);
+    return start + (end - start) * percentComplete;
+  }
+
+  thrust: number = 5;
+  lastThrust: number = 5;
+
+  setThrust(userInfo: UserInfo, data: string, nowMs) {
+    const thrustValue: number = parseFloat(data);
+    this.thrust = this.mapTarget(thrustValue, 1, 9);
+  }
+
   tilt(userInfo: UserInfo, data: string, nowMs) {
     let angle: number = parseFloat(data);
     if (this.spaceshipProxy) {
@@ -131,8 +219,10 @@ class MarkFliesGame extends GamePlusQuiz {
       this.spaceshipProxy.changingDirection(now);
       this.flameProxy.changingDirection(now);
       this.flameProxy.storeLastPosition();
-      this.spaceshipProxy.rotateTo(angle, degreesToMove, 1500);
-      this.flameProxy.rotateTo(angle, degreesToMove, 1500);
+      this.spaceshipProxy.easeSpin(nowMs, this.spaceshipProxy.rotation, angle, 1500);
+      this.flameProxy.easeSpin(nowMs, this.flameProxy.rotation, angle, 1500);
+      //this.spaceshipProxy.rotateTo(angle, degreesToMove, 1500);
+      //this.flameProxy.rotateTo(angle, degreesToMove, 1500);
     }
   }
 
@@ -251,7 +341,7 @@ class MarkFliesGame extends GamePlusQuiz {
       this.flameProxy.destroyBy(1000);
     }
 
-    const flyTime: number = 40000;
+    const flyTime: number = 60000;
     this.spaceshipProxy = this.spaceshipSprites.addShifted(X, Y, 0, shipColor);
     this.spaceshipProxy.destroyAllInExactly(flyTime);
     this.spaceshipProxy.fadeInTime = 500;
@@ -273,41 +363,119 @@ class MarkFliesGame extends GamePlusQuiz {
 
   }
 
+  rotatePoint(pointToRotate: Point, angle: number, centerPoint: Point): Point {
+    const s: number = Math.sin(angle);
+    const c: number = Math.cos(angle);
+
+    // translate point back to origin:
+    const deltaX = pointToRotate.x - centerPoint.x;
+    const deltaY = pointToRotate.y - centerPoint.y;
+
+    // rotate point
+    const newX: number = deltaX * c - deltaY * s;
+    const newY: number = deltaX * s + deltaY * c;
+
+    // translate point back:
+    return new Point(newX + centerPoint.x, newY + centerPoint.y);
+  }
+
   readonly markDefaultX: number = 1175;
   readonly markDefaultY: number = 1050;
-  static readonly engineThrust: number = 1.6;
- //readonly markDefaultX: number = 1175;
- // readonly markDefaultY: number = 550;
+  static readonly engineThrust: number = 2.8 / 9;
+  //readonly markDefaultX: number = 1175;
+  // readonly markDefaultY: number = 550;
   readonly markDefaultScale: number = 1;
+
   readonly markDefaultRotation: number = 0;
-  
+  markHeadTop: number;
+  markHeadBottom: number;
+  markHeadLeft: number;
+  markHeadRight: number;
+
+  markScreenCenter: Point;
+
+  readonly markHeight: number = 350;
 
   keepSpaceshipInBounds(nowMs: number) {
     if (!this.spaceshipProxy)
       return;
 
     const scale: number = this.spaceshipProxy.scale;
-    const markHeight: number = 430;
-    const markHeadHeight: number = markHeight / 3;
+    
+    const markHeadHeight: number = this.markHeight / 4;
     const shipWidth: number = 600;
-    const markScaledHeight: number = markHeight * scale;
+    const markScaledHeight: number = this.markHeight * scale;
+
+    const currentRotationDegrees: number = this.spaceshipProxy.rotation;
 
     // TODO: Use trig to calculate Mark head position.
     const shipCenterX: number = this.spaceshipProxy.x + this.spaceshipSprites.originX;
+    const shipCenterY: number = this.spaceshipProxy.y + this.spaceshipSprites.originY;
+    const shipCenter: Point = new Point(shipCenterX, shipCenterY);
     const shipLeftX: number = shipCenterX - shipWidth * scale / 2;
     const shipRightX: number = shipCenterX + shipWidth * scale / 2;
-    const markHeadTop: number = this.spaceshipProxy.y + this.spaceshipSprites.originY - markScaledHeight;
-    const markHeadBottom: number = markHeadTop + markHeadHeight * scale;
 
-    if (markHeadTop < 0 || markHeadBottom > screenHeight) {
+    const markHeadCenterY: number = shipCenterY - this.getMarkHeight(scale);
+    const markCenterHead = new Point(shipCenterX, markHeadCenterY);
+    const angleInRadians: number = this.spaceshipProxy.rotation * Math.PI / 180;
+    this.markScreenCenter = this.rotatePoint(markCenterHead, angleInRadians, shipCenter);
+
+    this.markHeadTop = this.markScreenCenter.y - markHeadHeight * scale;
+    this.markHeadBottom = this.markScreenCenter.y + markHeadHeight * scale;
+    this.markHeadLeft = this.markScreenCenter.x - markHeadHeight * scale;
+    this.markHeadRight = this.markScreenCenter.x + markHeadHeight * scale;
+
+    // TODO: If rotation puts Mark's head out of bounds - we need to check for that and bring it back.
+
+    if (this.spaceshipProxy.isRotating()) {
+      // We are rotating!!! Force in bounds if needed.
+      console.log(`We are rotating!!! Force in bounds if needed.`);
+      this.forceInBounds(nowMs);
+      return;
+    }
+
+    if (this.markHeadTop < 0 || this.markHeadBottom > screenHeight) {
       this.spaceshipProxy.bounceBack(nowMs, Orientation.Horizontal);
       this.flameProxy.bounceBack(nowMs, Orientation.Horizontal);
     }
 
-    if (shipLeftX < 0 || shipRightX > screenWidth)
-    {
+    if (this.markHeadLeft < 0 || this.markHeadRight > screenWidth) {
       this.spaceshipProxy.bounceBack(nowMs, Orientation.Vertical);
       this.flameProxy.bounceBack(nowMs, Orientation.Vertical);
     }
+  }
+
+  forceInBounds(nowMs: number) {
+    let deltaX: number = 0;
+    let deltaY: number = 0;
+
+    if (this.markHeadTop < 0) {
+      deltaY = -this.markHeadTop;
+    }
+
+    if (this.markHeadBottom > screenHeight) {
+      deltaY = screenHeight - this.markHeadBottom;
+    }
+
+    if (this.markHeadLeft < 0) {
+      deltaX = -this.markHeadLeft;
+    }
+
+    if (this.markHeadRight > screenWidth) {
+      deltaX = screenWidth - this.markHeadRight;
+    }
+
+    if (deltaY === 0 && deltaX === 0)
+      return;
+
+
+    this.moveImmediateDelta(deltaX, deltaY, nowMs);
+  }
+
+  moveImmediateDelta(deltaX: number, deltaY: number, nowMs: number) {
+    this.spaceshipProxy.move(deltaX, deltaY);
+    this.flameProxy.move(deltaX, deltaY);
+    this.spaceshipProxy.changingDirection(nowMs);
+    this.flameProxy.changingDirection(nowMs);
   }
 }

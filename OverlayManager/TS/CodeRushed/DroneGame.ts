@@ -153,7 +153,10 @@ class DroneGame extends GamePlusQuiz {
 
 		super.loadResources();
 
-		this.coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, this.outlineGameSurfaceNoAdsNoMark/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
+		this.coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null,
+			this.outlineGameSurfaceBeastBuild
+			/* this.outlineGameSurfaceNoAdsNoMark */
+			/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
 
 		this.addSeeds();
 
@@ -824,6 +827,34 @@ class DroneGame extends GamePlusQuiz {
 			'*                                         *' + '\n' +
 			'*                                         *' + '\n' +
 			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' + // 10
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' + // 20
+			'*                                         *' + '\n' +
+			'*                                         *' + '\n' +
+			'                                          *' + '\n' +
+			'    *************             *************', coinMargin);
+	}
+
+	outlineGameSurfaceBeastBuild(sprites: Sprites) {
+		sprites.layout(
+			'***********************************        ' + '\n' +
+			'*                                          ' + '\n' +
+			'*                                          ' + '\n' +
+			'*                                          ' + '\n' +
+			'*                                          ' + '\n' +
+			'*                                          ' + '\n' +
+			'*                                          ' + '\n' +
 			'*                                         *' + '\n' +
 			'*                                         *' + '\n' +
 			'*                                         *' + '\n' + // 10

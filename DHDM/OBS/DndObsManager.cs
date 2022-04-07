@@ -215,5 +215,10 @@ namespace DHDM
 		{
 			weatherManager.ShowWeather(weatherKeyword);
 		}
+
+		public void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility)
+		{
+			plateManager.SetObsSourceVisibility(sceneName, sourceName, sourceVisibility);
+		}
 	}
 }

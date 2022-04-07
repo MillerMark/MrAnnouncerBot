@@ -51,6 +51,9 @@
     <None Update="LiveVideoAnimation\Data\Drone Failure.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LiveVideoAnimation\Data\Mechs.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="LiveVideoAnimation\Data\PartyEleven.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
