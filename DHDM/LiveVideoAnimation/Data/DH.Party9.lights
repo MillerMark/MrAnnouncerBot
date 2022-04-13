@@ -1,0 +1,373 @@
+{
+  "Lights": [
+    {
+      "SequenceData": [
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 13.933333333333294
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 6,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 11,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.2333333333333333
+        },
+        {
+          "Hue": 10,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 8,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.26666666666666666
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 4,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 99,
+          "Lightness": 4,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 99,
+          "Lightness": 0,
+          "Duration": 0.1
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.766666666666652
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 10,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 18,
+          "Duration": 0.3
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 14,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 9,
+          "Duration": 0.2333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 4,
+          "Duration": 0.6
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 2.500000000000001
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 3,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 6,
+          "Duration": 0.2333333333333333
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 10,
+          "Duration": 0.3333333333333333
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 4,
+          "Duration": 0.19999999999999998
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.16666666666666666
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 4.966666666666659
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 4,
+          "Duration": 0.6
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.9333333333333332
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 4,
+          "Duration": 0.5666666666666667
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.866666666666652
+        }
+      ],
+      "ID": "E286CF5DEEBA"
+    },
+    {
+      "SequenceData": [
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 18.066666666666723
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 5,
+          "Duration": 0.4333333333333333
+        },
+        {
+          "Hue": 6,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.26666666666666666
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.53333333333332
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 2,
+          "Duration": 0.3
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.3333333333333333
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 3,
+          "Duration": 0.19999999999999998
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 5.133333333333325
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 5,
+          "Duration": 0.8999999999999999
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 7,
+          "Duration": 0.6333333333333333
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 2,
+          "Duration": 0.5666666666666667
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.866666666666652
+        }
+      ],
+      "ID": "YOYOYO!!!"
+    },
+    {
+      "SequenceData": [
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 17.600000000000033
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 7,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 0.5333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 15,
+          "Duration": 0.3
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 10,
+          "Duration": 0.13333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 6,
+          "Duration": 0.1
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.53333333333332
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 3,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 6,
+          "Duration": 0.2333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 10,
+          "Duration": 0.3333333333333333
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 7,
+          "Duration": 0.19999999999999998
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 3,
+          "Duration": 0.1
+        },
+        {
+          "Hue": 7,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.06666666666666667
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 4.966666666666659
+        },
+        {
+          "Hue": 17,
+          "Saturation": 100,
+          "Lightness": 8,
+          "Duration": 1.5333333333333348
+        },
+        {
+          "Hue": 17,
+          "Saturation": 100,
+          "Lightness": 2,
+          "Duration": 0.5666666666666667
+        },
+        {
+          "Hue": 17,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 0.03333333333333333
+        },
+        {
+          "Hue": 0,
+          "Saturation": 100,
+          "Lightness": 0,
+          "Duration": 6.833333333333319
+        }
+      ],
+      "ID": "F008BE401CCF"
+    }
+  ]
+}

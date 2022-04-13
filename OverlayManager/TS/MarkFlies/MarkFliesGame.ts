@@ -10,9 +10,12 @@ class MarkFliesGame extends GamePlusQuiz {
   animations: Animations = new Animations();
   spaceshipProxy: SpriteProxy;
   flameProxy: SpriteProxy;
+  targeting: boolean;
   targetX: number;
   targetY: number;
+  stopTargetingTime: number;
   targetScale: number;
+  targetingStartTime: number;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -23,6 +26,8 @@ class MarkFliesGame extends GamePlusQuiz {
 
     this.spaceshipSprites.updatePositions(nowMs);
     this.flameSprites.updatePositions(nowMs);
+    if (this.targeting)
+      this.moveSpaceshipTowardTarget(nowMs);
 
     this.keepSpaceshipInBounds(nowMs);
 
@@ -32,23 +37,59 @@ class MarkFliesGame extends GamePlusQuiz {
     this.animations.removeExpiredAnimations(nowMs);
     this.animations.render(markFliesContext, nowMs);
 
-    this.updateThrustFromTilt();
+    this.updateThrustFromTilt(nowMs);
     this.updateVideoFeedFromShip();
 
     this.updateThrust();
 
-    //this.drawDiagnostics(context, nowMs);
+    this.drawDiagnostics(context, nowMs);
   }
-    updateThrust() {
-      if (this.lastThrust === this.thrust)
-        return;
-      this.lastThrust = this.thrust;
-      this.setScale(this.spaceshipProxy.scale);
-    }
+
+  updateThrust() {
+    if (this.lastThrust === this.thrust)
+      return;
+    this.lastThrust = this.thrust;
+    this.setScale(this.spaceshipProxy.scale);
+  }
 
   drawDiagnostics(context: CanvasRenderingContext2D, nowMs: number) {
     if (!this.spaceshipProxy)
       return;
+    //this.drawBoxAroundMarksHead(context);
+    this.drawFinalTrajectory(context);
+    this.drawSpaceshipCenter(context);
+  }
+
+  drawSpaceshipCenter(context: CanvasRenderingContext2D) {
+    const center: Point = this.spaceshipCenter;
+    const edgeLength: number = 20;
+    const halfEdgeLength: number = edgeLength / 2;
+    context.beginPath();
+    context.strokeStyle = "#ff8080";
+    context.lineWidth = 2;
+    context.rect(center.x - halfEdgeLength, center.y - halfEdgeLength, edgeLength, edgeLength);
+    context.fillStyle = "#ffdddd";
+    context.fillRect(center.x - halfEdgeLength, center.y - halfEdgeLength, edgeLength, edgeLength);
+    context.stroke();
+    context.fill();
+  }
+
+  drawFinalTrajectory(context: CanvasRenderingContext2D) {
+    if (!this.finalPoint)
+      return;
+    const edgeLength: number = 20;
+    const halfEdgeLength: number = edgeLength / 2;
+    context.beginPath();
+    context.strokeStyle = "#4040ff";
+    context.lineWidth = 2;
+    context.rect(this.finalPoint.x - halfEdgeLength, this.finalPoint.y - halfEdgeLength, edgeLength, edgeLength);
+    context.fillStyle = "#ffffff";
+    context.fillRect(this.finalPoint.x - halfEdgeLength, this.finalPoint.y - halfEdgeLength, edgeLength, edgeLength);
+    context.stroke();
+    context.fill();
+  }
+
+  drawBoxAroundMarksHead(context: CanvasRenderingContext2D) {
     context.beginPath();
     context.strokeStyle = "#ff0000";
     context.lineWidth = 2;
@@ -56,11 +97,24 @@ class MarkFliesGame extends GamePlusQuiz {
     context.stroke();
   }
 
-  updateThrustFromTilt() {
+  recentlyTargeting: boolean;
+
+  updateThrustFromTilt(nowMs: number) {
     if (!this.spaceshipProxy)
       return;
 
-    if (this.spaceshipProxy.rotation == this.lastSpaceshipRotation)
+    if (this.stopTargetingTime && performance.now() < this.stopTargetingTime) {
+      console.log(`this.overrideThrust(0, 0);`);
+      this.overrideThrust(0, 0);
+      this.recentlyTargeting = true;
+      return;
+    }
+
+    if (this.recentlyTargeting) {
+      this.recentlyTargeting = false;
+      this.changingDirection(nowMs);
+    }
+    else if (this.spaceshipProxy.rotation == this.lastSpaceshipRotation)
       return;
 
     // TODO: Use trig to calculate correct percentage of horizontal and vertical thrust!!!
@@ -92,6 +146,10 @@ class MarkFliesGame extends GamePlusQuiz {
     const scale: number = this.spaceshipProxy.scale;
     const horizontalThrust: number = horizontalFactor * MarkFliesGame.engineThrust * scale * this.thrust;
     const verticalThrust: number = verticalFactor * MarkFliesGame.engineThrust * scale * this.thrust;
+    this.overrideThrust(horizontalThrust, verticalThrust);
+  }
+
+  overrideThrust(horizontalThrust: number, verticalThrust: number) {
     this.spaceshipProxy.horizontalThrustOverride = horizontalThrust;
     this.flameProxy.horizontalThrustOverride = horizontalThrust;
     this.spaceshipProxy.verticalThrustOverride = verticalThrust;
@@ -150,47 +208,22 @@ class MarkFliesGame extends GamePlusQuiz {
     //Seeds
   }
 
-  goto(userInfo: UserInfo, data: string, nowMs) {
-    let x: number;
-    let y: number;
-    let z: number;
-    if (data.length == 3) {
-      x = parseFloat(data[0]);
-      y = parseFloat(data[1]);
-      z = parseFloat(data[2]);
-    }
-    else if (data.length == 6) {
-      x = parseFloat(data[0] + '.' + data[1]);
-      y = parseFloat(data[2] + '.' + data[3]);
-      z = parseFloat(data[4] + '.' + data[5]);
-    }
-    else
-      return;
-    this.targetXYZ(x, y, z);
-  }
-
-  targetXYZ(x: number, y: number, z: number) {
-    this.targetScale = this.mapTarget(z, 0.25, 1.1);
-
-    this.targetX = this.mapTarget(x, 0, 1919);
-    this.targetY = this.mapTarget(y, 0, 1079) + this.getMarkHeight(this.targetScale);
-    console.log(`this.targetX = ${this.targetX}`);
-
-    this.setScale(this.targetScale);
-    this.moveImmediate(this.targetX, this.targetY);
-  }
-
   getMarkHeight(scale: number): number {
     return this.markHeight * scale;
   }
 
-  moveImmediate(targetX: number, targetY: number) {
-    const shipCenterX: number = this.spaceshipProxy.x + this.spaceshipSprites.originX;
-    const shipCenterY: number = this.spaceshipProxy.y + this.spaceshipSprites.originY;
-    const deltaX: number = targetX - shipCenterX;
-    const deltaY: number = targetY - shipCenterY;
+  get spaceshipCenter(): Point {
+    return new Point(this.spaceshipProxy.x + this.spaceshipSprites.originX, this.spaceshipProxy.y + this.spaceshipSprites.originY);
+  }
 
-    this.moveImmediateDelta(deltaX, deltaY, performance.now());
+  getDeltaToShipCenter(targetX: number, targetY: number): Point {
+    const shipCenter: Point = this.spaceshipCenter;
+    return new Point(targetX - shipCenter.x, targetY - shipCenter.y);
+  }
+
+  moveImmediate(targetX: number, targetY: number) {
+    const delta: Point = this.getDeltaToShipCenter(targetX, targetY);
+    this.moveImmediateDelta(delta.x, delta.y, performance.now());
   }
 
   setScale(targetScale: number) {
@@ -213,16 +246,16 @@ class MarkFliesGame extends GamePlusQuiz {
 
   tilt(userInfo: UserInfo, data: string, nowMs) {
     let angle: number = parseFloat(data);
+    this.easeTilt(angle, nowMs);
+  }
+
+  easeTilt(angle: number, nowMs: number) {
     if (this.spaceshipProxy) {
       let degreesToMove: number = this.getDegreesToRotate(angle, this.spaceshipProxy);
-      let now: number = performance.now();
-      this.spaceshipProxy.changingDirection(now);
-      this.flameProxy.changingDirection(now);
+      this.changingDirection(nowMs);
       this.flameProxy.storeLastPosition();
       this.spaceshipProxy.easeSpin(nowMs, this.spaceshipProxy.rotation, angle, 1500);
       this.flameProxy.easeSpin(nowMs, this.flameProxy.rotation, angle, 1500);
-      //this.spaceshipProxy.rotateTo(angle, degreesToMove, 1500);
-      //this.flameProxy.rotateTo(angle, degreesToMove, 1500);
     }
   }
 
@@ -401,7 +434,7 @@ class MarkFliesGame extends GamePlusQuiz {
       return;
 
     const scale: number = this.spaceshipProxy.scale;
-    
+
     const markHeadHeight: number = this.markHeight / 4;
     const shipWidth: number = 600;
     const markScaledHeight: number = this.markHeight * scale;
@@ -468,14 +501,91 @@ class MarkFliesGame extends GamePlusQuiz {
     if (deltaY === 0 && deltaX === 0)
       return;
 
-
     this.moveImmediateDelta(deltaX, deltaY, nowMs);
   }
 
   moveImmediateDelta(deltaX: number, deltaY: number, nowMs: number) {
-    this.spaceshipProxy.move(deltaX, deltaY);
-    this.flameProxy.move(deltaX, deltaY);
+    this.moveDelta(deltaX, deltaY);
+    this.changingDirection(nowMs);
+  }
+
+  finalPoint: Point;
+
+  changingDirection(nowMs: number) {
     this.spaceshipProxy.changingDirection(nowMs);
     this.flameProxy.changingDirection(nowMs);
   }
+
+  moveDelta(deltaX: number, deltaY: number) {
+    this.spaceshipProxy.move(deltaX, deltaY);
+    this.flameProxy.move(deltaX, deltaY);
+  }
+
+  targetXYZ(x: number, y: number, z: number) {
+    this.targetScale = this.mapTarget(z, 0.25, 1.1);
+
+    this.targetX = this.mapTarget(x, 0, 1919);
+    this.targetY = this.mapTarget(y, 0, 1079) + this.getMarkHeight(this.targetScale);
+    console.log(`this.targetX = ${this.targetX}`);
+
+    // TODO: Ease this:
+    this.setScale(this.targetScale);
+    this.targeting = true;
+    this.targetingStartTime = this.nowMs;
+    const timeToTargetSeconds: number = 2;
+    this.stopTargetingTime = performance.now() + timeToTargetSeconds * 1000;
+    console.log(`this.stopTargetingTime = ${this.stopTargetingTime}`);
+    this.finalPoint = this.getTrajectory(timeToTargetSeconds);
+    this.changingDirection(this.nowMs);
+    this.overrideThrust(0, 0);
+
+    // if finalPoint is out of bounds, we need to simulate the bounce back in.
+
+    // We need to know where we will be based on velocity alone in ___ amount of time.
+    // I want to use the delta to calculate our moves.
+    // I want to do this (correcting thrust) a few times in the journey.
+    const delta: Point = this.getDeltaToShipCenter(this.finalPoint.x, this.finalPoint.y);
+    //if (delta.x > 0) {
+    //  this.easeTilt(60, performance.now());
+    //  // Moving right...
+
+    //}
+    //else
+    //  this.easeTilt(-60, performance.now());
+
+    // TODO: Calculate an initial needed thrust based on horizontal distance to target.
+    //this.moveImmediate(this.targetX, this.targetY);
+  }
+
+  private getTrajectory(timeToTargetSeconds: number) {
+    const deltaToCurrentTrajectoryX: number = Physics.metersToPixels(Physics.getDisplacementMeters(timeToTargetSeconds, this.spaceshipProxy.velocityX, 0));
+    const deltaToCurrentTrajectoryY: number = Physics.metersToPixels(Physics.getDisplacementMeters(timeToTargetSeconds, this.spaceshipProxy.velocityY, 0));
+    const shipCenter: Point = this.spaceshipCenter;
+    const finalPoint: Point = new Point(shipCenter.x + deltaToCurrentTrajectoryX, shipCenter.y + deltaToCurrentTrajectoryY);
+    return finalPoint;
+  }
+
+  goto(userInfo: UserInfo, data: string, nowMs) {
+    let x: number;
+    let y: number;
+    let z: number;
+    if (data.length == 3) {
+      x = parseFloat(data[0]);
+      y = parseFloat(data[1]);
+      z = parseFloat(data[2]);
+    }
+    else if (data.length == 6) {
+      x = parseFloat(data[0] + '.' + data[1]);
+      y = parseFloat(data[2] + '.' + data[3]);
+      z = parseFloat(data[4] + '.' + data[5]);
+    }
+    else
+      return;
+    this.targetXYZ(x, y, z);
+  }
+
+  moveSpaceshipTowardTarget(nowMs: number) {
+    // TODO: Fill this in later.
+  }
+
 }

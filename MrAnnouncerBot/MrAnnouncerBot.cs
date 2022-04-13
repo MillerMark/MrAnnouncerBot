@@ -397,6 +397,7 @@ namespace MrAnnouncerBot
 		const string STR_MarkSaysOrThinks = "!mark:";
 		const string STR_FredSaysOrThinks = "!fred:";
 		const string STR_CampbellSaysOrThinks = "!campbell:";
+		const string STR_RichardSaysOrThinks = "!richard:";
 
 		private bool PlayFanfare(string displayName, string message = emptyString)
 		{
@@ -1115,7 +1116,7 @@ namespace MrAnnouncerBot
 			int playerId;
 			if (name == "mark")
 				playerId = 2;
-			else if (name == "fred")
+			else if (name == "fred" || name == "richard")
 				playerId = 4;
 			else if (name == "campbell")
 				// TODO: Add support for X positioning.
@@ -1139,7 +1140,7 @@ namespace MrAnnouncerBot
 			var command = e.Command.CommandText;
 			var lowerMessage = e.Command.ChatMessage.Message.ToLower();
 
-			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks) || lowerMessage.StartsWith(STR_CampbellSaysOrThinks))
+			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks) || lowerMessage.StartsWith(STR_CampbellSaysOrThinks) || lowerMessage.StartsWith(STR_RichardSaysOrThinks))
 			{
 				SayOrThinkIt(e.Command.ChatMessage);
 				return;

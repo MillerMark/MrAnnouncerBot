@@ -11,19 +11,19 @@ class Physics {
     return pixels / pixelsPerMeter;
   }
 
-  static getDisplacementMeters(time: number, initialVelocity: number, acceleration: number): number {
+  static getDisplacementMeters(timeSeconds: number, initialVelocity: number, acceleration: number): number {
 
     //` <formula #ffffe0;3; d = v_i t + \frac{at^2}{2}>
 
-    return initialVelocity * time + acceleration * time * time / 2;
+    return initialVelocity * timeSeconds + acceleration * timeSeconds * timeSeconds / 2;
   }
 
 
-  static getFinalVelocityMetersPerSecond(time: number, initialVelocity: number, acceleration: number): number {
+  static getFinalVelocityMetersPerSecond(timeSeconds: number, initialVelocity: number, acceleration: number): number {
 
     //` <formula #ffffe0;1.5; v_f = v_i + at>
 
-    return initialVelocity + acceleration * time;
+    return initialVelocity + acceleration * timeSeconds;
   }
 
 

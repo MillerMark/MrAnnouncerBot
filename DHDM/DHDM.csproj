@@ -45,6 +45,9 @@
     <None Update="LiveVideoAnimation\Data\DanceTen.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LiveVideoAnimation\Data\DH.Party9.lights">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="LiveVideoAnimation\Data\Drone Failure.lights">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -112,7 +112,7 @@ namespace BotCore
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
 				return bonus;
-			if (existingViewer.UserName == "coderushed" || existingViewer.UserName == "cheese_minor" || existingViewer.UserName == "rorybeckercoderush")
+			if (existingViewer.UserName == "coderushed" || existingViewer.UserName == "cheese_minor" || existingViewer.UserName == "richard_campbell" || existingViewer.UserName == "rorybeckercoderush")
 				return ModeratorLevel;
 
 			return existingViewer.GetLevel() + bonus;
