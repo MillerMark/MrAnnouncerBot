@@ -588,7 +588,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		sprite.fadeOutTime = 800;
 		sprite.verticalThrustOverride = -0.09 * humanoidThrustScaleFactor;
 		sprite.autoScaleFactorPerSecond = 0.89 + humanoidScaleOffset;
-		sprite.timeStart = performance.now() + timeOffset;
+		sprite.lifetimeStart = performance.now() + timeOffset;
 		sprite.expirationDate += timeOffset;
 	}
 
@@ -938,7 +938,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				sprite.opacity = windup.Opacity;
 
 				if (windup.Lifespan)
-					sprite.expirationDate = sprite.timeStart + windup.Lifespan;
+					sprite.expirationDate = sprite.lifetimeStart + windup.Lifespan;
 				sprite.fadeInTime = windup.FadeIn;
 				sprite.velocityX = windup.Velocity.x;
 				sprite.velocityY = windup.Velocity.y;

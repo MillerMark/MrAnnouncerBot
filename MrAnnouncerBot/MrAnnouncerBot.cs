@@ -205,7 +205,7 @@ namespace MrAnnouncerBot
 		{
 			log.Add(new ErrorEntry() { Exception = e.Exception });
 			// TODO: Reconnect on error?
-			System.Diagnostics.Debugger.Break();
+			//System.Diagnostics.Debugger.Break();
 		}
 
 		void QueueSceneToPlay(string sceneToPlay)

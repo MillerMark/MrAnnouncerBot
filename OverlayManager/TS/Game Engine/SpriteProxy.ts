@@ -91,7 +91,7 @@
 	}
 
 	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex = 0, startIndex = 0, endBounds = 0, reverse = false, frameInterval: number = fps30, fileName = '') {
-		if (nowMs < this.timeStart)
+		if (nowMs < this.lifetimeStart)
 			return;
 
 		let numFramesToAdvance: number;
@@ -299,7 +299,7 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 
 	getCurrentHueShiftDelta(now: number): number {
 		if (this.hueShiftPerSecond !== 0) {
-			let secondsPassed: number = (now - this.timeStart) / 1000;
+			let secondsPassed: number = (now - this.lifetimeStart) / 1000;
 			return secondsPassed * this.hueShiftPerSecond % 360;
 		}
 		return 0;

@@ -1204,7 +1204,7 @@
 				this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
 			}
 			else {
-				this.deEmphasisSprite.timeStart = activeBackGame.nowMs;
+				this.deEmphasisSprite.lifetimeStart = activeBackGame.nowMs;
 			}
 		}
 

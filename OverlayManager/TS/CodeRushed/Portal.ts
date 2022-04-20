@@ -19,7 +19,7 @@
 
   set delayStart(delayMs: number) {
     super.delayStart = delayMs;
-    this.background.timeStart = performance.now() + delayMs;
+    this.background.lifetimeStart = performance.now() + delayMs;
   }
 
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {

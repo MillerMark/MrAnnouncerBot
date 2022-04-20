@@ -89,7 +89,7 @@ class Wall extends SpriteProxy {
 
   updatePosition(now: number) {
     this.storeLastPosition();
-    var secondsPassed = (now - this.timeStart) / 1000;
+    var secondsPassed = (now - this.lifetimeStart) / 1000;
     if (secondsPassed < this.airTime) {
       this.endCap1.updatePosition(now);
       this.endCap2.updatePosition(now);

@@ -243,7 +243,7 @@ class Drone extends ColorShiftingSpriteProxy {
 
 	updatePosition(now: number) {
 		this.storeLastPosition();
-		const secondsPassed = (now - this.timeStart) / 1000;
+		const secondsPassed = (now - this.physicsTimeStart) / 1000;
 
 		const hAccel = this.getHorizontalThrust(now);
 		const vAccel = this.getVerticalThrust(now);
@@ -553,7 +553,7 @@ class Drone extends ColorShiftingSpriteProxy {
 	}
 
 	changeVelocityBy(deltaVelocityX: number, deltaVelocityY: number, now: number) {
-		const secondsPassed = (now - this.timeStart) / 1000;
+		const secondsPassed = (now - this.physicsTimeStart) / 1000;
 		const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
 		const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
@@ -760,7 +760,7 @@ class Drone extends ColorShiftingSpriteProxy {
 	}
 
 	getFuturePoint(x: number, now: number): FuturePoint {
-		const secondsPassed = (now - this.timeStart) / 1000;
+		const secondsPassed = (now - this.physicsTimeStart) / 1000;
 
     /* 
      * 

@@ -459,11 +459,8 @@ class Sprites {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
 			if (sprite.stillAlive(now, this.baseAnimation.frameCount) && sprite.systemDrawn) {
-				if (now >= sprite.timeStart) {
-					//sprite.drawBackground(context, now);
+				if (now >= sprite.lifetimeStart) {
 					this.baseAnimation.drawCroppedByIndex(context, dx, dy, sprite.frameIndex, sx, sy, sw, sh, dw, dh);
-					//sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
-					//sprite.drawAdornments(context, now);
 				}
 			}
 
@@ -497,7 +494,7 @@ class Sprites {
 		context.globalAlpha = sprite.getAlpha(nowMs) * this.opacity;
 
 		if (sprite.stillAlive(nowMs, this.baseAnimation.frameCount) && sprite.systemDrawn) {
-			if (nowMs >= sprite.timeStart) {
+			if (nowMs >= sprite.lifetimeStart) {
 				numSpritesDrawn++;
 				sprite.drawBackground(context, nowMs);
 				sprite.draw(this.baseAnimation, context, nowMs, this.spriteWidth, this.spriteHeight, this.originX, this.originY);

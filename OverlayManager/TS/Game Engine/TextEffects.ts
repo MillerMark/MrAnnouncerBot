@@ -34,7 +34,7 @@ class ScalableAnimation extends AnimatedElement {
 			if (this.deltaScale === undefined)
 				this.deltaScale = this.targetScale - this.originalScale;
 
-			const scaleStartTime: number = this.timeStart + this.waitToScale;
+			const scaleStartTime: number = this.lifetimeStart + this.waitToScale;
 			const timePassed: number = now - scaleStartTime;
 
 			if (timePassed > 0) {

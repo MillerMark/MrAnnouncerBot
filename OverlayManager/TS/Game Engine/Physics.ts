@@ -18,6 +18,13 @@ class Physics {
     return initialVelocity * timeSeconds + acceleration * timeSeconds * timeSeconds / 2;
   }
 
+  static getThrustToDisplace(distanceMeters: number, velocityMetersPerSecond: number, timeSeconds: number ): number {
+    //` <formula #ffffe0;3; a = \frac{2*(d - v_i t)}{t^2}>
+
+    return 2 * (distanceMeters - velocityMetersPerSecond * timeSeconds) / (timeSeconds * timeSeconds);
+  }
+
+
 
   static getFinalVelocityMetersPerSecond(timeSeconds: number, initialVelocity: number, acceleration: number): number {
 
@@ -27,9 +34,12 @@ class Physics {
   }
 
 
-  static getDropTimeSeconds(heightMeters: number, acceleration: number, initialVelocity = 0) {
+  static getDropTimeSeconds(heightMeters: number, acceleration: number, initialVelocity: number = 0) {
 
     //` <formula #ffffe0;3; t = \frac{-v_i + \sqrt{v_i^2 + 2ha}}{a}>
+
+    if (acceleration == 0)
+      return heightMeters / initialVelocity;
 
     return (-initialVelocity + Math.sqrt(initialVelocity * initialVelocity + 2 * heightMeters * acceleration)) / acceleration;
   }

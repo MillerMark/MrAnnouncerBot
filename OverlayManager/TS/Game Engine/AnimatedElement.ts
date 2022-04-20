@@ -16,7 +16,8 @@
   lastRotationUpdate: number;
   opacity: number;
   expirationDate: number;
-  timeStart: number;
+  lifetimeStart: number;
+  physicsTimeStart: number;
   fadeInTime = 0;
   fadeOutTime = 4000;
   fadeOnDestroy = true;
@@ -114,10 +115,11 @@
     this.initialHorizontalScale = 1;
     this.initialVerticalScale = 1;
 
-    this.timeStart = performance.now();
+    this.lifetimeStart = performance.now();
+    this.physicsTimeStart = this.lifetimeStart;
 
     if (lifeSpanMs > 0)
-      this.expirationDate = this.timeStart + lifeSpanMs;
+      this.expirationDate = this.lifetimeStart + lifeSpanMs;
     else
       this.expirationDate = null;
   }
@@ -183,7 +185,7 @@
   }
 
   animate(nowMs: number) {
-    if (nowMs < this.timeStart)
+    if (nowMs < this.lifetimeStart)
       return;
 
     if (this.timeToRotate > 0) {
@@ -238,7 +240,7 @@
   }
 
   set delayStart(delayMs: number) {
-    this.timeStart = performance.now() + delayMs;
+    this.lifetimeStart = performance.now() + delayMs;
   }
 
   destroyBy(lifeTimeMs: number) {
@@ -285,7 +287,7 @@
   alreadyFadedIn: boolean;
 
   getAlpha(now: number): number {
-    const msAlive: number = now - this.timeStart;
+    const msAlive: number = now - this.lifetimeStart;
 
     if (msAlive < 0)   // Not yet alive!!!
       return 0;
@@ -322,7 +324,7 @@
   }
 
   bounce(left: number, top: number, right: number, bottom: number, width: number, height: number, now: number) {
-    const secondsPassed = (now - this.timeStart) / 1000;
+    const secondsPassed = (now - this.physicsTimeStart) / 1000;
     const horizontalBounceDecay = 0.9;
     const verticalBounceDecay = 0.9;
 
@@ -350,15 +352,15 @@
     return hitBottomWall;
   }
 
-  changingDirection(now: number): void {
-    const secondsPassed = (now - this.timeStart) / 1000;
-    const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-    const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
-    this.changeVelocity(velocityX, velocityY, now);
+  changingDirection(nowMs: number): void {
+    const secondsPassed = (nowMs - this.physicsTimeStart) / 1000;
+    const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(nowMs));
+    const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(nowMs));
+    this.changeVelocity(velocityX, velocityY, nowMs);
   }
 
-  changeVelocity(velocityX: number, velocityY: number, now: number) {
-    this.timeStart = now;
+  changeVelocity(velocityX: number, velocityY: number, nowMs: number) {
+    this.physicsTimeStart = nowMs;
     this.velocityX = velocityX;
     this.velocityY = velocityY;
     this.startX = this.x;
@@ -429,7 +431,7 @@
       return;
     }
 
-    const secondsPassed = (nowMs - this.timeStart) / 1000;
+    const secondsPassed = (nowMs - this.physicsTimeStart) / 1000;
 
     const xDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityX, this.getHorizontalThrust(nowMs));
     this.x = this.startX + Physics.metersToPixels(xDisplacement);

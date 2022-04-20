@@ -851,7 +851,7 @@ class Sprinkles {
 		body.horizontalScale = this.horizontalScale;
 		body.name = hornBodyPair.name + Sprinkles.BodyModifier;
 		body.hueShiftPerSecond = this.bodyHueShiftPerSecond;
-		body.timeStart = now;
+		body.lifetimeStart = now;
 		body.frameIntervalOverride = frameIntervalOverride;
 		body.addOnFrameAdvanceCallback(this.onFrameAdvanced.bind(this))
 		body.addOnCycleCallback(this.animationCycled.bind(this));
@@ -862,7 +862,7 @@ class Sprinkles {
 		horn.addOnCycleCallback(this.animationCycled.bind(this));
 		horn.onExpire = this.onSpriteExpire.bind(this)
 		horn.hueShiftPerSecond = Sprinkles.hornHueDegreesShiftPerSecond;
-		horn.timeStart = now;
+		horn.lifetimeStart = now;
 		horn.frameIntervalOverride = frameIntervalOverride;
 
 		hornBodyPair.justAdded = true;

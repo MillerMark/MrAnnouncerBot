@@ -44,13 +44,13 @@
 		if (Random.chancePercent(50))
 			sprite.animationReverseOverride = true;
 		sprite.frameIntervalOverride = fps30 * Random.between(0.5, 2);
-		sprite.timeStart = now + Random.between(0, 800);
+		sprite.lifetimeStart = now + Random.between(0, 800);
 		sprite.velocityX = Random.between(-1.75, 1.75);
 		sprite.velocityY = Random.between(0, -3);
 		sprite.rotation = Random.max(360);
 		sprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
 		sprite.initialRotation = sprite.rotation;
-		sprite.expirationDate = sprite.timeStart + 3000;
+		sprite.expirationDate = sprite.lifetimeStart + 3000;
 		sprite.fadeOutTime = 0;
 		sprite.fadeInTime = 0;
 	}
@@ -67,7 +67,7 @@
 		if (Random.chancePercent(50))
 			sprite.animationReverseOverride = true;
 		sprite.frameIntervalOverride = fps30 * Random.between(0.5, 2);
-		sprite.timeStart = now + Random.between(0, 800);
+		sprite.lifetimeStart = now + Random.between(0, 800);
 
 		const airTime: number = CoinManager.getAirTimeToDmBoxSec();
 
@@ -77,7 +77,7 @@
 
 		sprite.velocityX = Physics.pixelsToMeters(screenWidth - CoinManager.halfWidthDmFrame - x) / airTime;
 		sprite.velocityY = -Physics.getFinalVelocityMetersPerSecond(airTime, 0, CoinManager.gravity);
-		sprite.expirationDate = sprite.timeStart + airTime * 1000;
+		sprite.expirationDate = sprite.lifetimeStart + airTime * 1000;
 		sprite.fadeOutTime = 300;
 		sprite.fadeInTime = 0;
 	}

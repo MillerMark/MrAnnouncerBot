@@ -822,16 +822,16 @@
 		const spellBookBack: SpriteProxy = this.spellBookBack.add(left, lowerSpellBookTop, 0);
 		spellBookBack.fadeInTime = SpellBook.fadeInTime;
 		spellBookBack.horizontalScale = this.horizontalScale;
-		spellBookBack.timeStart = 0;
+		spellBookBack.lifetimeStart = 0;
 		const spellBookFront: SpriteProxy = this.spellBookTop.add(left, top, 0);
 		spellBookFront.fadeInTime = SpellBook.fadeInTime;
-		spellBookFront.timeStart = 0;
+		spellBookFront.lifetimeStart = 0;
 		spellBookFront.horizontalScale = this.horizontalScale;
 
 		const schoolOfMagicIndex = spell.schoolOfMagic - 1;
 		if (spell.schoolOfMagic > SchoolOfMagic.None) {
 			const schoolOfMagicIcon: SpriteProxy = this.schoolOfMagic.add(this.schoolOfMagicTopLeft.x, this.schoolOfMagicTopLeft.y, schoolOfMagicIndex);
-			schoolOfMagicIcon.timeStart = 0;
+			schoolOfMagicIcon.lifetimeStart = 0;
 			schoolOfMagicIcon.fadeInTime = SpellBook.fadeInTime;
 		}
 
@@ -886,12 +886,12 @@
 		const hueShiftDelta: number = Random.plusMinusBetween(20, 40);
 		const mediumHueShift: number = hueShift - hueShiftDelta;
 		const medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, mediumHueShift, this.getSaturation(mediumHueShift));
-		medium.timeStart = performance.now() + 9 * fps30;  // medium starts 9 frames in.
+		medium.lifetimeStart = performance.now() + 9 * fps30;  // medium starts 9 frames in.
 		medium.horizontalScale = horizontalScaleBig;
 		medium.verticalScale = verticalScaleBig;
 		const smallHueShift: number = hueShift + hueShiftDelta;
 		const small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, smallHueShift, this.getSaturation(smallHueShift));
-		small.timeStart = performance.now() + 16 * fps30;  // small starts 16 frames in.
+		small.lifetimeStart = performance.now() + 16 * fps30;  // small starts 16 frames in.
 		small.horizontalScale = horizontalScaleBig;
 		small.verticalScale = verticalScaleBig;
 		return true;
