@@ -115,7 +115,17 @@ class MarkFliesGame extends GamePlusQuiz {
       context.font = "44px serif";
       context.textAlign = "left";
       context.textBaseline = "top";
-      context.fillText(ContinuousTargetingState[this.continuousTargetingState].toString(), this.targetX + stateOffset, this.targetY + stateOffset);
+      const offsetX: number = 16;
+      const offsetY: number = 16;
+      let diagnosticsText: string = ContinuousTargetingState[this.continuousTargetingState].toString();
+
+      let timeToNextCourseCorrection: string = '';
+      if (this.nextCourseCorrection > nowMs) {
+        timeToNextCourseCorrection = ` ${((this.nextCourseCorrection - nowMs) / 1000).toFixed(1)} sec`;
+        diagnosticsText += timeToNextCourseCorrection;
+      }
+
+      context.fillText(diagnosticsText, this.targetX + stateOffset + offsetX, this.targetY + stateOffset + offsetY);
       // 
     }
   }
@@ -196,11 +206,15 @@ class MarkFliesGame extends GamePlusQuiz {
   recentlyTargeting: boolean;
 
   getAvailableThrust(): number {
-    return MarkFliesGame.engineThrustPerLevel * this.spaceshipProxy.scale * this.thrust;
+    return this.getScaledEngineThrustPerLevel() * this.thrust;
   }
 
   getThrustVector(): Vector {
     return this.getVectorToShipCenter(this.getMarkHeadCenterPointIncludingTilt(this.spaceshipCenter)).normalize(1);
+  }
+
+  getThrustVectorAtDegrees(rotationDegrees: number): Vector {
+    return this.getVectorToShipCenter(this.getHeadCenterPointAtAngle(this.spaceshipCenter, rotationDegrees)).normalize(1);
   }
 
   getScaledGravity(): number {
@@ -256,6 +270,8 @@ class MarkFliesGame extends GamePlusQuiz {
       this.setThrust(userInfo, data, nowMs);
     if (command === 'Goto')
       this.goto(userInfo, data, nowMs);
+    if (command === 'GotoZ')
+      this.gotoZ(userInfo, data, nowMs);
     else if (command === 'ResetMark')
       this.resetMark();
     //Tilt
@@ -288,6 +304,10 @@ class MarkFliesGame extends GamePlusQuiz {
   }
 
   setScale(targetScale: number) {
+    if (!this.spaceshipProxy) {
+      console.error(`this.spaceshipProxy is null!!! Cannot setScale!`);
+      return;
+    }
     this.spaceshipProxy.scale = targetScale;
     this.flameProxy.scale = targetScale * this.thrust / 6.7;
   }
@@ -315,6 +335,21 @@ class MarkFliesGame extends GamePlusQuiz {
     let angle: number = parseFloat(data);
     this.easeTilt(angle, nowMs);
   }
+
+  easeScale(newScaleValue: number, nowMs: any) {
+    if (this.spaceshipProxy) {
+      this.targetScale = this.getMappedScale(newScaleValue);
+      const scaleTimeMs: number = 1500;
+      this.flameProxy.storeLastPosition();
+      this.spaceshipProxy.easeScale(nowMs, this.spaceshipProxy.scale, this.targetScale, scaleTimeMs);
+      this.flameProxy.easeScale(nowMs, this.flameProxy.scale, this.targetScale, scaleTimeMs);
+    }
+  }
+    getMappedScale(newScaleValue: number): number {
+      return this.mapTarget(newScaleValue, 0.25, 1.1);
+    }
+
+
 
   easeTilt(angle: number, nowMs: number, tiltTimeMs: number = 1500) {
     if (this.spaceshipProxy) {
@@ -485,8 +520,7 @@ class MarkFliesGame extends GamePlusQuiz {
   static readonly engineThrustFullThrottle: number = 2.8 * 4;
   static readonly engineThrustPerLevel: number = MarkFliesGame.engineThrustFullThrottle / 9;
   static readonly gravitationalForce: number = MarkFliesGame.engineThrustPerLevel * 5;
-  //readonly markDefaultX: number = 1175;
-  // readonly markDefaultY: number = 550;
+
   readonly markDefaultScale: number = 1;
 
   readonly markDefaultRotation: number = 0;
@@ -537,10 +571,14 @@ class MarkFliesGame extends GamePlusQuiz {
   }
 
   getMarkHeadCenterPointIncludingTilt(shipCenter: Point) {
+    return this.getHeadCenterPointAtAngle(shipCenter, this.spaceshipProxy.rotation);
+  }
+
+  private getHeadCenterPointAtAngle(shipCenter: Point, rotationDegrees: number) {
     const scale: number = this.spaceshipProxy.scale;
     const markHeadCenterY: number = shipCenter.y - this.getMarkHeight(scale);
     const markCenterHead = new Point(shipCenter.x, markHeadCenterY);
-    const angleInRadians: number = this.spaceshipProxy.rotation * Math.PI / 180;
+    const angleInRadians: number = MathEx.toRadians(rotationDegrees);
     return this.rotatePoint(markCenterHead, angleInRadians, shipCenter);
   }
 
@@ -595,7 +633,7 @@ class MarkFliesGame extends GamePlusQuiz {
 
   targetXYZ(x: number, y: number, z: number) {
     this.continuousTargetingState = ContinuousTargetingState.calculateApproachThrust;
-    this.targetScale = this.mapTarget(z, 0.25, 1.1);
+    this.targetScale = this.getMappedScale(z);
 
     this.targetX = this.mapTarget(x, 0, 1919);
     this.targetY = this.mapTarget(y, 0, 1079) + this.getMarkHeight(this.targetScale);
@@ -726,29 +764,33 @@ class MarkFliesGame extends GamePlusQuiz {
     this.targetXYZ(x, y, z);
   }
 
-  nextCourseCorrection: number;
-  intervalBetweenUpdates: number;
-
-  oldFlyMarkTowardTarget(nowMs: number) {
-    if (this.targeting !== true)
-      return;
-    if (nowMs < this.nextCourseCorrection)
-      return;
-    this.nextCourseCorrection += this.intervalBetweenUpdates;
-    if (this.targetingState === OldTargetingState.startedTargeting)
-      this.startCourseCorrection(nowMs);
-    else if (this.targetingState === OldTargetingState.mainThrustTowardsCourse)
-      this.mainThrustTowardsTarget(nowMs);
-    else if (this.targetingState === OldTargetingState.coastingTowardsTargetX) {
-      this.applyBrakingHorizontalThrust(nowMs);
-    }
-    else if (this.targetingState === OldTargetingState.breakingForTargetX) {
-      this.headTowardTargetY(nowMs);
-      this.targeting = false;  // Testing
-    }
-
-    // thrustVector.x
+  gotoZ(userInfo: UserInfo, data: string, nowMs) {
+    let newZ: number = parseFloat(data);
+    this.easeScale(newZ, nowMs);
   }
+
+  nextCourseCorrection: number;
+
+  //oldFlyMarkTowardTarget(nowMs: number) {
+  //  if (this.targeting !== true)
+  //    return;
+  //  if (nowMs < this.nextCourseCorrection)
+  //    return;
+  //  this.nextCourseCorrection += this.intervalBetweenUpdates;
+  //  if (this.targetingState === OldTargetingState.startedTargeting)
+  //    this.startCourseCorrection(nowMs);
+  //  else if (this.targetingState === OldTargetingState.mainThrustTowardsCourse)
+  //    this.mainThrustTowardsTarget(nowMs);
+  //  else if (this.targetingState === OldTargetingState.coastingTowardsTargetX) {
+  //    this.applyBrakingHorizontalThrust(nowMs);
+  //  }
+  //  else if (this.targetingState === OldTargetingState.breakingForTargetX) {
+  //    this.headTowardTargetY(nowMs);
+  //    this.targeting = false;  // Testing
+  //  }
+
+  //  // thrustVector.x
+  //}
 
   applyBrakingHorizontalThrust(nowMs: number) {
 
@@ -758,40 +800,41 @@ class MarkFliesGame extends GamePlusQuiz {
     this.targetingState = OldTargetingState.movingToTargetY;
   }
 
-  mainThrustTowardsTarget(nowMs: number) {
-    //const thrustVector: Vector = this.getThrustVector();
-    //const availableThrust: number = this.getAvailableThrust();
-    const markHeadCenter: Point = this.getMarkHeadCenterPointIncludingTilt(this.spaceshipCenter);
+  //mainThrustTowardsTarget(nowMs: number) {
+  //  //const thrustVector: Vector = this.getThrustVector();
+  //  //const availableThrust: number = this.getAvailableThrust();
+  //  const markHeadCenter: Point = this.getMarkHeadCenterPointIncludingTilt(this.spaceshipCenter);
 
-    const rotationDegrees: number = this.spaceshipProxy.rotation;
+  //  //const rotationDegrees: number = this.spaceshipProxy.rotation;
 
-    // TODO: Adjust tilt to always point Mark toward target. But between -60 and +60 degresss.
-    const pixelsToTargetX: number = this.targetX - markHeadCenter.x;
-    const metersToTargetX: number = Physics.pixelsToMeters(pixelsToTargetX);
-    if (this.spaceshipProxy.velocityX != 0) {
-      const secondsToTargetX: number = Physics.getDropTimeSeconds(metersToTargetX, 0, this.spaceshipProxy.velocityX);
-      console.log(`secondsToTargetX = ${secondsToTargetX}`);
-      const goalBrakeTimeSeconds: number = 3;
+  //  // TODO: Adjust tilt to always point Mark toward target. But between -60 and +60 degresss.
+  //  const pixelsToTargetX: number = this.targetX - markHeadCenter.x;
+  //  const metersToTargetX: number = Physics.pixelsToMeters(pixelsToTargetX);
+  //  if (this.spaceshipProxy.velocityX != 0) {
+  //    const secondsToTargetX: number = Physics.getDropTimeSeconds(metersToTargetX, 0, this.spaceshipProxy.velocityX);
+  //    console.log(`secondsToTargetX = ${secondsToTargetX}`);
+  //    const goalBrakeTimeSeconds: number = 3;
 
-      if (secondsToTargetX < goalBrakeTimeSeconds && this.targetingState === OldTargetingState.mainThrustTowardsCourse) {
-        this.targetingState = OldTargetingState.coastingTowardsTargetX;
-        this.maintainAltitude = true;
+  //    if (secondsToTargetX < goalBrakeTimeSeconds && this.targetingState === OldTargetingState.mainThrustTowardsCourse) {
+  //      this.targetingState = OldTargetingState.coastingTowardsTargetX;
+  //      this.maintainAltitude = true;
 
-        const horizontalThrust: number = Physics.getThrustToDisplace(-metersToTargetX, this.spaceshipProxy.velocityX, goalBrakeTimeSeconds);
-        const verticalThrust: number = -MarkFliesGame.gravitationalForce;
-        this.thrust = 3;
-        let brakeTimeSeconds: number = secondsToTargetX / 2;
-        const brakeTimeMs: number = this.secondsToMs(brakeTimeSeconds);
-        this.easeTilt(-this.spaceshipProxy.rotation, nowMs, brakeTimeMs);
-        this.nextCourseCorrection = nowMs + brakeTimeMs;
-      }
-    }
-  }
+  //      //const horizontalThrust: number = Physics.getThrustToDisplace(-metersToTargetX, this.spaceshipProxy.velocityX, goalBrakeTimeSeconds);
+  //      //const verticalThrust: number = -MarkFliesGame.gravitationalForce;
+  //      this.thrust = 3;
+  //      let brakeTimeSeconds: number = secondsToTargetX / 2;
+  //      const brakeTimeMs: number = this.secondsToMs(brakeTimeSeconds);
+  //      this.easeTilt(-this.spaceshipProxy.rotation, nowMs, brakeTimeMs);
+  //      this.nextCourseCorrection = nowMs + brakeTimeMs;
+  //    }
+  //  }
+  //}
 
-  startCourseCorrection(nowMs: number) {
-    this.targetingState = OldTargetingState.mainThrustTowardsCourse;
-    this.intervalBetweenUpdates = 100;
-  }
+  //startCourseCorrection(nowMs: number) {
+  //  this.targetingState = OldTargetingState.mainThrustTowardsCourse;
+  //  this.intervalBetweenUpdates = 100;
+  //  
+  //}
 
   updateThrustFromTilt(nowMs: number) {
     if (!this.spaceshipProxy)
@@ -802,7 +845,7 @@ class MarkFliesGame extends GamePlusQuiz {
     if (this.maintainAltitude) {
       const counteringThrustAgainstGravity: number = -this.getScaledGravity();
       const desiredThrust: number = counteringThrustAgainstGravity / thrustVector.y;
-      this.thrust = desiredThrust / (MarkFliesGame.engineThrustPerLevel * this.spaceshipProxy.scale);
+      this.thrust = desiredThrust / this.getScaledEngineThrustPerLevel();
       if (this.thrust < MarkFliesGame.minimumThrust)
         this.thrust = MarkFliesGame.minimumThrust;
       if (this.thrust > MarkFliesGame.maximumThrust)
@@ -813,6 +856,9 @@ class MarkFliesGame extends GamePlusQuiz {
     const verticalThrust: number = thrustVector.y * availableThrust;
 
     this.overrideThrust(nowMs, horizontalThrust, verticalThrust);
+  }
+  getScaledEngineThrustPerLevel() {
+    return MarkFliesGame.engineThrustPerLevel * this.spaceshipProxy.scale;
   }
 
   continuousTargetingState: ContinuousTargetingState;
@@ -865,19 +911,33 @@ class MarkFliesGame extends GamePlusQuiz {
 
     // Has no consideration for the walls or bouncing.
 
-    const timeToXSeconds: number = Physics.getDropTimeSeconds(deltaXMeters,
+    let timeToXSeconds: number = Physics.getDropTimeSeconds(deltaXMeters,
       this.spaceshipProxy.getHorizontalThrust(nowMs),
       this.spaceshipProxy.velocityX);
+
+    if (timeToXSeconds === Number.NEGATIVE_INFINITY) {
+      let availableThrustOnTilt: number;
+      // TODO: Calculate or measure this:
+      const maxPossibleHorizontalThrust: number = 5;
+
+      timeToXSeconds = Physics.getDropTimeSeconds(Math.abs(deltaXMeters),
+        maxPossibleHorizontalThrust,
+        this.spaceshipProxy.velocityX);
+    }
 
     const timeToYSeconds: number = Physics.getDropTimeSeconds(deltaYMeters,
       this.spaceshipProxy.getVerticalThrust(nowMs),
       this.spaceshipProxy.velocityY);
 
+    console.log('timeToXSeconds: ' + timeToXSeconds);
+    console.log('timeToYSeconds: ' + timeToYSeconds);
+
     this.targetHorizontalThrust = 0;
     this.targetVerticalThrust = 0;
 
+    const overshootFactor: number = 1.35;
     let distanceToTargetMeters: number;
-    let timeToTargetSeconds: number;
+    let timeToHalfwayToTargetSeconds: number;
     // Worried about cases where initial velocity is high!!! Predicting edge case issues where multiple iterations required to solve this.
     if ((timeToXSeconds > 0 && timeToXSeconds < timeToYSeconds || timeToYSeconds < 0)) {
       console.log(`Targeting x-axis first!`);
@@ -885,7 +945,7 @@ class MarkFliesGame extends GamePlusQuiz {
       distanceToTargetMeters = deltaXMeters;
       this.targetHorizontalThrust = this.getApproachThrust(nowMs, distanceToTargetMeters);
       console.log(`this.targetHorizontalThrust = ${this.targetHorizontalThrust}`);
-      timeToTargetSeconds = Physics.getDropTimeSeconds(distanceToTargetMeters, this.targetHorizontalThrust, this.spaceshipProxy.velocityX);
+      timeToHalfwayToTargetSeconds = Physics.getDropTimeSeconds(overshootFactor * distanceToTargetMeters / 2, this.targetHorizontalThrust, this.spaceshipProxy.velocityX);
     }
     else {
       console.log(`Targeting y-axis first!`);
@@ -893,42 +953,97 @@ class MarkFliesGame extends GamePlusQuiz {
       distanceToTargetMeters = deltaYMeters;
       this.targetVerticalThrust = this.getApproachThrust(nowMs, distanceToTargetMeters);
       console.log('this.targetVerticalThrust: ' + this.targetVerticalThrust);
-      timeToTargetSeconds = Physics.getDropTimeSeconds(distanceToTargetMeters, this.targetVerticalThrust, this.spaceshipProxy.velocityY);
+      timeToHalfwayToTargetSeconds = Physics.getDropTimeSeconds(overshootFactor * distanceToTargetMeters / 2, this.targetVerticalThrust, this.spaceshipProxy.velocityY);
     }
 
-    if (timeToTargetSeconds < 0)
-      timeToTargetSeconds = Math.abs(timeToTargetSeconds);
+    if (timeToHalfwayToTargetSeconds < 0)
+      timeToHalfwayToTargetSeconds = Math.abs(timeToHalfwayToTargetSeconds);
 
-    const totalApproachTimeMs: number = this.secondsToMs(timeToTargetSeconds);
-    const thrustTimeMs: number = totalApproachTimeMs / 2;
-    this.brakeTimeMs = totalApproachTimeMs - thrustTimeMs;
-    this.nextCourseCorrection = nowMs + thrustTimeMs;
-    this.calculateTiltFromThrust(nowMs);
+    const timeToHalfwayToTargetMs: number = this.secondsToMs(timeToHalfwayToTargetSeconds);
+    this.brakeTimeMs = timeToHalfwayToTargetMs;
+    this.nextCourseCorrection = nowMs + timeToHalfwayToTargetMs;
+    console.log(`Approaching!!!`);
+    this.tiltToMatchThrust(nowMs, timeToHalfwayToTargetMs);
     this.continuousTargetingState = ContinuousTargetingState.applyingApproachThrust;
   }
 
-  calculateTiltFromThrust(nowMs: number) {
+  tiltToMatchThrust(nowMs: number, thrustTime: number) {
+    //this.thrust = 9;
     // TODO: Left off here. Use this.targetHorizontalThrust and this.targetVerticalThrust to calculate tilt!!!!
+    const tiltTimeMs: number = thrustTime / 8;
+    const counteringThrustAgainstGravity: number = -this.getScaledGravity();
+    let newTilt: number;
+
+    const currentThrustMagnitude: number = this.thrust * this.getScaledEngineThrustPerLevel();
+
+    if (this.targetHorizontalThrust) {
+
+      // <formula 3; \theta = arctan(\frac{counteringThrustAgainstGravity}{targetHorizontalThrust})>
+
+      console.log(`calculating tilt from horizontal thrust...`);
+      //const thetaRadians: number = Math.acos(Math.abs(this.targetHorizontalThrust) / currentThrustMagnitude);
+      console.log('this.targetHorizontalThrust: ' + this.targetHorizontalThrust);
+      console.log('counteringThrustAgainstGravity: ' + counteringThrustAgainstGravity);
+      const thetaRadians: number = Math.atan(Math.abs(this.targetHorizontalThrust / counteringThrustAgainstGravity));
+      const thetaDegrees: number = MathEx.toDegrees(thetaRadians);
+      newTilt = thetaDegrees * Math.sign(this.targetHorizontalThrust);
+      console.log(`tiltToMatchThrust: thetaDegrees = ${thetaDegrees}°, newTilt = ${newTilt}°`);
+      const futureThrustVector = this.getThrustVectorAtDegrees(newTilt);
+      const futureHorizontalThrust: number = this.getAvailableThrust() * futureThrustVector.x;
+
+      // futureHorizontalThrust magnitude is too great!!! (-3.11 and we want it to be -0.5)
+      if (futureHorizontalThrust) {
+
+      }
+    }
+    else if (this.targetVerticalThrust) {
+      // <formula 3; \theta = arcsin(\frac{targetVerticalThrust}{currentThrustMagnitude})>
+      console.log(`calculating tilt from vertical thrust...`);
+      const thetaRadians: number = Math.asin(Math.abs(this.targetVerticalThrust) / currentThrustMagnitude);
+      const thetaDegrees: number = MathEx.toDegrees(thetaRadians);
+      newTilt = thetaDegrees * Math.sign(this.targetVerticalThrust);
+    }
+    else {
+      console.error(`vertical & horizontal thrust are both zero...`);
+      newTilt = 0;
+    }
+
+    const maxTilt: number = 45;
+    newTilt = MathEx.clamp(newTilt, -maxTilt, maxTilt);
+    console.log(`newTilt: ${newTilt}°`);
+    this.easeTilt(newTilt, nowMs, tiltTimeMs);
+    console.log(``);
   }
 
   startBraking(nowMs: number) {
-    this.continuousTargetingState === ContinuousTargetingState.applyingBrakingThrust;
+    console.log(`startBraking...`);
+    this.continuousTargetingState = ContinuousTargetingState.applyingBrakingThrust;
     const spaceshipCenter = this.spaceshipCenter;
+    this.targetHorizontalThrust = 0;
+    this.targetVerticalThrust = 0;
+    const brakeTimeSeconds: number = this.msToSeconds(this.brakeTimeMs);
+
     if (this.targetAxis === Axis.x) {
       const distanceToTargetPixels: number = this.targetX - spaceshipCenter.x;
       const distanceToTargetMeters: number = Physics.pixelsToMeters(distanceToTargetPixels);
       // TODO: Flip the sign on distanceToTargetMeters if we end up accelerating instead of braking!!!
-      this.targetHorizontalThrust = Physics.getThrustToDisplace(-distanceToTargetMeters, this.spaceshipProxy.velocityX, this.brakeTimeMs);
+      console.log('distanceToTargetMeters: ' + distanceToTargetMeters);
+      console.log('brakeTimeSeconds: ' + brakeTimeSeconds);
+      console.log('this.spaceshipProxy.velocityX: ' + this.spaceshipProxy.velocityX);
+      this.targetHorizontalThrust = Physics.getThrustToDisplace(-distanceToTargetMeters, this.spaceshipProxy.velocityX, brakeTimeSeconds);
+      console.log('this.targetHorizontalThrust: ' + this.targetHorizontalThrust);
     }
     else {
       const distanceToTargetPixels: number = this.targetY - spaceshipCenter.y;
       const distanceToTargetMeters: number = Physics.pixelsToMeters(distanceToTargetPixels);
       // TODO: Flip the sign on distanceToTargetMeters if we end up accelerating instead of braking!!!
-      this.targetVerticalThrust = Physics.getThrustToDisplace(-distanceToTargetMeters, this.spaceshipProxy.velocityY, this.brakeTimeMs);
+      this.targetVerticalThrust = Physics.getThrustToDisplace(-distanceToTargetMeters, this.spaceshipProxy.velocityY, brakeTimeSeconds);
     }
 
     this.nextCourseCorrection = nowMs + this.brakeTimeMs;
-    this.calculateTiltFromThrust(nowMs);
+    console.log(`Braking!!!`);
+    this.tiltToMatchThrust(nowMs, this.brakeTimeMs);
+    console.log(``);
   }
 
   stopBraking(nowMs: number) {
@@ -964,8 +1079,8 @@ class MarkFliesGame extends GamePlusQuiz {
   }
 
   getApproachThrust(nowMs: number, distanceToTargetMeters: number): number {
-    const nominalTravelSpeed: number = 2; // m/s
-    const targetTravelTimeSeconds: number = distanceToTargetMeters / nominalTravelSpeed;
+    const nominalTravelSpeed: number = 4; // m/s
+    const targetTravelTimeSeconds: number = Math.abs(distanceToTargetMeters / nominalTravelSpeed);
     if (this.targetAxis === Axis.x) {
       return Physics.getThrustToDisplace(distanceToTargetMeters, this.spaceshipProxy.velocityX, targetTravelTimeSeconds);
     }

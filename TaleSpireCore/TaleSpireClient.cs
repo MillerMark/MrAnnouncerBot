@@ -10,7 +10,8 @@ namespace TaleSpireCore
 {
 	public static class TaleSpireClient
 	{
-		public const string TaleSpireMachineIpAddress = "192.168.1.133";
+		public static bool Enabled { get; set; } = false;
+        public const string TaleSpireMachineIpAddress = "192.168.1.139";
 
 		public static ApiResponse SendMessageToServer(string command, float num)
 		{
@@ -31,85 +32,92 @@ namespace TaleSpireCore
 		}
 
 		public static ApiResponse Invoke(string command, string[] msgparams)
-		{
-			// Data buffer for incoming data.  
-			byte[] bytes = new byte[4 * 1024 * 1024];
+        {
+            if (!Enabled)
+                return ApiResponse.TaleSpireClientNotEnabled();
 
-			// Connect to a remote device.  
-			try
-			{
-				int port = 999;
-				IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachineIpAddress), port);
-					
-				// Create a TCP/IP  socket.  
-				Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            // Data buffer for incoming data.  
+            byte[] bytes = new byte[4 * 1024 * 1024];
 
-				// Connect the socket to the remote endpoint. Catch any errors.  
-				try
-				{
-					sender.Connect(localEndPoint);
+            // Connect to a remote device.  
+            try
+            {
+                int port = 999;
+                IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(TaleSpireMachineIpAddress), port);
 
-					Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
+                // Create a TCP/IP  socket.  
+                Socket sender = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-					// Encode the data string into a byte array.  
+                // Connect the socket to the remote endpoint. Catch any errors.  
+                try
+                {
+                    sender.Connect(localEndPoint);
 
-					// Encode commas in the strings...
-					for (int i = 0; i < msgparams.Length; i++)
-						if (msgparams[i] == null)
-							msgparams[i] = "";
-						else
-							msgparams[i] = msgparams[i].Replace(',', '⁞');
+                    Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
 
-					byte[] msg = Encoding.UTF8.GetBytes(command + " " + string.Join(",", msgparams));
+                    // Encode the data string into a byte array.  
 
-					// Send the data through the socket.  
-					int bytesSent = sender.Send(msg);
-					Console.WriteLine("Bytes sent:" + bytesSent.ToString());
-					Console.WriteLine("Command Sent: " + Encoding.UTF8.GetString(msg, 0, bytesSent));
-					sender.ReceiveTimeout = 3000;
-					// Receive the response from the remote device.  
-					string data = string.Empty;
-					int bytesRec = 0;
-					int sleeps = 0;
-					while (sender.Available == 0 && sleeps < 1000)
-					{
-						System.Threading.Thread.Sleep(30);
-						sleeps++;
-					}
-					while (sender.Available > 0)
-					{
-						bytesRec = sender.Receive(bytes);
-						data += Encoding.UTF8.GetString(bytes, 0, bytesRec);
-					}
-					//int bytesRec = sender.Receive(bytes, 0, sender.Available, SocketFlags.None);
-					//int bytesRec = sender.Receive(bytes);
-					//var data = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-					Console.WriteLine("Server responded bytes: {0} {1}", bytesRec, data);
-					// Release the socket.  
-					sender.Shutdown(SocketShutdown.Both);
-					sender.Close();
-					return ToApiResponse(data);
-				} catch (ArgumentNullException ane)
-				{
-					Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
-					return ApiResponse.FromException(ane);
-				} catch (SocketException se)
-				{
-					Console.WriteLine("SocketException : {0}", se.ToString());
-					return ApiResponse.FromException(se);
-				} catch (Exception e)
-				{
-					Console.WriteLine("Unexpected exception : {0}", e.ToString());
-					return ApiResponse.FromException(e);
-				}
-			} catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-				return ApiResponse.FromException(e);
-			}
-		}
+                    // Encode commas in the strings...
+                    for (int i = 0; i < msgparams.Length; i++)
+                        if (msgparams[i] == null)
+                            msgparams[i] = "";
+                        else
+                            msgparams[i] = msgparams[i].Replace(',', '⁞');
 
-		public static ApiResponse Invoke(string command)
+                    byte[] msg = Encoding.UTF8.GetBytes(command + " " + string.Join(",", msgparams));
+
+                    // Send the data through the socket.  
+                    int bytesSent = sender.Send(msg);
+                    Console.WriteLine("Bytes sent:" + bytesSent.ToString());
+                    Console.WriteLine("Command Sent: " + Encoding.UTF8.GetString(msg, 0, bytesSent));
+                    sender.ReceiveTimeout = 3000;
+                    // Receive the response from the remote device.  
+                    string data = string.Empty;
+                    int bytesRec = 0;
+                    int sleeps = 0;
+                    while (sender.Available == 0 && sleeps < 1000)
+                    {
+                        System.Threading.Thread.Sleep(30);
+                        sleeps++;
+                    }
+                    while (sender.Available > 0)
+                    {
+                        bytesRec = sender.Receive(bytes);
+                        data += Encoding.UTF8.GetString(bytes, 0, bytesRec);
+                    }
+                    //int bytesRec = sender.Receive(bytes, 0, sender.Available, SocketFlags.None);
+                    //int bytesRec = sender.Receive(bytes);
+                    //var data = Encoding.ASCII.GetString(bytes, 0, bytesRec);
+                    Console.WriteLine("Server responded bytes: {0} {1}", bytesRec, data);
+                    // Release the socket.  
+                    sender.Shutdown(SocketShutdown.Both);
+                    sender.Close();
+                    return ToApiResponse(data);
+                }
+                catch (ArgumentNullException ane)
+                {
+                    Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
+                    return ApiResponse.FromException(ane);
+                }
+                catch (SocketException se)
+                {
+                    Console.WriteLine("SocketException : {0}", se.ToString());
+                    return ApiResponse.FromException(se);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Unexpected exception : {0}", e.ToString());
+                    return ApiResponse.FromException(e);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return ApiResponse.FromException(e);
+            }
+        }
+
+        public static ApiResponse Invoke(string command)
 		{
 			return Invoke(command, new string[] { });
 		}

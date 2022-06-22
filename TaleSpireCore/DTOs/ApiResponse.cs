@@ -78,9 +78,14 @@ namespace TaleSpireCore
 			if (string.IsNullOrEmpty(message))
 				message = "Exception!";
 			return new ApiResponse(e.Message, message);
-		}
+        }
 
-		public T GetData<T>() where T : class
+        public static ApiResponse TaleSpireClientNotEnabled()
+        {
+            return new ApiResponse("TaleSpireClient is not enabled.", "Must enable the client first.");
+        }
+
+        public T GetData<T>() where T : class
 		{
 			if (Data is Newtonsoft.Json.Linq.JObject jObject)
 				return jObject.ToObject<T>();

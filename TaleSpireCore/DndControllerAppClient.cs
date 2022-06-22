@@ -8,7 +8,7 @@ namespace TaleSpireCore
 {
 	public static class DndControllerAppClient
 	{
-		private const string MarkMachine = "192.168.1.136";
+		private const string MarkMachine = "192.168.1.135";
 
 		public static void SendEventToServer(string command, string[] msgparams)
 		{

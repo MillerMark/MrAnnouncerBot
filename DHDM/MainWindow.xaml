@@ -840,7 +840,12 @@
 				<TabItem Header="Items" x:Name="tbItems" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:ItemList x:Name="lstItems" Padding="5" />
 				</TabItem>
-				<TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+                <TabItem Header="Joystick" x:Name="tbJoystick" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+                    <CheckBox x:Name="chkListening" Checked="chkListening_Checked" Unchecked="chkListening_Unchecked">
+                    	Listen to Joystick
+                    </CheckBox>
+                </TabItem>
+                <TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
 

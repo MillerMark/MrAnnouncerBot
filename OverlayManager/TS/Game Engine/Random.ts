@@ -1,4 +1,13 @@
 ﻿class MathEx {
+
+  static toDegrees(radians: number): number {
+    return 180 * radians / Math.PI;
+  }
+
+  static toRadians(degrees: number): number {
+    return Math.PI * degrees / 180;
+  }
+
   static readonly TWO_PI: number = 2 * Math.PI;
 
   static wrap(value: number, lowBounds: number, highBounds: number): number {

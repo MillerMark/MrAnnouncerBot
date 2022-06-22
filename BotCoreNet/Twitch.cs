@@ -101,6 +101,7 @@ namespace BotCore
 			CodeRushedPubSub.ListenToChannelPoints(STR_CodeRushedChannelId);
 			CodeRushedPubSub.Connect();
 			DroneCommandsClient = new TwitchClient();
+			//DroneCommandsClient.SendMessage(, message)
 			var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
 				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -126,7 +127,7 @@ namespace BotCore
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"await Api.Helix.Users.GetUsersAsync();");
+				Console.WriteLine($"Exception: \"{ex.Message}\" - await Api.Helix.Users.GetUsersAsync();");
 				return null;
 			}
 			
@@ -188,6 +189,31 @@ namespace BotCore
 			}
 			catch (Exception ex)
 			{
+				Console.WriteLine(ex.Message);
+			}
+		}
+
+		public static void DroneCommandsChat(string msg)
+		{
+			try
+			{
+				if (!DroneCommandsClient.IsInitialized || !DroneCommandsClient.IsConnected)
+				{
+					var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
+					var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
+					DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
+					DroneCommandsClient.Connect();
+				}
+				DroneCommandsClient.SendMessage(STR_DroneCommandsChannelName, msg);
+			}
+			catch (Exception ex)
+			{
+				if (!DroneCommandsClient.IsConnected)
+				{
+					DroneCommandsClient.Disconnect();
+					DroneCommandsClient.Connect();
+				}
+
 				Console.WriteLine(ex.Message);
 			}
 		}

@@ -184,6 +184,12 @@
     return this.easeRotation.getRemainingTime(now) > 0;
   }
 
+  easeScaleStillActive(now: number) {
+    if (!this.easeScaleValue)
+      return false;
+    return this.easeScaleValue.getRemainingTime(now) > 0;
+  }
+
   animate(nowMs: number) {
     if (nowMs < this.lifetimeStart)
       return;
@@ -378,6 +384,7 @@
 
   easePoint: EasePoint;
   easeRotation: EaseValue;
+  easeScaleValue: EaseValue;
 
   ease(startTime: number, fromX: number, fromY: number, toX: number, toY: number, timeSpanMs: number) {
     this.easePoint = new EasePoint(startTime, startTime + timeSpanMs);
@@ -389,6 +396,12 @@
     this.easeRotation = new EaseValue(startTime, startTime + timeSpanMs);
     this.easeRotation.from(fromValue);
     this.easeRotation.to(toValue);
+  }
+
+  easeScale(startTime: number, fromValue: number, toValue: number, timeSpanMs: number) {
+    this.easeScaleValue = new EaseValue(startTime, startTime + timeSpanMs);
+    this.easeScaleValue.from(fromValue);
+    this.easeScaleValue.to(toValue);
   }
 
   isRotating(): boolean {
@@ -406,6 +419,10 @@
     this.easeRotation = null;
   }
 
+  clearEaseScaleValue() {
+    this.easeScaleValue = null;
+  }
+
   protected updateEasePosition(nowMs: number) {
     this.x = this.easePoint.getX(nowMs);
     this.y = this.easePoint.getY(nowMs);
@@ -415,6 +432,10 @@
     this.rotation = this.easeRotation.getValue(nowMs);
   }
 
+  protected updateEaseScale(nowMs: number) {
+    this.scale = this.easeScaleValue.getValue(nowMs);
+  }
+
   updatePosition(nowMs: number) {
     this.storeLastPosition();
 
@@ -422,6 +443,12 @@
       this.updateEaseRotation(nowMs);
       if (this.easeRotation.getRemainingTime(nowMs) === 0)
         this.clearEaseRotation();
+    }
+
+    if (this.easeScaleValue) {
+      this.updateEaseScale(nowMs);
+      if (this.easeScaleValue.getRemainingTime(nowMs) === 0)
+        this.clearEaseScaleValue();
     }
 
     if (this.easePoint) {

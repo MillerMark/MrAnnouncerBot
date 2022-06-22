@@ -1343,7 +1343,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		super(startingFrameNumber, center, lifeSpanMs);
 		//this.addSongs('Adventure', 4);
 		this.addSongs('Techno', 80);
-		this.addSongs('Action', 109);
+		this.addSongs('Action', 108);
 		this.addSongs('Rock', 177);
 		this.addSongs('Funk', 103);
 		this.addSongs('EDM', 108);
@@ -1467,7 +1467,12 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	static reportVolume(): any {
-		chat('Current Boombox volume is: ' + Boombox.volume);
+		if (Boombox.suppressingVolume) {
+			const timeRemainingSec: number = (Boombox.suppressingVolumeEnds - performance.now()) / 1000;
+			chat(`Volume is now: ${Boombox.volume} (Suppressing to: ${Boombox.suppressVolumeLevel} - ends in ${timeRemainingSec} sec)`);
+		}
+		else 
+			chat(`Volume is now: ${Boombox.volume}`);
 	}
 
 	setVolumeForActiveSong() {

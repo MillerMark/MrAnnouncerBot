@@ -61,7 +61,7 @@ namespace ChatWatch
 		}
 		public void Chat(string message)
 		{
-			Twitch.Chat(message);
+			Twitch.Chat(Twitch.CodeRushedClient, message);
 		}
 
 		void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
@@ -104,7 +104,7 @@ namespace ChatWatch
 		{
 			//Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			//Twitch.Client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
-			Twitch.Client.OnMessageReceived += Client_OnMessageReceived;
+			Twitch.CodeRushedClient.OnMessageReceived += Client_OnMessageReceived;
 			//Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
 			//Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
 		}

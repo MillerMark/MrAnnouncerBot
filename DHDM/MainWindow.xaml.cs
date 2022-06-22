@@ -40,6 +40,7 @@ using LeapTools;
 using TwitchLib.PubSub;
 using System.ComponentModel;
 using ObsControl;
+using DHDM.FlyMark;
 
 namespace DHDM
 {
@@ -11682,6 +11683,18 @@ namespace DHDM
 		public void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility)
 		{
 			obsManager.SetObsSourceVisibility(sceneName, sourceName, sourceVisibility);
+		}
+
+		private void chkListening_Checked(object sender, RoutedEventArgs e)
+		{
+			JoystickListener.StartListening();
+			BotCore.Twitch.DroneCommandsChat("Listening to the Joystick...");
+		}
+
+		private void chkListening_Unchecked(object sender, RoutedEventArgs e)
+		{
+			JoystickListener.StopListening();
+			BotCore.Twitch.DroneCommandsChat("Stopped listening to the Joystick...");
 		}
 	}
 }

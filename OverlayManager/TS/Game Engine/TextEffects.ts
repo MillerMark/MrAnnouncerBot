@@ -1,6 +1,5 @@
 class ScalableAnimation extends AnimatedElement {
 	elasticIn: boolean;
-	scale: number;
 	targetScale = -1;
 	originalScale: number;
 	deltaScale: number = undefined;
