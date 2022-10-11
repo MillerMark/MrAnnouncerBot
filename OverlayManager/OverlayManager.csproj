@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
     <PlatformTarget>x64</PlatformTarget>
+	<UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\**" />
@@ -118,6 +119,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="NAudio.Midi" Version="2.1.0" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.9.1" />
     <PackageReference Include="TwitchLib" Version="3.3.0" />
     <PackageReference Include="TwitchLib.Api" Version="3.4.1" />

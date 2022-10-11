@@ -187,7 +187,8 @@ namespace MrAnnouncerBot
 				InitializeObsWebSocket();
 			HookupTwitchEvents(Twitch.CodeRushedClient);
 			HookupPubSubEvents(Twitch.CodeRushedPubSub);
-		}
+            HookupTwitchEvents(Twitch.DroneCommandsClient);
+        }
 		
 		void HookupPubSubEvents(TwitchPubSub codeRushedPubSub)
 		{
@@ -397,6 +398,7 @@ namespace MrAnnouncerBot
 		const string STR_MarkSaysOrThinks = "!mark:";
 		const string STR_FredSaysOrThinks = "!fred:";
 		const string STR_CampbellSaysOrThinks = "!campbell:";
+		const string STR_RorySaysOrThinks = "!rory:";
 		const string STR_RichardSaysOrThinks = "!richard:";
 
 		private bool PlayFanfare(string displayName, string message = emptyString)
@@ -1113,14 +1115,26 @@ namespace MrAnnouncerBot
 			if (colonPos < 0 || colonPos >= msg.Length - 1)
 				return;
 			string name = msg.Substring(1, colonPos - 1).Trim().ToLower();
+			string colorStr = "";
 			int playerId;
 			if (name == "mark")
+			{
 				playerId = 2;
+                colorStr = " (#3600d1)";
+            }
 			else if (name == "fred" || name == "richard")
+			{
 				playerId = 4;
+                colorStr = " (#284974)";
+            }
 			else if (name == "campbell")
+				playerId = 5;
+			else if (name == "rory")
+			{
 				// TODO: Add support for X positioning.
 				playerId = 5;
+				colorStr = " (#00675f)";
+			}
 			else
 				return;
 			string phrase = msg.Substring(colonPos + 1).Trim();
@@ -1129,10 +1143,13 @@ namespace MrAnnouncerBot
 
 			var censoredPhrase = filter.CensorString(phrase);
 
+			if (censoredPhrase.Contains("(#"))  // Already specifies a color?
+				colorStr = "";
+
 			if (phrase.StartsWith("("))
-				ThinkIt(chatMessage, playerId, censoredPhrase);
+				ThinkIt(chatMessage, playerId, censoredPhrase + colorStr);
 			else
-				SayIt(chatMessage, playerId, censoredPhrase);
+				SayIt(chatMessage, playerId, censoredPhrase + colorStr);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
@@ -1140,7 +1157,7 @@ namespace MrAnnouncerBot
 			var command = e.Command.CommandText;
 			var lowerMessage = e.Command.ChatMessage.Message.ToLower();
 
-			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks) || lowerMessage.StartsWith(STR_CampbellSaysOrThinks) || lowerMessage.StartsWith(STR_RichardSaysOrThinks))
+			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks) || lowerMessage.StartsWith(STR_CampbellSaysOrThinks) || lowerMessage.StartsWith(STR_RorySaysOrThinks) || lowerMessage.StartsWith(STR_RichardSaysOrThinks))
 			{
 				SayOrThinkIt(e.Command.ChatMessage);
 				return;

@@ -31,9 +31,9 @@ namespace OverlayManager
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			HookEvents();
 			Twitch.InitializeConnections();
-			return Task.CompletedTask;
+            HookEvents();
+            return Task.CompletedTask;
 		}
 
 		public void HookEvents()
