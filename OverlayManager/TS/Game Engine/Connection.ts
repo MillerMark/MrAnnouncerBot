@@ -297,6 +297,10 @@ function speechBubble(speechStr: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.speechBubble(speechStr);
 	}
+}function showBook(title: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.showBook(title);
+	}
 }
 
 function cardCommand(cardStr: string) {
@@ -427,6 +431,7 @@ function connectToSignalR(signalR) {
 		connection.on("CalibrateLeapMotion", calibrateLeapMotion);
 		connection.on("UpdateSkeletalData", updateSkeletalData);
 		connection.on("SpeechBubble", speechBubble);
+		connection.on("ShowBook", showBook);
 		connection.on("CardCommand", cardCommand);
 		connection.on("ContestCommand", contestCommand);
 		connection.on("SetPlayerData", initializePlayerData);

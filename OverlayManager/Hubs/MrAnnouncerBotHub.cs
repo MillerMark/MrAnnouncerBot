@@ -45,7 +45,12 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.SpeechBubble(speechStr);
 		}
-		
+
+		public void ShowBook(string title)
+		{
+			coderushedHub.Clients.All.ShowBook(title);
+		}
+
 		public void CardCommand(string cardStr)
 		{
 			coderushedHub.Clients.All.CardCommand(cardStr);

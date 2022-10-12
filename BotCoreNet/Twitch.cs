@@ -42,7 +42,7 @@ namespace BotCore
 			{
 				CodeRushedClient.Connect();
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
-				HookEvents(CodeRushedClient);
+				HookBasicEvents(CodeRushedClient);
 			}
 			catch //(Exception ex)
 			{
@@ -56,7 +56,7 @@ namespace BotCore
 			{
 				DroneCommandsClient.Connect();
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
-				HookEvents(DroneCommandsClient);
+				HookBasicEvents(DroneCommandsClient);
 			}
 			catch (Exception ex)
 			{
@@ -223,7 +223,7 @@ namespace BotCore
 			CodeRushedClient.SendWhisper(userName, msg);
 		}
 
-		static void HookEvents(TwitchClient client)
+		static void HookBasicEvents(TwitchClient client)
 		{
 			client.OnLog += TwitchClientLog;
 			client.OnConnectionError += TwitchClient_OnConnectionError;

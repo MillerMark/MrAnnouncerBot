@@ -24,6 +24,7 @@ namespace OverlayManager.Hubs
 		Task CalibrateLeapMotion(string calibrationData);
 		Task UpdateSkeletalData(string skeletalData);
 		Task SpeechBubble(string speechStr);
+		Task ShowBook(string title);
 		Task CardCommand(string cardStr);
 		Task ContestCommand(string contestStr);
 		Task ChangePlayerHealth(string playerData);

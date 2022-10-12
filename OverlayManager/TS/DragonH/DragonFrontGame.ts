@@ -410,6 +410,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	contestManager: ContestManager = new ContestManager(this.animatedTextManager);
 	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this, this.inGameCreatureManager);
+	showBookManager: ShowBookManager = new ShowBookManager();
 
 	showFpsMessage(message: string): any {
 		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
@@ -536,6 +537,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		super.updateScreen(context, nowMs);
 
+		this.showBookManager.updatePositions(nowMs);
+
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
@@ -574,6 +577,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		this.renderTextAnimations(context, nowMs);
 		this.speechBubbleManager.draw(context, nowMs);
+		this.showBookManager.draw(context, nowMs);
 
 		if (this.calibrationPosition) {
 			context.fillStyle = '#ff0000';
@@ -808,6 +812,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fred.loadResources();
 		this.coinManager.loadResources();
 		this.speechBubbleManager.loadResources();
+		this.showBookManager.loadResources();
 
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true, null, null, true);
 		this.denseSmoke.name = 'DenseSmoke';
@@ -2080,6 +2085,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	speechBubble(speechStr: string) {
 		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr);
+	}
+
+	showBook(title: string) {
+		console.log(`Show book with title: "${title}"`);
+		this.showBookManager.showBook(this.world.ctx, title);
 	}
 
 	updateInGameCreatures(commandData: string) {

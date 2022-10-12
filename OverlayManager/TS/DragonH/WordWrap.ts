@@ -224,12 +224,21 @@ class WordRenderer {
 	activeStyle: LayoutStyle;
 	calculatedFontYOffset = 0;
 
+	static readonly defaultTextColor: string = '#1a0c0a';
+	static readonly defaultBulletColor: string = '#5b3c35';
+	static readonly defaultEmphasisColor: string = '#a01a00';
+	static readonly defaultTableLineColor: string = '#5b3c35';
+	static readonly defaultFontName: string = 'ccbiffbamboom';
+	static readonly defaultFontSize: number = 20;
+	static readonly defaultBulletIndent = 8;
+	static readonly defaultEmphasisFontHeightIncrease = 0;
+	static readonly defaultEmphasisFontStyleAscender = 13;  // This is the height from the baseline to the top of the tallest character.
+
 	constructor() {
 		const emphasisFontYOffsetForChrome = -2;
 		const emphasisFontYOffsetForObs = -3;
 		const emphasisLineYOffsetForChrome = 0;
 		const emphasisLineYOffsetForObs = 2;
-
 
 		if (browserIsOBS()) {
 			this.calculatedFontYOffset = emphasisFontYOffsetForObs;
@@ -239,6 +248,16 @@ class WordRenderer {
 			this.calculatedFontYOffset = emphasisFontYOffsetForChrome;
 			this.underlineOffset = emphasisLineYOffsetForChrome;
 		}
+
+		this.fontName = WordRenderer.defaultFontName;
+		this.fontSize = WordRenderer.defaultFontSize;
+		this.emphasisColor = WordRenderer.defaultEmphasisColor;
+		this.emphasisFontHeightIncrease = WordRenderer.defaultEmphasisFontHeightIncrease;
+		this.emphasisFontStyleAscender = WordRenderer.defaultEmphasisFontStyleAscender;
+		this.bulletIndent = WordRenderer.defaultBulletIndent;
+		this.bulletColor = WordRenderer.defaultBulletColor;
+		this.textColor = WordRenderer.defaultTextColor;
+		this.tableLineColor = WordRenderer.defaultTableLineColor;
 	}
 
 	fontSize = 18;

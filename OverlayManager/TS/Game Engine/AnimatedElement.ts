@@ -386,6 +386,8 @@
   easeRotation: EaseValue;
   easeScaleValue: EaseValue;
 
+  // For easing to work, set "moves = true" for the sprites instance. Also suggest calling disablGravity().
+  // Be sure to subtract the sprites' originX and originY from the to/from values.
   ease(startTime: number, fromX: number, fromY: number, toX: number, toY: number, timeSpanMs: number) {
     this.easePoint = new EasePoint(startTime, startTime + timeSpanMs);
     this.easePoint.from(fromX, fromY);

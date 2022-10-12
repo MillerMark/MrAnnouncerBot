@@ -16,7 +16,7 @@ namespace BotCore
 
 		static List<BotCommand> GetAll(string commandName)
 		{
-			return allChatCommands.Where(x => x.Command == commandName).ToList();
+			return allChatCommands.Where(x => (x.Command == commandName || x.Command.TrimEnd('*') == commandName)).ToList();
 		}
 
 		public static int Execute(string commandName, OnChatCommandReceivedArgs e)
