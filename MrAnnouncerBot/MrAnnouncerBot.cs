@@ -1040,6 +1040,7 @@ namespace MrAnnouncerBot
         }
 
         private const int minUserLevelForSpeechBubbles = 4;
+        ProfanityFilter.ProfanityFilter profanityFilter;
 
         public static List<SceneDto> Scenes
         {
@@ -1181,9 +1182,7 @@ namespace MrAnnouncerBot
             else
                 return;
 
-            var filter = new ProfanityFilter.ProfanityFilter();
-
-            var censoredPhrase = filter.CensorString(phrase);
+            var censoredPhrase = CensorText(phrase);
 
             if (censoredPhrase.Contains("(#"))  // Already specifies a color?
                 colorStr = "";
@@ -1315,14 +1314,6 @@ namespace MrAnnouncerBot
             Chat($"9p ET / 6p PT / 1a GMT / 11a AEST");
         }
 
-        async void HandleBookCommand(OnChatCommandReceivedArgs obj)
-        {
-            ChatCommand chatCommand = obj.Command;
-            string bookTitle = chatCommand.ArgumentsAsString;
-
-            await SafeHubInvokeAsync("ShowBook", bookTitle);
-        }
-
         void HandleDragonHNewTimeCommand(OnChatCommandReceivedArgs obj)
         {
             Chat($"Special time for Dungeons and Dragons today/tonight: ");
@@ -1336,6 +1327,25 @@ namespace MrAnnouncerBot
             Chat($"https://github.com/microsoft/vscode/issues/63791");
         }
 
+        async void HandleBookCommand(OnChatCommandReceivedArgs obj)
+        {
+            ChatCommand chatCommand = obj.Command;
+            string bookTitle = chatCommand.ArgumentsAsString;
+
+            await SafeHubInvokeAsync("ShowBook", CensorText(bookTitle));
+        }
+
+        private string CensorText(string text)
+        {
+            CreateProfanityFilterIfNecessary();
+            return profanityFilter.CensorString(text);
+        }
+
+        private void CreateProfanityFilterIfNecessary()
+        {
+            if (profanityFilter == null)
+                profanityFilter = new ProfanityFilter.ProfanityFilter();
+        }
 
         void HandleLevelUp(OnChatCommandReceivedArgs obj)
         {

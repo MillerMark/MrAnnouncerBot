@@ -10,6 +10,7 @@
 	// appearance:
 	static readonly titleFontName: string = 'Modesto Condensed Bold';
 	static readonly detailFontName: string = 'mrs-eaves';
+	static readonly detailFontWeight: string = '700';
 	static readonly titleFontIdealSize: number = 30;
 	static readonly titleLeftMargin: number = 25;
 	static readonly titleFirstIconSpacing: number = 10;
@@ -168,6 +169,7 @@
 
 		this.wordRenderer = new WordRenderer();
 		this.wordRenderer.fontName = SpellBook.detailFontName;
+		this.wordRenderer.fontWeightBold = SpellBook.detailFontWeight;
 		this.wordRenderer.fontSize = SpellBook.detailFontSize;
 		this.wordRenderer.emphasisColor = SpellBook.emphasisColor;
 		this.wordRenderer.emphasisFontHeightIncrease = SpellBook.emphasisFontHeightIncrease;

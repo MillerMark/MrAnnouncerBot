@@ -40,6 +40,7 @@ class MessageBox {
 
 		this.wordRenderer = new WordRenderer();
 		this.wordRenderer.fontName = SpellBook.detailFontName;
+		this.wordRenderer.fontWeightBold = SpellBook.detailFontWeight;
 		this.wordRenderer.fontSize = SpellBook.detailFontSize;
 		this.wordRenderer.emphasisColor = SpellBook.emphasisColor;
 		this.wordRenderer.emphasisFontHeightIncrease = SpellBook.emphasisFontHeightIncrease;

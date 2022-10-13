@@ -23,10 +23,8 @@ class SpeechData {
     //new LayoutDelimiters(LayoutStyle.italic, '[', ']')
   ];
 
-  constructor(wordWrapper: WordWrapper, wordRenderer: WordRenderer, context: CanvasRenderingContext2D, text: string, idealWidth: number, idealAspectRatio: number, fontSize: number, fontName: string, topBottomReducePercent: number) {
-    context.font = `${fontSize}px ${fontName}`;
-    wordWrapper.fontSize = fontSize;
-    wordRenderer.fontSize = fontSize;
+  constructor(wordWrapper: WordWrapper, wordRenderer: WordRenderer, context: CanvasRenderingContext2D, text: string, idealWidth: number, idealAspectRatio: number, fontSize: number, fontName: string, topBottomReducePercent: number, maxHeight: number = undefined) {
+    this.setFontSize(context, fontName, wordWrapper, wordRenderer, fontSize);
 
     const maxAttempts = 8;
     let attemptCount = 0;
@@ -63,12 +61,47 @@ class SpeechData {
       lastWidthAdjustPercent /= 2;
     } while (attemptCount < maxAttempts);
 
-    const fontScale: number = idealWidth / this.paragraph.getLongestLineWidth();
-    this.fontSize = Math.min(fontSize * fontScale, SpeechData.maxTextFontSize);
-    context.font = `${this.fontSize}px ${fontName}`;
-    wordWrapper.fontSize = this.fontSize;
-    wordRenderer.fontSize = this.fontSize;
+    let fontScale: number = idealWidth / this.paragraph.getLongestLineWidth();
+    this.fontSize = Math.min(this.fontSize * fontScale, SpeechData.maxTextFontSize);
+    this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+
+    let numFontAdjusts: number = 0;
+    let longestLineWidth: number = this.paragraph.getLongestLineWidth();
+    while (longestLineWidth > idealWidth && numFontAdjusts < 5)
+    {
+      fontScale = (1.0 + idealWidth / longestLineWidth) / 2.0;
+      this.fontSize = Math.min(this.fontSize * fontScale, SpeechData.maxTextFontSize);
+      this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+      longestLineWidth = this.paragraph.getLongestLineWidth();
+      numFontAdjusts++;
+    }
+
+    if (maxHeight) {
+      let totalHeight: number = this.paragraph.getParagraphHeight();
+      let numTries: number = 0;
+      while (totalHeight > maxHeight && numTries < 3) {
+        // Reduce the font size so all the text fits on the specified height.
+        let scaleFactor: number = maxHeight / totalHeight;
+        this.fontSize *= scaleFactor;
+        fontScale *= scaleFactor;
+        this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+        totalHeight = this.paragraph.getParagraphHeight();
+        numTries++;
+      }
+    }
+  }
+
+  private fontSizeChanged(context: CanvasRenderingContext2D, fontName: string, wordWrapper: WordWrapper, wordRenderer: WordRenderer, text: string, width: number, fontScale: number, topBottomReducePercent: number) {
+    this.setFontSize(context, fontName, wordWrapper, wordRenderer, this.fontSize);
     this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, width * fontScale, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
+  }
+
+  private setFontSize(context: CanvasRenderingContext2D, fontName: string, wordWrapper: WordWrapper, wordRenderer: WordRenderer, fontSize: number) {
+    //context.font = `${fontSize}px ${fontName}`;
+    this.fontSize = fontSize;
+    wordWrapper.fontSize = fontSize;
+    wordRenderer.fontSize = fontSize;
+    wordRenderer.fontChanged(context);
   }
 
   public static getScale(paragraphWidth: number, textWidth: number, paragraphHeight: number, textHeight: number) {
@@ -92,6 +125,14 @@ class SpeechData {
     }
     return { horizontalScale, verticalScale };
   }
+
+  public static getReadingTimeMs(speechStr: string) {
+    const numWords: number = (speechStr.match(/\s/g) || []).length + 1;
+    const averageReadingTimePerWordMs = 300;
+    const safetyFactor = 2.3;
+    const totalReadingTime: number = Math.max(1500, numWords * averageReadingTimePerWordMs * safetyFactor);
+    return totalReadingTime;
+  }
 }
 
 class ShowBookManager {
@@ -106,6 +147,35 @@ class ShowBookManager {
   constructor() {
     this.wordWrapper = new WordWrapper();
     this.wordRenderer = new WordRenderer();
+    this.wordRenderer.rotation = -3.5;
+    this.wordRenderer.fontName = 'solex';  // ccbiffbamboom
+    this.wordRenderer.fontWeightBold = '400';
+  }
+
+  titleCase(title: string, withLowers: boolean = false): string {
+    let result: string = title.replace(/([^\s:\-'])([^\s:\-']*)/g, function (txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }).replace(/Mc(.)/g, function (match, next) {
+      return 'Mc' + next.toUpperCase();
+    }).replace(/Coderush/g, 'CodeRush')
+      .replace(/Typescript/g, 'TypeScript')
+      .replace(/Javascript/g, 'JavaScript')
+      .replace(/Jetbrains/g, 'PoopBrains')
+      .replace(/Resharper/g, 'RePooper');
+
+    const lowers = ['A', 'An', 'The', 'At', 'By', 'For', 'In', 'Of', 'On', 'To', 'Up', 'And', 'As', 'But', 'Or', 'Nor', 'Not'];
+    for (let i = 0; i < lowers.length; i++) {
+      result = result.replace(new RegExp('\\s' + lowers[i] + '\\s', 'g'), function (txt) {
+        return txt.toLowerCase();
+      });
+    }
+
+    const uppers = ['R&d', 'Vb', 'Ftw', 'Wtf'];
+    for (let i = 0; i < uppers.length; i++) {
+      result = result.replace(new RegExp('\\b' + uppers[i] + '\\b', 'g'), uppers[i].toUpperCase());
+    }
+
+    return result;
   }
 
   private getParagraphSize(speechData: SpeechData) {
@@ -117,34 +187,19 @@ class ShowBookManager {
     return { paragraphWidth, paragraphHeight };
   }
 
-  createSpeechData(context: CanvasRenderingContext2D, textToShow: string, bookX: number, bookY: number): SpeechData {
-    const bookTitleWidth: number = 205;
+  createSpeechData(context: CanvasRenderingContext2D, textToShow: string): SpeechData {
+    const bookTitleWidth: number = 200;
     const bookTitleHeight: number = 193;
     const aspectRatio: number = bookTitleWidth / bookTitleHeight;
     const topBottomReducePercent: number = 0;
-    const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, bookTitleWidth, aspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
+    const idealFontSize: number = 22;
+    this.wordRenderer.setActiveStyle(context, LayoutStyle.italic);
+    const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, bookTitleWidth, aspectRatio, idealFontSize, this.wordRenderer.fontName, topBottomReducePercent, bookTitleHeight);
 
     speechData.okayToDraw = true;
 
-    const { paragraphWidth, paragraphHeight }: { paragraphWidth: number; paragraphHeight: number } = this.getParagraphSize(speechData);
-
-    const horizontalScale: number = 1;
-    const verticalScale: number = 1;
-    
-    //const { horizontalScale, verticalScale } = SpeechData.getScale(paragraphWidth, bookTitleWidth, paragraphHeight, bookTitleHeight);
-
-    //const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
-    const centerBookX: number = 306;
-    const centerBookY: number = 176;
-
-    let flippedHorizontally;
-    let scaledOffsetX: number = this.book.originX + centerBookX * horizontalScale;
-    let flippedHorizontalTextOffset = 0;
-    let flippedOffsetX = 0;
-    const maxRightPos = 1400;
-
-    speechData.width = bookTitleWidth * horizontalScale;
-    speechData.height = bookTitleHeight * verticalScale;
+    speechData.width = bookTitleWidth;
+    speechData.height = bookTitleHeight;
     speechData.textColor = `#ffffff`;
 
     return speechData;
@@ -170,30 +225,31 @@ class ShowBookManager {
     let colorShift: number = Random.between(0, 360);
     this.bookSprite = this.book.addShifted(xPos, yStartPos, 0, colorShift);
     this.handsSprite = this.hands.add(xPos, yStartPos, 0);
-    this.bookSprite.fadeInTime = 300;
-    this.handsSprite.fadeInTime = 300;
-    this.bookSprite.fadeOutTime = 300;
-    this.handsSprite.fadeOutTime = 300;
+
+    const entryTime: number = 800;
+    const exitTime: number = 800;
     let startTime: number = performance.now();
-    const timeOnScreen: number = 5000;
-    this.bookSprite.expirationDate = startTime + timeOnScreen;
-    this.handsSprite.expirationDate = startTime + timeOnScreen;
-    const bookMoveTime: number = 800;
+
+    const titleReadingTimeMs: number = SpeechData.getReadingTimeMs(title);
+    const extraTimeOnScreen: number = 2000;
+
+    const timeOnScreen: number = entryTime + extraTimeOnScreen + titleReadingTimeMs + exitTime;
+
     let fromX: number = xPos - this.book.originX;
     let fromY: number = yStartPos - this.book.originY;
     let toX: number = xPos - this.book.originX;
     let toY: number = screenBottom - this.book.originY;
 
-    this.bookSprite.data = this.createSpeechData(ctx, title, xPos, fromY);
-    this.bookSprite.ease(startTime, fromX, fromY, toX, toY, bookMoveTime);
-    this.handsSprite.ease(startTime, fromX, fromY, toX, toY, bookMoveTime);
+    this.bookSprite.data = this.createSpeechData(ctx, this.titleCase(title));
+    this.bookSprite.ease(startTime, fromX, fromY, toX, toY, entryTime);
+    this.handsSprite.ease(startTime, fromX, fromY, toX, toY, entryTime);
 
     this.timeoutHandle = setTimeout(() => {
       this.timeoutHandle = null;
       let now: number = performance.now();
-      this.bookSprite.ease(now, toX, toY, fromX, fromY, bookMoveTime);
-      this.handsSprite.ease(now, toX, toY, fromX, fromY, bookMoveTime);
-    }, timeOnScreen - bookMoveTime);
+      this.bookSprite.ease(now, toX, toY, fromX, fromY, exitTime);
+      this.handsSprite.ease(now, toX, toY, fromX, fromY, exitTime);
+    }, timeOnScreen - exitTime);
   }
 
   loadResources() {
@@ -227,7 +283,7 @@ class ShowBookManager {
     const speechData: SpeechData = sprite.data as SpeechData;
     if (speechData && speechData.okayToDraw) {
       this.wordRenderer.fontSize = speechData.fontSize;
-      this.wordRenderer.setActiveStyle(context, LayoutStyle.normal);
+      this.wordRenderer.setActiveStyle(context, LayoutStyle.italic);
 
       this.wordRenderer.textColor = speechData.textColor;
       const leftMargin: number = 35;
@@ -244,7 +300,7 @@ class ShowBookManager {
         centerY = tallTopMargin + basicYOffset;
       else if (paragraphHeight < shortThreshold)
         centerY = shortTopMargin + basicYOffset;
-      else 
+      else
         centerY = mediumTopMargin + basicYOffset;
 
       let centerX: number = leftMargin + sprite.x + this.book.originX + speechData.width / 2;
@@ -382,7 +438,7 @@ class SpeechBubbleManager {
     sprite.fadeInTime = 400;
     sprite.fadeOutTime = 467;
 
-    const totalReadingTime: number = this.getTotalReadingTime(speechStr);
+    const totalReadingTime: number = SpeechData.getReadingTimeMs(speechStr);
 
     sprite.expirationDate = performance.now() + sprite.fadeInTime + totalReadingTime + sprite.fadeOutTime;
     sprite.flipHorizontally = flippedHorizontally;
@@ -391,14 +447,6 @@ class SpeechBubbleManager {
     sprite.data = speechData;
     sprite.horizontalScale = horizontalScale;
     sprite.verticalScale = verticalScale;
-  }
-
-  private getTotalReadingTime(speechStr: string) {
-    const numWords: number = (speechStr.match(/\s/g) || []).length + 1;
-    const averageReadingTimePerWordMs = 300;
-    const safetyFactor = 2;
-    const totalReadingTime: number = Math.max(1500, numWords * averageReadingTimePerWordMs * safetyFactor);
-    return totalReadingTime;
   }
 
   private checkForVerticalFlip(speechData: SpeechData, playerId: number, speechType: SpeechType, verticalScale: number, xPos: any, yPos: number, textStartY: number, height: number, verticalTextOffsetBecauseNoDescenders: number, scaledPosOffsetY: number) {
