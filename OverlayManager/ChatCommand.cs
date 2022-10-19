@@ -154,7 +154,7 @@ namespace OverlayManager
                 SetForegroundWindow(originalWindowHandle);
         }
 
-        int GetOutputDeviceNumber(string deviceName)
+        static int GetOutputDeviceNumber(string deviceName)
         {
             for (int device = 0; device < MidiOut.NumberOfDevices; device++)
                 if (deviceName == MidiOut.DeviceInfo(device).ProductName)
@@ -162,7 +162,7 @@ namespace OverlayManager
             return -1;
         }
 
-        void CreateMidiOut()
+        static void CreateMidiOut()
         {
             int deviceNumber = GetOutputDeviceNumber("RoryMidi");
             if (deviceNumber < 0)  // Did not find the device.
@@ -171,7 +171,7 @@ namespace OverlayManager
             midiOut = new MidiOut(deviceNumber);
         }
 
-        int GetNote(string midiNote)
+        static int GetNote(string midiNote)
         {
             string trimmedNote = midiNote.Trim();
             string[] notes = trimmedNote.Split('|');
@@ -191,7 +191,12 @@ namespace OverlayManager
             return -1;
         }
 
-        void SendMidi(string midiNote)
+        /// <summary>
+        /// Sends the specified midi note. Note: the loopMidi app must be running for the midi note to be received.
+        /// </summary>
+        /// <param name="midiNote">The midi note (as a string) to play ("0"-"127"). To randomly select between multiple 
+        /// midi notes, separate them with the pipe symbol ("|").</param>
+        public static void SendMidi(string midiNote)
         {
             if (midiOut == null)
                 CreateMidiOut();

@@ -48,6 +48,27 @@ namespace OverlayManager.Hubs
 
 		public void ShowBook(string title)
 		{
+			int wordCount = title.Split(' ').Length + 1;
+			const double averageReadingTimePerWordMs = 300;
+			const double safetyFactor = 2.3;
+			double totalReadingTimeSec = Math.Max(1500, wordCount * averageReadingTimePerWordMs * safetyFactor) / 1000;
+			if (totalReadingTimeSec > 10 )
+                ChatCommand.SendMidi("40");
+			else if (totalReadingTimeSec > 9)
+                ChatCommand.SendMidi("39");
+            else if (totalReadingTimeSec > 8)
+                ChatCommand.SendMidi("38");
+            else if (totalReadingTimeSec > 7)
+                ChatCommand.SendMidi("37");
+			else if (totalReadingTimeSec > 6)
+				ChatCommand.SendMidi("36");
+			else if (totalReadingTimeSec > 5)
+				ChatCommand.SendMidi("35");
+			else if (totalReadingTimeSec > 4)
+				ChatCommand.SendMidi("34");
+			else 
+				ChatCommand.SendMidi("33");
+
 			coderushedHub.Clients.All.ShowBook(title);
 		}
 

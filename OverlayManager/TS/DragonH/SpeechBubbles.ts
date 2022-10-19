@@ -152,8 +152,18 @@ class ShowBookManager {
     this.wordRenderer.fontWeightBold = '400';
   }
 
+  hasMixedCase(txt: string): boolean {
+    for (let i = 1; i < txt.length; i++) {
+      if (txt[i].toUpperCase() == txt[i])
+        return true;
+    }
+    return false;
+  }
+
   titleCase(title: string, withLowers: boolean = false): string {
-    let result: string = title.replace(/([^\s:\-'])([^\s:\-']*)/g, function (txt) {
+    let result: string = title.replace(/([^\s:\-'])([^\s:\-']*)/g, (txt) => {
+      if (this.hasMixedCase(txt))
+        return txt;
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     }).replace(/Mc(.)/g, function (match, next) {
       return 'Mc' + next.toUpperCase();
@@ -175,6 +185,9 @@ class ShowBookManager {
       result = result.replace(new RegExp('\\b' + uppers[i] + '\\b', 'g'), uppers[i].toUpperCase());
     }
 
+    result = result.replace('\'S', '\'s').replace(' \'s', ' \'S');
+    result = result.replace('\'T', '\'t').replace(' \'t', ' \'T');
+
     return result;
   }
 
@@ -187,9 +200,11 @@ class ShowBookManager {
     return { paragraphWidth, paragraphHeight };
   }
 
+  static readonly verticalDrop: number = 30;
+
   createSpeechData(context: CanvasRenderingContext2D, textToShow: string): SpeechData {
     const bookTitleWidth: number = 200;
-    const bookTitleHeight: number = 193;
+    const bookTitleHeight: number = 193 - ShowBookManager.verticalDrop;
     const aspectRatio: number = bookTitleWidth / bookTitleHeight;
     const topBottomReducePercent: number = 0;
     const idealFontSize: number = 22;
@@ -255,13 +270,13 @@ class ShowBookManager {
   loadResources() {
     this.book = new Sprites('Rory/Book', 1, fps30, AnimationStyle.Static, true);
     this.book.originX = 174;
-    this.book.originY = 298;
+    this.book.originY = 298 - ShowBookManager.verticalDrop;
     this.book.moves = true;
     this.book.disableGravity();
 
     this.hands = new Sprites('Rory/Hands', 1, fps30, AnimationStyle.Static, true);
     this.hands.originX = 174;
-    this.hands.originY = 298;
+    this.hands.originY = 298 - ShowBookManager.verticalDrop;
     this.hands.moves = true;
     this.hands.disableGravity();
   }
