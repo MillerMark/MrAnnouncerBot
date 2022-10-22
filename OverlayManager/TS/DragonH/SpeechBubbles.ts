@@ -63,7 +63,9 @@ class SpeechData {
 
     let fontScale: number = idealWidth / this.paragraph.getLongestLineWidth();
     this.fontSize = Math.min(this.fontSize * fontScale, SpeechData.maxTextFontSize);
-    this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+    this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, idealWidth, fontScale, topBottomReducePercent);
+
+    this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, idealWidth, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
 
     let numFontAdjusts: number = 0;
     let longestLineWidth: number = this.paragraph.getLongestLineWidth();
@@ -71,7 +73,8 @@ class SpeechData {
     {
       fontScale = (1.0 + idealWidth / longestLineWidth) / 2.0;
       this.fontSize = Math.min(this.fontSize * fontScale, SpeechData.maxTextFontSize);
-      this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+      this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, idealWidth, fontScale, topBottomReducePercent);
+      this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, idealWidth, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
       longestLineWidth = this.paragraph.getLongestLineWidth();
       numFontAdjusts++;
     }
@@ -84,7 +87,8 @@ class SpeechData {
         let scaleFactor: number = maxHeight / totalHeight;
         this.fontSize *= scaleFactor;
         fontScale *= scaleFactor;
-        this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, width, fontScale, topBottomReducePercent);
+        this.fontSizeChanged(context, fontName, wordWrapper, wordRenderer, text, idealWidth, fontScale, topBottomReducePercent);
+        this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, idealWidth, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
         totalHeight = this.paragraph.getParagraphHeight();
         numTries++;
       }
@@ -187,6 +191,8 @@ class ShowBookManager {
 
     result = result.replace('\'S', '\'s').replace(' \'s', ' \'S');
     result = result.replace('\'T', '\'t').replace(' \'t', ' \'T');
+    result = result.replace('\'Ll', '\'ll').replace('\'Re', '\'re');
+    result = result.replace('I\'M', 'I\'m');
 
     return result;
   }
