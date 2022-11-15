@@ -139,7 +139,7 @@ namespace OverlayManager
             string trimmedShortcut = shortcut.Trim();
             string[] shortcuts = trimmedShortcut.Split('|');
             string thisShortcut;
-            if (shortcuts.Length > 0)
+            if (shortcuts.Length > 1)
             {
                 Random random = new Random();
                 int index = random.Next(shortcuts.Length);

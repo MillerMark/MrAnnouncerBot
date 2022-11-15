@@ -1942,7 +1942,7 @@ namespace DndCore
 		[JsonIgnore]
 		public int NumWildMagicChecks { get; set; }
 
-		public bool ShowingNameplate { get; set; } = true;
+		public bool ShowingNameplate { get; set; } = false;
 
 		[JsonIgnore]
 		public Ability OverrideAttackingAbility { get; set; }

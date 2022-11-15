@@ -1,4 +1,5 @@
 ﻿//#define profiling
+//#define FullLoad
 using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -5901,7 +5902,7 @@ namespace DHDM
 					chkShowPlayerNameplate.Unchecked += ShowPlayerNameplate_CheckedChanged;
 					chkShowPlayerNameplate.MaxWidth = 200;
 					chkShowPlayerNameplate.MinHeight = 45;
-					chkShowPlayerNameplate.IsChecked = player.ShowingNameplate;
+					chkShowPlayerNameplate.IsChecked = player.ShowingNameplate || player.Name == "Fred";
 					chkShowPlayerNameplate.Tag = player.playerID;
 					playerControls.Children.Add(chkShowPlayerNameplate);
 
@@ -6500,19 +6501,27 @@ namespace DHDM
 			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 
 			AddPlayersToGame();
+#if FullLoad
 			AddCreaturesToGame();
+#endif
 
 			game.Clock.SetTime(saveTime);
+
 			game.Start();
 			SendPlayerData();
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
+#if FullLoad
 			lstAllSpells.ItemsSource = AllSpells.Spells;
 			spAllMonsters.DataContext = AllMonsters.Monsters;
 			SetInGameCreatures();
+#endif
 			InitializePlayerStats();
+
+#if FullLoad
 			TellTaleSpireWhoIsOnWhatSide();
+#endif
 		}
 
 		private void AddPlayersToGame()

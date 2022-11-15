@@ -163,6 +163,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
 | party | DH.Party1 | Good | 
 | party2 | DH.Party2 | Good | 
+| players | Players | System | 
 
 ### Level 10
 

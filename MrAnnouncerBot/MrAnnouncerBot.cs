@@ -1015,8 +1015,15 @@ namespace MrAnnouncerBot
                 return;
             }
             ActivatingScene(scene);
-            obsWebsocket.SetCurrentScene(sceneName);
-        }
+			try
+			{
+				obsWebsocket.SetCurrentScene(sceneName);
+			}
+			catch (Exception e)
+			{
+				Chat($"Sorry, I can't find that scene: {sceneName}");
+			}
+		}
 
         private void ActivateSceneIfPermitted(SceneDto scene, string displayName, int userLevel)
         {
