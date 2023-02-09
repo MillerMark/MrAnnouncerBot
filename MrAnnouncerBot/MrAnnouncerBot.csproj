@@ -48,23 +48,22 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.9.1" />
     <PackageReference Include="Profanity.Detector" Version="0.1.8" />
-    <PackageReference Include="TwitchLib" Version="3.3.0" />
-    <PackageReference Include="TwitchLib.Api" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Core" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Core.Enums" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Core.Interfaces" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Core.Models" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Helix" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.Helix.Models" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Api.V5" Version="3.4.1" />
-    <PackageReference Include="TwitchLib.Client" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Client.Enums" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Client.Models" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Communication" Version="1.0.3" />
-    <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
+    <PackageReference Include="TwitchLib" Version="3.5.3" />
+    <PackageReference Include="TwitchLib.Api" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Core" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Core.Enums" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Core.Interfaces" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Core.Models" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Helix" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Api.Helix.Models" Version="3.8.0" />
+    <PackageReference Include="TwitchLib.Client" Version="3.3.1" />
+    <PackageReference Include="TwitchLib.Client.Enums" Version="3.3.1" />
+    <PackageReference Include="TwitchLib.Client.Models" Version="3.3.1" />
+    <PackageReference Include="TwitchLib.Communication" Version="1.0.4" />
+    <PackageReference Include="TwitchLib.PubSub" Version="3.2.6" />
   </ItemGroup>
 
   <ItemGroup>

@@ -194,16 +194,30 @@ namespace MrAnnouncerBot
         void HookupPubSubEvents(TwitchPubSub codeRushedPubSub)
         {
             codeRushedPubSub.OnPubSubServiceError += CodeRushedPubSub_OnPubSubServiceError;
-            codeRushedPubSub.OnChannelPointsRewardRedeemed += CodeRushedPubSub_OnChannelPointsRewardRedeemed;
-        }
+			codeRushedPubSub.OnPubSubServiceClosed += CodeRushedPubSub_OnPubSubServiceClosed;
+			codeRushedPubSub.OnPubSubServiceConnected += CodeRushedPubSub_OnPubSubServiceConnected;
+			codeRushedPubSub.OnChannelPointsRewardRedeemed += CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+		}
 
-        void UnhookPubSubEvents(TwitchPubSub codeRushedPubSub)
+		void UnhookPubSubEvents(TwitchPubSub codeRushedPubSub)
         {
             codeRushedPubSub.OnPubSubServiceError -= CodeRushedPubSub_OnPubSubServiceError;
-            codeRushedPubSub.OnChannelPointsRewardRedeemed -= CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+			codeRushedPubSub.OnPubSubServiceClosed -= CodeRushedPubSub_OnPubSubServiceClosed;
+			codeRushedPubSub.OnPubSubServiceConnected -= CodeRushedPubSub_OnPubSubServiceConnected;
+			codeRushedPubSub.OnChannelPointsRewardRedeemed -= CodeRushedPubSub_OnChannelPointsRewardRedeemed;
         }
 
-        private void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
+		private void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
+		{
+			
+		}
+
+		private void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
+		{
+			
+		}
+
+		private void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
         {
             log.Add(new ErrorEntry() { Exception = e.Exception });
             // TODO: Reconnect on error?
@@ -262,7 +276,6 @@ namespace MrAnnouncerBot
             client.OnUserLeft += TwitchClient_OnUserLeft;
             client.OnChannelStateChanged += Client_OnChannelStateChanged;
             client.OnDisconnected += Client_OnDisconnected;
-            client.OnHostingStopped += Client_OnHostingStopped;
             client.OnLog += Client_OnLog;
         }
 
@@ -276,18 +289,12 @@ namespace MrAnnouncerBot
             client.OnChannelStateChanged -= Client_OnChannelStateChanged;
             client.OnDisconnected -= Client_OnDisconnected;
             client.OnError -= Client_OnError;
-            client.OnHostingStopped -= Client_OnHostingStopped;
             client.OnLog -= Client_OnLog;
         }
 
         private void Client_OnLog(object sender, OnLogArgs e)
         {
             log.Add(new LogEntry() { BotUsername = e.BotUsername, Data = e.Data, Time = e.DateTime });
-        }
-
-        private void Client_OnHostingStopped(object sender, OnHostingStoppedArgs e)
-        {
-            log.Add(new MessageEntry() { Message = "Hosting Stopped: " + e.HostingStopped.HostingChannel, Time = DateTime.Now });
         }
 
         private void Client_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)

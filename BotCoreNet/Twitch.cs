@@ -14,6 +14,8 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Interfaces;
+using TwitchLib.PubSub.Events;
+using TwitchLib.PubSub.Models.Responses;
 
 namespace BotCore
 {
@@ -97,7 +99,11 @@ namespace BotCore
 			//Logging = true;
 			CodeRushedClient = new TwitchClient();
 			CodeRushedPubSub = new TwitchPubSub();
+
+			CodeRushedPubSub.OnListenResponse += onListenResponse;
 			CodeRushedPubSub.OnPubSubServiceConnected += CodeRushedPubSub_OnPubSubServiceConnected;
+			CodeRushedPubSub.OnPubSubServiceClosed += CodeRushedPubSub_OnPubSubServiceClosed;
+			CodeRushedPubSub.OnPubSubServiceError += CodeRushedPubSub_OnPubSubServiceError;
 			CodeRushedPubSub.ListenToChannelPoints(STR_CodeRushedChannelId);
 			CodeRushedPubSub.Connect();
 			DroneCommandsClient = new TwitchClient();
@@ -108,6 +114,24 @@ namespace BotCore
 
 			configuration = builder.Build();
 			InitializeApiClient();
+		}
+
+		private static void onListenResponse(object sender, OnListenResponseArgs e)
+		{
+			if (!e.Successful)
+			{
+				string error = e.Response.Error;
+			}
+		}
+
+		private static void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
+		{
+			
+		}
+
+		private static void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
+		{
+			
 		}
 
 		public static IConfigurationRoot Configuration { get => configuration; }
@@ -152,8 +176,9 @@ namespace BotCore
 
 			Api = new TwitchAPI();
 			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];
+			//Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];
+			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotAccessToken"];
 			CodeRushedBotApiClientId = Configuration["Secrets:CodeRushedBotTwitchApiClientId"];
-			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];
 		}
 
 		public static void Disconnect()
@@ -235,7 +260,7 @@ namespace BotCore
 			client.OnConnectionError -= TwitchClient_OnConnectionError;
 		}
 
-		static void TwitchClientLog(object sender, OnLogArgs e)
+		static void TwitchClientLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
 		{
 			if (Logging)
 				Console.WriteLine(e.Data);
@@ -369,7 +394,7 @@ namespace BotCore
 
 		public static void Authenticate(TwitchPubSub codeRushedPubSub)
 		{
-			codeRushedPubSub.SendTopics(Configuration["Secrets:PubSubAccessToken"]);
+			codeRushedPubSub.SendTopics(Configuration["Secrets:TwitchBotAccessToken"]);
 		}
 	}
 }
