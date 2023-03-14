@@ -27,8 +27,8 @@ namespace DHDM
 			foreach (DmMood dmMood in AllDmMoods)
 				if (dmMood.Keyword == moodName)
 				{
-					ObsManager.SetSourceVisibility(dmMood.Background, STR_DungeonMasterScene, true);
-					ObsManager.SetSourceVisibility(dmMood.Foreground, STR_DungeonMasterScene, true);
+					ObsManager.SetSceneItemEnabled(dmMood.Background, STR_DungeonMasterScene, true);
+					ObsManager.SetSceneItemEnabled(dmMood.Foreground, STR_DungeonMasterScene, true);
 				}
 
 			foreach (DmMood dmMood in AllDmMoods)

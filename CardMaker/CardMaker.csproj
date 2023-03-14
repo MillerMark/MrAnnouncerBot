@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
@@ -18,30 +18,30 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\Source\SheetsPersist\SheetsPersist.csproj" />
     <ProjectReference Include="..\AvalonEdit\SuperAvalonEdit.csproj" />
-    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
+    <ProjectReference Include="..\BotCore\BotCore.csproj" />
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
     <ProjectReference Include="..\Imaging\Imaging.csproj" />
     <ProjectReference Include="..\Streamloots\Streamloots.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CloudinaryDotNet" Version="1.17.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.20.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="6.0.1" />
-    <PackageReference Include="RestClient.Net.Abstractions" Version="5.0.7" />
-    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="7.0.3" />
+    <PackageReference Include="RestClient.Net.Abstractions" Version="5.1.0" />
+    <PackageReference Include="SheetsPersist" Version="1.3.4" />
+    <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.1" />
+    <PackageReference Include="System.IO.Pipelines" Version="7.0.0" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
-    <PackageReference Include="System.Net.Http" Version="4.3.0" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

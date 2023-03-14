@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 using System.Drawing;
+using System.Collections.Generic;
 using DndCore;
 using CommonCore;
 
@@ -19,6 +20,7 @@ namespace ObsControl
 
 		static ObsManager()
 		{
+			Console.WriteLine($"Connecting from ObsManager...");
 			Connect();
 		}
 
@@ -26,44 +28,19 @@ namespace ObsControl
 		{
 			string[] parts = sourceName.Split(';');
 			foreach (string part in parts)
-				obsWebsocket.SetSourceFilterVisibility(part.Trim(), filterName, filterEnabled);
+				obsWebsocket.SetSourceFilterEnabled(part.Trim(), filterName, filterEnabled);
 		}
 
 		static GetSceneListInfo sceneList;
 
-		public static SceneItem GetSceneItem(string sceneName, string itemName)
+		private static void ObsWebsocket_StreamStateChanged(object sender, OBSWebsocketDotNet.Types.Events.StreamStateChangedEventArgs e)
 		{
-			if (sceneList == null)
-			{
-				if (!obsWebsocket.IsConnected)
-					return null;
-				sceneList = obsWebsocket.GetSceneList();
-			}
-
-			OBSScene scene = sceneList?.Scenes?.FirstOrDefault(x => x.Name == sceneName);
-			return scene?.Items?.FirstOrDefault(x => x.SourceName == itemName);
+			StateChanged?.Invoke(sender, e.OutputState.State);
 		}
 
-		public static void OnStateChanged(object sender, OutputState state)
-		{
-			StateChanged?.Invoke(sender, state);
-		}
-
-		public static	void OnSceneChanged(object sender, string sceneName)
+		public static void OnSceneChanged(object sender, string sceneName)
 		{
 			SceneChanged?.Invoke(sender, sceneName);
-		}
-
-		public static void SetSourceVisibility(string sceneName, string sourceName, bool visible)
-		{
-			try
-			{
-				obsWebsocket.SetSourceRender(sourceName, visible, sceneName);
-			}
-			catch //(Exception ex)
-			{
-
-			}
 		}
 
 		public static void Connect()
@@ -72,9 +49,10 @@ namespace ObsControl
 				return;
 			try
 			{
-				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
-				obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
-				obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
+				obsWebsocket.ConnectAsync(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
+				obsWebsocket.CurrentProgramSceneChanged += ObsWebsocket_CurrentProgramSceneChanged;
+				obsWebsocket.StreamStateChanged += ObsWebsocket_StreamStateChanged;
+				obsWebsocket.Disconnected += ObsWebsocket_Disconnected;
 			}
 			catch (AuthFailureException)
 			{
@@ -86,22 +64,21 @@ namespace ObsControl
 			}
 		}
 
-		//
-		private static void ObsWebsocket_StreamingStateChanged(OBSWebsocket sender, OutputState type)
+		private static void ObsWebsocket_Disconnected(object sender, OBSWebsocketDotNet.Communication.ObsDisconnectionInfo e)
 		{
-			OnStateChanged(sender, type);
+			System.Diagnostics.Debugger.Break();
 		}
 
-		private static void ObsWebsocket_SceneChanged(OBSWebsocket sender, string newSceneName)
+		private static void ObsWebsocket_CurrentProgramSceneChanged(object sender, OBSWebsocketDotNet.Types.Events.ProgramSceneChangedEventArgs e)
 		{
-			OnSceneChanged(sender, newSceneName);
+			OnSceneChanged(sender, e.SceneName);
 		}
 
 		public static void SizeAndPositionItem(BaseLiveFeedAnimator e, double scale, double opacity = 1, double rotation = 0, bool flipped = false)
 		{
 			if (e.HasLastCamera())
 			{
-				SetSourceVisibility(e.LastSceneName, e.LastItemName, false);
+				SetSceneItemEnabled(e.LastSceneName, e.LastItemName, false);
 				e.ClearLastCamera();
 			}
 
@@ -113,14 +90,17 @@ namespace ObsControl
 
 			try
 			{
-				SceneItemProperties sceneItemProperties = obsWebsocket.GetSceneItemProperties(e.ItemName, e.SceneName);
-				sceneItemProperties.Visible = opacity > 0;
+				SceneItemDetails sceneItemDetails = GetSceneItemDetails(e.SceneName, e.ItemName);
+				SceneItemTransformInfo sceneItemTransformInfo = GetSceneItemProperties(e.SceneName, e.ItemName);
+				int sceneItemId = GetSceneItemId(e.SceneName, e.ItemName);
 
-				if (sceneItemProperties.Visible)
+				obsWebsocket.SetSceneItemEnabled(e.SceneName, sceneItemId, opacity > 0);
+
+				if (opacity > 0)
 				{
 					// TODO: Consider optimizing this to only change when the new value is different from the last one set. Confidence should be high (e.g., time between sets should be short, and everything else should match).
 					const string ImageMaskFilter = "Image Mask/Blend";
-					FilterSettings sourceFilterInfo = obsWebsocket.GetSourceFilterInfo(e.ItemName, ImageMaskFilter);
+					FilterSettings sourceFilterInfo = obsWebsocket.GetSourceFilter(e.ItemName, ImageMaskFilter);
 					JObject settings = sourceFilterInfo.Settings;
 					int newOpacity = (int)(opacity * 100);
 					ImageMask imageMask = settings.ToObject<ImageMask>();
@@ -132,7 +112,7 @@ namespace ObsControl
 				}
 				//if (rotation != sceneItemProperties.Rotation)
 				//{
-				sceneItemProperties.Rotation = rotation;
+				sceneItemTransformInfo.Rotation = rotation;
 
 				// This will rotate around the top left.
 				// ![](342CE4E3D8508B3F1D4B944701C25E97.png)
@@ -149,23 +129,14 @@ namespace ObsControl
 				Point2d newUpperLeft = Math2D.RotatePoint(upperLeft, centerPoint, rotation);
 				newLeft = newUpperLeft.X;
 				newTop = newUpperLeft.Y;
-				
-				sceneItemProperties.Bounds = new SceneItemBoundsInfo()
-				{
-					Height = e.VideoHeight * scale,
-					Width = Math.Abs(e.VideoWidth) * scale,
-					Alignnment = sceneItemProperties.Bounds.Alignnment,
-					Type = sceneItemProperties.Bounds.Type
-				};
 
-				sceneItemProperties.Position = new SceneItemPositionInfo()
-				{
-					X = newLeft,
-					Y = newTop,
-					Alignment = sceneItemProperties.Position.Alignment
-				};
+				sceneItemTransformInfo.BoundsHeight = e.VideoHeight * scale;
+				sceneItemTransformInfo.BoundsWidth = Math.Abs(e.VideoWidth) * scale;
 
-				obsWebsocket.SetSceneItemProperties(sceneItemProperties, e.SceneName);
+				sceneItemTransformInfo.X = newLeft;
+				sceneItemTransformInfo.Y = newTop;
+
+				obsWebsocket.SetSceneItemTransform(e.SceneName, sceneItemId, sceneItemTransformInfo);
 
 				float flipMultiplier = 1;
 				if (e.VideoWidth < 0)
@@ -189,25 +160,47 @@ namespace ObsControl
 
 		public static void SetCurrentScene(string sceneName)
 		{
-			obsWebsocket.SetCurrentScene(sceneName);
+			obsWebsocket.SetCurrentProgramScene(sceneName);
 		}
 
-		public static OBSScene GetCurrentScene()
+		public static SceneBasicInfo GetCurrentScene()
 		{
-			return obsWebsocket.GetCurrentScene();
+			string currentProgramSceneName = GetCurrentSceneName();
+			GetSceneListInfo sceneListInfo = obsWebsocket.GetSceneList();
+			return sceneListInfo.Scenes.FirstOrDefault(x => x.Name == currentProgramSceneName);
 		}
 
-		// TODO: Reorder parameters..
-		public static void SetSourceRender(string sourceName, bool visible, string sceneName)
+		public static string GetCurrentSceneName()
 		{
-			obsWebsocket.SetSourceRender(sourceName, visible, sceneName);
+			return obsWebsocket.GetCurrentProgramScene();
 		}
 
-		public static SceneItemProperties GetSceneItemProperties(string itemName, string sceneName)
+		static SceneItemDetails GetSceneItemDetails(string sceneName, string sourceName)
 		{
-			return obsWebsocket.GetSceneItemProperties(itemName, sceneName);
+			return obsWebsocket.GetSceneItemList(sceneName).FirstOrDefault(x => x.SourceName == sourceName);
+		}
+
+		public static bool GetSceneItemEnabled(string sceneName, string sourceName)
+		{
+			return obsWebsocket.GetSceneItemEnabled(sceneName, GetSceneItemId(sceneName, sourceName));
+		}
+
+		public static void SetSceneItemEnabled(string sceneName, string sourceName, bool sceneItemEnabled)
+		{
+			obsWebsocket.SetSceneItemEnabled(sceneName, GetSceneItemId(sceneName, sourceName), sceneItemEnabled);
+		}
+
+		public static SceneItemTransformInfo GetSceneItemProperties(string sceneName, string itemName)
+		{
+			return obsWebsocket.GetSceneItemTransform(sceneName, GetSceneItemId(sceneName, itemName));
+		}
+
+		private static int GetSceneItemId(string sceneName, string itemName)
+		{
+			return obsWebsocket.GetSceneItemId(sceneName, itemName, 0);
 		}
 
 		public static bool IsConnected => obsWebsocket.IsConnected;
 	}
 }
+

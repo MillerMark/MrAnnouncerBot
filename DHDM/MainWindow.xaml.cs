@@ -99,6 +99,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
+			GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
 			MarkFliesManager.Initialize();
 			ChangingInternally = true;
 			try

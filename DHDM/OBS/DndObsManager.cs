@@ -69,7 +69,7 @@ namespace DHDM
 				return;
 			}
 
-			ObsManager.SetSourceVisibility(ea.SceneName, ea.SourceName, ea.Visible);
+			ObsManager.SetSceneItemEnabled(ea.SceneName, ea.SourceName, ea.Visible);
 		}
 
 		private static void DelayShowSourceTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -94,9 +94,9 @@ namespace DHDM
 		{
 			try
 			{
-				OBSScene currentScene = ObsManager.GetCurrentScene();
-				if (IsFoundationScene(currentScene.Name))
-					return currentScene.Name;
+				string currentSceneName = ObsManager.GetCurrentSceneName();
+				if (IsFoundationScene(currentSceneName))
+					return currentSceneName;
 				return DndObsManager.STR_PlayerScene;
 			}
 			catch //(Exception ex)
@@ -167,13 +167,11 @@ namespace DHDM
 		}
 		void StartLiveFeedAnimation(string itemName, string sceneName, double playerX, double videoAnchorHorizontal, double videoAnchorVertical, double videoWidth, double videoHeight, double targetScale, double timeMs)
 		{
-			SceneItem sceneItem = ObsManager.GetSceneItem(sceneName, itemName);
-
-			SceneItemProperties sceneItemProperties = ObsManager.GetSceneItemProperties(itemName, sceneName);
-			double startScale = sceneItemProperties.Bounds.Height / videoHeight;
+			SceneItemTransformInfo sceneItemTransformInfo = ObsManager.GetSceneItemProperties(sceneName, itemName);
+			double startScale = sceneItemTransformInfo.BoundsHeight / videoHeight;
 			VideoFeed[] videoFeeds = GetVideoFeeds(sceneName, itemName, videoAnchorHorizontal, videoAnchorVertical, videoWidth, videoHeight);
 			LiveFeedScaler liveFeedAnimation = new LiveFeedScaler(videoFeeds, playerX, startScale, targetScale, timeMs);
-			if (!sceneItem.Render)
+			if (!ObsManager.GetSceneItemEnabled(sceneName, itemName))
 				ObsManager.SizeAndPositionItem(liveFeedAnimation, (float)liveFeedAnimation.TargetScale);
 			else
 				liveFeedAnimation.Render += LiveFeedAnimation_Render;

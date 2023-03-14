@@ -108,7 +108,7 @@ namespace DHDM
 
 		private void ShowStampedeMediaSource(string mediaSource, bool visible)
 		{
-			ObsManager.SetSourceVisibility(Scene_Stampedes, mediaSource, visible);
+			ObsManager.SetSceneItemEnabled(Scene_Stampedes, mediaSource, visible);
 		}
 
 		public string CardName { get; set; }

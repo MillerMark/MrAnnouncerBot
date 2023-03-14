@@ -104,7 +104,7 @@ namespace DHDM
 				return;
 			try
 			{
-				ObsManager.SetSourceRender(sourceName, visible, sceneName);
+				ObsManager.SetSceneItemEnabled(sceneName, sourceName, visible);
 			}
 			catch //(Exception ex)
 			{

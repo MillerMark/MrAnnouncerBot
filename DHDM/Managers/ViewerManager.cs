@@ -68,11 +68,11 @@ namespace DHDM
 
 		private void ObsManager_StateChanged(object sender, OutputState e)
 		{
-			if (e == OutputState.Started)
+			if (e == OutputState.OBS_WEBSOCKET_OUTPUT_STARTED)
 			{
 				StartStreaming();
 			}
-			else if (e == OutputState.Stopped)
+			else if (e == OutputState.OBS_WEBSOCKET_OUTPUT_STOPPED)
 			{
 				StopStreaming();
 			}

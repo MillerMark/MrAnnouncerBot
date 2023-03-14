@@ -143,7 +143,7 @@ namespace DHDM
 		{
 			foreach (string sourceSkillName in SourceSkillNames)
 			{
-				ObsManager.SetSourceVisibility(sourceSkillName, sceneName, false);
+				ObsManager.SetSceneItemEnabled(sourceSkillName, sceneName, false);
 			}
 		}
 
@@ -155,7 +155,7 @@ namespace DHDM
 
 		void CleanUpContestScene()
 		{
-			ObsManager.SetSourceVisibility("ContestLoop", SCENE_Contest, false);
+			ObsManager.SetSceneItemEnabled("ContestLoop", SCENE_Contest, false);
 			HideAllSources();
 		}
 

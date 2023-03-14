@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Imaging;
 using ObsControl;
-using Windows.UI.Composition.Scenes;
 
 namespace DHDM
 {

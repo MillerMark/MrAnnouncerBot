@@ -17,7 +17,7 @@ namespace DHDM
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			ObsManager.SetSourceVisibility(sourceVideo, "CR.Templates", true);
+			ObsManager.SetSceneItemEnabled(sourceVideo, "CR.Templates", true);
 			DndObsManager.SetSourceVisibility(sourceVideo, "CR.Templates", false, 7.7);
 		}
 
