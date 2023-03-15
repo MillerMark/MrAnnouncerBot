@@ -35,7 +35,7 @@ namespace OverlayManager
 			});
 
 			services.AddDirectoryBrowser();
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+			services.AddMvc();  // .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
 			services.AddSignalR(o => o.EnableDetailedErrors = true);
 			services.AddHostedService<BackgroundWorker>();
 			services.AddMvc(options => options.EnableEndpointRouting = false);

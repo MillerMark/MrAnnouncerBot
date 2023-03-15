@@ -514,9 +514,9 @@ class Drone extends ColorShiftingSpriteProxy {
 
 		const fontSize: number = 14;
 		this.centerTextInRect(context, 'Coins: ' + this.coinCount.toString(), this.y, fontSize, alpha);
-	}
+  }
 
-	private drawUserName(context: CanvasRenderingContext2D) {
+  private drawUserName(context: CanvasRenderingContext2D) {
 		const fontSize: number = 14 * this.scale;
 		let yTop: number = this.y + this.height;
 		this.centerTextInRect(context, this.displayName, yTop, fontSize, 1);
