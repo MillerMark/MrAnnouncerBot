@@ -18,6 +18,7 @@ class Sprites {
 	removeOnHitFloor = true;
 	lastTimeWeAdvancedTheFrame: number;
 	returnFrameIndex: number;
+  resumeFrameIndex: number = -1;
 	segmentSize: number;
 	originX: number;
 	originY: number;
@@ -365,6 +366,7 @@ class Sprites {
 			return;
 
 		const startOffset: number = this.returnFrameIndex;
+    const endOffset: number = this.resumeFrameIndex;
 		const frameCount = this.baseAnimation.frameCount;
 		let returnFrameIndex = this.getReturnIndex(frameCount, this.baseAnimation.reverse);
 
@@ -386,7 +388,9 @@ class Sprites {
 			const segmentSize: number = this.segmentSize;  // To simplify code below.
 			const saveFrameIndex: number = frameIndex;
 
-			const insideSegments: boolean = segmentSize > 0 && frameIndex >= startOffset;
+      const insideSegments: boolean = segmentSize > 0 &&
+        frameIndex >= startOffset && 
+        (endOffset < 0 || frameIndex < endOffset);
 
 			//if (this.name === 'hourglass') {
 			//	console.log(`frameIndex: ${frameIndex}, insideSegments: ${insideSegments}`);

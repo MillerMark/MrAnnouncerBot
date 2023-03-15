@@ -33,7 +33,7 @@ class Drone extends ColorShiftingSpriteProxy {
 		if (!(activeDroneGame instanceof DroneGame))
 			return;
 
-		const drones: Sprites = activeDroneGame.dronesRed;
+    const drones: Sprites = activeDroneGame.dronesRed;
 		const myDrone: Drone = createSprite(drones, now, createDrone) as Drone;
 		const hsl: HueSatLight = HueSatLight.fromHex(color);
 		if (hsl)
@@ -601,7 +601,7 @@ class Drone extends ColorShiftingSpriteProxy {
 
 		if (loadCopyrightedContent) {
 			splatSoundEffect.play();
-		}
+    }
 	}
 
 	// Picks a sequence of random numbers between 0 and maxBounds. pickCount is the number of random numbers selected.
@@ -826,7 +826,26 @@ class Drone extends ColorShiftingSpriteProxy {
 		}
 		else
 			this.mostRecentCoinCollection = now;
-	}
+  }
+
+  smokeOn(params: string) {
+    if (!(activeDroneGame instanceof DroneGame))
+      return;
+
+    const smokeSprites: Sprites = activeDroneGame.smokeSprites; 
+    const hueShift: number = 330;
+    const saturationPercent: number = 100;
+    const brightness: number = 100;
+    this.center;
+    let centerX: number = this.x + this.width / 2;
+    let centerY: number = this.y + this.height / 2;
+    // TODO: get the center of the drone!!!!
+    let sprite: SpriteProxy = smokeSprites.addShifted(centerX, centerY, 0, hueShift, saturationPercent, brightness);
+    const rotation: number = Math.random() * 360;
+    sprite.rotation = rotation;
+    sprite.expirationDate = performance.now() + 9000;
+    sprite.playToEndOnExpire = true;
+  }
 }
 
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {

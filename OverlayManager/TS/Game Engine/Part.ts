@@ -11,6 +11,7 @@ const fps80 = 1000 / 80;
 const fps70 = 1000 / 70;
 const fps60 = 16.66666667;
 const fps50 = 20;
+const fps47 = 21.27659574468;
 const fps40 = 25;
 const fps30 = 33.33333333;
 const fps20 = 50;

@@ -22,6 +22,7 @@ class DroneGame extends GamePlusQuiz {
 	backgroundBanner: Part;
 	coins: Sprites;
 	animations: Animations = new Animations();
+  lastCommand: string;
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -67,6 +68,7 @@ class DroneGame extends GamePlusQuiz {
 		//grass4.draw(myContext, now);
 
 		//this.beesYellow.updatePositions(now);
+    this.smokeSprites.updatePositions(nowMs);
 		this.allDrones.updatePositions(nowMs);
 		this.allMeteors.updatePositions(nowMs);
 		this.allWalls.updatePositions(nowMs);
@@ -80,7 +82,8 @@ class DroneGame extends GamePlusQuiz {
 		this.allWalls.draw(myContext, nowMs);
 		this.droneGateways.draw(myContext, nowMs);
 		this.warpIns.draw(myContext, nowMs);
-		this.boomboxes.draw(myContext, nowMs);
+    this.boomboxes.draw(myContext, nowMs);
+    this.smokeSprites.draw(myContext, nowMs);
 		this.allDrones.draw(myContext, nowMs);
 		this.allMeteors.draw(myContext, nowMs);
 
@@ -109,7 +112,18 @@ class DroneGame extends GamePlusQuiz {
 		//drawCrossHairs(myContext, 830, 540);
 		//drawCrossHairs(myContext, 830 + 340, 540);
 		this.animations.removeExpiredAnimations(nowMs);
-		this.animations.render(myContext, nowMs);
+    this.animations.render(myContext, nowMs);
+
+    if (this.lastCommand)
+    {
+      myContext.textAlign = 'left';
+      myContext.textBaseline = 'top';
+      myContext.font = '20px Arial';
+      myContext.fillStyle = '#fff';
+      myContext.strokeStyle = '#000';
+      myContext.fillText(this.lastCommand, 0, 0);
+      myContext.strokeText(this.lastCommand, 0, 0);
+    }
 	}
 
 	getBoomboxInstance(): Boombox {
@@ -237,7 +251,8 @@ class DroneGame extends GamePlusQuiz {
 		this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 	}
 
-	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+  executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+    //this.lastCommand = command;
 		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 
@@ -316,8 +331,13 @@ class DroneGame extends GamePlusQuiz {
 		else if (command === "red" || command === "orange" || command === "amber" || command === "yellow" ||
 			command === "green" || command === "cyan" || command === "blue" || command === "indigo"
 			|| command === "violet" || command === "magenta" || command === "black" || command === "white") {
-			this.paint(userInfo.userId, command, params);
-		}
+      this.paint(userInfo.userId, command, params);
+    }
+
+    else if (command === "SmokeOn") {
+      this.smokeOn(userInfo.userId, params);
+    }
+
 		else if (command === "ChangeDroneVelocity") {
 			this.changeDroneVelocity(userInfo.userId, params);
 		}
@@ -701,7 +721,14 @@ class DroneGame extends GamePlusQuiz {
 		const now: number = performance.now();
 		userDrone.changingDirection(now);
 		userDrone.changeVelocity(+parameters[0], +parameters[1], now);
-	}
+  }
+
+  smokeOn(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.smokeOn(params);
+  }
 
 	paint(userId: string, command: string, params: string) {
 		let userDrone: Drone = <Drone>this.allDrones.find(userId);
@@ -1034,8 +1061,10 @@ class DroneGame extends GamePlusQuiz {
 	boomboxes: Sprites;
 	droneGateways: Gateways;
 	allDrones: SpriteCollection;
-	allSeeds: SpriteCollection;
-	redSplats: SplatSprites;
+  allSeeds: SpriteCollection;
+
+  // TODO: Update this to a variety of paint shapes with the ability to hue shift paint.
+  redSplats: SplatSprites;
 	blackSplats: SplatSprites;
 	whiteSplats: SplatSprites;
 	orangeSplats: SplatSprites;
@@ -1046,7 +1075,9 @@ class DroneGame extends GamePlusQuiz {
 	cyanSplats: SplatSprites;
 	indigoSplats: SplatSprites;
 	violetSplats: SplatSprites;
-	magentaSplats: SplatSprites;
+  magentaSplats: SplatSprites;
+
+  smokeSprites: Sprites;
 
 	//` ![](2B073D0DC3C289F9E5723CAB5FD45014.png;;;0.02717,0.02717)
 
@@ -1111,7 +1142,20 @@ class DroneGame extends GamePlusQuiz {
 		drones.moves = true;
 		this.allDrones.add(drones);
 		return drones;
-	}
+  }
+
+  loadSmoke(): Sprites {
+    const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.Sequential, true);
+    smoke.segmentSize = 47;
+    smoke.returnFrameIndex = 30;
+    smoke.originX = 74;
+    smoke.originY = 67;
+    smoke.moves = true;
+    smoke.disableGravity();
+    smoke.resumeFrameIndex = 76;
+    smoke.verticalThrustOverride = -0.2;
+    return smoke;
+  }
 
 	warpIns: Sprites;
 
@@ -1128,7 +1172,8 @@ class DroneGame extends GamePlusQuiz {
 
 		//dronesRed = loadDrones('Red');
 		//dronesBlue = loadDrones('Blue');
-		this.dronesRed = this.loadDrones('192x90');
+    this.dronesRed = this.loadDrones('192x90');
+    this.smokeSprites = this.loadSmoke();
 	}
 
 	//function loadWatercolors(color: string): SpriteCollection {
