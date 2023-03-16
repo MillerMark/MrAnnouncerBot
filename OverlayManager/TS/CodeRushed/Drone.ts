@@ -22,6 +22,7 @@ const dronePathExtension = 18;
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 class Drone extends ColorShiftingSpriteProxy {
+
   static readonly width: number = 192;
   static readonly height: number = 90;
   firstCoinCollection: number;
@@ -248,6 +249,13 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   updatePosition(now: number) {
+    if (this.smokeIsOn) {
+      if (now > this.smokeEmitterOffTime)
+        this.smokeIsOn = false;
+      else
+        this.releaseSmokeIfNecessary(now);
+    }
+
     this.storeLastPosition();
     const secondsPassed = (now - this.physicsTimeStart) / 1000;
 
@@ -476,7 +484,7 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   private centerTextInRect(context: CanvasRenderingContext2D, text: string, yTop: number, fontSize: number, alpha: number) {
-    let centerX: number = this.x + this.width / 2;
+    let centerX: number = this.getCenterX();
     context.textBaseline = 'top';
     context.font = fontSize + 'px Arial';
     context.textAlign = 'center';
@@ -495,6 +503,14 @@ class Drone extends ColorShiftingSpriteProxy {
     context.fillStyle = this.color;
     context.fillText(text, centerX, yTop);
     context.globalAlpha = 1;
+  }
+
+  getCenterX(): number {
+    return this.x + this.width / 2;
+  }
+
+  getCenterY(): number {
+    return this.y + this.height / 2;
   }
 
   static readonly coinFadeTime: number = 0.5;
@@ -580,8 +596,8 @@ class Drone extends ColorShiftingSpriteProxy {
 
   dropPaint(command: string, params: string): any {
     const splats: SplatSprites = this.getSplats(command);
-    const droneCenterX: number = this.x + this.width / 2;
-    const droneCenterY: number = this.y + this.height / 2;
+    const droneCenterX: number = this.getCenterX();
+    const droneCenterY: number = this.getCenterY();
     const leftRightAdjust = 40;
     const upDownAdjust = 20;
     let yAdjust: number = Math.random() * upDownAdjust + 15;
@@ -835,22 +851,107 @@ class Drone extends ColorShiftingSpriteProxy {
       this.mostRecentCoinCollection = now;
   }
 
-  smokeOn(params: string) {
+  getDistanceFromLastSmokeEmission(centerX: number, centerY: number): number {
+    let deltaX: number = this.lastSmokeCenterX - centerX;
+    let deltaY: number = this.lastSmokeCenterY - centerY;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  }
+
+  releaseSmokeIfNecessary(now: number) {
+    let centerX: number = this.getCenterX();
+    let centerY: number = this.getCenterY();
+    let distanceFromLastSmokeEmission: number = this.getDistanceFromLastSmokeEmission(centerX, centerY);
+    const minDistanceBetweenEmissions: number = 18;
+    const minTimeBetweenEmissions: number = 2500;
+    let timeSinceLastEmissionMs: number = now - this.lastSmokeEmissionTime;
+    if (distanceFromLastSmokeEmission > minDistanceBetweenEmissions || timeSinceLastEmissionMs > minTimeBetweenEmissions)
+      this.releaseSmoke(now, centerX, centerY);
+  }
+
+  smokeOff() {
+    this.smokeIsOn = false;
+  }
+
+  smokeOn(params: string, now: number) {
+    let emitterDuration: number = parseInt(params);
+    if (emitterDuration <= 0 || emitterDuration > 15 || isNaN(emitterDuration))
+      emitterDuration = 15;
+
+    this.releaseSmoke(now, this.getCenterX(), this.getCenterY());
+    this.smokeIsOn = true;
+    this.smokeEmitterOffTime = now + emitterDuration * 1000;
+  }
+
+  setSmokeColor(params: string) {
+    if (!params) {
+      this.restoreSmokeColorToDefault();
+      return;
+    }
+    const parameters: string[] = params.split(',');
+    if (parameters.length > 0) {
+      this.smokeHueShift = MathEx.clamp(parseInt(parameters[0]), 0, 360);
+      if (parameters.length > 1) {
+        this.smokeSaturationPercent = MathEx.clamp(parseInt(parameters[1]), 0, 100);
+        if (parameters.length > 2) {
+          this.smokeBrightness = MathEx.clamp(parseInt(parameters[2]), 0, 200);
+        }
+      }
+    }
+    else {
+      this.smokeHueShift = MathEx.clamp(parseInt(params), 0, 360);
+    }
+  }
+
+  setSmokeLifetime(params: string) {
+    if (!params) {
+      this.smokeLifetimeMs = Drone.defaultSmokeLifetime;
+      return;
+    }
+
+    const newSmokeLifetime: number = parseFloat(params);
+    if (isNaN(newSmokeLifetime)) {
+      this.smokeLifetimeMs = Drone.defaultSmokeLifetime;
+      return;
+    }
+
+    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, 18) * 1000;
+  }
+
+  restoreSmokeColorToDefault() {
+    const hsl: HueSatLight = HueSatLight.fromHex(this.color);
+    this.smokeHueShift = hsl.hue * 360;
+    this.smokeSaturationPercent = hsl.saturation * 100;
+    this.smokeBrightness = hsl.light * 100;
+  }
+
+  smokeEmitterOffTime: number;
+  lastSmokeCenterX: number;
+  lastSmokeCenterY: number;
+
+  smokeHueShift: number = -1;
+  smokeSaturationPercent: number = 100;
+  smokeBrightness: number = 100;
+  static readonly defaultSmokeLifetime: number = 9000;
+  smokeLifetimeMs: number = Drone.defaultSmokeLifetime;
+  lastSmokeEmissionTime: number;
+  smokeIsOn: boolean;
+
+  private releaseSmoke(now: number, x: number, y: number) {
     if (!(activeDroneGame instanceof DroneGame))
       return;
 
-    const smokeSprites: Sprites = activeDroneGame.smokeSprites;
-    const hueShift: number = 330;
-    const saturationPercent: number = 100;
-    const brightness: number = 100;
-    this.center;
-    let centerX: number = this.x + this.width / 2;
-    let centerY: number = this.y + this.height / 2;
-    // TODO: get the center of the drone!!!!
-    let sprite: SpriteProxy = smokeSprites.addShifted(centerX, centerY, 0, hueShift, saturationPercent, brightness);
-    const rotation: number = Math.random() * 360;
-    sprite.rotation = rotation;
-    sprite.expirationDate = performance.now() + 9000;
+    if (this.smokeHueShift < 0) {
+      this.restoreSmokeColorToDefault();
+    }
+
+    this.lastSmokeEmissionTime = now;
+    this.lastSmokeCenterX = x;
+    this.lastSmokeCenterY = y;
+    let sprite: SpriteProxy = activeDroneGame.smokeSprites.addShifted(this.lastSmokeCenterX, this.lastSmokeCenterY, 0,
+      this.smokeHueShift, this.smokeSaturationPercent, this.smokeBrightness);
+    sprite.rotation = Math.random() * 360;
+    sprite.fadeInTime = 0;
+    sprite.expirationDate = performance.now() + this.smokeLifetimeMs;
     sprite.playToEndOnExpire = true;
   }
 

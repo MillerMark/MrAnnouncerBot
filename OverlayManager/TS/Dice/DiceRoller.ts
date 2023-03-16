@@ -3252,8 +3252,9 @@ class DieRoller {
 		// @ts-ignore - THREE
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-		this.container = document.getElementById(`ThreeJS.${this.groupName}`);
-		this.container.appendChild(this.renderer.domElement);
+    this.container = document.getElementById(`ThreeJS.${this.groupName}`);
+    if (this.container)
+		  this.container.appendChild(this.renderer.domElement);
 
 		// EVENTS
 		// CONTROLS

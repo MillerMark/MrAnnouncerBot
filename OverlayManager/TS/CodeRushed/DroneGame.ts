@@ -335,7 +335,20 @@ class DroneGame extends GamePlusQuiz {
     }
 
     else if (command === "SmokeOn") {
-      this.smokeOn(userInfo.userId, params);
+      this.smokeOn(userInfo.userId, params, now);
+    }
+
+    else if (command === "SmokeOff") {
+      this.smokeOff(userInfo.userId);
+    }
+
+    else if (command === "SmokeColor") {
+      this.smokeColor(userInfo.userId, params);
+    }
+
+
+    else if (command === "SmokeLifetime") {
+      this.smokeLifetime(userInfo.userId, params);
     }
 
 		else if (command === "ChangeDroneVelocity") {
@@ -387,7 +400,7 @@ class DroneGame extends GamePlusQuiz {
 			return true;
 		}
 	}
-
+    
 	destroyAllDronesOverMark(): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
 			drones.spriteProxies.forEach(function (drone: Drone) {
@@ -723,11 +736,32 @@ class DroneGame extends GamePlusQuiz {
 		userDrone.changeVelocity(+parameters[0], +parameters[1], now);
   }
 
-  smokeOn(userId: string, params: string) {
+  smokeOff(userId: string) {
     let userDrone: Drone = <Drone>this.allDrones.find(userId);
     if (!userDrone)
       return;
-    userDrone.smokeOn(params);
+    userDrone.smokeOff();
+  }
+
+  smokeOn(userId: string, params: string, now: number) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.smokeOn(params, now);
+  }
+
+  smokeColor(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.setSmokeColor(params);
+  }
+
+  smokeLifetime(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.setSmokeLifetime(params);
   }
 
 	paint(userId: string, command: string, params: string) {
@@ -1148,8 +1182,8 @@ class DroneGame extends GamePlusQuiz {
     const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.Sequential, true);
     smoke.segmentSize = 47;
     smoke.returnFrameIndex = 30;
-    smoke.originX = 74;
-    smoke.originY = 67;
+    smoke.originX = 60;
+    smoke.originY = 61;
     smoke.moves = true;
     smoke.disableGravity();
     smoke.resumeFrameIndex = 76;
