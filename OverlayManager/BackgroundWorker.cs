@@ -137,17 +137,17 @@ namespace OverlayManager
 					SilentAnswerQuiz(msg, whisperMessage); break;
 			}
 		}
-		
-		void AnswerQuiz(string args, ChatMessage chatMessage)
+
+		async void AnswerQuiz(string args, ChatMessage chatMessage)
 		{
-			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, 0);
-			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, 0);
+			await hub.Clients.All.ExecuteCommand("AnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
 		}
 
-		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
+		async void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
 		{
-			UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, 0);
-			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, 0);
+			await hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)

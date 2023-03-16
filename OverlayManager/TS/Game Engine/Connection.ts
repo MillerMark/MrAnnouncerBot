@@ -161,19 +161,19 @@ function rollDice(diceRollData: string) {
 }
 
 class UserInfo {
-	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public showsWatched: number) {
+	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public profileImageUrl: string, public showsWatched: number) {
 
 	}
 }
-function controlSpaceship(command: string, data: string, userId: string, userName: string, displayName: string, color: string, showsWatched: number) {
-	let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, showsWatched);
+function controlSpaceship(command: string, data: string, userId: string, userName: string, displayName: string, color: string, profileImageUrl: string, showsWatched: number) {
+  let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, profileImageUrl, showsWatched);
 	if (activeMarkFliesGame) {
 		activeMarkFliesGame.controlSpaceship(command, data, userInfo, activeMarkFliesGame.nowMs);
 	}
 }
 
-function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, showsWatched: number) {
-	let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, showsWatched);
+function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, profileImageUrl: string, showsWatched: number) {
+  let userInfo: UserInfo = new UserInfo(userId, userName, displayName, color, profileImageUrl, showsWatched);
 	if (activeBackGame) {
 		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
 	}

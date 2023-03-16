@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading;
+using TwitchLib.Api;
 
 namespace OverlayManager
 {
@@ -234,17 +235,17 @@ namespace OverlayManager
                 Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);
         }
 
-        private void ExecuteChatCommand(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string args, int showsWatched, string targetCommand)
+        private async void ExecuteChatCommand(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string args, int showsWatched, string targetCommand)
         {
-            UserInfo userInfo = UserInfo.FromChatMessage(chatMessage, showsWatched);
+			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, showsWatched);
 
             if (string.IsNullOrWhiteSpace(MarkFliesCommand))
-                hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+				await hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
             else
             {
                 if (!string.IsNullOrWhiteSpace(args))
                     MarkFliesData = args;
-                hub.Clients.All.ControlSpaceship(MarkFliesCommand, MarkFliesData, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.showsWatched);
+                await hub.Clients.All.ControlSpaceship(MarkFliesCommand, MarkFliesData, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
             }
         }
 

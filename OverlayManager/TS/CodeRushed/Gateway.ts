@@ -3,19 +3,20 @@
 		super(baseAnimationName, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
 	}
 
-	releaseDrone(now: number, userId: string, displayName: string, color: string, gatewayNum: number): any {
+  releaseDrone(now: number, userId: string, displayName: string, color: string, profileImageUrl: string, gatewayNum: number): any {
 		if (!(activeDroneGame instanceof DroneGame))
 			return;
 		activeDroneGame.allDrones.destroy(userId, addDroneExplosion);
 		let foundGateway = this.find(gatewayNum.toString());
 		if (foundGateway instanceof Gateway)
-			foundGateway.releaseDrone(now, userId, displayName, color);
+      foundGateway.releaseDrone(now, userId, displayName, color, profileImageUrl);
 	}
 }
 
 class WarpInSprite extends SpriteProxy {
 	public userId: string;
 	public displayName: string;
+  public profileImageUrl: string;
 	public color: string;
 	createdDrone: boolean = false;
 
@@ -27,7 +28,8 @@ class WarpInSprite extends SpriteProxy {
 		super.cycled(now);
 
 		if (!this.createdDrone) {
-			Drone.createAt(this.x - Drone.width * this.scale / 2, this.y - Drone.height * this.scale / 2, now, this.createSprite.bind(this), Drone.create, this.userId, this.displayName, this.color);
+      Drone.createAt(this.x - Drone.width * this.scale / 2, this.y - Drone.height * this.scale / 2, now,
+        this.createSprite.bind(this), Drone.create, this.userId, this.displayName, this.color, this.profileImageUrl);
 			this.createdDrone = true;
 		}
 
@@ -61,13 +63,14 @@ class Gateway extends SpriteProxy {
 		return matchData === this.ID.toString();
 	}
 
-	releaseDrone(now: number, userId: string, displayName: string, color: string): any {
+  releaseDrone(now: number, userId: string, displayName: string, color: string, profileImageUrl: string): any {
 		var x: number = this.x + Gateway.size / 2 - Drone.width * this.scale / 2;
 		var y: number = this.y + Gateway.size / 2 - Drone.height * this.scale / 2;
 
 		let warpInSprite: WarpInSprite = new WarpInSprite(0, x, y);
 		warpInSprite.userId = userId;
 		warpInSprite.displayName = displayName;
+		warpInSprite.profileImageUrl = profileImageUrl;
 		warpInSprite.color = color;
 		if (!(activeDroneGame instanceof DroneGame))
 			return;

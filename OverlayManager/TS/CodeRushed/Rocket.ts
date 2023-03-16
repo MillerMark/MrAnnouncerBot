@@ -726,11 +726,11 @@
     //this.createSprite(activeDroneGame.beesYellow, now);
   }
 
-  releaseDrone(now: number, userId: string, displayName: string, color: string): any {
+  releaseDrone(now: number, userId: string, displayName: string, color: string, profileImageUrl: string): any {
     if (!(activeDroneGame instanceof DroneGame))
       return;
     activeDroneGame.allDrones.destroy(userId, addDroneExplosion);
-    Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color);
+    Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color, profileImageUrl);
   }
 
   logState(message) {

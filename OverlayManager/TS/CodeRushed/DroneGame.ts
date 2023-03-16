@@ -317,10 +317,10 @@ class DroneGame extends GamePlusQuiz {
 		else if (command === "Drone") {
 			const gatewayNum: number = +params;
 			needToGetCoins(userInfo.userId);
-			if (gatewayNum)
-				this.droneGateways.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color, gatewayNum);
-			else
-				myRocket.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color);
+      if (gatewayNum)
+        this.droneGateways.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, gatewayNum);
+      else
+        myRocket.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color, userInfo.profileImageUrl);
 		}
 		else if (command === "MoveRelative") {
 			this.moveRelative(now, params, userInfo.userId);

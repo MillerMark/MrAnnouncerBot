@@ -52,7 +52,7 @@
     myRocket.dropMeteor(now);
   }
   else if (evt.keyCode == Key_O) {
-    myRocket.releaseDrone(now, '', '', '');
+    myRocket.releaseDrone(now, '', '', '', '');
   }
   else if (evt.keyCode == Key_S) {
     myRocket.dropSeed(now);
