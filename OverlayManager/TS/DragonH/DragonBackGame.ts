@@ -576,7 +576,7 @@ class DragonBackGame extends DragonGame {
 		this.emitter.particleGravity = 2;
 		this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
 		this.emitter.particleWind = new Vector(2, -0.1);
-	}
+  }
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
 		if (super.executeCommand(command, params, userInfo, now))

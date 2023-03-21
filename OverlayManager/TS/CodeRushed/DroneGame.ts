@@ -26,7 +26,61 @@ class DroneGame extends GamePlusQuiz {
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
-	}
+  }
+
+  //`![Meteor](5F8B49E97A5F459E6434A11E7FD272BE.png)
+  addMeteors() {
+    this.allMeteors = new SpriteCollection();
+
+    const meteorFrameInterval: number = 38;
+    this.redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.redMeteors.moves = true;
+
+    this.blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.blueMeteors.moves = true;
+
+    this.purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.purpleMeteors.moves = true;
+
+    this.allMeteors.add(this.redMeteors);
+    this.allMeteors.add(this.blueMeteors);
+    this.allMeteors.add(this.purpleMeteors);
+  }
+
+  //` ![](2B073D0DC3C289F9E5723CAB5FD45014.png;;;0.02717,0.02717)
+  allWalls: SpriteCollection;
+  horizontalSolidWall: WallSprites;
+  verticalSolidWall: WallSprites;
+  horizontalDoubleWall: WallSprites;
+  verticalDoubleWall: WallSprites;
+  horizontalDashedWall: WallSprites;
+  verticalDashedWall: WallSprites;
+  endCaps: Sprites;
+
+  //` ![](F8F205C07F3FCE8EEA5341ED98A92B36.png)  ![](77833405FDDE3ACB175756288F7BE0F8.png)
+  loadDrones(color: string): Sprites {
+    const drones = new Sprites(`Drones/${color}/Drone`, 30, fps30, AnimationStyle.Loop);
+    drones.segmentSize = 2;
+    drones.removeOnHitFloor = false;
+    drones.moves = true;
+    this.allDrones.add(drones);
+    return drones;
+  }
+
+  loadSmoke(): Sprites {
+    const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.Sequential, true);
+    smoke.segmentSize = 47;
+    smoke.returnFrameIndex = 30;
+    smoke.originX = 60;
+    smoke.originY = 61;
+    smoke.moves = true;
+    smoke.disableGravity();
+    smoke.resumeFrameIndex = 76;
+    smoke.verticalThrustOverride = -0.2;
+    return smoke;
+  }
+
+
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		super.updateScreen(context, nowMs);
@@ -807,25 +861,6 @@ class DroneGame extends GamePlusQuiz {
 	blueMeteors: Sprites;
 	purpleMeteors: Sprites;
 
-	//`![Meteor](5F8B49E97A5F459E6434A11E7FD272BE.png)
-	addMeteors() {
-		this.allMeteors = new SpriteCollection();
-
-		const meteorFrameInterval: number = 38;
-		this.redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-		this.redMeteors.moves = true;
-
-		this.blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-		this.blueMeteors.moves = true;
-
-		this.purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-		this.purpleMeteors.moves = true;
-
-		this.allMeteors.add(this.redMeteors);
-		this.allMeteors.add(this.blueMeteors);
-		this.allMeteors.add(this.purpleMeteors);
-	}
-
 	buildCenterRect(sprites) {
 		sprites.fillRect(100, 100, myCanvas.clientWidth - 100, myCanvas.clientHeight - 100, 12);
 	}
@@ -1113,17 +1148,6 @@ class DroneGame extends GamePlusQuiz {
 
   smokeSprites: Sprites;
 
-	//` ![](2B073D0DC3C289F9E5723CAB5FD45014.png;;;0.02717,0.02717)
-
-	allWalls: SpriteCollection;
-	horizontalSolidWall: WallSprites;
-	verticalSolidWall: WallSprites;
-	horizontalDoubleWall: WallSprites;
-	verticalDoubleWall: WallSprites;
-	horizontalDashedWall: WallSprites;
-	verticalDashedWall: WallSprites;
-	endCaps: Sprites;
-
 	loadWall(orientation: Orientation, style: WallStyle, folder: string, expectedFrameCount: number): WallSprites {
 		var orientationStr: string;
 		if (orientation === Orientation.Horizontal)
@@ -1167,30 +1191,7 @@ class DroneGame extends GamePlusQuiz {
 		this.verticalSolidWall.moves = true;
 		this.allWalls.add(this.verticalSolidWall);
 	}
-
-	//` ![](F8F205C07F3FCE8EEA5341ED98A92B36.png)  ![](77833405FDDE3ACB175756288F7BE0F8.png)
-	loadDrones(color: string): Sprites {
-		const drones = new Sprites(`Drones/${color}/Drone`, 30, fps30, AnimationStyle.Loop);
-		drones.segmentSize = 2;
-		drones.removeOnHitFloor = false;
-		drones.moves = true;
-		this.allDrones.add(drones);
-		return drones;
-  }
-
-  loadSmoke(): Sprites {
-    const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.Sequential, true);
-    smoke.segmentSize = 47;
-    smoke.returnFrameIndex = 30;
-    smoke.originX = 60;
-    smoke.originY = 61;
-    smoke.moves = true;
-    smoke.disableGravity();
-    smoke.resumeFrameIndex = 76;
-    smoke.verticalThrustOverride = -0.2;
-    return smoke;
-  }
-
+  
 	warpIns: Sprites;
 
 	loadWarpInAnimation() {
