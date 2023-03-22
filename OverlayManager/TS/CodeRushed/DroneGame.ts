@@ -68,15 +68,15 @@ class DroneGame extends GamePlusQuiz {
   }
 
   loadSmoke(): Sprites {
-    const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.Sequential, true);
+    const smoke = new Sprites(`Smoke/Smoke`, 150, fps47, AnimationStyle.CenterLoop, true);
     smoke.segmentSize = 47;
     smoke.returnFrameIndex = 30;
+    smoke.resumeFrameIndex = 77;
     smoke.originX = 60;
     smoke.originY = 61;
     smoke.moves = true;
     smoke.disableGravity();
-    smoke.resumeFrameIndex = 76;
-    smoke.verticalThrustOverride = -0.2;
+    smoke.verticalThrustOverride = -0.15;
     return smoke;
   }
 

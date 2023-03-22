@@ -340,7 +340,7 @@ class Part {
 		if (this.reverse) {
 			this.frameIndex--;
 			if (this.frameIndex < 0)
-				if (this.animationStyle === AnimationStyle.Sequential)
+        if (this.animationStyle === AnimationStyle.Sequential || this.animationStyle === AnimationStyle.CenterLoop)
 					this.frameIndex = 0;
 				else // AnimationStyle.Loop
 					this.frameIndex = this.frameCount - 1;
@@ -348,7 +348,7 @@ class Part {
 		else {
 			this.frameIndex++;
 			if (this.frameIndex >= this.frameCount)
-				if (this.animationStyle === AnimationStyle.Sequential)
+        if (this.animationStyle === AnimationStyle.Sequential || this.animationStyle === AnimationStyle.CenterLoop)
 					this.frameIndex = this.frameCount - 1;
 				else // AnimationStyle.Loop
 					this.frameIndex = 0;

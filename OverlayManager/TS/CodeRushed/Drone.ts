@@ -861,10 +861,10 @@ class Drone extends ColorShiftingSpriteProxy {
     let centerX: number = this.getCenterX();
     let centerY: number = this.getCenterY();
     let distanceFromLastSmokeEmission: number = this.getDistanceFromLastSmokeEmission(centerX, centerY);
-    const minDistanceBetweenEmissions: number = 18;
-    const minTimeBetweenEmissions: number = 2500;
+    const minDistanceBetweenEmissions: number = 18;  // px
+    const minTimeBetweenEmissionsMs: number = 2500;
     let timeSinceLastEmissionMs: number = now - this.lastSmokeEmissionTime;
-    if (distanceFromLastSmokeEmission > minDistanceBetweenEmissions || timeSinceLastEmissionMs > minTimeBetweenEmissions)
+    if (distanceFromLastSmokeEmission > minDistanceBetweenEmissions || timeSinceLastEmissionMs > minTimeBetweenEmissionsMs)
       this.releaseSmoke(now, centerX, centerY);
   }
 
@@ -877,7 +877,8 @@ class Drone extends ColorShiftingSpriteProxy {
     if (emitterDuration <= 0 || emitterDuration > 15 || isNaN(emitterDuration))
       emitterDuration = 15;
 
-    this.releaseSmoke(now, this.getCenterX(), this.getCenterY());
+    let smokeSprite: SpriteProxy = this.releaseSmoke(now, this.getCenterX(), this.getCenterY());
+    smokeSprite.logFrameAdvancement = true;
     this.smokeIsOn = true;
     this.smokeEmitterOffTime = now + emitterDuration * 1000;
   }
@@ -902,6 +903,8 @@ class Drone extends ColorShiftingSpriteProxy {
     }
   }
 
+  static readonly maxSmokeLifetimeSeconds: number = 18;
+
   setSmokeLifetime(params: string) {
     if (!params) {
       this.smokeLifetimeMs = Drone.defaultSmokeLifetime;
@@ -914,7 +917,7 @@ class Drone extends ColorShiftingSpriteProxy {
       return;
     }
 
-    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, 18) * 1000;
+    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, maxSmokeLifetimeSeconds) * 1000;
   }
 
   restoreSmokeColorToDefault() {
@@ -936,7 +939,7 @@ class Drone extends ColorShiftingSpriteProxy {
   lastSmokeEmissionTime: number;
   smokeIsOn: boolean;
 
-  private releaseSmoke(now: number, x: number, y: number) {
+  private releaseSmoke(now: number, x: number, y: number): SpriteProxy {
     if (!(activeDroneGame instanceof DroneGame))
       return;
 
@@ -950,9 +953,12 @@ class Drone extends ColorShiftingSpriteProxy {
     let sprite: SpriteProxy = activeDroneGame.smokeSprites.addShifted(this.lastSmokeCenterX, this.lastSmokeCenterY, 0,
       this.smokeHueShift, this.smokeSaturationPercent, this.smokeBrightness);
     sprite.rotation = Math.random() * 360;
-    sprite.fadeInTime = 0;
+    sprite.fadeInTime = 1000;
+    sprite.fadeOutTime = 1000;
+    sprite.fadeOnDestroy = true;
     sprite.expirationDate = performance.now() + this.smokeLifetimeMs;
     sprite.playToEndOnExpire = true;
+    return sprite;
   }
 
   drawUserProfile(context: CanvasRenderingContext2D) {

@@ -88,9 +88,28 @@
 				onFrameAdvanceCallback(this, returnFrameIndex, reverse, nowMs);
 			}, this);
 		}
-	}
+  }
 
-	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex = 0, startIndex = 0, endBounds = 0, reverse = false, frameInterval: number = fps30, fileName = '') {
+  loggedReadyToExitLoop: boolean = false;
+
+  //` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;0,0,1349,519;0.01270,0.01310)
+
+  lastEndBoundsLogged: number = -1;
+  /**
+   * Advances the frameIndex based on the specified parameters.
+   * @param frameCount the number of frames in the animation.
+   * @param nowMs the game time in MS.
+   * @param returnFrameIndex the index of the frame to show (the start of the segment, or end of the segment if reverse is 
+      true) after all the frames in the segment have been shown.
+   * @param startIndex the starting index of the active segment.
+   * @param endBounds the index of the end of the active segment or the index of the last frame if playing to the end.
+   * @param reverse true if animating backwards.
+   * @param frameInterval the interval, in MS, between frames.
+   * @param animationStyle the style of the animation.
+   * @param fileName used only for diagnostics and debugging.
+   * @returns
+   */
+  advanceFrame(frameCount: number, nowMs: number, returnFrameIndex = 0, startIndex = 0, endBounds = 0, reverse = false, frameInterval: number = fps30, animationStyle: AnimationStyle, fileName = '') {
 		if (nowMs < this.lifetimeStart)
 			return;
 
@@ -117,20 +136,49 @@
 		if (reverse) {
 			this.frameIndex -= numFramesToAdvance;
 		}
-		else {
-			let segmentSize: number = endBounds - startIndex;
+    else {
+      let segmentSize: number = endBounds - startIndex;
+      //if (this.logFrameAdvancement) {
+      //  console.log(`numFramesToAdvance = ${numFramesToAdvance}, segmentSize = ${segmentSize}, numFramesToAdvance % segmentSize = ${numFramesToAdvance % segmentSize}`);
+      //}
+
 			if (segmentSize > 0) {
 				this.frameIndex += numFramesToAdvance % segmentSize;
 			}
 			else {
 				this.frameIndex += numFramesToAdvance;
 			}
-		}
+    }
 
-		if (endBounds !== 0) {
-			if (this.frameIndex >= endBounds && (!this.expirationDate || this.getLifeRemainingMs(nowMs) > 0)) {
-				this.frameIndex = startIndex;
-				this.cycled(nowMs);
+    // returnFrameIndex = 30
+    // startIndex = 30
+    // endBounds = 77
+
+    if (endBounds !== 0) {
+      if (this.logFrameAdvancement) {
+        if (this.lastEndBoundsLogged !== endBounds) {
+          this.lastEndBoundsLogged = endBounds;
+          console.error(`endBounds: ${endBounds}`);
+        }
+      }
+      if (this.frameIndex >= endBounds) {
+        if (!this.expirationDate || this.getLifeRemainingMs(nowMs) > 0) {
+
+          if (animationStyle === AnimationStyle.CenterLoop) {
+            if (this.frameIndex >= frameCount) {
+              this.frameIndex = returnFrameIndex;
+              this.cycled(nowMs);
+              if (this.logFrameAdvancement) {
+                console.error(`CenterLoop cycled!`);
+              }
+            }
+          }
+          else {
+            // TODO: Feels like a bug here. Should probably be startIndex + (this.frameIndex - endBounds)
+            this.frameIndex = startIndex;
+            this.cycled(nowMs);
+          }
+        }
 			}
 		}
 		else if (reverse) {
@@ -144,7 +192,11 @@
 				this.frameIndex = returnFrameIndex;
 				this.cycled(nowMs);
 			}
-		}
+    }
+
+    if (this.logFrameAdvancement) {
+      console.log(`frameIndex: ${this.frameIndex}`);
+    }
 	}
 
 	getHalfWidth(): number {
@@ -171,8 +223,7 @@
 			this.x + halfWidth, this.y + halfHeight);
 	}
 
-	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
-		originX = 0, originY = 0): void {
+  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number, originX = 0, originY = 0): void {
 		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
 	}
 
