@@ -289,7 +289,6 @@
     return lifeRemaining < this.fadeOutTime && this.fadeOnDestroy;
   }
 
-  logFrameAdvancement: boolean = false;
   logData: boolean;
   alreadyFadedIn: boolean;
 

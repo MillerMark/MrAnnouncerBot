@@ -1,4 +1,4 @@
-﻿class SpriteProxy extends AnimatedElement {
+﻿class SpriteProxy extends ScalableAnimation {
   frameIntervalOverride: number;
   animationReverseOverride: boolean;
   haveCycledOnce: boolean;
@@ -90,11 +90,8 @@
     }
   }
 
-  loggedReadyToExitLoop: boolean = false;
-
   //` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;0,0,1349,519;0.01270,0.01310)
 
-  lastEndBoundsLogged: number = -1;
   /**
    * Advances the frameIndex based on the specified parameters.
    * @param frameCount the number of frames in the animation.
@@ -153,12 +150,6 @@
     // endBounds = 77
 
     if (endBounds !== 0) {
-      if (this.logFrameAdvancement) {
-        if (this.lastEndBoundsLogged !== endBounds) {
-          this.lastEndBoundsLogged = endBounds;
-          console.error(`endBounds: ${endBounds}`);
-        }
-      }
       if (this.frameIndex >= endBounds) {
         if (!this.expirationDate || this.getLifeRemainingMs(nowMs) > 0) {
 
@@ -166,9 +157,6 @@
             if (this.frameIndex >= frameCount) {
               this.frameIndex = returnFrameIndex;
               this.cycled(nowMs);
-              if (this.logFrameAdvancement) {
-                console.error(`CenterLoop cycled!`);
-              }
             }
             else {
               this.frameIndex = startIndex;
@@ -193,10 +181,6 @@
         this.frameIndex = returnFrameIndex;
         this.cycled(nowMs);
       }
-    }
-
-    if (this.logFrameAdvancement) {
-      console.log(`frameIndex: ${this.frameIndex}`);
     }
   }
 

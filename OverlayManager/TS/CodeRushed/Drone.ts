@@ -861,7 +861,7 @@ class Drone extends ColorShiftingSpriteProxy {
     let centerX: number = this.getCenterX();
     let centerY: number = this.getCenterY();
     let distanceFromLastSmokeEmission: number = this.getDistanceFromLastSmokeEmission(centerX, centerY);
-    const minDistanceBetweenEmissions: number = 18;  // px
+    const minDistanceBetweenEmissions: number = 9;  // px
     const minTimeBetweenEmissionsMs: number = 2500;
     let timeSinceLastEmissionMs: number = now - this.lastSmokeEmissionTime;
     if (distanceFromLastSmokeEmission > minDistanceBetweenEmissions || timeSinceLastEmissionMs > minTimeBetweenEmissionsMs)
@@ -874,15 +874,20 @@ class Drone extends ColorShiftingSpriteProxy {
 
   smokeOn(params: string, now: number) {
     let emitterDuration: number = parseInt(params);
-    if (emitterDuration <= 0 || emitterDuration > 15 || isNaN(emitterDuration))
-      emitterDuration = 15;
+    const maxSmokeEmitterDurationSeconds: number = 15;
+    if (emitterDuration <= 0 || emitterDuration > maxSmokeEmitterDurationSeconds || isNaN(emitterDuration))
+      emitterDuration = maxSmokeEmitterDurationSeconds;
 
     let smokeSprite: SpriteProxy = this.releaseSmoke(now, this.getCenterX(), this.getCenterY());
-    smokeSprite.logFrameAdvancement = true;
     this.smokeIsOn = true;
     this.smokeEmitterOffTime = now + emitterDuration * 1000;
   }
 
+  /**
+   * Sets the smoke color
+   * @param params a comma-separated list of hue (0-360), saturation (0-100), and brightness (0-200). Only hue is 
+   * required. Saturation and Brightness are optional.
+   */
   setSmokeColor(params: string) {
     if (!params) {
       this.restoreSmokeColorToDefault();
@@ -896,6 +901,14 @@ class Drone extends ColorShiftingSpriteProxy {
         if (parameters.length > 2) {
           this.smokeBrightness = MathEx.clamp(parseInt(parameters[2]), 0, 200);
         }
+        else 
+        {
+          this.smokeBrightness = 100;
+        }
+      }
+      else {
+        this.smokeSaturationPercent = 100;
+        this.smokeBrightness = 100;
       }
     }
     else {
@@ -954,9 +967,12 @@ class Drone extends ColorShiftingSpriteProxy {
       this.smokeHueShift, this.smokeSaturationPercent, this.smokeBrightness);
     sprite.rotation = Math.random() * 360;
     sprite.fadeInTime = 1000;
-    sprite.fadeOutTime = 1000;
+    sprite.fadeOutTime = Math.min(2 * this.smokeLifetimeMs / 3, this.smokeLifetimeMs - 1000);
     sprite.fadeOnDestroy = true;
+    sprite.opacity = 0.6;
     sprite.expirationDate = performance.now() + this.smokeLifetimeMs;
+    sprite.scale = 0.5;
+    sprite.targetScale = 3 * this.smokeLifetimeMs / (Drone.maxSmokeLifetimeSeconds * 1000);
     sprite.playToEndOnExpire = true;
     return sprite;
   }

@@ -320,10 +320,6 @@ class Sprites {
     if (sprite.haveCycledOnce && (this.animationStyle === AnimationStyle.Sequential || this.animationStyle === AnimationStyle.CenterLoop)) {
       //if (this.baseAnimation.fileName.endsWith('Slam'))
       //	debugger;
-      if (sprite.logFrameAdvancement)
-      {
-      	console.log(`Removing sprite!`);
-      }
       this.spriteProxies.splice(i, 1);
     }
   }
@@ -413,17 +409,7 @@ class Sprites {
             let timeToEndMs: number = frameInterval * framesToEnd;
             let timeToEndWithOneMoreLoopMs: number = timeToEndMs + frameInterval * segmentSize;
 
-            //if (sprite.logFrameAdvancement) {
-            //  console.log(`timeToEndWithOneMoreLoopMs: `);
-            //}
-
             const readyToExitLoop: boolean = lifetimeMs < timeToEndWithOneMoreLoopMs;
-
-            if (sprite.logFrameAdvancement && readyToExitLoop && !sprite.loggedReadyToExitLoop) {
-              //console.log(`returnFrameIndex = ${returnFrameIndex}, segmentStartIndex = ${segmentStartIndex}, segmentEndIndex = ${segmentEndIndex}`);
-              sprite.loggedReadyToExitLoop = true;
-              console.error(`readyToExitLoop!`);
-            }
 
             if (sprite.playToEndOnExpire && readyToExitLoop)
               segmentEndIndex = frameCount - 1;
@@ -436,15 +422,12 @@ class Sprites {
           if (sprite.playToEndOnExpire && sprite.expirationDate && (fadingOutNow || sprite.playToEndNow))
             segmentEndIndex = frameCount - 1;
         }
-        
+
         //if (sprite.logFrameAdvancement) {
         //  //console.log(`returnFrameIndex = ${returnFrameIndex}, segmentStartIndex = ${segmentStartIndex}, segmentEndIndex = ${segmentEndIndex}`);
         //  console.log(`life remaining: ${sprite.getLifeRemainingMs(nowMs) / 1000} sec`);
         //}
-        if (sprite.logFrameAdvancement)
-        {
-          console.log('segmentEndIndex: ' + segmentEndIndex);
-        }
+        
         sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, segmentStartIndex, segmentEndIndex, reverse, frameInterval, this.animationStyle, this.baseAnimation.fileName);
       }
       else {
@@ -492,8 +475,17 @@ class Sprites {
   }
 
   updatePositions(now: number): void {
+    this.scaleAnimatedElements(now);
     if (this.moves)
       this.updatePositionsForFreeElements(now);
+  }
+
+  scaleAnimatedElements(now: number) {
+    this.spriteProxies.forEach((sprite: SpriteProxy) => {
+      if (sprite.targetScale >= 0) {
+        sprite.setScale(sprite.getScale(now));
+      }
+    }, this);
   }
 
   drawCropped(context: CanvasRenderingContext2D, now: number, dx: number, dy: number, sx: number, sy: number, sw: number, sh: number, dw: number, dh: number) {

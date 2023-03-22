@@ -42,6 +42,18 @@ namespace OverlayManager
         [Column]
         public string Aliases { get; set; }
 
+        /// <summary>
+        /// For documentation only. Describes the parameters to a command.
+        /// </summary>
+        [Column]
+        public string Parameters { get; set; }
+
+        /// <summary>
+        /// For documentation only. Describes the command.
+        /// </summary>
+        [Column]
+        public string Description { get; set; }
+
         [Column]
         public string Shortcut { get; set; }
 
