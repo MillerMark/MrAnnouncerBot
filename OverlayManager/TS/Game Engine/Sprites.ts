@@ -406,11 +406,16 @@ class Sprites {
         let segmentEndIndex: number = segmentStartIndex + segmentSize;
 
         if (this.animationStyle === AnimationStyle.CenterLoop) {
+          segmentEndIndex--;
           if (sprite.expirationDate) {
             let lifetimeMs: number = sprite.expirationDate - nowMs;
             let framesToEnd: number = frameCount - frameIndex;
             let timeToEndMs: number = frameInterval * framesToEnd;
             let timeToEndWithOneMoreLoopMs: number = timeToEndMs + frameInterval * segmentSize;
+
+            //if (sprite.logFrameAdvancement) {
+            //  console.log(`timeToEndWithOneMoreLoopMs: `);
+            //}
 
             const readyToExitLoop: boolean = lifetimeMs < timeToEndWithOneMoreLoopMs;
 
@@ -436,6 +441,10 @@ class Sprites {
         //  //console.log(`returnFrameIndex = ${returnFrameIndex}, segmentStartIndex = ${segmentStartIndex}, segmentEndIndex = ${segmentEndIndex}`);
         //  console.log(`life remaining: ${sprite.getLifeRemainingMs(nowMs) / 1000} sec`);
         //}
+        if (sprite.logFrameAdvancement)
+        {
+          console.log('segmentEndIndex: ' + segmentEndIndex);
+        }
         sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, segmentStartIndex, segmentEndIndex, reverse, frameInterval, this.animationStyle, this.baseAnimation.fileName);
       }
       else {
@@ -528,10 +537,10 @@ class Sprites {
   public drawSprite(context: CanvasRenderingContext2D, sprite: SpriteProxy, nowMs: number, numSpritesDrawn = 0) {
     context.globalAlpha = sprite.getAlpha(nowMs) * this.opacity;
 
-    if (sprite.logFrameAdvancement)
-    {
-      console.log(`context.globalAlpha: ${context.globalAlpha}`);
-    }
+    //if (sprite.logFrameAdvancement)
+    //{
+    //  console.log(`context.globalAlpha: ${context.globalAlpha}`);
+    //}
 
     if (sprite.stillAlive(nowMs, this.baseAnimation.frameCount) && sprite.systemDrawn) {
       if (nowMs >= sprite.lifetimeStart) {

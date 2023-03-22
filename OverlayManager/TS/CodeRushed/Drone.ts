@@ -917,7 +917,7 @@ class Drone extends ColorShiftingSpriteProxy {
       return;
     }
 
-    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, maxSmokeLifetimeSeconds) * 1000;
+    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, Drone.maxSmokeLifetimeSeconds) * 1000;
   }
 
   restoreSmokeColorToDefault() {

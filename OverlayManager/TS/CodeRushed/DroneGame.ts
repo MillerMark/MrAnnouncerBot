@@ -76,7 +76,7 @@ class DroneGame extends GamePlusQuiz {
     smoke.originY = 61;
     smoke.moves = true;
     smoke.disableGravity();
-    smoke.verticalThrustOverride = -0.15;
+    smoke.verticalThrustOverride = -0.05;
     return smoke;
   }
 
