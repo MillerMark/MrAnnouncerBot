@@ -55,7 +55,10 @@ class GravityGames {
     this.activePlanet = earth;
   }
 
+  startedGame: boolean;
+
   startGame(layout: string[]): void {
+    this.startedGame = true;
     if (this.activeGame)
       this.activeGame.end();
     this.newGame();

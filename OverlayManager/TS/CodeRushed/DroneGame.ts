@@ -1371,8 +1371,7 @@ class DroneGame extends GamePlusQuiz {
 			meteorProxy.blowUp();
 	}
 
-
-	collectCoinsInRect(x: number, y: number, width: number, height: number): number {
+  collectCoinsInRect(x: number, y: number, width: number, height: number): number {
 		var coinsCollected: number = this.coins.collect(x, y, width, height);
 		if (coinsCollected > 0) {
 			new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
@@ -1385,17 +1384,46 @@ class DroneGame extends GamePlusQuiz {
 	collectCoins(now: number) {
 		this.collectCoinsInRect(myRocket.x, myRocket.y, 310, 70);
 
-		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.spriteProxies.forEach(function (drone: Drone) {
+		this.allDrones.allSprites.forEach((drones: Sprites) => {
+			drones.spriteProxies.forEach((drone: Drone) => {
 				const margin: number = 8;
 				let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width * drone.scale - margin / 2, Drone.height * drone.scale - margin / 2);
 				if (coinsFound > 0) {
 					connection.invoke("AddCoins", drone.userId, coinsFound);
 					drone.coinCount += coinsFound;
-					drone.justCollectedCoins(now);
+          drone.justCollectedCoins(now);
 				}
 			}, this);
-		}, this);
+    }, this);
+
+    if (gravityGames.startedGame && this.coins.spriteProxies.length == 0)
+    {
+    	this.coins.layout(
+        '******                            *********' + '\n' +
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' + // 10
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '                                           ' + '\n' +
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' + // 20
+        '*                                         *' + '\n' +
+        '*                                         *' + '\n' +
+        '                                          *' + '\n' +
+        '    ******                         ********', coinMargin);
+    }
 
 		//dronesRed.sprites.forEach
 	}
