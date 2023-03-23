@@ -336,8 +336,7 @@ class Part {
 
 		if (this.animationStyle === AnimationStyle.Random)
 			this.frameIndex = Random.intMax(this.frameCount);
-
-		if (this.reverse) {
+    else if (this.reverse) {
 			this.frameIndex--;
 			if (this.frameIndex < 0)
         if (this.animationStyle === AnimationStyle.Sequential || this.animationStyle === AnimationStyle.CenterLoop)

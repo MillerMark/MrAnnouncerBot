@@ -80,7 +80,15 @@ class DroneGame extends GamePlusQuiz {
     return smoke;
   }
 
-
+  loadGravityOrbAsset(fileName: string, originX: number, originY: number): Sprites {
+    const gravityOrb = new Sprites(`GravityOrb/${fileName}`, 209, fps30, AnimationStyle.CenterLoop, true);
+    gravityOrb.segmentSize = 101;
+    gravityOrb.returnFrameIndex = 46;
+    gravityOrb.resumeFrameIndex = 147;
+    gravityOrb.originX = originX;
+    gravityOrb.originY = originY;
+    return gravityOrb;
+  }
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		super.updateScreen(context, nowMs);
@@ -123,7 +131,8 @@ class DroneGame extends GamePlusQuiz {
 
 		//this.beesYellow.updatePositions(now);
     this.smokeSprites.updatePositions(nowMs);
-		this.allDrones.updatePositions(nowMs);
+    this.allDrones.updatePositions(nowMs);
+    GravityWells.cleanUpExpired(nowMs);
 		this.allMeteors.updatePositions(nowMs);
 		this.allWalls.updatePositions(nowMs);
 		this.endCaps.updatePositions(nowMs);
@@ -137,6 +146,8 @@ class DroneGame extends GamePlusQuiz {
 		this.droneGateways.draw(myContext, nowMs);
 		this.warpIns.draw(myContext, nowMs);
     this.boomboxes.draw(myContext, nowMs);
+    this.gravityOrbOuterRingSprites.draw(myContext, nowMs);
+    this.gravityOrbInnerCoreSprites.draw(myContext, nowMs);
     this.smokeSprites.draw(myContext, nowMs);
 		this.allDrones.draw(myContext, nowMs);
 		this.allMeteors.draw(myContext, nowMs);
@@ -386,6 +397,10 @@ class DroneGame extends GamePlusQuiz {
 			command === "green" || command === "cyan" || command === "blue" || command === "indigo"
 			|| command === "violet" || command === "magenta" || command === "black" || command === "white") {
       this.paint(userInfo.userId, command, params);
+    }
+
+    else if (command === "GravityOrb") {
+      this.dropGravityOrb(userInfo.userId, now);
     }
 
     else if (command === "SmokeOn") {
@@ -797,6 +812,13 @@ class DroneGame extends GamePlusQuiz {
     userDrone.smokeOff();
   }
 
+  dropGravityOrb(userId: string, now: number) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.dropGravityOrb(now);
+  }
+
   smokeOn(userId: string, params: string, now: number) {
     let userDrone: Drone = <Drone>this.allDrones.find(userId);
     if (!userDrone)
@@ -1147,6 +1169,8 @@ class DroneGame extends GamePlusQuiz {
   magentaSplats: SplatSprites;
 
   smokeSprites: Sprites;
+  gravityOrbOuterRingSprites: Sprites;
+  gravityOrbInnerCoreSprites: Sprites;
 
 	loadWall(orientation: Orientation, style: WallStyle, folder: string, expectedFrameCount: number): WallSprites {
 		var orientationStr: string;
@@ -1205,10 +1229,10 @@ class DroneGame extends GamePlusQuiz {
 	addDrones() {
 		this.allDrones = new SpriteCollection();
 
-		//dronesRed = loadDrones('Red');
-		//dronesBlue = loadDrones('Blue');
-    this.dronesRed = this.loadDrones('192x90');
+		this.dronesRed = this.loadDrones('192x90');
     this.smokeSprites = this.loadSmoke();
+    this.gravityOrbOuterRingSprites = this.loadGravityOrbAsset('OuterRing', 87, 88.5);
+    this.gravityOrbInnerCoreSprites = this.loadGravityOrbAsset('InnerOrb', 50, 51);
 	}
 
 	//function loadWatercolors(color: string): SpriteCollection {

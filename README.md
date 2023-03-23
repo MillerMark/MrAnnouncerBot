@@ -164,6 +164,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | party | DH.Party1 | Good | 
 | party2 | DH.Party2 | Good | 
 | players | Players | System | 
+| rory | Rory | System | 
 
 ### Level 10
 

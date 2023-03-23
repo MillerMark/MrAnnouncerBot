@@ -371,6 +371,11 @@ class Sprites {
     for (let i = this.spriteProxies.length - 1; i >= 0; i--) {
       const sprite: SpriteProxy = this.spriteProxies[i];
 
+      if (this.animationStyle === AnimationStyle.Random) {
+        sprite.frameIndex = Random.intMax(this.baseAnimation.frameCount);
+        continue;
+      }
+
       let frameInterval: number = this.frameInterval;
       if (sprite.frameIntervalOverride) {
         frameInterval = sprite.frameIntervalOverride;
@@ -572,10 +577,10 @@ class Sprites {
   }
 
   updatePositionsForFreeElements(now: number) {
-    this.spriteProxies.forEach(function (sprite: SpriteProxy) {
+    this.spriteProxies.forEach((sprite: SpriteProxy) => {
       if (!sprite.owned)
         sprite.updatePosition(now);
-    }, this);
+    });
   }
 
   bounce(left: number, top: number, right: number, bottom: number, now: number) {

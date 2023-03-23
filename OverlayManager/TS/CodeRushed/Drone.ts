@@ -20,8 +20,52 @@ function playZap() {
 
 const dronePathExtension = 18;
 
+class GravityWell {
+  constructor(public x: number, public y: number, public owner: SpriteProxy, public expireTime: number) {
+
+  }
+}
+
+class GravityWells {
+  static allGravityWells: Array<GravityWell> = new Array<GravityWell>();
+
+  static add(x: number, y: number, owner: SpriteProxy, expireTime: number) {
+    GravityWells.allGravityWells.push(new GravityWell(x, y, owner, expireTime));
+  }
+
+  static influence(sprite: SpriteProxy, now: number) {
+    if (GravityWells.allGravityWells.length === 0)
+      return;
+
+    GravityWells.allGravityWells.forEach((gravityWell: GravityWell) => {
+      if (gravityWell.owner !== sprite) {
+        if (gravityWell.expireTime < now) {
+          sprite.horizontalThrustOverride = 0;
+          sprite.verticalThrustOverride = 0;
+          console.log(`sprite.horizontalThrustOverride = 0;`);
+        }
+        else {
+          sprite.horizontalThrustOverride = 3;
+          console.error(`sprite.horizontalThrustOverride = 3;`);
+        }
+      }
+    });
+  }
+
+  static cleanUpExpired(now: number) {
+    for (let i = GravityWells.allGravityWells.length - 1; i >= 0; i--) {
+      const gravityWell: GravityWell = GravityWells.allGravityWells[i];
+      if (gravityWell.expireTime < now) {
+        GravityWells.allGravityWells.splice(i, 1);
+      }
+    }
+  }
+}
+
+
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 class Drone extends ColorShiftingSpriteProxy {
+
 
   static readonly width: number = 192;
   static readonly height: number = 90;
@@ -249,6 +293,7 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   updatePosition(now: number) {
+    GravityWells.influence(this, now);
     if (this.smokeIsOn) {
       if (now > this.smokeEmitterOffTime)
         this.smokeIsOn = false;
@@ -389,22 +434,6 @@ class Drone extends ColorShiftingSpriteProxy {
   HorizontalThrust = 2;
   VerticalThrust = 2;
 
-  getHorizontalThrust(now: number): number {
-    if (this.targetPosition) {
-      const maxDistance = 1920;
-      const deltaX: number = this.getTargetDeltaX();
-      const thrust: number = this.getProportionalThrust(deltaX, maxDistance);
-      if (thrust)
-        return thrust;
-    }
-    let thrust = 0;
-    if (this.rightThrustOffTime > now)
-      thrust += this.HorizontalThrust;
-    if (this.leftThrustOffTime > now)
-      thrust -= this.HorizontalThrust;
-    return thrust;
-  }
-
   private getTargetDeltaX(): number {
     return this.targetPosition.x - (this.x + Drone.width / 2);
   }
@@ -428,6 +457,26 @@ class Drone extends ColorShiftingSpriteProxy {
     return Math.abs(delta) <= minThresholdForThrust;
   }
 
+  getHorizontalThrust(now: number): number {
+    if (this.targetPosition) {
+      const maxDistance = 1920;
+      const deltaX: number = this.getTargetDeltaX();
+      const thrust: number = this.getProportionalThrust(deltaX, maxDistance);
+      if (thrust)
+        return thrust;
+    }
+    let thrust = 0;
+    if (this.rightThrustOffTime > now)
+      thrust += this.HorizontalThrust;
+    if (this.leftThrustOffTime > now)
+      thrust -= this.HorizontalThrust;
+
+    if (this.horizontalThrustOverride !== undefined)
+      thrust += this.horizontalThrustOverride;
+
+    return thrust;
+  }
+
   getVerticalThrust(now: number): number {
     if (this.targetPosition) {
       const maxDistance = 1080;
@@ -441,6 +490,9 @@ class Drone extends ColorShiftingSpriteProxy {
       thrust -= this.VerticalThrust;
     if (this.downThrustOffTime > now)
       thrust += this.VerticalThrust;
+    if (this.verticalThrustOverride !== undefined)
+      thrust += this.verticalThrustOverride;
+
     return thrust;
   }
 
@@ -883,6 +935,13 @@ class Drone extends ColorShiftingSpriteProxy {
     this.smokeEmitterOffTime = now + emitterDuration * 1000;
   }
 
+  dropGravityOrb(now: number) {
+    let x: number = this.getCenterX();
+    let y: number = this.getCenterY();
+    this.createGravityOrbAssets(now, x, y);
+    GravityWells.add(x, y, this, now + Drone.actualGravityOrbLifetimeMs);
+  }
+
   /**
    * Sets the smoke color
    * @param params a comma-separated list of hue (0-360), saturation (0-100), and brightness (0-200). Only hue is 
@@ -901,8 +960,7 @@ class Drone extends ColorShiftingSpriteProxy {
         if (parameters.length > 2) {
           this.smokeBrightness = MathEx.clamp(parseInt(parameters[2]), 0, 200);
         }
-        else 
-        {
+        else {
           this.smokeBrightness = 100;
         }
       }
@@ -951,6 +1009,31 @@ class Drone extends ColorShiftingSpriteProxy {
   smokeLifetimeMs: number = Drone.defaultSmokeLifetime;
   lastSmokeEmissionTime: number;
   smokeIsOn: boolean;
+
+  static readonly gravityOrbVisualLifetimeMs: number = 8500;
+  static readonly actualGravityOrbLifetimeMs: number = Drone.gravityOrbVisualLifetimeMs - 2600;
+
+  createGravityOrbAssets(now: number, x: number, y: number) {
+    if (!(activeDroneGame instanceof DroneGame))
+      return;
+
+    const hsl: HueSatLight = HueSatLight.fromHex(this.color);
+
+    let innerCore: SpriteProxy = activeDroneGame.gravityOrbInnerCoreSprites.add(x, y);
+    innerCore.rotation = Math.random() * 360;
+    innerCore.fadeInTime = 300;
+    innerCore.fadeOutTime = 300;
+    innerCore.fadeOnDestroy = true;
+    innerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
+    innerCore.playToEndOnExpire = true;
+
+    let outerCore: SpriteProxy = activeDroneGame.gravityOrbOuterRingSprites.addShifted(x, y, 0, hsl.hue * 360, 100, 125);
+    outerCore.fadeInTime = 300;
+    outerCore.fadeOutTime = 300;
+    outerCore.fadeOnDestroy = true;
+    outerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
+    outerCore.playToEndOnExpire = true;
+  }
 
   private releaseSmoke(now: number, x: number, y: number): SpriteProxy {
     if (!(activeDroneGame instanceof DroneGame))
