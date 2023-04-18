@@ -22,6 +22,7 @@ using TwitchLib.Client;
 using TwitchLib.PubSub;
 using OBSWebsocketDotNet.Types;
 using SheetsPersist;
+using static MrAnnouncerBot.MrAnnouncerBot;
 
 namespace MrAnnouncerBot
 {
@@ -362,8 +363,10 @@ namespace MrAnnouncerBot
 		}
 
 		Dictionary<string, DateTime> playedFanfares = new Dictionary<string, DateTime>();
+        Dictionary<string, DateTime> playedGreetingFromFred = new Dictionary<string, DateTime>();
+        Dictionary<string, DateTime> playedGreetingFromRory = new Dictionary<string, DateTime>();
 
-		Queue<string> fanfareQueue = new Queue<string>();
+        Queue<string> fanfareQueue = new Queue<string>();
 		List<FanfareDto> fanfares = new List<FanfareDto>();
 		DateTime lastFanfareActivated = DateTime.Now;
 		double lastFanfareDuration;
@@ -456,7 +459,7 @@ namespace MrAnnouncerBot
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Unable to play fanfare: " + sceneName);
+					Console.WriteLine($"Unable to play fanfare: {sceneName}. Exception: {ex.Message}");
 					Debugger.Break();
 				}
 
@@ -577,9 +580,54 @@ namespace MrAnnouncerBot
 			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs, backTrackStr);
 		}
 
-		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+        public enum Greeter
+        {
+            Fred,
+            Rory
+        }
+
+        string GetGreeting(Greeter greeter, string userName, string userId)
+        {
+            string settingName;
+            if (greeter == Greeter.Rory)
+                settingName = "rory";
+            else
+                settingName = "fred";
+            
+            DataRow viewerSetting = AllViewerListSettings.GetViewerSetting(userId, userName, settingName);
+            if (viewerSetting == null)
+                return null;
+
+            return viewerSetting.SelectRandom();
+        }
+
+        void PlayGreetingIfNeeded(Dictionary<string, DateTime> greetingCache, string userName, string userId, Greeter greeter)
+        {
+            if (greetingCache.ContainsKey(userId) && greetingCache[userId].DayOfYear == DateTime.Now.DayOfYear)
+                return;  // Already played the greeting today.
+
+            string greeting = GetGreeting(greeter, userName, userId);
+            if (greeting == null)
+                return;
+
+            if (greeter == Greeter.Fred)
+                SayOrThinkIt("fred", greeting);
+            else
+                SayOrThinkIt("rory", greeting);
+
+            greetingCache[userId] = DateTime.Now;
+        }
+
+        void PlayGreetingsFromAvatars(ChatMessage chatMessage)
+        {
+            PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
+            PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+        }
+
+        private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
-			HandleUserFanfare(e.ChatMessage);
+            PlayGreetingsFromAvatars(e.ChatMessage);
+            HandleUserFanfare(e.ChatMessage);
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
@@ -1122,7 +1170,7 @@ namespace MrAnnouncerBot
 			await hubConnection.InvokeAsync(methodName, parameters);
 		}
 
-		async void ThinkIt(ChatMessage chatMessage, int playerId, string phrase)
+        async void ThinkIt(int playerId, string phrase)
 		{
 			string colorStr = ExtractColorStr(ref phrase);
 			string offsetStr = ExtractOffsetStr(ref phrase);
@@ -1176,56 +1224,61 @@ namespace MrAnnouncerBot
 		}
 
 		void SayOrThinkIt(ChatMessage chatMessage)
-		{
-			//if (DateTime.Now.Hour > 16)
-			//{
-			//	Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
-			//	return;
-			//}
+        {
+            //if (DateTime.Now.Hour > 16)
+            //{
+            //	Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
+            //	return;
+            //}
 
-			if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
-			{
-				Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
-				return;
-			}
+            if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
+            {
+                Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
+                return;
+            }
 
-			string msg = chatMessage.Message.Trim();
-			GetNameAndPhrase(msg, out string name, out string phrase);
+            string msg = chatMessage.Message.Trim();
+            GetNameAndPhrase(msg, out string name, out string phrase);
 
-			string colorStr = "";
-			int playerId;
-			if (name == "mark")
-			{
-				playerId = 2;
-				colorStr = "(#3600d1)";
-			}
-			else if (name == "fred" || name == "richard")
-			{
-				playerId = 4;
-				colorStr = "(#284974)";
-			}
-			else if (name == "campbell")
-				playerId = 5;
-			else if (name == "rory")
-			{
-				playerId = 5;
-				colorStr = "(#880000)";
-			}
-			else
-				return;
+            SayOrThinkIt(name, phrase);
+        }
 
-			var censoredPhrase = CensorText(phrase);
+        private void SayOrThinkIt(string name, string phrase)
+        {
+            string colorStr = "";
+            int playerId;
+            if (name == "mark")
+            {
+                playerId = 2;
+                colorStr = "(#3600d1)";
+            }
+            else if (name == "fred" || name == "richard")
+            {
+                playerId = 4;
+                colorStr = "(#284974)";
+            }
+            else if (name == "campbell")
+                playerId = 5;
+            else if (name == "rory")
+            {
+                playerId = 5;
+                colorStr = "(#880000)";
+            }
+            else
+                return;
 
-			if (censoredPhrase.Contains("(#"))  // Already specifies a color?
-				colorStr = "";
+            var censoredPhrase = CensorText(phrase);
 
-			if (phrase.StartsWith("("))
-				ThinkIt(chatMessage, playerId, censoredPhrase + colorStr);
-			else
-				SayIt(playerId, censoredPhrase + colorStr);
-		}
+            if (censoredPhrase.Contains("(#"))  // Already specifies a color?
+                colorStr = "";
 
-		private static void GetNameAndPhrase(string msg, out string name, out string phrase)
+            if (phrase.StartsWith("("))
+                ThinkIt(playerId, censoredPhrase + colorStr);
+            else
+                SayIt(playerId, censoredPhrase + colorStr);
+        }
+
+        private static void GetNameAndPhrase(string msg, out string name, out string phrase)
 		{
 			name = null;
 			phrase = null;
@@ -1269,15 +1322,15 @@ namespace MrAnnouncerBot
 			if (BotCommands.Execute(e.Command.CommandText, e) > 0)
 				return;
 
-			if (e.Command.ChatMessage.DisplayName == "CodeRushed")
+            if (e.Command.ChatMessage.DisplayName == "CodeRushed")
 			{
 				if (e.Command.CommandText == "Reset" && e.Command.ArgumentsAsString == "Fanfare")
 					ResetFanfares();
 
 				if (e.Command.CommandText == "Fanfare")
 				{
-					string displayName = e.Command.ChatMessage.DisplayName;
-					PlayFanfare(displayName);
+					string fanfare = e.Command.ArgumentsAsString;
+					PlayFanfare(fanfare);
 				}
 			}
 
@@ -1311,7 +1364,10 @@ namespace MrAnnouncerBot
 			scenes = null;
 			restrictedScenes = null;
 			channelPointActions = null;
-		}
+            AllViewerListSettings.Invalidate();
+            playedGreetingFromFred.Clear();
+            playedGreetingFromRory.Clear();
+        }
 
 		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
 		{

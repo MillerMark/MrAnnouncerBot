@@ -138,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BotCore\BotCore.csproj" />
+    <ProjectReference Include="..\CommonCore\CommonCore.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />

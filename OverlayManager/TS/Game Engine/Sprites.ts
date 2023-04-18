@@ -100,6 +100,16 @@ class Sprites {
     this.horizontalThrustOverride = 0;
   }
 
+  /**
+   *  
+   * @param x
+   * @param y
+   * @param startingFrameIndex
+   * @param hueShift
+   * @param saturationPercent
+   * @param brightness
+   * @returns
+   */
   addShifted(x: number, y: number, startingFrameIndex = 0, hueShift = 0, saturationPercent = -1, brightness = -1): ColorShiftingSpriteProxy {
     const sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
     this.applyOverrides(sprite);

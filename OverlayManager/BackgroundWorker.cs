@@ -26,7 +26,7 @@ namespace OverlayManager
 			this.hub = hub;
 			Configuration = configuration;
 			//OldInitializeChatCommands();
-			InitializeChatCommands();
+			LoadChatCommands();
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken)
@@ -167,7 +167,7 @@ namespace OverlayManager
 
 			if (command.Command == "reload")
 			{
-				chatCommands = GoogleSheets.Get<ChatCommand>();
+                LoadChatCommands();
 				return;
 			}
 
@@ -197,6 +197,11 @@ namespace OverlayManager
 			return null;
 		}
 
+
+        /// <summary>
+        /// This is deprecated. Commands are now all loaded from the Mr. Announcer Guy spreadsheet.
+        /// https://docs.google.com/spreadsheets/d/1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g/edit#gid=1390191191
+        /// </summary>
 		void OldInitializeChatCommands()
 		{
 			// Changing planets:
@@ -259,9 +264,10 @@ namespace OverlayManager
 			return null;
 		}
 
-		void InitializeChatCommands()
+		void LoadChatCommands()
 		{
 			chatCommands = GoogleSheets.Get<ChatCommand>();
+            AllViewerListSettings.Invalidate();
 		}
 
 		static BackgroundWorker()

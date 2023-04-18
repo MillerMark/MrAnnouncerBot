@@ -21,7 +21,44 @@ function playZap() {
 const dronePathExtension = 18;
 
 class GravityWell {
-  constructor(public x: number, public y: number, public owner: SpriteProxy, public expireTime: number) {
+  // TODO: Immunity needs to last about 3 seconds
+  //! Need to sync up the two portals. Expiration date settings seems to be failing.
+  //! Weird flicker sometimes.
+
+  immuneSprites: Array<SpriteProxy> = [];
+
+  addImmune(sprite: SpriteProxy) {
+    this.immuneSprites.push(sprite);
+  }
+
+  isImmuneTo(sprite: SpriteProxy): boolean {
+    for (let i = 0; i < this.immuneSprites.length; i++) {
+      if (this.immuneSprites[i] === sprite)
+        return true;
+    }
+    return false;
+  }
+
+  connectedPortal: GravityWell = undefined;
+
+  isPortal(): boolean {
+    return this.connectedPortal !== undefined;
+  }
+
+  isPortalTo(newGravityWell: GravityWell, hueShift: number) {
+    this.outerCore.hueShift = hueShift;
+    this.innerOrb.hueShift = hueShift - 280;
+    this.connectedPortal = newGravityWell;
+    if (newGravityWell.expireTime > this.expireTime) {
+      this.expireTime = newGravityWell.expireTime;
+      this.outerCore.expirationDate = newGravityWell.expireTime;
+      this.innerOrb.expirationDate = newGravityWell.expireTime;
+    }
+  }
+
+  constructor(public x: number, public y: number, public owner: SpriteProxy, public expireTime: number,
+    public outerCore: ColorShiftingSpriteProxy,
+    public innerOrb: ColorShiftingSpriteProxy) {
 
   }
 }
@@ -29,27 +66,107 @@ class GravityWell {
 class GravityWells {
   static allGravityWells: Array<GravityWell> = new Array<GravityWell>();
 
-  static add(x: number, y: number, owner: SpriteProxy, expireTime: number) {
-    GravityWells.allGravityWells.push(new GravityWell(x, y, owner, expireTime));
+  static getGravityWellCount(sprite: SpriteProxy): number {
+    let count: number = 0;
+    for (let i = 0; i < GravityWells.allGravityWells.length; i++) {
+      const gravityWell: GravityWell = GravityWells.allGravityWells[i];
+      if (gravityWell.owner === sprite) {
+        count++;
+      }
+    }
+    return count;
   }
 
-  static influence(sprite: SpriteProxy, now: number) {
-    if (GravityWells.allGravityWells.length === 0)
-      return;
-
-    GravityWells.allGravityWells.forEach((gravityWell: GravityWell) => {
-      if (gravityWell.owner !== sprite) {
-        if (gravityWell.expireTime < now) {
-          sprite.horizontalThrustOverride = 0;
-          sprite.verticalThrustOverride = 0;
-          console.log(`sprite.horizontalThrustOverride = 0;`);
-        }
-        else {
-          sprite.horizontalThrustOverride = 3;
-          console.error(`sprite.horizontalThrustOverride = 3;`);
-        }
+  static getFirstGravityWell(sprite: SpriteProxy): GravityWell {
+    let count: number = 0;
+    for (let i = 0; i < GravityWells.allGravityWells.length; i++) {
+      const gravityWell: GravityWell = GravityWells.allGravityWells[i];
+      if (gravityWell.owner === sprite) {
+        return gravityWell;
       }
-    });
+    }
+    return null;
+  }
+
+  static add(x: number, y: number, owner: SpriteProxy, expireTime: number, outerCore: ColorShiftingSpriteProxy, innerOrb: ColorShiftingSpriteProxy): boolean {
+    const existingWellCount: number = GravityWells.getGravityWellCount(owner);
+    if (existingWellCount >= 2) {
+      return false;
+    }
+
+    const newGravityWell: GravityWell = new GravityWell(x, y, owner, expireTime, outerCore, innerOrb);
+
+    if (existingWellCount == 1) {
+      const existingGravityWell: GravityWell = GravityWells.getFirstGravityWell(owner);
+      if (existingGravityWell) {
+        newGravityWell.isPortalTo(existingGravityWell, 45);
+        existingGravityWell.isPortalTo(newGravityWell, 220);
+      }
+
+      // Special case - create a portal!!!!
+    }
+    GravityWells.allGravityWells.push(newGravityWell);
+    return true;
+  }
+
+  /**
+   * Moves the drone closer to the gravity well. 
+   * @param sprite the drone to influence
+   * @param nowMS the game time in MS
+   * @returns true if the drone is over the gravity well. 
+   */
+  static influence(sprite: SpriteProxy, nowMS: number): boolean {
+    if (GravityWells.allGravityWells.length === 0)
+      return false;
+
+    sprite.horizontalThrustOverride = 0;
+    sprite.verticalThrustOverride = 0;
+
+    for (let i = 0; i < GravityWells.allGravityWells.length; i++) {
+      const gravityWell: GravityWell = GravityWells.allGravityWells[i];
+      if (gravityWell.owner === sprite)
+        continue;
+
+      if (gravityWell.expireTime <= nowMS)
+        continue;
+
+      if (gravityWell.isImmuneTo(sprite))
+        continue;
+
+      if (!(sprite instanceof Drone))
+        continue;
+
+      const maxDistance: number = 1920;
+      const distanceToWell: number = MathEx.clamp(sprite.getDistanceToXY(gravityWell.x - Drone.width / 2, gravityWell.y - Drone.height / 2), 0, maxDistance);
+      const minDistanceToWellToExplodeOrTransport: number = 50; // px
+
+      if (distanceToWell < minDistanceToWellToExplodeOrTransport) {
+        if (gravityWell.isPortal()) {
+          sprite.move(gravityWell.connectedPortal.x - sprite.x - sprite.width / 2, gravityWell.connectedPortal.y - sprite.y - sprite.height / 2);
+          gravityWell.connectedPortal.addImmune(sprite);
+          sprite.changingDirection(nowMS);
+          return;
+        }
+        return true;
+      }
+
+      const deltaX: number = gravityWell.x - sprite.getCenterX();
+      const deltaY: number = gravityWell.y - sprite.getCenterY();
+
+      const inverseDistance: number = maxDistance - distanceToWell;
+      const inverseMultiplier: number = inverseDistance / maxDistance;
+      let targetVector: Vector = new Vector(deltaX, deltaY);
+      let normalizedTargetVector: Vector = targetVector.normalize(1);
+      const gravityWellForce: number = 3;
+      const scaledGravityWellForce: number = inverseMultiplier * gravityWellForce;
+      sprite.horizontalThrustOverride += normalizedTargetVector.x * scaledGravityWellForce;
+      sprite.verticalThrustOverride += normalizedTargetVector.y * scaledGravityWellForce;
+
+
+
+    }
+
+    return false;
   }
 
   static cleanUpExpired(now: number) {
@@ -65,8 +182,6 @@ class GravityWells {
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 class Drone extends ColorShiftingSpriteProxy {
-
-
   static readonly width: number = 192;
   static readonly height: number = 90;
   firstCoinCollection: number;
@@ -293,7 +408,11 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   updatePosition(now: number) {
-    GravityWells.influence(this, now);
+    if (GravityWells.influence(this, now)) {
+      this.smokeIsOn = false;
+      this.selfDestruct();
+      return;
+    }
     if (this.smokeIsOn) {
       if (now > this.smokeEmitterOffTime)
         this.smokeIsOn = false;
@@ -936,10 +1055,14 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   dropGravityOrb(now: number) {
+    const existingWellCount: number = GravityWells.getGravityWellCount(this);
+    if (existingWellCount >= 2) {  // Already has 2 gravity wells.
+      return;
+    }
     let x: number = this.getCenterX();
     let y: number = this.getCenterY();
-    this.createGravityOrbAssets(now, x, y);
-    GravityWells.add(x, y, this, now + Drone.actualGravityOrbLifetimeMs);
+    const orbAssets: [ColorShiftingSpriteProxy, ColorShiftingSpriteProxy] = this.createGravityOrbAssets(now, x, y);
+    GravityWells.add(x, y, this, now + Drone.actualGravityOrbLifetimeMs, orbAssets[0], orbAssets[1]);
   }
 
   /**
@@ -1013,13 +1136,13 @@ class Drone extends ColorShiftingSpriteProxy {
   static readonly gravityOrbVisualLifetimeMs: number = 8500;
   static readonly actualGravityOrbLifetimeMs: number = Drone.gravityOrbVisualLifetimeMs - 2600;
 
-  createGravityOrbAssets(now: number, x: number, y: number) {
+  createGravityOrbAssets(now: number, x: number, y: number): [ColorShiftingSpriteProxy, ColorShiftingSpriteProxy] {
     if (!(activeDroneGame instanceof DroneGame))
       return;
 
     const hsl: HueSatLight = HueSatLight.fromHex(this.color);
 
-    let innerCore: SpriteProxy = activeDroneGame.gravityOrbInnerCoreSprites.add(x, y);
+    let innerCore: ColorShiftingSpriteProxy = activeDroneGame.gravityOrbInnerCoreSprites.addShifted(x, y, 0, 0, 100, 100);
     innerCore.rotation = Math.random() * 360;
     innerCore.fadeInTime = 300;
     innerCore.fadeOutTime = 300;
@@ -1027,12 +1150,14 @@ class Drone extends ColorShiftingSpriteProxy {
     innerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
     innerCore.playToEndOnExpire = true;
 
-    let outerCore: SpriteProxy = activeDroneGame.gravityOrbOuterRingSprites.addShifted(x, y, 0, hsl.hue * 360, 100, 125);
+    let outerCore: ColorShiftingSpriteProxy = activeDroneGame.gravityOrbOuterRingSprites.addShifted(x, y, 0, hsl.hue * 360, 100, 125);
     outerCore.fadeInTime = 300;
     outerCore.fadeOutTime = 300;
     outerCore.fadeOnDestroy = true;
     outerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
     outerCore.playToEndOnExpire = true;
+
+    return [outerCore, innerCore];
   }
 
   private releaseSmoke(now: number, x: number, y: number): SpriteProxy {

@@ -1,17 +1,16 @@
-using BotCore;
-using NAudio.Midi;
-using Microsoft.AspNetCore.SignalR;
-using OverlayManager.Hubs;
 using System;
-using SheetsPersist;
-using System.Collections.Generic;
 using System.Linq;
-using TwitchLib.Client.Models;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Threading;
-using TwitchLib.Api;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.SignalR;
+using TwitchLib.Client.Models;
+using BotCore;
+using CommonCore;
+using NAudio.Midi;
+using SheetsPersist;
+using OverlayManager.Hubs;
 
 namespace OverlayManager
 {
@@ -38,6 +37,9 @@ namespace OverlayManager
 
         [Column]
         public string TranslatedCommand { get; set; }
+
+        [Column("C#")]
+        public bool HandledInCSharp { get; set; }
 
         [Column]
         public string Aliases { get; set; }
@@ -67,8 +69,7 @@ namespace OverlayManager
         public bool CommandBecomesArg { get => commandBecomesArgs; set => commandBecomesArgs = value; }
 
         [Column("ChatBack")]
-        // TODO: Rename ChatBack2 to ChatBack
-        public string ChatBack2 { get => chatBackMessage; set => chatBackMessage = value; }
+        public string ChatBack { get => chatBackMessage; set => chatBackMessage = value; }
 
         public ChatCommand(string command, string translatedCommand) : this(command)
         {
@@ -227,6 +228,108 @@ namespace OverlayManager
             midiOut.Send(noteOnEvent.OffEvent.GetAsShortMessage());
         }
 
+        DataRow GetViewerSettingAndReportAnyErrors(ChatMessage chatMessage, string args)
+        {
+            args = args.Trim();
+            string settingName = args.EverythingBefore(" ").Trim();
+            if (string.IsNullOrEmpty(settingName))
+                settingName = args;
+            if (string.IsNullOrEmpty(settingName))
+            {
+                Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} Must specify a setting name, like \"greeting\".");
+                return null;
+            }
+
+            if (!AllViewerListSettings.HasViewerSettings(settingName))
+            {
+                Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} Setting \"{settingName}\" was not found.");
+                return null;
+            }
+
+            DataRow viewerSetting = AllViewerListSettings.GetViewerSetting(chatMessage.UserId, chatMessage.Username, settingName);
+
+            if (viewerSetting == null)
+            {
+                viewerSetting = new DataRow(chatMessage.UserId, chatMessage.Username);
+                AllViewerListSettings.AddViewerSetting(settingName, viewerSetting);
+
+            }
+
+            viewerSetting.SettingName = settingName;
+
+            return viewerSetting;
+        }
+        void AddSetting(ChatMessage chatMessage, string args)
+        {
+            DataRow viewerSetting = GetViewerSettingAndReportAnyErrors(chatMessage, args);
+
+            if (viewerSetting == null)
+                return;
+
+            if (!viewerSetting.HasEmptySlot())
+            {
+                Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} You have no empty slots! Delete a setting slot first.");
+                return;
+            }
+
+            string value = args.Trim().EverythingAfter(" ").Trim();
+            viewerSetting.Add(value);
+        }
+
+        void ShowSettings(ChatMessage chatMessage, string args)
+        {
+            DataRow viewerSetting = GetViewerSettingAndReportAnyErrors(chatMessage, args);
+
+            if (viewerSetting == null)
+                return;
+
+            Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} {viewerSetting.SettingName} settings: {viewerSetting.GetSettingReport()}");
+        }
+
+        void DeleteSettings(ChatMessage chatMessage, string args)
+        {
+            DataRow viewerSetting = GetViewerSettingAndReportAnyErrors(chatMessage, args);
+
+            if (viewerSetting == null)
+                return;
+
+            if (!int.TryParse(args.Trim().EverythingAfter(" "), out int indexToDelete))
+            {
+                Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} Must specify an index to delete (0, 1, 2...)");
+                return;
+            }
+
+            if (indexToDelete < 0 || indexToDelete > 9)
+            {
+                Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} Specify an index between 0 and 9");
+                return;
+            }
+
+            viewerSetting.Delete(indexToDelete);
+        }
+
+        void DeleteAllSettings(ChatMessage chatMessage, string args)
+        {
+            DataRow viewerSetting = GetViewerSettingAndReportAnyErrors(chatMessage, args);
+
+            if (viewerSetting == null)
+                return;
+
+            viewerSetting.DeleteAll();
+        }
+
+        void HandleCSharpCommand(string cmdText, ChatMessage chatMessage, string args)
+        {
+            if (cmdText == "add")
+                AddSetting(chatMessage, args);
+            else if (cmdText == "show")
+                ShowSettings(chatMessage, args);
+            else if (cmdText == "delete")
+                DeleteSettings(chatMessage, args);
+            else if (cmdText == "deleteall")
+                DeleteAllSettings(chatMessage, args);
+        }
+
         public virtual void Execute(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string cmdText, string args, int showsWatched)
         {
             if (!string.IsNullOrWhiteSpace(Shortcut))
@@ -237,6 +340,12 @@ namespace OverlayManager
 
             if (commandBecomesArgs)
                 args = cmdText;
+
+            if (HandledInCSharp)
+            {
+                HandleCSharpCommand(cmdText, chatMessage, args);
+            }
+
             string targetCommand = Translate(cmdText);
             if (targetCommand != null)
             {
