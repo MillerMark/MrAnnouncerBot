@@ -31,7 +31,7 @@ namespace ObsControl
 				obsWebsocket.SetSourceFilterEnabled(part.Trim(), filterName, filterEnabled);
 		}
 
-		static GetSceneListInfo sceneList;
+		//static GetSceneListInfo sceneList;
 
 		private static void ObsWebsocket_StreamStateChanged(object sender, OBSWebsocketDotNet.Types.Events.StreamStateChangedEventArgs e)
 		{

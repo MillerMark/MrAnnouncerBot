@@ -594,7 +594,7 @@ namespace MrAnnouncerBot
             else
                 settingName = "fred";
             
-            DataRow viewerSetting = AllViewerListSettings.GetViewerSetting(userId, userName, settingName);
+            DataRow viewerSetting = AllViewerListSettings.Instance.GetViewerSetting(userId, userName, settingName);
             if (viewerSetting == null)
                 return null;
 
@@ -1364,7 +1364,7 @@ namespace MrAnnouncerBot
 			scenes = null;
 			restrictedScenes = null;
 			channelPointActions = null;
-            AllViewerListSettings.Invalidate();
+            AllViewerListSettings.Instance.Invalidate();
             playedGreetingFromFred.Clear();
             playedGreetingFromRory.Clear();
         }

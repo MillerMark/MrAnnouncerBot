@@ -8,6 +8,7 @@ using System.Reflection;
 
 namespace BotCore
 {
+
     [Document(DocumentNames.ViewerSettings)]
     [Sheet("WillBeOverridden")]
     public class DataRow
@@ -115,7 +116,7 @@ namespace BotCore
         private void SetDirty()
         {
             isDirty = true;
-            AllViewerListSettings.SetDirty();
+            AllViewerListSettings.Instance.SetDirty();
         }
 
         public void DataHasBeenSaved()

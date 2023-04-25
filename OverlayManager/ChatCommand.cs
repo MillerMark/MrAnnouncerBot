@@ -240,18 +240,18 @@ namespace OverlayManager
                 return null;
             }
 
-            if (!AllViewerListSettings.HasViewerSettings(settingName))
+            if (!AllViewerListSettings.Instance.HasViewerSettings(settingName))
             {
                 Twitch.Chat(Twitch.CodeRushedClient, $"@{chatMessage.Username} Setting \"{settingName}\" was not found.");
                 return null;
             }
 
-            DataRow viewerSetting = AllViewerListSettings.GetViewerSetting(chatMessage.UserId, chatMessage.Username, settingName);
+            DataRow viewerSetting = AllViewerListSettings.Instance.GetViewerSetting(chatMessage.UserId, chatMessage.Username, settingName);
 
             if (viewerSetting == null)
             {
                 viewerSetting = new DataRow(chatMessage.UserId, chatMessage.Username);
-                AllViewerListSettings.AddViewerSetting(settingName, viewerSetting);
+                AllViewerListSettings.Instance.AddViewerSetting(settingName, viewerSetting);
 
             }
 
@@ -318,12 +318,41 @@ namespace OverlayManager
             viewerSetting.DeleteAll();
         }
 
-        void HandleCSharpCommand(string cmdText, ChatMessage chatMessage, string args)
+        void SetSmokeColorSetting(ChatMessage chatMessage, string args)
+        {
+            ViewerSettings viewerSettings = AllViewerSettings.Instance.GetViewerSettings(chatMessage.UserId);
+            viewerSettings.SmokeColor = args;
+        }
+
+        void SetSmokeLifetimeSetting(ChatMessage chatMessage, string args)
+        {
+            ViewerSettings viewerSettings = AllViewerSettings.Instance.GetViewerSettings(chatMessage.UserId);
+            viewerSettings.SmokeLifetime = args;
+        }
+
+        void LaunchingDrone(ChatMessage chatMessage, string args, IHubContext<CodeRushedHub, IOverlayCommands> hub, int showsWatched)
+        {
+            ViewerSettings viewerSettings = AllViewerSettings.Instance.GetViewerSettings(chatMessage.UserId);
+
+            if (!string.IsNullOrWhiteSpace(viewerSettings.SmokeColor))
+                ExecuteChatCommand(hub, chatMessage, viewerSettings.SmokeColor, showsWatched, "SmokeColor");
+
+            if (!string.IsNullOrWhiteSpace(viewerSettings.SmokeLifetime))
+                ExecuteChatCommand(hub, chatMessage, viewerSettings.SmokeLifetime, showsWatched, "SmokeLifetime");
+        }
+
+        void HandleCSharpCommand(string cmdText, ChatMessage chatMessage, string args, IHubContext<CodeRushedHub, IOverlayCommands> hub, int showsWatched)
         {
             if (cmdText == "add")
                 AddSetting(chatMessage, args);
             else if (cmdText == "show")
                 ShowSettings(chatMessage, args);
+            else if (cmdText == "drone")
+                LaunchingDrone(chatMessage, args, hub, showsWatched);
+            else if (cmdText == "smokecolor")
+                SetSmokeColorSetting(chatMessage, args);
+            else if (cmdText == "smokelifetime")
+                SetSmokeLifetimeSetting(chatMessage, args);
             else if (cmdText == "delete")
                 DeleteSettings(chatMessage, args);
             else if (cmdText == "deleteall")
@@ -341,16 +370,12 @@ namespace OverlayManager
             if (commandBecomesArgs)
                 args = cmdText;
 
-            if (HandledInCSharp)
-            {
-                HandleCSharpCommand(cmdText, chatMessage, args);
-            }
-
             string targetCommand = Translate(cmdText);
             if (targetCommand != null)
-            {
                 ExecuteChatCommand(hub, chatMessage, args, showsWatched, targetCommand);
-            }
+
+            if (HandledInCSharp)
+                HandleCSharpCommand(cmdText, chatMessage, args, hub, showsWatched);
 
             if (chatBackMessage != null)
                 Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);

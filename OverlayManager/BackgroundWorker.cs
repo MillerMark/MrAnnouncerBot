@@ -267,8 +267,9 @@ namespace OverlayManager
 		void LoadChatCommands()
 		{
 			chatCommands = GoogleSheets.Get<ChatCommand>();
-            AllViewerListSettings.Invalidate();
-		}
+            AllViewerListSettings.Instance.Invalidate();
+            AllViewerSettings.Instance.Invalidate();
+        }
 
 		static BackgroundWorker()
 		{
