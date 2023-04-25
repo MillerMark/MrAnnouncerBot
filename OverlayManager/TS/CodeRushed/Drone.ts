@@ -133,11 +133,11 @@ class GravityWells {
       if (gravityWell.isImmuneTo(sprite))
         continue;
 
-      if (!(sprite instanceof Drone))
+      if (!(sprite instanceof BaseDrone))
         continue;
 
       const maxDistance: number = 1920;
-      const distanceToWell: number = MathEx.clamp(sprite.getDistanceToXY(gravityWell.x - Drone.width / 2, gravityWell.y - Drone.height / 2), 0, maxDistance);
+      const distanceToWell: number = MathEx.clamp(sprite.getDistanceToXY(gravityWell.x - sprite.width / 2, gravityWell.y - sprite.height / 2), 0, maxDistance);
       const minDistanceToWellToExplodeOrTransport: number = 50; // px
 
       if (distanceToWell < minDistanceToWellToExplodeOrTransport) {
@@ -179,33 +179,34 @@ class GravityWells {
   }
 }
 
-
-//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
-class Drone extends ColorShiftingSpriteProxy {
-  static readonly width: number = 192;
-  static readonly height: number = 90;
+class BaseDrone extends ColorShiftingSpriteProxy {
+  static frameWidth: number = 192;
+  static frameHeight: number = 90;
   firstCoinCollection: number;
   mostRecentCoinCollection: number;
   targetPosition: Vector;
   userProfileImage: HTMLImageElement;
   userProfileLoaded: boolean;
 
-  static createAt(x: number, y: number, now: number,
+  static baseCreateAt(sprites: Sprites, x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
-    createDrone: (x: number, y: number, frameCount: number) => Drone,
-    userId: string, displayName: string, color: string, profileImageUrl: string): any {
-    if (!(activeDroneGame instanceof DroneGame))
-      return;
+    createDrone: (x: number, y: number, frameCount: number) => BaseDrone,
+    userId: string, displayName: string, color: string, profileImageUrl: string,
+    width: number, height: number): BaseDrone {
 
-    const drones: Sprites = activeDroneGame.dronesRed;
-    const myDrone: Drone = createSprite(drones, now, createDrone) as Drone;
+    if (!(activeDroneGame instanceof DroneGame))
+      return null;
+
+    const myDrone: BaseDrone = createSprite(sprites, now, createDrone) as BaseDrone;
     const hsl: HueSatLight = HueSatLight.fromHex(color);
     if (hsl)
       myDrone.setHueSatBrightness(hsl.hue * 360, 100, 125);
-    //if (displayName == "CodeRushed" || displayName == "wil_bennett")
+
+    //if (displayName == "CodeRushed")
     //	myDrone.scale = 1.5;
-    myDrone.height = drones.spriteHeight * myDrone.scale;
-    myDrone.width = drones.spriteWidth * myDrone.scale;
+
+    myDrone.height = sprites.spriteHeight * myDrone.scale;
+    myDrone.width = sprites.spriteWidth * myDrone.scale;
     myDrone.displayName = displayName;
     myDrone.profileImageUrl = profileImageUrl;
     const initialBurnTime = 800;
@@ -223,6 +224,8 @@ class Drone extends ColorShiftingSpriteProxy {
     if (color === '')
       color = '#49357b';
     myDrone.color = color;
+
+    return myDrone;
   }
 
   coinCount = 0;
@@ -282,8 +285,8 @@ class Drone extends ColorShiftingSpriteProxy {
     this.lastTimeWeAdvancedTheSparksFrame = now;
   }
 
-  static create(x: number, y: number, frameCount: number): Drone {
-    return new Drone(Random.intMax(frameCount), x, y);
+  static create(x: number, y: number, frameCount: number): BaseDrone {
+    return new BaseDrone(Random.intMax(frameCount), x, y);
   }
 
   hitWall(now: number) {
@@ -484,8 +487,8 @@ class Drone extends ColorShiftingSpriteProxy {
       else if (pitch === 2)
         meteorAdjustY = 8;
       this.meteor.storeLastPosition();
-      this.meteor.x = this.x + Drone.width * this.scale / 2 - meteorWidth / 2;
-      this.meteor.y = this.y + Drone.height * this.scale / 2 - meteorHeight + meteorAdjustY;
+      this.meteor.x = this.x + this.width / 2 - meteorWidth / 2;
+      this.meteor.y = this.y + this.height / 2 - meteorHeight + meteorAdjustY;
     }
 
     if (this.parentSparkSprites != undefined && this.parentSparkSprites != null) {
@@ -495,8 +498,8 @@ class Drone extends ColorShiftingSpriteProxy {
         this.parentSparkSprites = null;
       }
       else {
-        this.sparkX = this.x + Drone.width * this.scale / 2 - this.parentSparkSprites.originX;
-        this.sparkY = this.y + Drone.height * this.scale / 2 - this.parentSparkSprites.originY;
+        this.sparkX = this.x + this.width / 2 - this.parentSparkSprites.originX;
+        this.sparkY = this.y + this.height / 2 - this.parentSparkSprites.originY;
       }
     }
   }
@@ -521,8 +524,8 @@ class Drone extends ColorShiftingSpriteProxy {
     this.parentSparkSprites = parentSparkSprites;
     this.sparkCreationTime = performance.now();
     this.sparkFrameIndex = 0;
-    this.sparkX = this.x + Drone.width * this.scale / 2 - this.parentSparkSprites.originX;
-    this.sparkY = this.y + Drone.height * this.scale / 2 - this.parentSparkSprites.originY;
+    this.sparkX = this.x + this.width / 2 - this.parentSparkSprites.originX;
+    this.sparkY = this.y + this.height / 2 - this.parentSparkSprites.originY;
   }
 
 
@@ -554,11 +557,13 @@ class Drone extends ColorShiftingSpriteProxy {
   VerticalThrust = 2;
 
   private getTargetDeltaX(): number {
-    return this.targetPosition.x - (this.x + Drone.width / 2);
+    // TODO: Check - no scaling??? Seems like it should use the Drone's scaled width
+    return this.targetPosition.x - (this.x + BaseDrone.frameWidth / 2);
   }
 
   private getTargetDeltaY(): number {
-    return this.targetPosition.y - (this.y + Drone.height / 2);
+    // TODO: Check - no scaling???
+    return this.targetPosition.y - (this.y + BaseDrone.frameHeight / 2);
   }
 
   private getProportionalThrust(delta: number, maxDistance: number) {
@@ -616,23 +621,8 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
-    let pitch: number;
-    if (this.frameIndex < 10) { // Up
-      pitch = 0;
-    }
-    else if (this.frameIndex < 20) { // Flat
-      pitch = 1;
-    }
-    else { // Down 
-      pitch = 2;
-    }
-    const roll: number = Math.floor((this.frameIndex % 10) / 2);
-
-    const healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
-
     if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeDroneGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x / this.scale, this.y / this.scale, healthIndex, this.scale);
 
     this.drawUserName(context);
     this.drawCoinsCollected(context, now);
@@ -691,18 +681,18 @@ class Drone extends ColorShiftingSpriteProxy {
     var secondsSinceFirstCollection: number = (now - this.firstCoinCollection || 0) / 1000;
     var secondsSinceMostRecentCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
 
-    if (secondsSinceMostRecentCollection > (Drone.coinFadeTime * 2 + Drone.coinDuration))
+    if (secondsSinceMostRecentCollection > (BaseDrone.coinFadeTime * 2 + BaseDrone.coinDuration))
       return;
 
     var alpha: number = 1;
 
-    if (secondsSinceFirstCollection < Drone.coinFadeTime) {
+    if (secondsSinceFirstCollection < BaseDrone.coinFadeTime) {
       // Fade in...
-      alpha = secondsSinceFirstCollection / Drone.coinFadeTime;
+      alpha = secondsSinceFirstCollection / BaseDrone.coinFadeTime;
     }
 
-    if (secondsSinceMostRecentCollection > Drone.coinFadeTime + Drone.coinDuration) {
-      alpha = 1 - (secondsSinceMostRecentCollection - (Drone.coinFadeTime + Drone.coinDuration)) / Drone.coinFadeTime;
+    if (secondsSinceMostRecentCollection > BaseDrone.coinFadeTime + BaseDrone.coinDuration) {
+      alpha = 1 - (secondsSinceMostRecentCollection - (BaseDrone.coinFadeTime + BaseDrone.coinDuration)) / BaseDrone.coinFadeTime;
     }
 
     const fontSize: number = 14;
@@ -914,11 +904,11 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   getHalfWidth(): number {
-    return Drone.width * this.scale / 2;
+    return this.width / 2;
   }
 
   getHalfHeight(): number {
-    return Drone.height * this.scale / 2;
+    return this.height / 2;
   }
 
   getDistanceTo(otherSprite: SpriteProxy): number {
@@ -968,8 +958,8 @@ class Drone extends ColorShiftingSpriteProxy {
     const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
     const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
-    const centerX: number = this.x + Drone.width * this.scale / 2;
-    const centerY: number = this.y + Drone.height * this.scale / 2;
+    const centerX: number = this.x + this.width / 2;
+    const centerY: number = this.y + this.height / 2;
     const deltaXPixels = x - centerX;
     if (deltaXPixels === 0) {
       return new FuturePoint(x, centerY, now);
@@ -1014,7 +1004,7 @@ class Drone extends ColorShiftingSpriteProxy {
   justCollectedCoins(now: number): void {
     const secondsSinceFirstCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
 
-    if (secondsSinceFirstCollection > Drone.coinFadeTime * 2 + Drone.coinDuration) {
+    if (secondsSinceFirstCollection > BaseDrone.coinFadeTime * 2 + BaseDrone.coinDuration) {
       this.firstCoinCollection = now;
       this.mostRecentCoinCollection = now;
     }
@@ -1062,7 +1052,7 @@ class Drone extends ColorShiftingSpriteProxy {
     let x: number = this.getCenterX();
     let y: number = this.getCenterY();
     const orbAssets: [ColorShiftingSpriteProxy, ColorShiftingSpriteProxy] = this.createGravityOrbAssets(now, x, y);
-    GravityWells.add(x, y, this, now + Drone.actualGravityOrbLifetimeMs, orbAssets[0], orbAssets[1]);
+    GravityWells.add(x, y, this, now + BaseDrone.actualGravityOrbLifetimeMs, orbAssets[0], orbAssets[1]);
   }
 
   /**
@@ -1075,6 +1065,7 @@ class Drone extends ColorShiftingSpriteProxy {
       this.restoreSmokeColorToDefault();
       return;
     }
+
     const parameters: string[] = params.split(',');
     if (parameters.length > 0) {
       this.smokeHueShift = MathEx.clamp(parseInt(parameters[0]), 0, 360);
@@ -1101,17 +1092,17 @@ class Drone extends ColorShiftingSpriteProxy {
 
   setSmokeLifetime(params: string) {
     if (!params) {
-      this.smokeLifetimeMs = Drone.defaultSmokeLifetime;
+      this.smokeLifetimeMs = BaseDrone.defaultSmokeLifetime;
       return;
     }
 
     const newSmokeLifetime: number = parseFloat(params);
     if (isNaN(newSmokeLifetime)) {
-      this.smokeLifetimeMs = Drone.defaultSmokeLifetime;
+      this.smokeLifetimeMs = BaseDrone.defaultSmokeLifetime;
       return;
     }
 
-    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, Drone.maxSmokeLifetimeSeconds) * 1000;
+    this.smokeLifetimeMs = MathEx.clamp(newSmokeLifetime, 2, BaseDrone.maxSmokeLifetimeSeconds) * 1000;
   }
 
   restoreSmokeColorToDefault() {
@@ -1129,12 +1120,12 @@ class Drone extends ColorShiftingSpriteProxy {
   smokeSaturationPercent: number = 100;
   smokeBrightness: number = 100;
   static readonly defaultSmokeLifetime: number = 9000;
-  smokeLifetimeMs: number = Drone.defaultSmokeLifetime;
+  smokeLifetimeMs: number = BaseDrone.defaultSmokeLifetime;
   lastSmokeEmissionTime: number;
   smokeIsOn: boolean;
 
   static readonly gravityOrbVisualLifetimeMs: number = 8500;
-  static readonly actualGravityOrbLifetimeMs: number = Drone.gravityOrbVisualLifetimeMs - 2600;
+  static readonly actualGravityOrbLifetimeMs: number = BaseDrone.gravityOrbVisualLifetimeMs - 2600;
 
   createGravityOrbAssets(now: number, x: number, y: number): [ColorShiftingSpriteProxy, ColorShiftingSpriteProxy] {
     if (!(activeDroneGame instanceof DroneGame))
@@ -1147,14 +1138,14 @@ class Drone extends ColorShiftingSpriteProxy {
     innerCore.fadeInTime = 300;
     innerCore.fadeOutTime = 300;
     innerCore.fadeOnDestroy = true;
-    innerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
+    innerCore.expirationDate = now + BaseDrone.gravityOrbVisualLifetimeMs;
     innerCore.playToEndOnExpire = true;
 
     let outerCore: ColorShiftingSpriteProxy = activeDroneGame.gravityOrbOuterRingSprites.addShifted(x, y, 0, hsl.hue * 360, 100, 125);
     outerCore.fadeInTime = 300;
     outerCore.fadeOutTime = 300;
     outerCore.fadeOnDestroy = true;
-    outerCore.expirationDate = now + Drone.gravityOrbVisualLifetimeMs;
+    outerCore.expirationDate = now + BaseDrone.gravityOrbVisualLifetimeMs;
     outerCore.playToEndOnExpire = true;
 
     return [outerCore, innerCore];
@@ -1180,7 +1171,7 @@ class Drone extends ColorShiftingSpriteProxy {
     sprite.opacity = 0.6;
     sprite.expirationDate = performance.now() + this.smokeLifetimeMs;
     sprite.scale = 0.5;
-    sprite.targetScale = 3 * this.smokeLifetimeMs / (Drone.maxSmokeLifetimeSeconds * 1000);
+    sprite.targetScale = 3 * this.smokeLifetimeMs / (BaseDrone.maxSmokeLifetimeSeconds * 1000);
     sprite.playToEndOnExpire = true;
     return sprite;
   }
@@ -1214,6 +1205,66 @@ class Drone extends ColorShiftingSpriteProxy {
     this.drawUserProfile(context);
   }
 }
+
+//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
+class Drone extends BaseDrone {
+  static createAt(x: number, y: number, now: number,
+    createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
+    createDrone: (x: number, y: number, frameCount: number) => BaseDrone,
+    userId: string, displayName: string, color: string, profileImageUrl: string): BaseDrone {
+
+    if (!(activeDroneGame instanceof DroneGame))
+      return null;
+    const myDrone: BaseDrone = BaseDrone.baseCreateAt(activeDroneGame.dronesRed,
+      x, y, now,
+      createSprite,
+      createDrone,
+      userId, displayName, color, profileImageUrl, 192, 90);
+  }
+
+  drawAdornments(context: CanvasRenderingContext2D, now: number): void {
+    if (!(activeDroneGame instanceof DroneGame))
+      return;
+
+    let pitch: number;
+    if (this.frameIndex < 10) { // Up
+      pitch = 0;
+    }
+    else if (this.frameIndex < 20) { // Flat
+      pitch = 1;
+    }
+    else { // Down 
+      pitch = 2;
+    }
+    const roll: number = Math.floor((this.frameIndex % 10) / 2);
+
+    const healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
+
+    activeDroneGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x / this.scale, this.y / this.scale, healthIndex, this.scale);
+
+    super.drawAdornments(context, now);
+  }
+}
+
+//` ![](Body21.png)
+
+class Roundie extends BaseDrone {
+  static createAt(x: number, y: number, now: number,
+    createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
+    createDrone: (x: number, y: number, frameCount: number) => BaseDrone,
+    userId: string, displayName: string, color: string, profileImageUrl: string): BaseDrone {
+
+    if (!(activeDroneGame instanceof DroneGame))
+      return null;
+
+    const myDrone: BaseDrone = BaseDrone.baseCreateAt(activeDroneGame.roundies,
+      x, y, now,
+      createSprite,
+      createDrone,
+      userId, displayName, color, profileImageUrl, 562, 424);
+  }
+}
+
 
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
   const x: number = drone.x + spriteWidth / 2;

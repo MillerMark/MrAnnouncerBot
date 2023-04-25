@@ -2,7 +2,7 @@
 const meteorHeight: number = 80;
 
 class Meteor extends SpriteProxy {
-  owner: Drone;
+  owner: BaseDrone;
   constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
     super(startingFrameNumber, x, y, lifeSpanMs);
 	}

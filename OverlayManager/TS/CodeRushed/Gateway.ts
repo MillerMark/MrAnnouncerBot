@@ -27,9 +27,10 @@ class WarpInSprite extends SpriteProxy {
 	cycled(now: number) {
 		super.cycled(now);
 
-		if (!this.createdDrone) {
-      Drone.createAt(this.x - Drone.width * this.scale / 2, this.y - Drone.height * this.scale / 2, now,
-        this.createSprite.bind(this), Drone.create, this.userId, this.displayName, this.color, this.profileImageUrl);
+    if (!this.createdDrone) {
+      // TODO: Integrate with Roundie.
+      Drone.createAt(this.x - BaseDrone.frameWidth * this.scale / 2, this.y - BaseDrone.frameHeight * this.scale / 2, now,
+        this.createSprite.bind(this), BaseDrone.create, this.userId, this.displayName, this.color, this.profileImageUrl);
 			this.createdDrone = true;
 		}
 
@@ -64,8 +65,8 @@ class Gateway extends SpriteProxy {
 	}
 
   releaseDrone(now: number, userId: string, displayName: string, color: string, profileImageUrl: string): any {
-		var x: number = this.x + Gateway.size / 2 - Drone.width * this.scale / 2;
-		var y: number = this.y + Gateway.size / 2 - Drone.height * this.scale / 2;
+		var x: number = this.x + Gateway.size / 2 - BaseDrone.frameWidth * this.scale / 2;
+    var y: number = this.y + Gateway.size / 2 - BaseDrone.frameHeight * this.scale / 2;
 
 		let warpInSprite: WarpInSprite = new WarpInSprite(0, x, y);
 		warpInSprite.userId = userId;

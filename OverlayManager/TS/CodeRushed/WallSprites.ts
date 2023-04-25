@@ -6,10 +6,10 @@
   }
 
 
-  wallBounce(testSprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, nowMs: number) {
+  wallBounce(testSprite: BaseDrone | Meteor, spriteWidth: number, spriteHeight: number, nowMs: number) {
     this.spriteProxies.forEach(function (wallSprite: Wall) {
       if (testSprite.pathVector(spriteWidth, spriteHeight).intersectsWith(wallSprite.getLine())) {
-        var needToBounce: boolean = testSprite instanceof Drone || wallSprite.wallStyle === WallStyle.Double;
+        var needToBounce: boolean = testSprite instanceof BaseDrone || wallSprite.wallStyle === WallStyle.Double;
 
         if (needToBounce) {
           let bounceAmplification: number = 1;
@@ -25,9 +25,9 @@
         if (!(activeDroneGame instanceof DroneGame))
           return;
 
-        if (testSprite instanceof Drone) {
+        if (testSprite instanceof BaseDrone) {
           // smoke..
-					activeDroneGame.sparkSmoke.add(testSprite.x + Drone.width * this.scale / 2, testSprite.y + Drone.height * this.scale / 2, 0);
+					activeDroneGame.sparkSmoke.add(testSprite.x + testSprite.width / 2, testSprite.y + testSprite.height / 2, 0);
 
           // sparks...
           if (wallSprite.wallStyle !== WallStyle.Double)

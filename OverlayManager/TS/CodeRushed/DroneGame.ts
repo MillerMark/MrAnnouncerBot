@@ -58,13 +58,22 @@ class DroneGame extends GamePlusQuiz {
   endCaps: Sprites;
 
   //` ![](F8F205C07F3FCE8EEA5341ED98A92B36.png)  ![](77833405FDDE3ACB175756288F7BE0F8.png)
-  loadDrones(color: string): Sprites {
-    const drones = new Sprites(`Drones/${color}/Drone`, 30, fps30, AnimationStyle.Loop);
+  loadDrones(folder: string): Sprites {
+    const drones = new Sprites(`Drones/${folder}/Drone`, 30, fps30, AnimationStyle.Loop);
     drones.segmentSize = 2;
     drones.removeOnHitFloor = false;
     drones.moves = true;
     this.allDrones.add(drones);
     return drones;
+  }
+
+  loadRoundies(): Sprites {
+    const roundies = new Sprites(`Drones/Roundie/Body`, 30, fps2, AnimationStyle.Loop);
+    roundies.segmentSize = 2;
+    roundies.removeOnHitFloor = false;
+    roundies.moves = true;
+    this.allDrones.add(roundies);
+    return roundies;
   }
 
   loadSmoke(): Sprites {
@@ -472,7 +481,7 @@ class DroneGame extends GamePlusQuiz {
     
 	destroyAllDronesOverMark(): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.spriteProxies.forEach(function (drone: Drone) {
+      drones.spriteProxies.forEach(function (drone: BaseDrone) {
 				if (drone.x > 885 && drone.x < 1236 && drone.y > 737)
 					drone.selfDestruct();
 			}, this);
@@ -733,7 +742,7 @@ class DroneGame extends GamePlusQuiz {
 			numbers = ['0', '0'];
 		}
 		// TODO: If third parameter is "x", kill all thrusters as we toss the meteor.
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 		userDrone.tossMeteor(numbers[0], numbers[1]);
@@ -744,7 +753,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneRight(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -752,7 +761,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneLeft(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -760,7 +769,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneUp(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -768,7 +777,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	flyTo(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -780,12 +789,12 @@ class DroneGame extends GamePlusQuiz {
 		userDrone.flyTo(+numbers[0], +numbers[1]);
 	}
 
-	private getDrone(userId: string): Drone {
-		return this.allDrones.find(userId) as Drone;
+  private getDrone(userId: string): BaseDrone {
+    return this.allDrones.find(userId) as BaseDrone;
 	}
 
 	droneDown(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -793,7 +802,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	changeDroneVelocity(userId: string, params: string) {
-		const userDrone: Drone = this.getDrone(userId);
+    const userDrone: BaseDrone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -806,42 +815,42 @@ class DroneGame extends GamePlusQuiz {
   }
 
   smokeOff(userId: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
     if (!userDrone)
       return;
     userDrone.smokeOff();
   }
 
   dropGravityOrb(userId: string, now: number) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
     if (!userDrone)
       return;
     userDrone.dropGravityOrb(now);
   }
 
   smokeOn(userId: string, params: string, now: number) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
     if (!userDrone)
       return;
     userDrone.smokeOn(params, now);
   }
 
   smokeColor(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
     if (!userDrone)
       return;
     userDrone.setSmokeColor(params);
   }
 
   smokeLifetime(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
     if (!userDrone)
       return;
     userDrone.setSmokeLifetime(params);
   }
 
 	paint(userId: string, command: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    let userDrone: BaseDrone = <BaseDrone>this.allDrones.find(userId);
 		if (!userDrone)
 			return;
 
@@ -856,7 +865,7 @@ class DroneGame extends GamePlusQuiz {
 
 	wallBounce(nowMs: number): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.spriteProxies.forEach(function (drone: Drone) {
+      drones.spriteProxies.forEach(function (drone: BaseDrone) {
 				this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
 				this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
 				this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, nowMs);
@@ -1149,6 +1158,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	dronesRed: Sprites;
+	roundies: Sprites;
 	boomboxes: Sprites;
 	droneGateways: Gateways;
 	allDrones: SpriteCollection;
@@ -1230,6 +1240,7 @@ class DroneGame extends GamePlusQuiz {
 		this.allDrones = new SpriteCollection();
 
 		this.dronesRed = this.loadDrones('192x90');
+    this.roundies = this.loadRoundies();
     this.smokeSprites = this.loadSmoke();
     this.gravityOrbOuterRingSprites = this.loadGravityOrbAsset('OuterRing', 87, 88.5);
     this.gravityOrbInnerCoreSprites = this.loadGravityOrbAsset('InnerOrb', 50, 51);
@@ -1380,7 +1391,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now: number): void {
-		let drone: Drone = <Drone>droneProxy;
+    let drone: BaseDrone = <BaseDrone>droneProxy;
 		let meteor: Meteor = <Meteor>meteorProxy;
 		if (drone && meteor) {
 			drone.addMeteor(meteor, now);
@@ -1409,9 +1420,9 @@ class DroneGame extends GamePlusQuiz {
 		this.collectCoinsInRect(myRocket.x, myRocket.y, 310, 70);
 
 		this.allDrones.allSprites.forEach((drones: Sprites) => {
-			drones.spriteProxies.forEach((drone: Drone) => {
+      drones.spriteProxies.forEach((drone: BaseDrone) => {
 				const margin: number = 8;
-				let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width * drone.scale - margin / 2, Drone.height * drone.scale - margin / 2);
+        let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, drone.width - margin / 2, drone.height - margin / 2);
 				if (coinsFound > 0) {
 					connection.invoke("AddCoins", drone.userId, coinsFound);
 					drone.coinCount += coinsFound;

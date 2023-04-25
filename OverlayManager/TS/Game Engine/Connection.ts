@@ -330,7 +330,7 @@ function playerDataChanged(playerID: number, pageID: number, playerData: string)
 
 function userHasCoins(userId: string, amount: number) {
 	if (activeDroneGame instanceof DroneGame) {
-		const userDrone: Drone = activeDroneGame.allDrones.find(userId) as Drone;
+		const userDrone: BaseDrone = activeDroneGame.allDrones.find(userId) as BaseDrone;
 		if (userDrone)
 			userDrone.coinCount += amount;
 	}

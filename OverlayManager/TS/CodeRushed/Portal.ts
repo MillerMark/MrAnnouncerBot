@@ -65,7 +65,7 @@
     const centerX: number = this.x + Portal.size / 2;
 
     const checkDrone = (drone: SpriteProxy) => {
-      if (drone instanceof Drone) {
+      if (drone instanceof BaseDrone) {
         const futurePoint: FuturePoint = drone.getFuturePoint(centerX, now);
         if (futurePoint !== null) {
           const distanceToDrop: number = futurePoint.y - (this.y + Portal.size / 2);
