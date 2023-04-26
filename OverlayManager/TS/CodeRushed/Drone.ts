@@ -1206,7 +1206,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
   }
 }
 
-//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
+//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png;;;0.05664,0.05664)
 class Drone extends BaseDrone {
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
@@ -1246,7 +1246,7 @@ class Drone extends BaseDrone {
   }
 }
 
-//` ![](Body21.png)
+//` ![](Body21.png;;;0.01613,0.01613)
 
 class Roundie extends BaseDrone {
   static createAt(x: number, y: number, now: number,

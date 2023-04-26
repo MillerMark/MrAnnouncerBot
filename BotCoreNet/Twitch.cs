@@ -30,13 +30,13 @@ namespace BotCore
 
 		public static void InitializeConnections()
 		{
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//`! !!!                                                                                      !!!
-			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-			//`! !!!                                                                                      !!!
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-			UnhookEvents(CodeRushedClient);
+            UnhookEvents(CodeRushedClient);
 			var codeRushedOAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
 			var codeRushedConnectionCredentials = new ConnectionCredentials(STR_CodeRushedChannelUserName, codeRushedOAuthToken);
 			CodeRushedClient.Initialize(codeRushedConnectionCredentials, STR_CodeRushedChannelName);

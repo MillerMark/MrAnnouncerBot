@@ -23,10 +23,14 @@ using TwitchLib.PubSub;
 using OBSWebsocketDotNet.Types;
 using SheetsPersist;
 using static MrAnnouncerBot.MrAnnouncerBot;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 namespace MrAnnouncerBot
 {
-	public partial class MrAnnouncerBot
+
+    public partial class MrAnnouncerBot
 	{
 		MySecureString mrAnnouncerGuyClientId;
 		MySecureString mrAnnouncerGuyAccessToken;
@@ -59,9 +63,10 @@ namespace MrAnnouncerBot
 		private bool useObs = true;
 		HubConnection hubConnection;
 
-		public MrAnnouncerBot()
+        public MrAnnouncerBot()
 		{
-			RegisterSpreadsheets();
+            FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
+            RegisterSpreadsheets();
 			CheckDocs();
 			InitChatRoomTimer();
 			LoadPersistentData();
@@ -601,32 +606,74 @@ namespace MrAnnouncerBot
             return viewerSetting.SelectRandom();
         }
 
-        void PlayGreetingIfNeeded(Dictionary<string, DateTime> greetingCache, string userName, string userId, Greeter greeter)
+        public enum PlayGreetingResult
+        {
+            NothingPlayed,
+            RoryPlayed,
+            FredPlayed
+        }
+
+        PlayGreetingResult PlayGreetingIfNeeded(Dictionary<string, DateTime> greetingCache, string userName, string userId, Greeter greeter)
         {
             if (greetingCache.ContainsKey(userId) && greetingCache[userId].DayOfYear == DateTime.Now.DayOfYear)
-                return;  // Already played the greeting today.
+                return PlayGreetingResult.NothingPlayed;  // Already played the greeting today.
 
             string greeting = GetGreeting(greeter, userName, userId);
             if (greeting == null)
-                return;
-
-            if (greeter == Greeter.Fred)
-                SayOrThinkIt("fred", greeting);
-            else
-                SayOrThinkIt("rory", greeting);
+                return PlayGreetingResult.NothingPlayed;
 
             greetingCache[userId] = DateTime.Now;
+
+            if (greeter == Greeter.Fred)
+            {
+                SayOrThinkIt("fred", greeting);
+                return PlayGreetingResult.FredPlayed;
+            }
+            else
+            {
+                SayOrThinkIt("rory", greeting);
+                return PlayGreetingResult.RoryPlayed;
+            }
         }
+
+        Random randominator = new Random();
 
         void PlayGreetingsFromAvatars(ChatMessage chatMessage)
         {
-            PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
-            PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+            PlayGreetingResult playGreetingResult;
+            if (randominator.Next(100) < 50)
+            {
+                playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
+                if (playGreetingResult == PlayGreetingResult.NothingPlayed)
+                    playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+            }
+            else
+            {
+                playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+                if (playGreetingResult == PlayGreetingResult.NothingPlayed)
+                    playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
+            }
         }
 
-        private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+        void MarkThatWeAlreadyGreetedFromFred(string userId)
+        {
+            playedGreetingFromFred[userId] = DateTime.Now;
+        }
+
+        private async void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
-            PlayGreetingsFromAvatars(e.ChatMessage);
+            if (FredGpt.IsTalkingToFred(e.ChatMessage.Message))
+            {
+                MarkThatWeAlreadyGreetedFromFred(e.ChatMessage.UserId);
+                string response = await FredGpt.GetResponse(e.ChatMessage.UserId, e.ChatMessage.Username, e.ChatMessage.Message);
+                if (string.IsNullOrWhiteSpace(response))
+                    PlayGreetingsFromAvatars(e.ChatMessage);
+                else
+                    SayOrThinkIt("fred", response);
+            }
+            else
+                PlayGreetingsFromAvatars(e.ChatMessage);
+
             HandleUserFanfare(e.ChatMessage);
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
@@ -833,7 +880,7 @@ namespace MrAnnouncerBot
 			{
 				Debugger.Break();
 
-				UnhookPubSubEvents(Twitch.CodeRushedPubSub);
+                UnhookPubSubEvents(Twitch.CodeRushedPubSub);
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
 				UnHookTwitchEvents(Twitch.DroneCommandsClient);
 				Twitch.InitializeConnections();
