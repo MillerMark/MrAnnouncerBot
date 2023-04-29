@@ -24,9 +24,11 @@ namespace BotCore
 		private const string STR_CodeRushedChannelName = "CodeRushed";
 		private const string STR_CodeRushedChannelId = "237584851";
 		private const string STR_DroneCommandsChannelName = "DroneCommands";
-		private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
-		private const string STR_DroneCommandsChannelUserName = "DroneCommands";
-		static readonly IConfigurationRoot configuration;
+        private const string STR_DroneCommandsChannelUserName = "DroneCommands";
+        private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
+        private const string STR_FredGptChannelName = "FredGpt";
+        private const string STR_FredGptChannelUserName = "FredGpt";
+        static readonly IConfigurationRoot configuration;
 
 		public static void InitializeConnections()
 		{
@@ -40,7 +42,8 @@ namespace BotCore
 			var codeRushedOAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
 			var codeRushedConnectionCredentials = new ConnectionCredentials(STR_CodeRushedChannelUserName, codeRushedOAuthToken);
 			CodeRushedClient.Initialize(codeRushedConnectionCredentials, STR_CodeRushedChannelName);
-			try
+
+            try
 			{
 				CodeRushedClient.Connect();
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
@@ -65,9 +68,25 @@ namespace BotCore
 				Console.WriteLine(ex.Message);
 				Console.WriteLine(ex.StackTrace);
 				Console.WriteLine();
-			}
+            }
+            
+            var fredGptOAuthToken = Configuration["Secrets:FredGptOAuthToken"];
+            var fredGptConnectionCredentials = new ConnectionCredentials(STR_FredGptChannelUserName, fredGptOAuthToken);
+            FredGptClient.Initialize(fredGptConnectionCredentials /* , STR_FredGptChannelName */);
+            try
+            {
+                FredGptClient.Connect();
+                //Client.JoinRoom(STR_ChannelName, "#botcontrol");
+                HookBasicEvents(FredGptClient);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine();
+            }
 
-		}
+        }
 
 		public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
 		{
@@ -107,8 +126,11 @@ namespace BotCore
 			CodeRushedPubSub.ListenToChannelPoints(STR_CodeRushedChannelId);
 			CodeRushedPubSub.Connect();
 			DroneCommandsClient = new TwitchClient();
-			//DroneCommandsClient.SendMessage(, message)
-			var builder = new ConfigurationBuilder()
+            
+            FredGptClient = new TwitchClient();
+
+            //DroneCommandsClient.SendMessage(, message)
+            var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
 				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
@@ -137,7 +159,8 @@ namespace BotCore
 		public static IConfigurationRoot Configuration { get => configuration; }
 		public static TwitchAPI Api { get; private set; }
 		public static TwitchClient CodeRushedClient { get; private set; }
-		public static TwitchPubSub CodeRushedPubSub { get; private set; }
+        public static TwitchClient FredGptClient { get; private set; }
+        public static TwitchPubSub CodeRushedPubSub { get; private set; }
 		public static TwitchClient DroneCommandsClient { get; private set; }
 		public static bool Logging { get; set; } = true;
 		public static string CodeRushedBotApiClientId { get; set; }
@@ -187,7 +210,8 @@ namespace BotCore
 			{
 				CodeRushedPubSub.Disconnect();
 				CodeRushedClient.Disconnect();
-				DroneCommandsClient.Disconnect();
+                FredGptClient.Disconnect();
+                DroneCommandsClient.Disconnect();
 			}
 			catch (Exception ex)
 			{

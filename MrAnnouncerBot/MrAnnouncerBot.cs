@@ -26,6 +26,7 @@ using static MrAnnouncerBot.MrAnnouncerBot;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
+using System.Drawing;
 
 namespace MrAnnouncerBot
 {
@@ -194,7 +195,8 @@ namespace MrAnnouncerBot
 		{
 			if (useObs)
 				InitializeObsWebSocket();
-			HookupTwitchEvents(Twitch.CodeRushedClient);
+            HookupCoreEvents(Twitch.FredGptClient);
+            HookupTwitchEvents(Twitch.CodeRushedClient);
 			HookupPubSubEvents(Twitch.CodeRushedPubSub);
 			HookupTwitchEvents(Twitch.DroneCommandsClient);
 		}
@@ -274,16 +276,28 @@ namespace MrAnnouncerBot
 			return ChannelPointActions.FirstOrDefault(x => string.Compare(x.Title, title, true) == 0);
 		}
 
-		void HookupTwitchEvents(TwitchClient client)
+        void HookupCoreEvents(TwitchClient client)
+        {
+            client.OnError += Client_OnError;
+            client.OnDisconnected += Client_OnDisconnected;
+        }
+
+        void UnhookCoreEvents(TwitchClient client)
+        {
+            client.OnError -= Client_OnError;
+            client.OnDisconnected -= Client_OnDisconnected;
+        }
+
+        void HookupTwitchEvents(TwitchClient client)
 		{
-			client.OnError += Client_OnError;
-			client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+            HookupCoreEvents(client);
+
+            client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
 			client.OnMessageReceived += TwitchClient_OnMessageReceived;
 			client.OnUserJoined += TwitchClient_OnUserJoined;
 			client.OnUserLeft += TwitchClient_OnUserLeft;
 			client.OnChannelStateChanged += Client_OnChannelStateChanged;
-			client.OnDisconnected += Client_OnDisconnected;
 			client.OnLog += Client_OnLog;
 		}
 
@@ -295,10 +309,10 @@ namespace MrAnnouncerBot
 			client.OnUserJoined -= TwitchClient_OnUserJoined;
 			client.OnUserLeft -= TwitchClient_OnUserLeft;
 			client.OnChannelStateChanged -= Client_OnChannelStateChanged;
-			client.OnDisconnected -= Client_OnDisconnected;
-			client.OnError -= Client_OnError;
 			client.OnLog -= Client_OnLog;
-		}
+            UnhookCoreEvents(client);
+
+        }
 
 		private void Client_OnLog(object sender, OnLogArgs e)
 		{
@@ -660,16 +674,63 @@ namespace MrAnnouncerBot
             playedGreetingFromFred[userId] = DateTime.Now;
         }
 
+        public static Color ColorFromHSV(double hue, double saturation, double value)
+        {
+            int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
+            double f = hue / 60 - Math.Floor(hue / 60);
+
+            value = value * 255;
+            int v = Convert.ToInt32(value);
+            int p = Convert.ToInt32(value * (1 - saturation));
+            int q = Convert.ToInt32(value * (1 - f * saturation));
+            int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
+
+            if (hi == 0)
+                return Color.FromArgb(255, v, t, p);
+            else if (hi == 1)
+                return Color.FromArgb(255, q, v, p);
+            else if (hi == 2)
+                return Color.FromArgb(255, p, v, t);
+            else if (hi == 3)
+                return Color.FromArgb(255, p, q, v);
+            else if (hi == 4)
+                return Color.FromArgb(255, t, p, v);
+            else
+                return Color.FromArgb(255, v, p, q);
+        }
+
+        Color GetHighContrastTextColorAgainstWhiteBackground(Color color)
+        {
+            float hue = color.GetHue();
+            float saturation = color.GetSaturation();
+            float brightness = color.GetBrightness();
+            if (brightness > 0.4)
+            {
+                brightness = 0.4f;
+                return ColorFromHSV(hue, saturation, brightness);
+            }
+            return color;
+        }
+
+        bool IsNotFred(string userId)
+        {
+            return userId != "904388657";
+        }
+
         private async void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
-            if (FredGpt.IsTalkingToFred(e.ChatMessage.Message))
+            if (IsNotFred(e.ChatMessage.UserId) && FredGpt.IsTalkingToFred(e.ChatMessage.Message))
             {
                 MarkThatWeAlreadyGreetedFromFred(e.ChatMessage.UserId);
                 string response = await FredGpt.GetResponse(e.ChatMessage.UserId, e.ChatMessage.Username, e.ChatMessage.Message);
                 if (string.IsNullOrWhiteSpace(response))
                     PlayGreetingsFromAvatars(e.ChatMessage);
                 else
-                    SayOrThinkIt("fred", response);
+                {
+                    SayOrThinkIt("fred", response, ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)));
+                    string trimmedResponse = response.TrimStart('"').TrimEnd('"');
+                    FredChat(trimmedResponse);
+                }
             }
             else
                 PlayGreetingsFromAvatars(e.ChatMessage);
@@ -882,12 +943,14 @@ namespace MrAnnouncerBot
 
                 UnhookPubSubEvents(Twitch.CodeRushedPubSub);
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
-				UnHookTwitchEvents(Twitch.DroneCommandsClient);
-				Twitch.InitializeConnections();
+                UnHookTwitchEvents(Twitch.DroneCommandsClient);
+                UnhookCoreEvents(Twitch.FredGptClient);
+                Twitch.InitializeConnections();
 				HookupTwitchEvents(Twitch.DroneCommandsClient);
 				HookupTwitchEvents(Twitch.CodeRushedClient);
 				HookupPubSubEvents(Twitch.CodeRushedPubSub);
-			}
+                HookupCoreEvents(Twitch.FredGptClient);
+            }
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
 
@@ -934,9 +997,18 @@ namespace MrAnnouncerBot
 		private void Chat(string msg)
 		{
 			Twitch.Chat(Twitch.CodeRushedClient, TruncateForTwitch(msg));
-		}
+        }
 
-		public void Run()
+        private void FredChat(string msg)
+        {
+            if (Twitch.FredGptClient.JoinedChannels.Count == 0)
+            {
+                Twitch.FredGptClient.JoinChannel(STR_ChannelName);
+            }
+            Twitch.Chat(Twitch.FredGptClient, TruncateForTwitch(msg));
+        }
+
+        public void Run()
 		{
 			Twitch.InitializeConnections();
 			InitializeConnections();
@@ -1290,7 +1362,7 @@ namespace MrAnnouncerBot
             SayOrThinkIt(name, phrase);
         }
 
-        private void SayOrThinkIt(string name, string phrase)
+        private void SayOrThinkIt(string name, string phrase, string colorOverride = null)
         {
             string colorStr = "";
             int playerId;
@@ -1313,6 +1385,11 @@ namespace MrAnnouncerBot
             }
             else
                 return;
+
+            if (!string.IsNullOrWhiteSpace(colorOverride))
+            {
+                colorStr = $"({colorOverride})";
+            }
 
             var censoredPhrase = CensorText(phrase);
 
