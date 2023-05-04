@@ -1,5 +1,6 @@
 using MrAnnouncerBot;
 using NUnit;
+using BotCore;
 
 namespace MrAnnounceBotTests
 {

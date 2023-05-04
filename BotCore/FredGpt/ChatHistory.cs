@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 
-namespace MrAnnouncerBot
+namespace BotCore
 {
     public class ChatHistory
     {
@@ -12,6 +12,9 @@ namespace MrAnnouncerBot
         public Queue<ChatPair> ChatPairs { get; set; }
         public string InitialPrompt { get; set; }
         bool isDirty;
+        bool fredHasResponded;
+        bool waitingForFredToRespond;
+        DateTime? waitTimeStart;
 
         public ChatHistory(string initialPrompt)
         {
@@ -37,6 +40,7 @@ namespace MrAnnouncerBot
 
         public void AppendCompletion(string completion)
         {
+            waitingForFredToRespond = false;
             isDirty = true;
             ChatPair lastEntry = ChatPairs.Last();
             lastEntry.FredResponse += completion;
@@ -44,6 +48,7 @@ namespace MrAnnouncerBot
 
         public void AddHumanPart(string humanPrompt)
         {
+            waitingForFredToRespond = true;
             isDirty = true;
             while (ChatPairs.Count >= MaxHistory)
                 ChatPairs.Dequeue();
@@ -53,9 +58,31 @@ namespace MrAnnouncerBot
 
         public void AddCompletionPrompt(string completionPrompt)
         {
+            waitingForFredToRespond = true;
+            if (waitTimeStart == null)
+                waitTimeStart = DateTime.UtcNow;
             isDirty = true;
             ChatPair lastEntry = ChatPairs.Last();
             lastEntry.FredResponse = completionPrompt;
         }
+
+        public void Reset()
+        {
+            if (ChatPairs.Count > 0)
+                ChatPairs = new Queue<ChatPair>(ChatPairs.Take(ChatPairs.Count - 1));
+        }
+
+        public bool WaitingForFredToRespond => waitingForFredToRespond;
+
+        public double SecondsSinceWeStartedWaiting
+        {
+            get
+            {
+                if (waitTimeStart.HasValue)
+                    return (DateTime.UtcNow - waitTimeStart.Value).TotalSeconds;
+                return double.MaxValue;
+            }
+        }
+        
     }
 }

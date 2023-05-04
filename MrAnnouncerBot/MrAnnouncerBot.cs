@@ -27,6 +27,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
 using System.Drawing;
+using System.Speech.Recognition;
 
 namespace MrAnnouncerBot
 {
@@ -101,7 +102,7 @@ namespace MrAnnouncerBot
 			InitializeKidzCodeBot();
 			mrAnnouncerGuyClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
 			mrAnnouncerGuyAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
-		}
+        }
 
 		void ChangeScene(string sceneName)
 		{
@@ -1639,5 +1640,5 @@ namespace MrAnnouncerBot
 		{
 			GoogleSheets.RegisterDocumentID("Mr. Announcer Guy", "1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g");
 		}
-	}
+    }
 }

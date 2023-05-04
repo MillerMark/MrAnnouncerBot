@@ -127,6 +127,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client">
       <Version>7.0.3</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.28.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json">
       <Version>7.0.0</Version>
     </PackageReference>
@@ -161,6 +162,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="StreamDeck Commands\TensCommand.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\ICanRecognizeSpeech.cs" Link="Speech\ICanRecognizeSpeech.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechRecognizerWrapper.cs" Link="Speech\SpeechRecognizerWrapper.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechUI.cs" Link="Speech\SpeechUI.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="GlobalHooks\" />
+    <Folder Include="Speech\" />
   </ItemGroup>
   <PropertyGroup />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

@@ -9,7 +9,7 @@
   <ItemGroup>
     <Compile Remove="Data\**" />
     <Compile Remove="SoundEffects\**" />
-    <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Data\**" />	
     <EmbeddedResource Remove="SoundEffects\**" />
     <None Remove="Data\**" />
     <None Remove="SoundEffects\**" />
@@ -41,7 +41,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.3" />

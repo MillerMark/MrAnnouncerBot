@@ -10,6 +10,7 @@ namespace BotCore
 		{
 			value = initialValue;
 		}
+
 		public override string ToString()
 		{
 			return "This is a secure string. Call GetStr() to get the value.";

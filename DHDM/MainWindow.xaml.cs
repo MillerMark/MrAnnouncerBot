@@ -42,6 +42,7 @@ using TwitchLib.PubSub;
 using System.ComponentModel;
 using ObsControl;
 using DHDM.FlyMark;
+using DevExpress.CodeRush.Foundation.Speak;
 
 namespace DHDM
 {
@@ -99,7 +100,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
-			GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
+            GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
 			MarkFliesManager.Initialize();
 			ChangingInternally = true;
 			try
@@ -125,9 +126,15 @@ namespace DHDM
 			{
 				ChangingInternally = false;
 			}
-		}
 
-		void CheckActionQueue(object sender, EventArgs e)
+            StartSpeechUI();
+            GlobalHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
+            GlobalHooks.Start();
+        }
+
+        SpeechUI speechUI;
+
+        void CheckActionQueue(object sender, EventArgs e)
 		{
 			if (askingQuestion)
 				return;
@@ -10524,7 +10531,8 @@ namespace DHDM
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			Dmx.ShutDown();
+            GlobalHooks.Stop();
+            Dmx.ShutDown();
 			leapDevice.ShuttingDown();
 			AllViewers.Save();
 		}
@@ -11706,7 +11714,73 @@ namespace DHDM
 			JoystickListener.StopListening();
 			BotCore.Twitch.DroneCommandsChat("Stopped listening to the Joystick...");
 		}
-	}
+
+        void StartSpeechUI()
+        {
+            speechUI = new SpeechUI();
+            speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper());
+            speechUI.StartedListening += SpeechUI_StartedListening;
+            speechUI.StoppedListening += SpeechUI_StoppedListening;
+            speechUI.AbortedListening += SpeechUI_AbortedListening;
+            speechUI.WordsRecognized += SpeechUI_WordsRecognized;
+            speechUI.ExceptionThrown += SpeechUI_ExceptionThrown;
+        }
+
+        private void SpeechUI_ExceptionThrown(object sender, Exception e)
+        {
+            
+        }
+
+        private void SpeechUI_WordsRecognized(object sender, string e)
+        {
+            
+        }
+
+        private void SpeechUI_AbortedListening(object sender, EventArgs e)
+        {
+            ShowStoppedListening();
+        }
+
+        void ShowStoppedListening()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Title = "Dungeon Master - Ready";
+            });
+        }
+
+        private void SpeechUI_StoppedListening(object sender, EventArgs e)
+        {
+            ShowStoppedListening();
+        }
+
+        void ShowStartedListening()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Title = "Dungeon Master - Listening";
+            });
+        }
+
+        private void SpeechUI_StartedListening(object sender, EventArgs e)
+        {
+            ShowStartedListening();
+        }
+
+        void ControlKeyStateChanged(bool ctrlKeyWasHitOrReleased)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                bool onlyControlModifierIsDown = Keyboard.Modifiers == ModifierKeys.Control;
+                speechUI.SetListeningStateBasedOnCtrlKey(ctrlKeyWasHitOrReleased, onlyControlModifierIsDown);
+            });
+        }
+
+        private void GlobalHooks_ControlKeyStateChanged(object sender, bool e)
+        {
+            ControlKeyStateChanged(e);
+        }
+    }
 }
 
 
