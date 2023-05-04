@@ -100,6 +100,13 @@ namespace DHDM
 
 		public MainWindow()
 		{
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // !!!                                                                                      !!!
+            // !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            // !!!                                                                                      !!!
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
+
             GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
 			MarkFliesManager.Initialize();
 			ChangingInternally = true;
@@ -11731,9 +11738,11 @@ namespace DHDM
             
         }
 
-        private void SpeechUI_WordsRecognized(object sender, string e)
+        private async void SpeechUI_WordsRecognized(object sender, string e)
         {
-            
+            string response = await FredGpt.GetResponse("Mark", "Mark", e);
+            int playerId = AllPlayers.GetPlayerIdFromName("Fred");
+            SaySomething(response, " #28486b", playerId, "says");
         }
 
         private void SpeechUI_AbortedListening(object sender, EventArgs e)
