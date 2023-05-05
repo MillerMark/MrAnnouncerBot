@@ -11741,8 +11741,7 @@ namespace DHDM
         private async void SpeechUI_WordsRecognized(object sender, string e)
         {
             string response = await FredGpt.GetResponse("Mark", "Mark", e);
-            int playerId = AllPlayers.GetPlayerIdFromName("Fred");
-            SaySomething(response, " #28486b", playerId, "says");
+            SaySomething(response, " #28486b", AllPlayers.GetPlayerIdFromName("Fred"), "says");
         }
 
         private void SpeechUI_AbortedListening(object sender, EventArgs e)
@@ -11773,6 +11772,7 @@ namespace DHDM
 
         private void SpeechUI_StartedListening(object sender, EventArgs e)
         {
+            SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "thinks");
             ShowStartedListening();
         }
 

@@ -339,12 +339,65 @@ class ShowBookManager {
   }
 }
 
+class ThinkingManager {
+  spriteCollection: SpriteCollection;
+  constructor() {
+    this.spriteCollection = new SpriteCollection();
+  }
+
+  draw(context: CanvasRenderingContext2D, nowMs: number) {
+    this.spriteCollection.draw(context, nowMs);
+  }
+
+  addThinkingAnimation(name: string, frameCount: number): void {
+    let originX: number;
+    let originY: number;
+    const baseAnimationName: string = `SpeechBubbles/Thinking/${name}`;
+    let sprites: Sprites = new Sprites(baseAnimationName, frameCount, fps30, AnimationStyle.Loop, true);
+    sprites.originX = 89;
+    sprites.originY = 80;
+    sprites.name = name;
+    this.spriteCollection.add(sprites);
+  }
+
+  static readonly thinkingMaxLifetimeMs: number = 5000;
+
+  showRandomThought(xPos: number, yPos: number) {
+    const randomThoughtSprites: Sprites = this.spriteCollection.getRandom();
+    if (!randomThoughtSprites)
+      return;
+
+    const randomHueShift: number = Math.floor(Math.random() * 360);
+    let thinking: SpriteProxy = randomThoughtSprites.addShifted(xPos + 80, yPos - 120, 0, randomHueShift);
+    thinking.fadeInTime = 400;
+    thinking.fadeOutTime = 400;
+    thinking.expirationDate = performance.now() + thinking.fadeInTime + ThinkingManager.thinkingMaxLifetimeMs + thinking.fadeOutTime;
+  }
+
+
+  loadResources()
+  {
+    this.addThinkingAnimation('A', 38);
+    this.addThinkingAnimation('B', 19);
+    this.addThinkingAnimation('C', 44);
+    this.addThinkingAnimation('D', 49);
+    this.addThinkingAnimation('E', 29);
+    this.addThinkingAnimation('F', 29);
+    this.addThinkingAnimation('G', 29);
+    this.addThinkingAnimation('H', 34);
+    this.addThinkingAnimation('I', 31);
+    this.addThinkingAnimation('J', 27);
+    this.addThinkingAnimation('K', 25);
+  }
+}
+
 class SpeechBubbleManager {
   soundManager: SoundManager;
   wordRenderer: WordRenderer;
   wordWrapper: WordWrapper;
   speechBubbles: Sprites;
   thoughtBubbles: Sprites;
+  thinkingManager: ThinkingManager;
 
   static readonly textColor: string = '#1a0c0a';
   static readonly bulletColor: string = '#5b3c35';
@@ -361,6 +414,7 @@ class SpeechBubbleManager {
   idealTextAspectRatio = 1;
 
   constructor(private iGetPlayerX: IGetPlayerX, private iGetCreatureX: IGetCreatureX = null) {
+    this.thinkingManager = new ThinkingManager();
     this.soundManager = new SoundManager('GameDev/Assets/DragonH/SoundEffects/SpeechBubbles');
     this.wordWrapper = new WordWrapper();
 
@@ -388,6 +442,8 @@ class SpeechBubbleManager {
     this.thoughtBubbles.segmentSize = 15;
     this.thoughtBubbles.originX = 54;
     this.thoughtBubbles.originY = 242;
+
+    this.thinkingManager.loadResources();
   }
 
   static readonly dungeonMasterId: number = 100;
@@ -398,6 +454,7 @@ class SpeechBubbleManager {
     const { playerId, speechType, textToShow, colorStr, xOffset }: { playerId: number; speechType: SpeechType; textToShow: string; colorStr: string; xOffset: number } = this.getSpeechCommandParts(speechStr);
 
     //console.log('sayOrThinkSomething - colorStr: ' + colorStr);
+    console.log('sayOrThinkSomething - speechStr: ' + speechStr);
 
     if (playerId === Number.MIN_VALUE || playerId === Creature.invalidCreatureId || speechType === SpeechType.None)
       return;
@@ -415,51 +472,74 @@ class SpeechBubbleManager {
 
     let { textWidth, topBottomReducePercent, textHeight, sprites, offsetX, textStartX, offsetY, textStartY }: { textWidth: number; topBottomReducePercent: number; textHeight: number; sprites: Sprites; offsetX: number; textStartX: number; offsetY: number; textStartY: number } = this.initializeBasedOnBubbleType(speechType);
 
-    const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, textWidth, this.idealTextAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
+    let speechData: SpeechData = null;
+    let hScale: number;
+    let vScale: number;
 
-    const { paragraphWidth, paragraphHeight }: { paragraphWidth: number; paragraphHeight: number } = this.getParagraphSize(speechData);
+    if (speechType === SpeechType.Thinks && textToShow === '...') {
+      // Special case - thinks!!!
+      hScale = 0.77;
+      vScale = 1;
+    }
+    else 
+     {
+      speechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, textWidth, this.idealTextAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
 
+      const { paragraphWidth, paragraphHeight }: { paragraphWidth: number; paragraphHeight: number } = this.getParagraphSize(speechData);
 
-    const { horizontalScale, verticalScale } = SpeechData.getScale(paragraphWidth, textWidth, paragraphHeight, textHeight);
+      const { horizontalScale, verticalScale } = SpeechData.getScale(paragraphWidth, textWidth, paragraphHeight, textHeight);
+      hScale = horizontalScale;
+      vScale = verticalScale;
+     }
+    
 
     //const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
-
 
     let scaledOffsetX: number | undefined;
     let flippedOffsetX;
     let flippedHorizontalTextOffset;
     let flippedHorizontally;
-    ({ scaledOffsetX, flippedOffsetX, flippedHorizontalTextOffset, flippedHorizontally, textStartX } = this.checkForHorizontalFlip(sprites, offsetX, horizontalScale, playerX, textStartX, textWidth));
+    ({ scaledOffsetX, flippedOffsetX, flippedHorizontalTextOffset, flippedHorizontally, textStartX } = this.checkForHorizontalFlip(sprites, offsetX, hScale, playerX, textStartX, textWidth));
 
     let xPos = playerX + xOffset + scaledOffsetX + flippedOffsetX;
 
     const verticalTextOffsetBecauseNoDescenders: number = this.wordRenderer.fontSize * 0.12;   // Shift down a bit since there are no descenders in the Comic font.
-    let yPos: number = playerY - offsetY * verticalScale;
+    let yPos: number = playerY - offsetY * vScale;
 
-    const { scaledPosOffsetX, scaledPosOffsetY } = this.getScaledPosOffset(sprites, horizontalScale, verticalScale);
+    const { scaledPosOffsetX, scaledPosOffsetY } = this.getScaledPosOffset(sprites, hScale, vScale);
 
-    speechData.x = xPos + flippedHorizontalTextOffset - scaledPosOffsetX + textStartX * horizontalScale;
-    speechData.y = this.getSpeechDataY(yPos, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY, textStartY, verticalScale, speechData);
+    if (speechData)
+    {
+      speechData.x = xPos + flippedHorizontalTextOffset - scaledPosOffsetX + textStartX * hScale;
+      speechData.y = this.getSpeechDataY(yPos, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY, textStartY, vScale, speechData);
+    }
 
     let flipVertically;
-    ({ flipVertically, xPos, yPos, textStartY } = this.checkForVerticalFlip(speechData, playerId, speechType, verticalScale, xPos, yPos, textStartY, textHeight, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY));
+    ({ flipVertically, xPos, yPos, textStartY } = this.checkForVerticalFlip(speechData, playerId, speechType, vScale, xPos, yPos, textStartY, textHeight, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY));
 
-    speechData.width = textWidth * horizontalScale;
-    speechData.height = textHeight * verticalScale;
-    speechData.textColor = colorStr;
-    speechData.playerId = playerId;
-    this.createNewSprite(sprites, xPos, scaledPosOffsetX, yPos, scaledPosOffsetY, speechStr, flippedHorizontally, flipVertically, speechData, horizontalScale, verticalScale);
+    let totalReadingTime: number;
+    if (speechData)
+    {
+      speechData.width = textWidth * hScale;
+      speechData.height = textHeight * vScale;
+      speechData.textColor = colorStr;
+      speechData.playerId = playerId;
+      totalReadingTime = SpeechData.getReadingTimeMs(speechStr);
+    }
+    else 
+      totalReadingTime = ThinkingManager.thinkingMaxLifetimeMs;
+
+    this.createNewSprite(sprites, xPos - scaledPosOffsetX, yPos - scaledPosOffsetY, speechStr, flippedHorizontally, flipVertically, speechData, hScale, vScale, totalReadingTime);
   }
 
-  private createNewSprite(sprites: Sprites, xPos: any, scaledPosOffsetX: number, yPos: number, scaledPosOffsetY: number, speechStr: string, flippedHorizontally: any, flipVertically: any, speechData: SpeechData, horizontalScale: number, verticalScale: number) {
+  private createNewSprite(sprites: Sprites, xPos: number, yPos: number, speechStr: string, flippedHorizontally: any, flipVertically: any, speechData: SpeechData, horizontalScale: number, verticalScale: number, totalReadingTime: number) {
     //console.log(`yPos: ${yPos}, scaledPosOffsetY: ${scaledPosOffsetY}, speechData.y: ${speechData.y}`);
     //console.log(speechData);
-    const sprite: SpriteProxy = sprites.add(xPos - scaledPosOffsetX, yPos - scaledPosOffsetY);
+
+    const sprite: SpriteProxy = sprites.add(xPos, yPos);
     sprite.playToEndOnExpire = true;
     sprite.fadeInTime = 400;
     sprite.fadeOutTime = 467;
-
-    const totalReadingTime: number = SpeechData.getReadingTimeMs(speechStr);
 
     sprite.expirationDate = performance.now() + sprite.fadeInTime + totalReadingTime + sprite.fadeOutTime;
     sprite.flipHorizontally = flippedHorizontally;
@@ -468,12 +548,19 @@ class SpeechBubbleManager {
     sprite.data = speechData;
     sprite.horizontalScale = horizontalScale;
     sprite.verticalScale = verticalScale;
+
+    if (!speechData)
+    {
+      // Special case - thinks!!!
+      // TODO: Consider adding support for flippedHorizontally and flipVertically.
+      this.thinkingManager.showRandomThought(xPos, yPos);
+    }
   }
 
   private checkForVerticalFlip(speechData: SpeechData, playerId: number, speechType: SpeechType, verticalScale: number, xPos: any, yPos: number, textStartY: number, height: number, verticalTextOffsetBecauseNoDescenders: number, scaledPosOffsetY: number) {
     let flipVertically = false;
 
-    if (speechData.y < 0) // Make sure top of text is on screen.
+    if (speechData && speechData.y < 0) // Make sure top of text is on screen.
     {
       // TODO: Handle playerId < 0 for in-game creatures.
       if (playerId === SpeechBubbleManager.dungeonMasterId) {
@@ -752,6 +839,7 @@ class SpeechBubbleManager {
   draw(context: CanvasRenderingContext2D, nowMs: number) {
     this.thoughtBubbles.draw(context, nowMs);
     this.speechBubbles.draw(context, nowMs);
+    this.thinkingManager.draw(context, nowMs);
     this.drawText(context, this.thoughtBubbles);
     this.drawText(context, this.speechBubbles);
   }
