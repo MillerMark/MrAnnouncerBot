@@ -78,7 +78,8 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
-		DispatcherTimer delayRollTimer;
+        DispatcherTimer showThinkingTimer;
+        DispatcherTimer delayRollTimer;
 		DispatcherTimer reconnectToTwitchDungeonMasterTimer;
 		DispatcherTimer reconnectToTwitchDragonHumpersTimer;
 		DispatcherTimer showClearPlayerDiceButtonTimer;
@@ -231,8 +232,11 @@ namespace DHDM
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
+            showThinkingTimer = new DispatcherTimer(DispatcherPriority.Send);
+            showThinkingTimer.Tick += new EventHandler(ShowThinkingTimerHandler);
+            showThinkingTimer.Interval = TimeSpan.FromMilliseconds(850);
 
-			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
+            delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
 			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
 
 			reconnectToTwitchDungeonMasterTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -5555,7 +5559,8 @@ namespace DHDM
 		DateTime clearPlayerDiceButtonShowTime;
 		DateTime clearViewerDiceButtonShowTime;
 		private static readonly TimeSpan timeToAutoClear = TimeSpan.FromSeconds(2); // Delete this.
-		void RealTimeClockHandler(object sender, EventArgs e)
+
+        void RealTimeClockHandler(object sender, EventArgs e)
 		{
 			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;
 			lastUpdateTime = DateTime.Now;
@@ -11735,18 +11740,24 @@ namespace DHDM
 
         private void SpeechUI_ExceptionThrown(object sender, Exception e)
         {
-            
+            showThinkingTimer.Stop();
         }
 
         private async void SpeechUI_WordsRecognized(object sender, string e)
         {
+            int fredId = AllPlayers.GetPlayerIdFromName("Fred");
+            SaySomething("...", string.Empty, fredId, "thinking");
+
             string response = await FredGpt.GetResponse("Mark", "Mark", e);
-            SaySomething(response, " #28486b", AllPlayers.GetPlayerIdFromName("Fred"), "says");
+            SaySomething(response, " #28486b", fredId, "says");
         }
 
         private void SpeechUI_AbortedListening(object sender, EventArgs e)
         {
+            showThinkingTimer.Stop();
             ShowStoppedListening();
+            int fredId = AllPlayers.GetPlayerIdFromName("Fred");
+            SaySomething("", string.Empty, fredId, "HideThoughts");
         }
 
         void ShowStoppedListening()
@@ -11759,6 +11770,7 @@ namespace DHDM
 
         private void SpeechUI_StoppedListening(object sender, EventArgs e)
         {
+            showThinkingTimer.Stop();
             ShowStoppedListening();
         }
 
@@ -11772,8 +11784,8 @@ namespace DHDM
 
         private void SpeechUI_StartedListening(object sender, EventArgs e)
         {
-            SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "thinks");
-            ShowStartedListening();
+            showThinkingTimer.Stop();
+            showThinkingTimer.Start();
         }
 
         void ControlKeyStateChanged(bool ctrlKeyWasHitOrReleased)
@@ -11788,6 +11800,13 @@ namespace DHDM
         private void GlobalHooks_ControlKeyStateChanged(object sender, bool e)
         {
             ControlKeyStateChanged(e);
+        }
+
+        void ShowThinkingTimerHandler(object sender, EventArgs ea)
+        {
+            showThinkingTimer.Stop();
+            SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "listening");
+            ShowStartedListening();
         }
     }
 }

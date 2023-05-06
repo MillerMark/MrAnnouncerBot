@@ -378,7 +378,7 @@
     this.startY = this.y;
   }
 
-  matches(matchData): boolean {
+  matches(matchData: any): boolean {
     return matchData === null;   // Descendants can override if they want to implement a custom search/find functionality...
   }
 

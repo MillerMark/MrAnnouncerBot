@@ -1,7 +1,10 @@
 ﻿enum SpeechType {
   None,
   Thinks,
-  Says
+  Says,
+  Listening,
+  Thinking,
+  HideThoughts,
 }
 
 class SpeechData {
@@ -340,16 +343,19 @@ class ShowBookManager {
 }
 
 class ThinkingManager {
-  spriteCollection: SpriteCollection;
+  listeningCollection: SpriteCollection;
+  thinkingCollection: SpriteCollection;
   constructor() {
-    this.spriteCollection = new SpriteCollection();
+    this.listeningCollection = new SpriteCollection();
+    this.thinkingCollection = new SpriteCollection();
   }
 
   draw(context: CanvasRenderingContext2D, nowMs: number) {
-    this.spriteCollection.draw(context, nowMs);
+    this.listeningCollection.draw(context, nowMs);
+    this.thinkingCollection.draw(context, nowMs);
   }
 
-  addThinkingAnimation(name: string, frameCount: number): void {
+  addThinkingAnimation(collection: SpriteCollection, name: string, frameCount: number): void {
     let originX: number;
     let originY: number;
     const baseAnimationName: string = `SpeechBubbles/Thinking/${name}`;
@@ -357,37 +363,71 @@ class ThinkingManager {
     sprites.originX = 89;
     sprites.originY = 80;
     sprites.name = name;
-    this.spriteCollection.add(sprites);
+    collection.add(sprites);
   }
 
   static readonly thinkingMaxLifetimeMs: number = 5000;
 
-  showRandomThought(xPos: number, yPos: number) {
-    const randomThoughtSprites: Sprites = this.spriteCollection.getRandom();
+  showRandomAnimation(collection: SpriteCollection, xPos: number, yPos: number, playerId: number, ownerBubble: SpriteProxy): Listener {
+    const randomThoughtSprites: Sprites = collection.getRandom();
     if (!randomThoughtSprites)
       return;
 
-    const randomHueShift: number = Math.floor(Math.random() * 360);
-    let thinking: SpriteProxy = randomThoughtSprites.addShifted(xPos + 80, yPos - 120, 0, randomHueShift);
-    thinking.fadeInTime = 400;
-    thinking.fadeOutTime = 400;
-    thinking.expirationDate = performance.now() + thinking.fadeInTime + ThinkingManager.thinkingMaxLifetimeMs + thinking.fadeOutTime;
+    return Listener.create(randomThoughtSprites, xPos + randomThoughtSprites.originX, yPos + randomThoughtSprites.originY, playerId, ownerBubble);
+  }
+
+  showRandomListeningAnimation(xPos: number, yPos: number, playerId: number, ownerBubble: SpriteProxy) {
+    var listener: Listener = this.showRandomAnimation(this.listeningCollection, xPos + 45, yPos + 40, playerId, ownerBubble);
+    listener.setHueSatBrightness(220, 80, 120);
+  }
+
+  showRandomThinkingAnimation(xPos: number, yPos: number, playerId: number, ownerBubble: SpriteProxy) {
+    var listener: Listener = this.showRandomAnimation(this.thinkingCollection, xPos, yPos, playerId, ownerBubble);
+    listener.setHueSatBrightness(0, 100, 120);
   }
 
 
   loadResources()
   {
-    this.addThinkingAnimation('A', 38);
-    this.addThinkingAnimation('B', 19);
-    this.addThinkingAnimation('C', 44);
-    this.addThinkingAnimation('D', 49);
-    this.addThinkingAnimation('E', 29);
-    this.addThinkingAnimation('F', 29);
-    this.addThinkingAnimation('G', 29);
-    this.addThinkingAnimation('H', 34);
-    this.addThinkingAnimation('I', 31);
-    this.addThinkingAnimation('J', 27);
-    this.addThinkingAnimation('K', 25);
+    this.addThinkingAnimation(this.thinkingCollection, 'A', 38);
+    this.addThinkingAnimation(this.thinkingCollection, 'B', 19);
+    this.addThinkingAnimation(this.thinkingCollection, 'C', 44);
+    this.addThinkingAnimation(this.listeningCollection, 'D', 49);
+    this.addThinkingAnimation(this.listeningCollection, 'E', 29);
+    this.addThinkingAnimation(this.listeningCollection, 'F', 29);
+    this.addThinkingAnimation(this.listeningCollection, 'G', 29);
+    this.addThinkingAnimation(this.listeningCollection, 'H', 34);
+    this.addThinkingAnimation(this.thinkingCollection, 'I', 31);
+    this.addThinkingAnimation(this.listeningCollection, 'J', 27);
+    this.addThinkingAnimation(this.listeningCollection, 'K', 25);
+  }
+}
+
+class Listener extends ColorShiftingSpriteProxy {
+  constructor(startingFrameNumber: number, center: Vector) {
+    super(startingFrameNumber, center, ThinkingManager.thinkingMaxLifetimeMs);
+  }
+
+  playerId: number;
+  ownerBubble: SpriteProxy;
+
+  matches(matchData: any): boolean {
+    return this.playerId === matchData;
+  }
+
+  static create(spriteArray: Sprites, x: number, y: number, playerId: number, ownerBubble: SpriteProxy): Listener {
+    let thinking: Listener = new Listener(0, new Vector(x - spriteArray.originX, y - spriteArray.originY));
+
+    thinking.playerId = playerId;
+    thinking.ownerBubble = ownerBubble;
+
+    thinking.fadeInTime = 400;
+    thinking.fadeOutTime = 400;
+    thinking.expirationDate = performance.now() + thinking.fadeInTime + ThinkingManager.thinkingMaxLifetimeMs + thinking.fadeOutTime;
+
+    spriteArray.spriteProxies.push(thinking);
+
+    return thinking;
   }
 }
 
@@ -452,9 +492,33 @@ class SpeechBubbleManager {
   // 
   sayOrThinkSomething(context: CanvasRenderingContext2D, speechStr: string) {
     const { playerId, speechType, textToShow, colorStr, xOffset }: { playerId: number; speechType: SpeechType; textToShow: string; colorStr: string; xOffset: number } = this.getSpeechCommandParts(speechStr);
+    if (speechType !== SpeechType.Listening)
+    {
+      const thinker: SpriteProxy = this.thinkingManager.thinkingCollection.find(playerId);
+      if (thinker instanceof Listener) {
+        thinker.ownerBubble.fadeOutNow(200);
+        thinker.fadeOutNow(200);
+      }
+
+      const listener: SpriteProxy = this.thinkingManager.listeningCollection.find(playerId);
+
+      if (listener instanceof Listener)
+      {
+        if (speechType === SpeechType.Thinking)
+          this.thinkingManager.showRandomThinkingAnimation(listener.x, listener.y, playerId, listener.ownerBubble);
+        else
+          listener.ownerBubble.fadeOutNow(200);
+
+        listener.fadeOutNow(200);
+        return;
+      }
+
+      if (speechType === SpeechType.HideThoughts)
+        return;
+    }
 
     //console.log('sayOrThinkSomething - colorStr: ' + colorStr);
-    console.log('sayOrThinkSomething - speechStr: ' + speechStr);
+    //sconsole.log('sayOrThinkSomething - speechStr: ' + speechStr);
 
     if (playerId === Number.MIN_VALUE || playerId === Creature.invalidCreatureId || speechType === SpeechType.None)
       return;
@@ -476,8 +540,7 @@ class SpeechBubbleManager {
     let hScale: number;
     let vScale: number;
 
-    if (speechType === SpeechType.Thinks && textToShow === '...') {
-      // Special case - thinks!!!
+    if (speechType === SpeechType.Listening) {
       hScale = 0.77;
       vScale = 1;
     }
@@ -529,10 +592,10 @@ class SpeechBubbleManager {
     else 
       totalReadingTime = ThinkingManager.thinkingMaxLifetimeMs;
 
-    this.createNewSprite(sprites, xPos - scaledPosOffsetX, yPos - scaledPosOffsetY, speechStr, flippedHorizontally, flipVertically, speechData, hScale, vScale, totalReadingTime);
+    this.createNewSprite(sprites, xPos - scaledPosOffsetX, yPos - scaledPosOffsetY, speechStr, playerId, flippedHorizontally, flipVertically, speechData, speechType, hScale, vScale, totalReadingTime);
   }
 
-  private createNewSprite(sprites: Sprites, xPos: number, yPos: number, speechStr: string, flippedHorizontally: any, flipVertically: any, speechData: SpeechData, horizontalScale: number, verticalScale: number, totalReadingTime: number) {
+  private createNewSprite(sprites: Sprites, xPos: number, yPos: number, speechStr: string, playerId: number, flippedHorizontally: any, flipVertically: any, speechData: SpeechData, speechType: SpeechType, horizontalScale: number, verticalScale: number, totalReadingTime: number) {
     //console.log(`yPos: ${yPos}, scaledPosOffsetY: ${scaledPosOffsetY}, speechData.y: ${speechData.y}`);
     //console.log(speechData);
 
@@ -549,11 +612,10 @@ class SpeechBubbleManager {
     sprite.horizontalScale = horizontalScale;
     sprite.verticalScale = verticalScale;
 
-    if (!speechData)
+    if (speechType == SpeechType.Listening)
     {
-      // Special case - thinks!!!
       // TODO: Consider adding support for flippedHorizontally and flipVertically.
-      this.thinkingManager.showRandomThought(xPos, yPos);
+      this.thinkingManager.showRandomListeningAnimation(xPos - sprites.originX, yPos - sprites.originY, playerId, sprite);
     }
   }
 
@@ -562,10 +624,9 @@ class SpeechBubbleManager {
 
     if (speechData && speechData.y < 0) // Make sure top of text is on screen.
     {
-      // TODO: Handle playerId < 0 for in-game creatures.
       if (playerId === SpeechBubbleManager.dungeonMasterId) {
         flipVertically = true;
-        if (speechType === SpeechType.Thinks) {
+        if (speechType === SpeechType.Thinks || speechType === SpeechType.Listening) {
           const invertedSpeechBubbleOffsetX = 70;
           const invertedSpeechBubbleOffsetY = 125;
           speechData.x += invertedSpeechBubbleOffsetX;
@@ -576,9 +637,9 @@ class SpeechBubbleManager {
         textStartY = -textStartY + height;
         speechData.y = this.getSpeechDataY(yPos, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY, textStartY, verticalScale, speechData);
       }
-      else if (playerId < 0) {
+      else if (playerId < 0) {  //! in-game creatures.
         flipVertically = true;
-        if (speechType === SpeechType.Thinks) {
+        if (speechType === SpeechType.Thinks || speechType === SpeechType.Listening) {
           const invertedSpeechBubbleOffsetX = -60;
           const invertedSpeechBubbleOffsetY = 125;
           speechData.x += invertedSpeechBubbleOffsetX;
@@ -647,7 +708,7 @@ class SpeechBubbleManager {
 
     let topBottomReducePercent: number;
 
-    if (speechType === SpeechType.Thinks) {
+    if (speechType === SpeechType.Thinks || speechType === SpeechType.Listening || speechType === SpeechType.Thinking) {
       sprites = this.thoughtBubbles;
       offsetX = thoughtBubbleOffsetX;
       offsetY = thoughtBubbleOffsetY;
@@ -699,7 +760,7 @@ class SpeechBubbleManager {
     if (speechType === SpeechType.Thinks) {
       this.soundManager.safePlayMp3('ThoughtBubbleAppear');
     }
-    else {
+    else if (speechType === SpeechType.Says) {
       this.soundManager.safePlayMp3('SpeechBubbleAppear');
     }
   }
@@ -824,16 +885,23 @@ class SpeechBubbleManager {
     const speechData: SpeechData = sprite.data as SpeechData;
     if (speechData) {
       speechData.okayToDraw = sprite.frameIndex >= returnFrameIndex && sprite.frameIndex < endLoopAnimationFrameIndex;
+      if (sprite.frameIndex === endLoopAnimationFrameIndex + 1)
+        this.soundManager.safePlayMp3('Pop[4]');
     }
-    if (sprite.frameIndex === endLoopAnimationFrameIndex + 1)
-      this.soundManager.safePlayMp3('Pop[4]');
   }
 
   getSpeechType(firstPart: string): SpeechType {
-    if (firstPart.toLowerCase().indexOf('says') >= 0)
+    const lower: string = firstPart.toLowerCase();
+    if (lower.indexOf('says') >= 0)
       return SpeechType.Says;
-    else
+    else if (lower.indexOf('thinks') >= 0)
       return SpeechType.Thinks;
+    else if (lower.indexOf('listening') >= 0)
+      return SpeechType.Listening;
+    else if (lower.indexOf('thinking') >= 0)
+      return SpeechType.Thinking;
+    else if (lower.indexOf('hidethoughts') >= 0)
+      return SpeechType.HideThoughts;
   }
 
   draw(context: CanvasRenderingContext2D, nowMs: number) {

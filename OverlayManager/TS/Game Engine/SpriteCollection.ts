@@ -104,7 +104,7 @@ class SpriteCollection {
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.changingDirection(now) });
   }
 
-  find(matchData: string): SpriteProxy {
+  find(matchData: any): SpriteProxy {
     for (var i = 0; i < this.allSprites.length; i++) {
       let sprites: Sprites = this.allSprites[i];
       let foundSprite: SpriteProxy = sprites.find(matchData);

@@ -66,7 +66,7 @@ namespace ObsControl
 
 		private static void ObsWebsocket_Disconnected(object sender, OBSWebsocketDotNet.Communication.ObsDisconnectionInfo e)
 		{
-			System.Diagnostics.Debugger.Break();
+			//System.Diagnostics.Debugger.Break();
 		}
 
 		private static void ObsWebsocket_CurrentProgramSceneChanged(object sender, OBSWebsocketDotNet.Types.Events.ProgramSceneChangedEventArgs e)

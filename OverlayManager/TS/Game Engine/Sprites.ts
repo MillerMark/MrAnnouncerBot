@@ -79,7 +79,7 @@ class Sprites {
     return this.spriteProxies.findIndex(sprite => sprite.matches(matchData))
   }
 
-  find(matchData: string): SpriteProxy {
+  find(matchData: any): SpriteProxy {
     const index: number = this.indexOf(matchData);
     if (index >= 0)
       return this.spriteProxies[index];
