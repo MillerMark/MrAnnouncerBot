@@ -389,17 +389,32 @@ class ThinkingManager {
 
   loadResources()
   {
-    this.addThinkingAnimation(this.thinkingCollection, 'A', 38);
-    this.addThinkingAnimation(this.thinkingCollection, 'B', 19);
-    this.addThinkingAnimation(this.thinkingCollection, 'C', 44);
     this.addThinkingAnimation(this.listeningCollection, 'D', 49);
     this.addThinkingAnimation(this.listeningCollection, 'E', 29);
     this.addThinkingAnimation(this.listeningCollection, 'F', 29);
     this.addThinkingAnimation(this.listeningCollection, 'G', 29);
     this.addThinkingAnimation(this.listeningCollection, 'H', 34);
-    this.addThinkingAnimation(this.thinkingCollection, 'I', 31);
     this.addThinkingAnimation(this.listeningCollection, 'J', 27);
     this.addThinkingAnimation(this.listeningCollection, 'K', 25);
+    this.addThinkingAnimation(this.listeningCollection, 'W', 36);
+    this.addThinkingAnimation(this.listeningCollection, 'X', 40);
+
+    this.addThinkingAnimation(this.thinkingCollection, 'A', 38);
+    this.addThinkingAnimation(this.thinkingCollection, 'B', 19);
+    this.addThinkingAnimation(this.thinkingCollection, 'C', 44);
+    this.addThinkingAnimation(this.thinkingCollection, 'I', 31);
+    this.addThinkingAnimation(this.thinkingCollection, 'L', 39);
+    this.addThinkingAnimation(this.thinkingCollection, 'M', 29);
+    this.addThinkingAnimation(this.thinkingCollection, 'N', 48);
+    this.addThinkingAnimation(this.thinkingCollection, 'O', 25);
+    this.addThinkingAnimation(this.thinkingCollection, 'P', 72);
+    this.addThinkingAnimation(this.thinkingCollection, 'Q', 20);
+    this.addThinkingAnimation(this.thinkingCollection, 'R', 95);
+    this.addThinkingAnimation(this.thinkingCollection, 'S', 43);
+    this.addThinkingAnimation(this.thinkingCollection, 'T', 34);
+    this.addThinkingAnimation(this.thinkingCollection, 'U', 21);
+    this.addThinkingAnimation(this.thinkingCollection, 'V', 80);
+
   }
 }
 

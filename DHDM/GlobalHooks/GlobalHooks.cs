@@ -1,4 +1,4 @@
-﻿#nullable  enable
+﻿#nullable enable
 using System;
 using System.Linq;
 using System.Diagnostics;
@@ -6,30 +6,17 @@ using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Timers;
 using System.Windows;
+using DevExpress.CodeRush.Foundation.Hooks;
 
-namespace DHDM
+namespace DevExpress.CodeRush.Foundation.Hooks
 {
-
-    public class MyMouseEventArgs
-    {
-        public Point Position { get; set; }
-        public MouseButtonState LeftButton { get; set; }
-        public MouseButtonState MiddleButton { get; set; }
-        public MouseButtonState RightButton { get; set; }
-        public Int16 WheelSpinDelta { get; set; }
-
-        public MyMouseEventArgs()
-        {
-            
-        }
-    }
-
-    public static class GlobalHooks
+    // Keep this name - it's global. Needed to be compatible with linked code from other places.
+    public static class WpfHooks
     {
         static Point savedMousePosition;
         public static Point SavedMousePosition { get => savedMousePosition; }
-        public static event EventHandler<bool>? ControlKeyStateChanged;
-        public static event EventHandler<MyMouseEventArgs> MouseThingHappened;
+        public static event EventHandler<ControlKeyEventArgs>? ControlKeyStateChanged;
+        public static event EventHandler<MyMouseEventArgs>? MouseEventFired;
         static System.Timers.Timer keyProcessingTimer = new(50);
         static bool? ctrlKeyHitOrReleased = null;
         private const int WH_KEYBOARD_LL = 13;
@@ -132,10 +119,10 @@ namespace DHDM
                 {
                     uint highWord = hookStruct.mouseData >> 16;
                     myMouseEventArgs.WheelSpinDelta = (Int16)highWord;
-                    uint lowWord = hookStruct.mouseData & 0xffff;
+                    //uint lowWord = hookStruct.mouseData & 0xffff;
                     //System.Diagnostics.Debugger.Break();
                 }
-                MouseThingHappened?.Invoke(null, myMouseEventArgs);
+                MouseEventFired?.Invoke(null, myMouseEventArgs);
             }
 
 
@@ -146,8 +133,12 @@ namespace DHDM
         {
             keyProcessingTimer.Stop();
             if (ctrlKeyHitOrReleased.HasValue)
-                ControlKeyStateChanged?.Invoke(null, ctrlKeyHitOrReleased.Value);
+                ControlKeyStateChanged?.Invoke(null, new ControlKeyEventArgs(ctrlKeyHitOrReleased.Value, whichCtrlKey));
         }
+
+        static WhichCtrlKey whichCtrlKey = WhichCtrlKey.None;
+
+        public static WhichCtrlKey PressedCtrlKey => whichCtrlKey;
 
         private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -158,6 +149,12 @@ namespace DHDM
                 int vkCode = Marshal.ReadInt32(lParam);
                 Key wpfKey = KeyInterop.KeyFromVirtualKey(vkCode);
                 ctrlKeyHitOrReleased = wpfKey == Key.LeftCtrl || wpfKey == Key.RightCtrl;
+                whichCtrlKey = WhichCtrlKey.None;
+                if (ctrlKeyHitOrReleased == true && wParam == (IntPtr)WM_KEYDOWN)
+                    if (wpfKey == Key.LeftCtrl)
+                        whichCtrlKey = WhichCtrlKey.Left;
+                    else if (wpfKey == Key.RightCtrl)
+                        whichCtrlKey = WhichCtrlKey.Right;
             }
 
             nint result = CallNextHookEx(_keyboardHookID, nCode, wParam, lParam);

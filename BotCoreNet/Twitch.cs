@@ -28,39 +28,19 @@ namespace BotCore
         private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
         private const string STR_FredGptChannelName = "FredGpt";
         private const string STR_FredGptChannelUserName = "FredGpt";
+        private const string STR_RoryGptChannelUserName = "RoryGpt";
+        private const string STR_MarksVoiceChannelUserName = "MarksVoice";
         static readonly IConfigurationRoot configuration;
 
 		public static void InitializeConnections()
 		{
-            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //`! !!!                                                                                      !!!
-            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-            //`! !!!                                                                                      !!!
-            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            UnhookEvents(CodeRushedClient);
-			var codeRushedOAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
-			var codeRushedConnectionCredentials = new ConnectionCredentials(STR_CodeRushedChannelUserName, codeRushedOAuthToken);
-			CodeRushedClient.Initialize(codeRushedConnectionCredentials, STR_CodeRushedChannelName);
-
-            try
-			{
-				CodeRushedClient.Connect();
-				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
-				HookBasicEvents(CodeRushedClient);
-			}
-			catch //(Exception ex)
-			{
-				System.Diagnostics.Debugger.Break();
-			}
-
+            InitializeCodeRushedConnection();
 			var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
 			var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
 			DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
 			try
 			{
 				DroneCommandsClient.Connect();
-				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
 				HookBasicEvents(DroneCommandsClient);
 			}
 			catch (Exception ex)
@@ -69,15 +49,51 @@ namespace BotCore
 				Console.WriteLine(ex.StackTrace);
 				Console.WriteLine();
             }
-            
-            var fredGptOAuthToken = Configuration["Secrets:FredGptOAuthToken"];
-            var fredGptConnectionCredentials = new ConnectionCredentials(STR_FredGptChannelUserName, fredGptOAuthToken);
-            FredGptClient.Initialize(fredGptConnectionCredentials /* , STR_FredGptChannelName */);
+
+            InitializeFredGptClient();
+            InitializeRoryGptClient();
+            InitializeMarksVoiceClient();
+        }
+
+        public static void InitializeCodeRushedConnection()
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            UnhookEvents(CodeRushedClient);
+            var codeRushedOAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
+            var codeRushedConnectionCredentials = new ConnectionCredentials(STR_CodeRushedChannelUserName, codeRushedOAuthToken);
+            CodeRushedClient.Initialize(codeRushedConnectionCredentials, STR_CodeRushedChannelName);
+
             try
             {
-                FredGptClient.Connect();
+                CodeRushedClient.Connect();
                 //Client.JoinRoom(STR_ChannelName, "#botcontrol");
-                HookBasicEvents(FredGptClient);
+                HookBasicEvents(CodeRushedClient);
+            }
+            catch //(Exception ex)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+        }
+
+        public static void InitializeMarksVoiceClient()
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            var marksVoiceOAuthToken = Configuration["Secrets:MarksVoiceOAuthToken"];
+            var marksVoiceConnectionCredentials = new ConnectionCredentials(STR_MarksVoiceChannelUserName, marksVoiceOAuthToken);
+            MarksVoiceClient.Initialize(marksVoiceConnectionCredentials /* , STR_MarksVoiceChannelName */);
+            try
+            {
+                MarksVoiceClient.Connect();
+                HookBasicEvents(MarksVoiceClient);
             }
             catch (Exception ex)
             {
@@ -85,10 +101,9 @@ namespace BotCore
                 Console.WriteLine(ex.StackTrace);
                 Console.WriteLine();
             }
-
         }
 
-		public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
+        public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
 		{
 			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//`! !!!                                                                                      !!!
@@ -128,6 +143,8 @@ namespace BotCore
 			DroneCommandsClient = new TwitchClient();
             
             FredGptClient = new TwitchClient();
+            RoryGptClient = new TwitchClient();
+            MarksVoiceClient = new TwitchClient();
 
             //DroneCommandsClient.SendMessage(, message)
             var builder = new ConfigurationBuilder()
@@ -138,7 +155,80 @@ namespace BotCore
 			InitializeApiClient();
 		}
 
-		private static void onListenResponse(object sender, OnListenResponseArgs e)
+        public static void ClientChat(TwitchClient client, string msg)
+        {
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(STR_CodeRushedChannelName);
+
+            Chat(client, TruncateIfNeeded(msg));
+        }
+
+        public static void FredChat(string msg)
+        {
+            ClientChat(FredGptClient, msg);
+        }
+
+        public static void InitializeFredGptClient()
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            var fredGptOAuthToken = Configuration["Secrets:FredGptOAuthToken"];
+            var fredGptConnectionCredentials = new ConnectionCredentials(STR_FredGptChannelUserName, fredGptOAuthToken);
+            FredGptClient.Initialize(fredGptConnectionCredentials /* , STR_FredGptChannelName */);
+            try
+            {
+                FredGptClient.Connect();
+                HookBasicEvents(FredGptClient);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine();
+            }
+        }
+
+        public static void InitializeRoryGptClient()
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            var roryGptOAuthToken = Configuration["Secrets:RoryGptOAuthToken"];
+            var roryGptConnectionCredentials = new ConnectionCredentials(STR_RoryGptChannelUserName, roryGptOAuthToken);
+            RoryGptClient.Initialize(roryGptConnectionCredentials /* , STR_RoryGptChannelName */);
+            try
+            {
+                RoryGptClient.Connect();
+                HookBasicEvents(RoryGptClient);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine();
+            }
+        }
+
+        public static void RoryGptChat(string msg)
+        {
+            ClientChat(RoryGptClient, msg);
+        }
+
+        public static void MarksVoiceChat(string msg)
+        {
+            ClientChat(MarksVoiceClient, msg);
+        }
+
+
+
+        private static void onListenResponse(object sender, OnListenResponseArgs e)
 		{
 			if (!e.Successful)
 			{
@@ -160,6 +250,8 @@ namespace BotCore
 		public static TwitchAPI Api { get; private set; }
 		public static TwitchClient CodeRushedClient { get; private set; }
         public static TwitchClient FredGptClient { get; private set; }
+        public static TwitchClient RoryGptClient { get; private set; }
+        public static TwitchClient MarksVoiceClient { get; private set; }
         public static TwitchPubSub CodeRushedPubSub { get; private set; }
 		public static TwitchClient DroneCommandsClient { get; private set; }
 		public static bool Logging { get; set; } = true;
@@ -211,6 +303,8 @@ namespace BotCore
 				CodeRushedPubSub.Disconnect();
 				CodeRushedClient.Disconnect();
                 FredGptClient.Disconnect();
+                RoryGptClient.Disconnect();
+                MarksVoiceClient.Disconnect();
                 DroneCommandsClient.Disconnect();
 			}
 			catch (Exception ex)
@@ -219,7 +313,16 @@ namespace BotCore
 			}
 		}
 
-		static void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
+        public static string TruncateIfNeeded(string msg)
+        {
+            const string STR_Ellipsis = "...";
+            const int maxLength = 410;
+            if (msg.Length > maxLength)
+                msg = msg.Substring(0, maxLength - STR_Ellipsis.Length) + STR_Ellipsis;
+            return msg;
+        }
+
+        static void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
 		{
 			Authenticate(CodeRushedPubSub);
 		}

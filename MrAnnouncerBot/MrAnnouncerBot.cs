@@ -47,7 +47,6 @@ namespace MrAnnouncerBot
 		private const string STR_ChannelName = "CodeRushed";
 		//private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
-		const string STR_Ellipsis = "...";
 		const string STR_CodeRushedUserId = "237584851";
 
 		private static List<SceneDto> scenes;
@@ -197,6 +196,8 @@ namespace MrAnnouncerBot
 			if (useObs)
 				InitializeObsWebSocket();
             HookupCoreEvents(Twitch.FredGptClient);
+            HookupCoreEvents(Twitch.RoryGptClient);
+            HookupCoreEvents(Twitch.MarksVoiceClient);
             HookupTwitchEvents(Twitch.CodeRushedClient);
 			HookupPubSubEvents(Twitch.CodeRushedPubSub);
 			HookupTwitchEvents(Twitch.DroneCommandsClient);
@@ -718,9 +719,14 @@ namespace MrAnnouncerBot
             return userId != "904388657";
         }
 
+        bool IsNotMarksVoice(string userId)
+        {
+            return userId != "907014337";
+        }
+
         private async void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
-            if (IsNotFred(e.ChatMessage.UserId) && FredGpt.IsTalkingToFred(e.ChatMessage.Message))
+            if (IsNotFred(e.ChatMessage.UserId) && IsNotMarksVoice(e.ChatMessage.UserId) && FredGpt.IsTalkingToFred(e.ChatMessage.Message))
             {
                 MarkThatWeAlreadyGreetedFromFred(e.ChatMessage.UserId);
                 string response = await FredGpt.GetResponse(e.ChatMessage.UserId, e.ChatMessage.Username, e.ChatMessage.Message);
@@ -730,7 +736,7 @@ namespace MrAnnouncerBot
                 {
                     SayOrThinkIt("fred", response, ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)));
                     string trimmedResponse = response.TrimStart('"').TrimEnd('"');
-                    FredChat(trimmedResponse);
+                    Twitch.FredChat(trimmedResponse);
                 }
             }
             else
@@ -946,11 +952,15 @@ namespace MrAnnouncerBot
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
                 UnHookTwitchEvents(Twitch.DroneCommandsClient);
                 UnhookCoreEvents(Twitch.FredGptClient);
+                UnhookCoreEvents(Twitch.RoryGptClient);
+                UnhookCoreEvents(Twitch.MarksVoiceClient);
                 Twitch.InitializeConnections();
 				HookupTwitchEvents(Twitch.DroneCommandsClient);
 				HookupTwitchEvents(Twitch.CodeRushedClient);
 				HookupPubSubEvents(Twitch.CodeRushedPubSub);
                 HookupCoreEvents(Twitch.FredGptClient);
+                HookupCoreEvents(Twitch.RoryGptClient);
+                HookupCoreEvents(Twitch.MarksVoiceClient);
             }
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
@@ -987,26 +997,9 @@ namespace MrAnnouncerBot
 			}
 		}
 
-		private static string TruncateForTwitch(string msg)
-		{
-			const int maxLength = 410;//  500;
-			if (msg.Length > maxLength)
-				msg = msg.Substring(0, maxLength - STR_Ellipsis.Length) + STR_Ellipsis;
-			return msg;
-		}
-
 		private void Chat(string msg)
 		{
-			Twitch.Chat(Twitch.CodeRushedClient, TruncateForTwitch(msg));
-        }
-
-        private void FredChat(string msg)
-        {
-            if (Twitch.FredGptClient.JoinedChannels.Count == 0)
-            {
-                Twitch.FredGptClient.JoinChannel(STR_ChannelName);
-            }
-            Twitch.Chat(Twitch.FredGptClient, TruncateForTwitch(msg));
+			Twitch.Chat(Twitch.CodeRushedClient, Twitch.TruncateIfNeeded(msg));
         }
 
         public void Run()

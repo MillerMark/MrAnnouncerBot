@@ -164,13 +164,34 @@
     <Compile Remove="StreamDeck Commands\TensCommand.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\AudioDevice.cs" Link="Audio\AudioDevice.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\PeakVolumeMeter.cs" Link="Audio\PeakVolumeMeter.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\AudioException.cs" Link="Audio\Support\AudioException.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\CaptureState.cs" Link="Audio\Support\CaptureState.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\SupportedWaveFormat.cs" Link="Audio\Support\SupportedWaveFormat.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveFormat.cs" Link="Audio\Support\WaveFormat.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveFormatEncoding.cs" Link="Audio\Support\WaveFormatEncoding.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveHeader.cs" Link="Audio\Support\WaveHeader.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveHeaderFlags.cs" Link="Audio\Support\WaveHeaderFlags.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveInBuffer.cs" Link="Audio\Support\WaveInBuffer.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveInCapabilities.cs" Link="Audio\Support\WaveInCapabilities.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveInEvent.cs" Link="Audio\Support\WaveInEvent.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveInEventArgs.cs" Link="Audio\Support\WaveInEventArgs.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WaveInterop.cs" Link="Audio\Support\WaveInterop.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Audio\Support\WinMmResult.cs" Link="Audio\Support\WinMmResult.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\BaseHookManager.cs" Link="GlobalHooks\BaseHookManager.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\ControlKeyEventArgs.cs" Link="GlobalHooks\ControlKeyEventArgs.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\MyMouseEventArgs.cs" Link="GlobalHooks\MyMouseEventArgs.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\WhichCtrlKey.cs" Link="GlobalHooks\WhichCtrlKey.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\ICanRecognizeSpeech.cs" Link="Speech\ICanRecognizeSpeech.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechError.cs" Link="Speech\SpeechError.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechRecognizerWrapper.cs" Link="Speech\SpeechRecognizerWrapper.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechUI.cs" Link="Speech\SpeechUI.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\WordsRecognizedEventArgs.cs" Link="Speech\WordsRecognizedEventArgs.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Storage\ApiKeyStorageOption.cs" Link="Speech\ApiKeyStorageOption.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="GlobalHooks\" />
-    <Folder Include="Speech\" />
+    <Folder Include="Audio\Support\" />
   </ItemGroup>
   <PropertyGroup />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

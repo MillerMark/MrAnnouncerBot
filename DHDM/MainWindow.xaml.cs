@@ -1,6 +1,7 @@
 ﻿//#define profiling
 //#define FullLoad
 using Microsoft.AspNetCore.SignalR.Client;
+using DevExpress.CodeRush.Foundation.Hooks;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
@@ -34,6 +35,7 @@ using System.IO;
 using SheetsPersist;
 using TaleSpireCore;
 using System.Reflection;
+using System.Diagnostics;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -136,8 +138,9 @@ namespace DHDM
 			}
 
             StartSpeechUI();
-            GlobalHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
-            GlobalHooks.Start();
+            WpfHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
+            WpfHooks.MouseEventFired += GlobalHooks_MouseEventFired;
+            WpfHooks.Start();
         }
 
         SpeechUI speechUI;
@@ -209,7 +212,8 @@ namespace DHDM
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
 			CreateDungeonMasterClient();
 			CreateDragonHumpersClient();
-			CreateDhPubSub();
+            InitializeVoiceConnectionToFred();  
+            CreateDhPubSub();
 
 			dmChatBot.Initialize(this);
 
@@ -227,7 +231,16 @@ namespace DHDM
 			//TaleSpireEvents.StartSocketServer();
 		}
 
-		private void CreateTimers()
+        void InitializeVoiceConnectionToFred()
+        {
+            Twitch.InitializeMarksVoiceClient();
+            Twitch.InitializeFredGptClient();
+            Twitch.InitializeCodeRushedConnection();
+            Twitch.CodeRushedClient.OnChatCommandReceived += CodeRushedClient_OnChatCommandReceived;
+            Twitch.CodeRushedClient.OnConnectionError += CodeRushedClient_OnConnectionError;
+        }
+
+        private void CreateTimers()
 		{
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
@@ -7167,7 +7180,7 @@ namespace DHDM
 		public void SelectPlayerShortcut(string shortcutName, int playerId)
 		{
 			shortcutName = shortcutName.Trim();
-			SafeInvoke(async () =>
+			SafeInvoke(() =>
 			{
 				ActivePlayerId = playerId;
 				CheckOnlyOnePlayer(playerId);
@@ -7733,7 +7746,7 @@ namespace DHDM
 
 		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
 		{
-			UnleashTheNextRoll();
+            UnleashTheNextRoll();
 		}
 
 		void AddSavingThrowsForTargetedCreatures(DiceRoll diceRoll, int hiddenThreshold, Ability savingThrowAbility)
@@ -10543,7 +10556,7 @@ namespace DHDM
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-            GlobalHooks.Stop();
+            WpfHooks.Stop();
             Dmx.ShutDown();
 			leapDevice.ShuttingDown();
 			AllViewers.Save();
@@ -11740,20 +11753,25 @@ namespace DHDM
 
         private void SpeechUI_ExceptionThrown(object sender, Exception e)
         {
+            Debug.WriteLine("SpeechUI_ExceptionThrown");
             showThinkingTimer.Stop();
         }
 
-        private async void SpeechUI_WordsRecognized(object sender, string e)
+        
+        private async void SpeechUI_WordsRecognized(object sender, WordsRecognizedEventArgs e)
         {
+            Twitch.MarksVoiceChat(e.Words);
             int fredId = AllPlayers.GetPlayerIdFromName("Fred");
             SaySomething("...", string.Empty, fredId, "thinking");
 
-            string response = await FredGpt.GetResponse("Mark", "Mark", e);
+            string response = await FredGpt.GetResponse("Mark", "Mark", e.Words);
             SaySomething(response, " #28486b", fredId, "says");
+            Twitch.FredChat(response);
         }
 
         private void SpeechUI_AbortedListening(object sender, EventArgs e)
         {
+            Debug.WriteLine("SpeechUI_AbortedListening");
             showThinkingTimer.Stop();
             ShowStoppedListening();
             int fredId = AllPlayers.GetPlayerIdFromName("Fred");
@@ -11770,6 +11788,7 @@ namespace DHDM
 
         private void SpeechUI_StoppedListening(object sender, EventArgs e)
         {
+            Debug.WriteLine("SpeechUI_StoppedListening");
             showThinkingTimer.Stop();
             ShowStoppedListening();
         }
@@ -11782,31 +11801,74 @@ namespace DHDM
             });
         }
 
-        private void SpeechUI_StartedListening(object sender, EventArgs e)
+        private void SpeechUI_StartedListening(object sender, WhichCtrlKey e)
         {
+            Debug.WriteLine("SpeechUI_StartedListening");
             showThinkingTimer.Stop();
             showThinkingTimer.Start();
         }
 
-        void ControlKeyStateChanged(bool ctrlKeyWasHitOrReleased)
+        void ControlKeyStateChanged(ControlKeyEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
                 bool onlyControlModifierIsDown = Keyboard.Modifiers == ModifierKeys.Control;
-                speechUI.SetListeningStateBasedOnCtrlKey(ctrlKeyWasHitOrReleased, onlyControlModifierIsDown);
+                speechUI.SetListeningStateBasedOnCtrlKey(e, onlyControlModifierIsDown);
             });
         }
 
-        private void GlobalHooks_ControlKeyStateChanged(object sender, bool e)
+        private void GlobalHooks_ControlKeyStateChanged(object sender, ControlKeyEventArgs e)
         {
             ControlKeyStateChanged(e);
         }
 
+        private void GlobalHooks_MouseEventFired(object sender, MyMouseEventArgs e)
+        {
+            if (e.HasAnyMouseAction(e.Position))
+                speechUI.AbortListening();
+        }
+
         void ShowThinkingTimerHandler(object sender, EventArgs ea)
         {
+            Debug.WriteLine("Show thinking...");
             showThinkingTimer.Stop();
             SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "listening");
             ShowStartedListening();
+        }
+
+        bool IsMark(string userId)
+        {
+            return userId == "237584851";
+        }
+
+        void Ignore(ChatMessage chatMessage)
+        {
+            if (!IsMark(chatMessage.UserId))
+                return;
+            speechUI.IsListening = false;
+            Twitch.FredChat("Me no listen!");
+        }
+
+        void Listen(ChatMessage chatMessage)
+        {
+            if (!IsMark(chatMessage.UserId))
+                return;
+            speechUI.IsListening = true;
+            Twitch.FredChat("Me hear you, Mark, loud and clear!");
+        }
+
+
+        private void CodeRushedClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
+        {
+            if (e.Command.CommandText.ToLower() == "ignore")
+                Ignore(e.Command.ChatMessage);
+            else if (e.Command.CommandText.ToLower() == "listen")
+                Listen(e.Command.ChatMessage);
+        }
+
+        private void CodeRushedClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
+        {
+            System.Diagnostics.Debugger.Break();
         }
     }
 }
