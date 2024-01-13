@@ -11743,7 +11743,7 @@ namespace DHDM
         void StartSpeechUI()
         {
             speechUI = new SpeechUI();
-            speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper());
+            speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper(), null);
             speechUI.StartedListening += SpeechUI_StartedListening;
             speechUI.StoppedListening += SpeechUI_StoppedListening;
             speechUI.AbortedListening += SpeechUI_AbortedListening;

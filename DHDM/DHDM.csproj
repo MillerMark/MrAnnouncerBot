@@ -78,6 +78,9 @@
     <None Update="LiveVideoAnimation\Data\SlashKey.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LiveVideoAnimation\Data\Speedy.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="LiveVideoAnimation\Data\SurlyDev.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -184,6 +187,9 @@
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\MyMouseEventArgs.cs" Link="GlobalHooks\MyMouseEventArgs.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Hooks\WhichCtrlKey.cs" Link="GlobalHooks\WhichCtrlKey.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\ICanRecognizeSpeech.cs" Link="Speech\ICanRecognizeSpeech.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\KnownPhrases.cs" Link="Speech\KnownPhrases.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\PhraseLifetime.cs" Link="Speech\PhraseLifetime.cs" />
+    <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\RecognitionConditioners\ICanConditionRecognizedWords.cs" Link="Speech\ICanConditionRecognizedWords.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechError.cs" Link="Speech\SpeechError.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechRecognizerWrapper.cs" Link="Speech\SpeechRecognizerWrapper.cs" />
     <Compile Include="C:\Source\CodeRush\Foundation\Engine\DevExpress.CodeRush.Foundation\Speak\SpeechUI.cs" Link="Speech\SpeechUI.cs" />

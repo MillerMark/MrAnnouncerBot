@@ -14,7 +14,7 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -89,7 +89,7 @@
       <Name>Imaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\VisualProcessingTests\VisualProcessingTests.csproj">
-      <Project>{EADAAC2F-DB04-407E-A49E-AB45854BB01D}</Project>
+      <Project>{eadaac2f-db04-407e-a49e-ab45854bb01d}</Project>
       <Name>VisualProcessingTests</Name>
     </ProjectReference>
   </ItemGroup>
