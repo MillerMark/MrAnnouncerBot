@@ -1,7 +1,6 @@
 ﻿//#define profiling
 //#define FullLoad
 using Microsoft.AspNetCore.SignalR.Client;
-using DevExpress.CodeRush.Foundation.Hooks;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
@@ -44,7 +43,6 @@ using TwitchLib.PubSub;
 using System.ComponentModel;
 using ObsControl;
 using DHDM.FlyMark;
-using DevExpress.CodeRush.Foundation.Speak;
 
 namespace DHDM
 {
@@ -138,12 +136,22 @@ namespace DHDM
 			}
 
             StartSpeechUI();
-            WpfHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
-            WpfHooks.MouseEventFired += GlobalHooks_MouseEventFired;
-            WpfHooks.Start();
+            HookKeyboardEvents();
         }
 
-        SpeechUI speechUI;
+        static void HookKeyboardEvents()
+        {
+            //WpfHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
+            //WpfHooks.MouseEventFired += GlobalHooks_MouseEventFired;
+            //WpfHooks.Start();
+        }
+
+        static void UnhookKeyboardEvents()
+        {
+            //WpfHooks.Stop();
+        }
+
+        //SpeechUI speechUI;
 
         void CheckActionQueue(object sender, EventArgs e)
 		{
@@ -10556,7 +10564,7 @@ namespace DHDM
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-            WpfHooks.Stop();
+            UnhookKeyboardEvents();
             Dmx.ShutDown();
 			leapDevice.ShuttingDown();
 			AllViewers.Save();
@@ -11742,13 +11750,12 @@ namespace DHDM
 
         void StartSpeechUI()
         {
-            speechUI = new SpeechUI();
-            speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper(), null);
-            speechUI.StartedListening += SpeechUI_StartedListening;
-            speechUI.StoppedListening += SpeechUI_StoppedListening;
-            speechUI.AbortedListening += SpeechUI_AbortedListening;
-            speechUI.WordsRecognized += SpeechUI_WordsRecognized;
-            speechUI.ExceptionThrown += SpeechUI_ExceptionThrown;
+            //speechUI = new SpeechUI();
+            //speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper(), null);
+            //speechUI.StoppedListening += SpeechUI_StoppedListening;
+            //speechUI.AbortedListening += SpeechUI_AbortedListening;
+            //speechUI.WordsRecognized += SpeechUI_WordsRecognized;
+            //speechUI.ExceptionThrown += SpeechUI_ExceptionThrown;
         }
 
         private void SpeechUI_ExceptionThrown(object sender, Exception e)
@@ -11758,13 +11765,13 @@ namespace DHDM
         }
 
         
-        private async void SpeechUI_WordsRecognized(object sender, WordsRecognizedEventArgs e)
+        private async void SpeechUI_WordsRecognized(object sender /*, WordsRecognizedEventArgs e */)
         {
-            Twitch.MarksVoiceChat(e.Words);
+            Twitch.MarksVoiceChat("e.Words <- fix");
             int fredId = AllPlayers.GetPlayerIdFromName("Fred");
             SaySomething("...", string.Empty, fredId, "thinking");
 
-            string response = await FredGpt.GetResponse("Mark", "Mark", e.Words);
+            string response = await FredGpt.GetResponse("Mark", "Mark", "e.Words <- fix");
             SaySomething(response, " #28486b", fredId, "says");
             Twitch.FredChat(response);
         }
@@ -11801,31 +11808,11 @@ namespace DHDM
             });
         }
 
-        private void SpeechUI_StartedListening(object sender, WhichCtrlKey e)
+        private void SpeechUI_StartedListening(object sender /*, WhichCtrlKey e */)
         {
             Debug.WriteLine("SpeechUI_StartedListening");
             showThinkingTimer.Stop();
             showThinkingTimer.Start();
-        }
-
-        void ControlKeyStateChanged(ControlKeyEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                bool onlyControlModifierIsDown = Keyboard.Modifiers == ModifierKeys.Control;
-                speechUI.SetListeningStateBasedOnCtrlKey(e, onlyControlModifierIsDown);
-            });
-        }
-
-        private void GlobalHooks_ControlKeyStateChanged(object sender, ControlKeyEventArgs e)
-        {
-            ControlKeyStateChanged(e);
-        }
-
-        private void GlobalHooks_MouseEventFired(object sender, MyMouseEventArgs e)
-        {
-            if (e.HasAnyMouseAction(e.Position))
-                speechUI.AbortListening();
         }
 
         void ShowThinkingTimerHandler(object sender, EventArgs ea)
@@ -11845,7 +11832,7 @@ namespace DHDM
         {
             if (!IsMark(chatMessage.UserId))
                 return;
-            speechUI.IsListening = false;
+            //speechUI.IsListening = false;
             Twitch.FredChat("Me no listen!");
         }
 
@@ -11853,7 +11840,7 @@ namespace DHDM
         {
             if (!IsMark(chatMessage.UserId))
                 return;
-            speechUI.IsListening = true;
+            //speechUI.IsListening = true;
             Twitch.FredChat("Me hear you, Mark, loud and clear!");
         }
 

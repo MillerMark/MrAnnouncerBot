@@ -59,7 +59,11 @@ namespace MrAnnouncerBot
 					Greet_SurlyDev();
 					break;
 
-				case "legendairymoooo":
+                case "speedyc12371":
+                    Greet_Speedy();
+                    break;
+
+                case "legendairymoooo":
 					Greet_LegendairyMoooo();
 					break;
 
@@ -241,9 +245,37 @@ namespace MrAnnouncerBot
 		}
 
 
-		#region SuperVIP Greetings
+        #region SuperVIP Greetings
 
-		private void Greet_SurlyDev()
+        private void Greet_Speedy()
+        {
+            switch (new Random().Next(7))
+            {
+                case 0:
+                    Greeting = $"@{DisplayName} just rolled up!";
+                    break;
+                case 1:
+                    Greeting = $"@{DisplayName} is here! Get ready to take it for a Speedy Spin!";
+                    break;
+                case 2:
+                    Greeting = $"And @{DisplayName} rolls in, just in time!";
+                    break;
+                case 3:
+                    Greeting = $"Hurray! @{DisplayName} is here!";
+                    break;
+                case 4:
+                    Greeting = $"@{DisplayName}'s here to help us write some code!";
+                    break;
+                case 5:
+                    Greeting = $"Our favorite @{DisplayName} just rolled in to the building!";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_SurlyDev()
 		{
 			switch (new Random().Next(14))
 			{
