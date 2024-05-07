@@ -258,3 +258,11 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 |---|---|---|
 | party11 | DH.Party11 | Good | 
 
+### Level 30
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| party12 | DH.Party12 | Good | 
+

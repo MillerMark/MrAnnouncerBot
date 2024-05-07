@@ -30,25 +30,27 @@ namespace DHDM
 		}
 
 		private void AdvanceFrame()
-		{
-			if (needToStopNow)
-				FrameIndex = frameCount - 1;
+        {
+            if (timer == null)
+                return;
+            if (needToStopNow)
+                FrameIndex = frameCount - 1;
 
-			if (FrameIndex < frameCount)
-			{
-				OnRenderFrame(out double duration, out bool shouldStop);
-				if (shouldStop)
-					return;
+            if (FrameIndex < frameCount)
+            {
+                OnRenderFrame(out double duration, out bool shouldStop);
+                if (shouldStop)
+                    return;
 
-				SetNextTimer(duration);
+                SetNextTimer(duration);
 
-				FrameIndex++;
-			}
-			if (FrameIndex >= frameCount || needToStopNow)
-				Stop();
-		}
+                FrameIndex++;
+            }
+            if (FrameIndex >= frameCount || needToStopNow)
+                Stop();
+        }
 
-		protected void OnRenderFrame(out double duration, out bool shouldStop)
+        protected void OnRenderFrame(out double duration, out bool shouldStop)
 		{
 			RenderFrameEventArgs ea = new RenderFrameEventArgs();
 			RenderFrame?.Invoke(this, ea);

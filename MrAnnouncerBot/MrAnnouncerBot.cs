@@ -28,9 +28,39 @@ using Microsoft.Extensions.Configuration;
 using System.Configuration;
 using System.Drawing;
 using System.Speech.Recognition;
+using DndCore;
 
 namespace MrAnnouncerBot
 {
+    // TODO: Move these classes to a new file.
+    public static class IEnumerableExtensionMethods
+    {
+        public static T PickOne<T>(this IEnumerable<T> source)
+        {
+            if (source.Count() == 1)
+                return source.ElementAt(0);
+
+            var index = new Random((int)DateTime.Now.Ticks).Next(source.Count());
+            return source.ElementAt(index);
+        }
+    }
+
+
+    [Document("Mr. Announcer Guy")]
+    [Sheet("Special Fanfares")]
+    public class SpecialFanfare
+    {
+        [Column]
+        public string UserId { get; set; }
+        [Column]
+        public string DisplayName { get; set; }
+        [Column]
+        public string KeyPhrase { get; set; }
+        [Column]
+        public string SceneName { get; set; }
+        [Column]
+        public double Duration { get; set; }
+    }
 
     public partial class MrAnnouncerBot
 	{
@@ -52,7 +82,8 @@ namespace MrAnnouncerBot
 		private static List<SceneDto> scenes;
 		private static List<RestrictedSceneDto> restrictedScenes;
 		private static List<ChannelPointAction> channelPointActions;
-		private string activeSceneName;
+        private static List<SpecialFanfare> specialFanfares;
+        private string activeSceneName;
 		private Timer checkChatRoomTimer;
 		private Timer autoSaveTimer;
 		private OBSWebsocket obsWebsocket = new OBSWebsocket();
@@ -236,9 +267,15 @@ namespace MrAnnouncerBot
 			//System.Diagnostics.Debugger.Break();
 		}
 
-		void QueueSceneToPlay(string sceneToPlay)
+		void QueueSceneToPlay(string scenesToPlay)
 		{
-			obsWebsocket.SetCurrentProgramScene(sceneToPlay);
+            string sceneToPlay;
+            if (scenesToPlay.Contains(";"))
+                sceneToPlay = scenesToPlay.Split(";", StringSplitOptions.RemoveEmptyEntries).PickOne();
+            else
+                sceneToPlay = scenesToPlay;
+
+            obsWebsocket.SetCurrentProgramScene(sceneToPlay);
 		}
 
 		void SetState(string stateToSet)
@@ -404,7 +441,7 @@ namespace MrAnnouncerBot
 
 			if (userFanfareCount > 0)
 			{
-				PlayFanfare(chatMessage.DisplayName, chatMessage.Message);
+				PlayFanfare(chatMessage.DisplayName, chatMessage.Message, chatMessage.UserId);
 			}
 			else
 				PlayBackloggedFanfare();
@@ -435,10 +472,37 @@ namespace MrAnnouncerBot
 		const string STR_RorySaysOrThinks = "!rory";
 		const string STR_RichardSaysOrThinks = "!richard";
 
-		private bool PlayFanfare(string displayName, string message = emptyString)
-		{
+        bool TriggersSpecialFanfare(string displayName, string message)
+        {
+            if (specialFanfares == null)
+            {
+                specialFanfares = GoogleSheets.Get<SpecialFanfare>();
+            }
+            SpecialFanfare specialFanfare = specialFanfares.FirstOrDefault(x => x.UserId == displayName);
+            if (specialFanfare != null && message.Contains(specialFanfare.KeyPhrase, StringComparison.InvariantCultureIgnoreCase))
+            {
+                string sceneName = specialFanfare.SceneName;
+                ActivatingSceneByName(sceneName, "SpecialFanfare");
+                try
+                {
+                    hubConnection.InvokeAsync("SuppressVolume", specialFanfare.Duration);
+                    obsWebsocket.SetCurrentProgramScene(sceneName);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to play special fanfare: {sceneName}. Exception: {ex.Message}");
+                }
+                return true;
+            }
 
-			string fanfareKey = displayName.ToLower();
+            return false;
+        }
+
+        private bool PlayFanfare(string displayName, string message = emptyString, string id = emptyString)
+		{
+            if (TriggersSpecialFanfare(id, message))
+                return false;
+            string fanfareKey = displayName.ToLower();
 			if (playedFanfares.ContainsKey(fanfareKey) && playedFanfares[fanfareKey].DayOfYear == DateTime.Now.DayOfYear)
 				return true;
 
@@ -481,7 +545,6 @@ namespace MrAnnouncerBot
 				catch (Exception ex)
 				{
 					Console.WriteLine($"Unable to play fanfare: {sceneName}. Exception: {ex.Message}");
-					Debugger.Break();
 				}
 
 				MarkFanfareAsPlayed(fanfare);

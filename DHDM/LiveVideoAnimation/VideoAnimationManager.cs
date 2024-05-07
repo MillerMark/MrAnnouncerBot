@@ -190,9 +190,9 @@ namespace DHDM
 			}
 		}
 
-		private static void ObsManager_SceneChanged(object sender, string sceneName)
+        private static void ObsManager_SceneChanged(object sender, string sceneName)
 		{
-			DateTime startTime = DateTime.Now;
+            DateTime startTime = DateTime.Now;
 			StopExistingAnimation();
 
 			List<VideoAnimationBinding> bindings = AllVideoBindings.GetAll(sceneName);
