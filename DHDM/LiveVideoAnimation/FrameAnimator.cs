@@ -8,7 +8,7 @@ namespace DHDM
 		public event RenderFrameEventHandler RenderFrame;
 		public event EventHandler AnimationComplete;
 		public int FrameIndex { get; set; }
-		Timer timer;
+        System.Timers.Timer timer;
 		DateTime startTime;
 		TimeSpan totalDrawTimeSoFar;
 		bool allDone;
@@ -19,7 +19,7 @@ namespace DHDM
 		public FrameAnimator(int frameCount)
 		{
 			this.frameCount = frameCount;
-			timer = new Timer();
+			timer = new System.Timers.Timer();
 			timer.Elapsed += Timer_Elapsed;
 		}
 

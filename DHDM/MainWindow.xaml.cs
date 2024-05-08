@@ -199,7 +199,7 @@ namespace DHDM
 			obsManager.Initialize(game, this);
 			dmMoodManager = new DmMoodManager();
 			contestManager = new ContestManager(obsManager);
-			VideoAnimationManager.Initialize();
+			VideoAnimationManager.Initialize(new LiveVideoEditor());
 			CreateViewerSpellcaster();
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();

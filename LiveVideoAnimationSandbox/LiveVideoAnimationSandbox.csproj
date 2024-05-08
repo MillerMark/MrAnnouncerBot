@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);LiveVideoAnimationSandbox</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\DHDM\Events\Delegates.cs" Link="Delegates.cs" />
+    <Compile Include="..\DHDM\Events\RenderFrameEventArgs.cs" Link="RenderFrameEventArgs.cs" />
+    <Compile Include="..\DHDM\FrmPickScene.xaml.cs" Link="FrmPickScene.xaml.cs" />
+    <Compile Include="..\DHDM\ILiveVideoEditor.cs" Link="ILiveVideoEditor.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\AllVideoBindings.cs" Link="AllVideoBindings.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\AllVideoFeeds.cs" Link="AllVideoFeeds.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\FrameAnimator.cs" Link="FrameAnimator.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\BluetoothLights.cs" Link="BluetoothLights.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\Dmx.cs" Link="Dmx.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\DmxLight.cs" Link="DmxLight.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\FrmColorPicker.xaml.cs" Link="FrmColorPicker.xaml.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\SceneLighting\AllSceneLightData.cs" Link="AllSceneLightData.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\Lights\SceneLighting\SceneLightData.cs" Link="SceneLightData.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\LiveFeedAnimator.cs" Link="LiveFeedAnimator.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\AnimatorWithTransforms.cs" Link="AnimatorWithTransforms.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml.cs" Link="FrmLiveAnimationEditor.xaml.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\Light.cs" Link="Light.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightingSequence.cs" Link="LightingSequence.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightSequenceData.cs" Link="LightSequenceData.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\VideoAnimationBinding.cs" Link="VideoAnimationBinding.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\VideoAnimationManager.cs" Link="VideoAnimationManager.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenDMX.NET" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="..\DHDM\FrmPickScene.xaml" Link="FrmPickScene.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="..\DHDM\LiveVideoAnimation\Lights\FrmColorPicker.xaml" Link="FrmColorPicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="..\DHDM\LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml" Link="FrmLiveAnimationEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DndCore\DndCore.csproj" />
+    <ProjectReference Include="..\Imaging\Imaging.csproj" />
+    <ProjectReference Include="..\ObsControl\ObsControl.csproj" />
+  </ItemGroup>
+
+</Project>

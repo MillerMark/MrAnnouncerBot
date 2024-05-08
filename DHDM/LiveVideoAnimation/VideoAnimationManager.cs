@@ -147,8 +147,9 @@ namespace DHDM
 		}
 
 		static List<FrameAnimator> lightAnimators = new List<FrameAnimator>();
+        static ILiveVideoEditor liveVideoEditor;
 
-		private static void FrameAnimator_AnimationComplete(object sender, EventArgs e)
+        private static void FrameAnimator_AnimationComplete(object sender, EventArgs e)
 		{
 			//string str = string.Join(Environment.NewLine, log.ToArray());
 			if (sender is FrameAnimator frameAnimator)
@@ -206,10 +207,10 @@ namespace DHDM
 			}
 			else
 			{
-				HubtasticBaseStation.PreloadImageBack(null, 0, 0, 0);
-				HubtasticBaseStation.PreloadImageFront(null, 0, 0, 0);
-				HubtasticBaseStation.ShowImageFront(null);
-				HubtasticBaseStation.ShowImageBack(null);
+                liveVideoEditor.PreloadImageBack(null, 0, 0, 0);
+                liveVideoEditor.PreloadImageFront(null, 0, 0, 0);
+                liveVideoEditor.ShowImageFront(null);
+                liveVideoEditor.ShowImageBack(null);
 			}
 
 			ChangeLightsBasedOnScene(sceneName);
@@ -246,10 +247,12 @@ namespace DHDM
 			//HubtasticBaseStation.ShowImageBack(@"Editor/BackTest.png");
 		}
 
-		public static void Initialize()
+		public static void Initialize(ILiveVideoEditor liveVideoEditor)
 		{
-			ObsManager.SceneChanged += ObsManager_SceneChanged;
+            VideoAnimationManager.liveVideoEditor = liveVideoEditor;
+            ObsManager.SceneChanged += ObsManager_SceneChanged;
 		}
+
 		public static void ClosingEditor()
 		{
 			frmLiveAnimationEditor = null;

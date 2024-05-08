@@ -8,7 +8,8 @@ namespace DHDM
 {
 	public class DmxLight
 	{
-		static DmxLight left;
+        public static bool Enabled { get; set; }
+        static DmxLight left;
 		public static DmxLight Left
 		{
 			get
@@ -51,6 +52,8 @@ namespace DHDM
 
 		private void SetColor(HueSatLight hueSatLight)
 		{
+            if (!Enabled)
+                return;
 			Color asRGB = hueSatLight.AsRGB;
 			Dmx.Controller.SetChannel(ChannelStart, asRGB.R);
 			Dmx.Controller.SetChannel(ChannelStart + 1, asRGB.G);

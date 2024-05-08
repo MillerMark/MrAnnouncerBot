@@ -10,7 +10,24 @@ using ObsControl;
 
 namespace DHDM
 {
-	public static class HubtasticBaseStation
+
+    public class LiveVideoEditor: ILiveVideoEditor
+    {
+        public void ShowImageFront(string fileName) {
+            HubtasticBaseStation.ShowImageFront(fileName);
+        }
+        public void ShowImageBack(string fileName) {
+            HubtasticBaseStation.ShowImageBack(fileName);
+        }
+        public void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount) {
+            HubtasticBaseStation.PreloadImageFront(fileName, startIndex, stopIndex, digitCount);
+        }
+        public void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount) {
+            HubtasticBaseStation.PreloadImageBack(fileName, startIndex, stopIndex, digitCount);
+        }
+    }
+
+    public static class HubtasticBaseStation
 	{
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
 		public delegate void QuestionAnswerMapEventHandler(object sender, QuestionAnswerMapEventArgs ea);

@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:DHDM"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Live Animation Editor" Height="486" Width="1270" Closed="Window_Closed">
+        SizeToContent="Height"
+        Title="Live Animation Editor" Width="1270" Closed="Window_Closed">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"></RowDefinition>
@@ -36,8 +37,11 @@
                 >
 			
 		</Slider>
-        <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Grid.Row="2" Height="25"  >
-        	
+        <StackPanel x:Name="spTimeline" Orientation="Vertical" Grid.Row="2" >
+            <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
+
+            </StackPanel>
+            <Canvas x:Name="cvsTimeline" Height="300" ></Canvas>
         </StackPanel>
 		<StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
 			<StackPanel Orientation="Horizontal">
