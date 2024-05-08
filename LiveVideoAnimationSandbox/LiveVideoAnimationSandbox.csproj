@@ -56,6 +56,7 @@
     <ProjectReference Include="..\DndCore\DndCore.csproj" />
     <ProjectReference Include="..\Imaging\Imaging.csproj" />
     <ProjectReference Include="..\ObsControl\ObsControl.csproj" />
+    <ProjectReference Include="..\WpfEditorControls\WpfEditorControls.csproj" />
   </ItemGroup>
 
 </Project>

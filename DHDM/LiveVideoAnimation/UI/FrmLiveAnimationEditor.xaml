@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
+        xmlns:dataVis="clr-namespace:WpfEditorControls;assembly=WpfEditorControls"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         SizeToContent="Height"
@@ -41,7 +42,12 @@
             <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
 
             </StackPanel>
-            <Canvas x:Name="cvsTimeline" Height="300" ></Canvas>
+            <dataVis:SequenceVisualizer Label="Scale" Color="DeepPink" Height="100" x:Name="scaleSequenceVisualizer"></dataVis:SequenceVisualizer>
+            <dataVis:SequenceVisualizer Label="X" Color="MediumPurple" Height="100" x:Name="xSequenceVisualizer"></dataVis:SequenceVisualizer>
+            <dataVis:SequenceVisualizer Label="Y" Color="#FF70DB89" Height="100" x:Name="ySequenceVisualizer"></dataVis:SequenceVisualizer>
+            <dataVis:SequenceVisualizer Label="Left" Height="40" x:Name="leftLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+            <dataVis:SequenceVisualizer Label="Center" Height="40" x:Name="centerLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+            <dataVis:SequenceVisualizer Label="Right" Height="40" x:Name="rightLightSequenceVisualizer"></dataVis:SequenceVisualizer>
         </StackPanel>
 		<StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
 			<StackPanel Orientation="Horizontal">

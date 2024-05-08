@@ -18,6 +18,8 @@ using ObsControl;
 using System.Security.Policy;
 using Newtonsoft.Json;
 using System.Windows.Media.Media3D;
+using WpfEditorControls;
+
 #if LiveVideoAnimationSandbox
 using LiveVideoAnimationSandbox;
 #endif
@@ -64,26 +66,26 @@ namespace DHDM
         List<AnimatorWithTransforms> liveFeedAnimators;
         AnimatorWithTransforms activeMovement;
 
-        void AddToTimeline(ObsTransformEdit obsTransformEdit, ref double xPos, double widthOfTimelineFrame)
-        {
-            Rectangle rectangle = new Rectangle();
-            rectangle.Fill = new SolidColorBrush(Colors.Blue);
-            rectangle.Width = widthOfTimelineFrame;
-            rectangle.Height = obsTransformEdit.Scale * 40;
-            Canvas.SetLeft(rectangle, xPos);
-            Canvas.SetTop(rectangle, 0);
-            cvsTimeline.Children.Add(rectangle);
-            xPos += widthOfTimelineFrame;
-        }
-
         void UpdateMovementOnTimeline()
         {
-            cvsTimeline.Children.Clear();
-            if (activeMovement == null || activeMovement.ObsTransformEdits.Count == 0)
-                return;
-            double widthOfTimelineFrame = cvsTimeline.ActualWidth / activeMovement.ObsTransformEdits.Count;
-            double xPos = 0;
-            activeMovement.ObsTransformEdits.ForEach(x => AddToTimeline(x, ref xPos, widthOfTimelineFrame));
+            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, x => x.Scale, GraphStyle.BoxFromBelow);
+            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, x => x.GetX(), GraphStyle.BoxFromBelow);
+            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, y => y.GetY(), GraphStyle.BoxFromBelow);
+            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, x => GetColor(x));
+            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, w => GetColor(w));
+            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, v => GetColor(v));
+        }
+
+        Color GetColor(LightSequenceData x)
+        {
+            double lightness;
+            if (x.Lightness > 0 && x.Lightness < 30)
+                lightness = x.Lightness + 30;
+            else
+                lightness = x.Lightness;
+
+            HueSatLight hsl = new HueSatLight(x.Hue / 360, x.Saturation / 100, lightness / 100);
+            return hsl.AsRGB;
         }
 
         AnimatorWithTransforms ActiveMovement {
@@ -115,14 +117,22 @@ namespace DHDM
             // TODO: Abort load if path not found.
             LoadAllImages(System.IO.Path.Combine(STR_EditorPath, SelectedSceneName));
 
-            relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
-            relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
-            if (digitCount == 0)
+            if (frontFiles == null)
+                relativePathFront = null;
+            else
+                relativePathFront = GetRelativePathBaseName(frontFiles[frameIndex]);
+            if (backFiles == null)
+                relativePathBack = null;
+            else
             {
-                int lastIndex = backFiles.Length - 1;
-                digitCount = lastIndex.ToString().Length;
+                relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
+                if (digitCount == 0)
+                {
+                    int lastIndex = backFiles.Length - 1;
+                    digitCount = lastIndex.ToString().Length;
+                }
+                sldFrameIndex.Maximum = backFiles.Length - 1;
             }
-            sldFrameIndex.Maximum = backFiles.Length - 1;
             UpdateUI();
             frameIndex = 0;
             DrawActiveFrame();
@@ -335,8 +345,10 @@ namespace DHDM
             int lastIndex = backFiles.Length - 1;
             int endFrame = Math.Min(lastIndex, frameIndex + extraFramesCount);
 
-            liveVideoEditor.PreloadImageBack(relativePathBack, startFrame, endFrame, digitCount);
-            liveVideoEditor.PreloadImageFront(relativePathFront, startFrame, endFrame, digitCount);
+            if (relativePathBack != null)
+                liveVideoEditor.PreloadImageBack(relativePathBack, startFrame, endFrame, digitCount);
+            if (relativePathFront != null)
+                liveVideoEditor.PreloadImageFront(relativePathFront, startFrame, endFrame, digitCount);
         }
 
         private string GetRelativePathBaseName(string fileName)
@@ -450,7 +462,19 @@ namespace DHDM
         }
         public string SelectedSceneName { get; set; }
         public string PngPath { get; set; }
-        public string ActiveMovementFileName { get; set; }
+        string activeMovementFileName;
+        public string ActiveMovementFileName { get => activeMovementFileName;
+            set
+            {
+                if (activeMovementFileName == value)
+                    return;
+                activeMovementFileName = value;
+                if (string.IsNullOrWhiteSpace(value))
+                    Title = $"Live Animation Editor";
+                else
+                    Title = $"Live Animation Editor - {value}";
+            }
+        }
 
 
         private void btnNextFrame_Click(object sender, RoutedEventArgs e)
@@ -487,8 +511,8 @@ namespace DHDM
 
         bool changingInternally;
         bool initializing;
-        string relativePathFront;
-        string relativePathBack;
+        string? relativePathFront;
+        string? relativePathBack;
         bool settingColorInternally;
         bool dragStarted;
         LiveVideoEditor liveVideoEditor;
@@ -838,6 +862,8 @@ namespace DHDM
 
             int totalFrameCount = 0;
 
+            LightingSequence = LoadLightingSequence(allBindings.FirstOrDefault().SceneName, totalFrameCount);
+
             foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
             {
                 AnimatorWithTransforms animatorWithTransforms = new AnimatorWithTransforms();
@@ -862,7 +888,6 @@ namespace DHDM
                     ActiveMovement = animatorWithTransforms;
             }
 
-            LightingSequence = LoadLightingSequence(allBindings.FirstOrDefault().SceneName, totalFrameCount);
             RenderCurrentSequence();
         }
 
