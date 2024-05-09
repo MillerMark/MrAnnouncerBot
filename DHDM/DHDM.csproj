@@ -119,6 +119,7 @@
     <ProjectReference Include="..\SharedCore\SharedCore.csproj" />
     <ProjectReference Include="..\Streamloots\Streamloots.csproj" />
     <ProjectReference Include="..\TaleSpireCore\TaleSpireCore.csproj" />
+    <ProjectReference Include="..\WpfEditorControls\WpfEditorControls.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="LiveVideoAnimation\Lights\hues.png" />
