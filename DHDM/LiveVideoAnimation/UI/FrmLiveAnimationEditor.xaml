@@ -9,147 +9,157 @@
         mc:Ignorable="d"
         SizeToContent="Height"
         Title="Live Animation Editor" Width="1270" Closed="Window_Closed">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-		</Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
         <Grid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="Copy Colors" Click="CopyColors_Click"/>
                 <MenuItem Header="Paste Colors" Click="PasteColors_Click"/>
             </ContextMenu>
         </Grid.ContextMenu>
-		<Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
-		<Button x:Name="btnSaveAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="153, 0, 0, 0" Click="btnSaveAnimation_Click">
-			Save
-		</Button>
-		<Button x:Name="btnReloadAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="306, 0, 0, 0" Click="btnReloadAnimation_Click">
-			Reload
-		</Button>
-		<Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="22" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" 
+        <Button x:Name="btnLoadAnimation" Content="Load Animation..." HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Click="btnLoadAnimation_Click" />
+        <Button x:Name="btnSaveAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="153, 0, 0, 0" Click="btnSaveAnimation_Click">
+            Save
+        </Button>
+        <Button x:Name="btnReloadAnimation" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Height="28" Margin="306, 0, 0, 0" Click="btnReloadAnimation_Click">
+            Reload
+        </Button>
+        <Slider x:Name="sldFrameIndex" Minimum="0" Value="0" Grid.Row="1" Height="22" Margin="4, 4, 4, 4" ValueChanged="sldFrameIndex_ValueChanged" 
                 Thumb.DragStarted="sldFrameIndex_DragStarted" Thumb.DragCompleted="sldFrameIndex_DragCompleted"
                 >
-			
-		</Slider>
+
+        </Slider>
         <StackPanel x:Name="spTimeline" Orientation="Vertical" Grid.Row="2" >
             <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
 
             </StackPanel>
-            <dataVis:SequenceVisualizer Label="Scale" Color="DeepPink" Height="100" x:Name="scaleSequenceVisualizer"></dataVis:SequenceVisualizer>
-            <dataVis:SequenceVisualizer Label="X" Color="MediumPurple" Height="100" x:Name="xSequenceVisualizer"></dataVis:SequenceVisualizer>
-            <dataVis:SequenceVisualizer Label="Y" Color="#FF70DB89" Height="100" x:Name="ySequenceVisualizer"></dataVis:SequenceVisualizer>
-            <dataVis:SequenceVisualizer Label="Left" Height="40" x:Name="leftLightSequenceVisualizer"></dataVis:SequenceVisualizer>
-            <dataVis:SequenceVisualizer Label="Center" Height="40" x:Name="centerLightSequenceVisualizer"></dataVis:SequenceVisualizer>
-            <dataVis:SequenceVisualizer Label="Right" Height="40" x:Name="rightLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+            <Grid>
+                <StackPanel Orientation="Vertical">
+                    <dataVis:SequenceVisualizer Label="Scale" Color="DeepPink" Height="80" x:Name="scaleSequenceVisualizer"></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer Label="Rotation" LabelSuffix="°" Color="#FFE07C02" Height="80" x:Name="rotationSequenceVisualizer"></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer Label="Opacity" Color="White" Height="80" x:Name="opacitySequenceVisualizer"></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer Label="X" Color="MediumPurple" Height="80" x:Name="xSequenceVisualizer"></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer Label="Y" Color="#FF70DB89" Height="80" x:Name="ySequenceVisualizer"></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Left" Height="40" x:Name="leftLightSequenceVisualizer" ></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Center" Height="40" x:Name="centerLightSequenceVisualizer" ></dataVis:SequenceVisualizer>
+                    <dataVis:SequenceVisualizer InnerBorder="Black" OuterBorder="Black" Label="Right" Height="40" x:Name="rightLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+                </StackPanel>
+                <Canvas x:Name="cvsPlayhead">
+                    <Rectangle x:Name="playheadGraphic" Canvas.Left="-55" Fill="DarkRed" Width="5" Height="500" ></Rectangle>
+                    <Rectangle x:Name="playheadGraphicInnerLine" Canvas.Left="-57" Fill="White" Width="1" Height="500" ></Rectangle>
+                </Canvas>
+            </Grid>
         </StackPanel>
-		<StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
-			<StackPanel Orientation="Horizontal">
-				<TextBlock x:Name="tbFrameIndexFromMovementFile" Text="00:00" Width="Auto" Height="Auto" FontSize="22"/>
-				<TextBlock x:Name="tbFrameIndexFromMemory" Text="00:00" Width="Auto" Height="Auto" FontSize="22" Foreground="DarkRed" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="620, 0, 0, 0"/>
-				<TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="X:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
-				<TextBox x:Name="tbxDeltaX" Width="80" TextChanged="tbxDeltaX_TextChanged">
-					0
-				</TextBox>
-				<Button x:Name="btnCopyDeltaXForward" Click="btnCopyDeltaXForward_Click">
-					>>
-				</Button>
-				<Slider x:Name="sldDeltaX" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaX_ValueChanged"></Slider>
-				<TextBlock x:Name="tbCurrentX" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
-				<TextBlock x:Name="tbNewX" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Y:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
-				<TextBox x:Name="tbxDeltaY" Width="80" TextChanged="tbxDeltaY_TextChanged">
-					0
-				</TextBox>
-				<Button x:Name="btnCopyDeltaYForward" Click="btnCopyDeltaYForward_Click">
-					>>
-				</Button>
-				<Slider x:Name="sldDeltaY" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaY_ValueChanged"></Slider>
-				<TextBlock x:Name="tbCurrentY" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
-				<TextBlock x:Name="tbNewY" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Rotation:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
-				<TextBox x:Name="tbxDeltaRotation" Width="80" TextChanged="tbxDeltaRotation_TextChanged">
-					0 
-				</TextBox>
-				<Button x:Name="btnCopyDeltaRotationForward" Click="btnCopyDeltaRotationForward_Click">
-					>>
-				</Button>
-				<Slider x:Name="sldDeltaRotation" Width="400" Margin="10, 0, 0, 0" Minimum="-45" Maximum="45" ValueChanged="sldDeltaRotation_ValueChanged"></Slider>
-				<TextBlock x:Name="tbCurrentRotation" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
-				<TextBlock x:Name="tbNewRotation" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Scale Factor:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
-				<TextBox x:Name="tbxDeltaScale" Width="80" TextChanged="tbxDeltaScale_TextChanged">
-					1
-				</TextBox>
-				<Button x:Name="btnCopyDeltaScaleForward" Click="btnCopyDeltaScaleForward_Click">
-					>>
-				</Button>
-				<Slider x:Name="sldDeltaScale" Value="1" Width="400" Margin="10, 0, 0, 0" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaScale_ValueChanged"></Slider>
-				<TextBlock x:Name="tbCurrentScale" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
-				<TextBlock x:Name="tbNewScale" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Opacity Factor:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
-				<TextBox x:Name="tbxDeltaOpacity" Width="80" TextChanged="tbxDeltaOpacity_TextChanged">
-					1
-				</TextBox>
-				<Button x:Name="btnCopyDeltaOpacityForward" Click="btnCopyDeltaOpacityForward_Click">
-					>>
-				</Button>
-				<Slider x:Name="sldDeltaOpacity" Width="400" Margin="10, 0, 0, 0" Value="1" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaOpacity_ValueChanged"></Slider>
-				<TextBlock x:Name="tbCurrentOpacity" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
-				<TextBlock x:Name="tbNewOpacity" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
-			</StackPanel>
-		</StackPanel>
-		<StackPanel Grid.Row="4" Orientation="Horizontal" Height="80">
+        <StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="tbFrameIndexFromMovementFile" Text="00:00" Width="Auto" Height="Auto" FontSize="22"/>
+                <TextBlock x:Name="tbFrameIndexFromMemory" Text="00:00" Width="Auto" Height="Auto" FontSize="22" Foreground="DarkRed" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="620, 0, 0, 0"/>
+                <TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="X:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
+                <TextBox x:Name="tbxDeltaX" Width="80" TextChanged="tbxDeltaX_TextChanged">
+                    0
+                </TextBox>
+                <Button x:Name="btnCopyDeltaXForward" Click="btnCopyDeltaXForward_Click">
+                    >>
+                </Button>
+                <Slider x:Name="sldDeltaX" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaX_ValueChanged"></Slider>
+                <TextBlock x:Name="tbCurrentX" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
+                <TextBlock x:Name="tbNewX" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Y:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
+                <TextBox x:Name="tbxDeltaY" Width="80" TextChanged="tbxDeltaY_TextChanged">
+                    0
+                </TextBox>
+                <Button x:Name="btnCopyDeltaYForward" Click="btnCopyDeltaYForward_Click">
+                    >>
+                </Button>
+                <Slider x:Name="sldDeltaY" Width="400" Margin="10, 0, 0, 0" Minimum="-200" Maximum="200" ValueChanged="sldDeltaY_ValueChanged"></Slider>
+                <TextBlock x:Name="tbCurrentY" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
+                <TextBlock x:Name="tbNewY" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Rotation:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
+                <TextBox x:Name="tbxDeltaRotation" Width="80" TextChanged="tbxDeltaRotation_TextChanged">
+                    0
+                </TextBox>
+                <Button x:Name="btnCopyDeltaRotationForward" Click="btnCopyDeltaRotationForward_Click">
+                    >>
+                </Button>
+                <Slider x:Name="sldDeltaRotation" Width="400" Margin="10, 0, 0, 0" Minimum="-45" Maximum="45" ValueChanged="sldDeltaRotation_ValueChanged"></Slider>
+                <TextBlock x:Name="tbCurrentRotation" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
+                <TextBlock x:Name="tbNewRotation" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Scale Factor:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
+                <TextBox x:Name="tbxDeltaScale" Width="80" TextChanged="tbxDeltaScale_TextChanged">
+                    1
+                </TextBox>
+                <Button x:Name="btnCopyDeltaScaleForward" Click="btnCopyDeltaScaleForward_Click">
+                    >>
+                </Button>
+                <Slider x:Name="sldDeltaScale" Value="1" Width="400" Margin="10, 0, 0, 0" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaScale_ValueChanged"></Slider>
+                <TextBlock x:Name="tbCurrentScale" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
+                <TextBlock x:Name="tbNewScale" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Opacity Factor:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
+                <TextBox x:Name="tbxDeltaOpacity" Width="80" TextChanged="tbxDeltaOpacity_TextChanged">
+                    1
+                </TextBox>
+                <Button x:Name="btnCopyDeltaOpacityForward" Click="btnCopyDeltaOpacityForward_Click">
+                    >>
+                </Button>
+                <Slider x:Name="sldDeltaOpacity" Width="400" Margin="10, 0, 0, 0" Value="1" Minimum="0.75" Maximum="1.25" ValueChanged="sldDeltaOpacity_ValueChanged"></Slider>
+                <TextBlock x:Name="tbCurrentOpacity" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="15, 0, 0, 0"/>
+                <TextBlock x:Name="tbNewOpacity" Text="0" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Height="80">
             <local:FrmColorPicker x:Name="leftLight" Margin="0, 0, 20, 0" ColorChanged="leftLight_ColorChanged"></local:FrmColorPicker>
-			<Button x:Name="btnPreviousFrame" Click="btnPreviousFrame_Click" Margin="0, 0, 15, 0">
-				<Viewbox Width="80" IsHitTestVisible="False">
-					<Canvas Width="408" Height="573">
-						<Polygon Points="408.5,573.5 -0.5,286.5 408.5,-0.5" FillRule="EvenOdd" Fill="#FFC00052" Stroke="{x:Null}" />
-					</Canvas>
-				</Viewbox>
-			</Button>
-			<StackPanel Orientation="Vertical" Margin="0, 0, 15, 0" VerticalAlignment="Center">
-				<TextBox x:Name="tbxFrameNumber" Text="0" HorizontalAlignment="Center" TextChanged="tbxFrameNumber_TextChanged"/>
-				<TextBlock Text="of" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
-				<TextBlock x:Name="tbTotalFrameCount" Text="0" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
-				<TextBlock Text="Frames" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
-			</StackPanel>
-			<Button x:Name="btnNextFrame" Click="btnNextFrame_Click" Margin="0, 0, 15, 0">
-				<Viewbox Width="80" >
-					<Canvas Width="408" Height="573">
-						<Polygon Points="-0.5,-0.5 408.5,286.5 -0.5,573.5" FillRule="EvenOdd" Fill="#FFC00052" Stroke="{x:Null}" />
-					</Canvas>
-				</Viewbox>
-			</Button>
+            <Button x:Name="btnPreviousFrame" Click="btnPreviousFrame_Click" Margin="0, 0, 15, 0">
+                <Viewbox Width="80" IsHitTestVisible="False">
+                    <Canvas Width="408" Height="573">
+                        <Polygon Points="408.5,573.5 -0.5,286.5 408.5,-0.5" FillRule="EvenOdd" Fill="#FFC00052" Stroke="{x:Null}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+            <StackPanel Orientation="Vertical" Margin="0, 0, 15, 0" VerticalAlignment="Center">
+                <TextBox x:Name="tbxFrameNumber" Text="0" HorizontalAlignment="Center" TextChanged="tbxFrameNumber_TextChanged"/>
+                <TextBlock Text="of" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="tbTotalFrameCount" Text="0" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
+                <TextBlock Text="Frames" Width="Auto" Height="Auto" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <Button x:Name="btnNextFrame" Click="btnNextFrame_Click" Margin="0, 0, 15, 0">
+                <Viewbox Width="80" >
+                    <Canvas Width="408" Height="573">
+                        <Polygon Points="-0.5,-0.5 408.5,286.5 -0.5,573.5" FillRule="EvenOdd" Fill="#FFC00052" Stroke="{x:Null}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
             <local:FrmColorPicker x:Name="rightLight" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
-		</StackPanel>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Center" Margin="8" >
             <local:FrmColorPicker x:Name="centerLight" Margin="0, 0, 20, 0" ColorChanged="centerLight_ColorChanged"></local:FrmColorPicker>
         </StackPanel>
         <StackPanel x:Name="spButtons" Orientation="Horizontal" Grid.Row="6" Margin="4" >
             <Button x:Name="btnCopyLightsForward" Width="136" Height="30" Click="btnCopyLightsForward_Click">
-         		Copy Lights Forward >>
-         </Button>
+                Copy Lights Forward >>
+            </Button>
         </StackPanel>
-	</Grid>
+    </Grid>
 </Window>

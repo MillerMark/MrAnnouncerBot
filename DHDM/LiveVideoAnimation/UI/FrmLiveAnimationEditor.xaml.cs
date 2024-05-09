@@ -68,12 +68,14 @@ namespace DHDM
 
         void UpdateMovementOnTimeline()
         {
-            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, x => x.Scale, GraphStyle.BoxFromBelow);
-            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, x => x.GetX(), GraphStyle.BoxFromBelow);
-            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, y => y.GetY(), GraphStyle.BoxFromBelow);
-            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, x => GetColor(x));
-            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, w => GetColor(w));
-            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, v => GetColor(v));
+            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Scale, GraphStyle.BoxFromBelow);
+            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Opacity, GraphStyle.Opacity);
+            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Rotation, GraphStyle.BoxFromBelow);
+            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
+            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
+            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, TotalAnimationFrames, x => GetColor(x));
+            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, TotalAnimationFrames, w => GetColor(w));
+            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, TotalAnimationFrames, v => GetColor(v));
         }
 
         Color GetColor(LightSequenceData x)
@@ -84,11 +86,12 @@ namespace DHDM
             else
                 lightness = x.Lightness;
 
-            HueSatLight hsl = new HueSatLight(x.Hue / 360, x.Saturation / 100, lightness / 100);
+            HueSatLight hsl = new HueSatLight((double)x.Hue / 360, (double)x.Saturation / 100, (double)lightness / 100);
             return hsl.AsRGB;
         }
 
-        AnimatorWithTransforms ActiveMovement {
+        AnimatorWithTransforms ActiveMovement
+        {
             get
             {
                 return activeMovement;
@@ -128,10 +131,10 @@ namespace DHDM
                 relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
                 if (digitCount == 0)
                 {
-                    int lastIndex = backFiles.Length - 1;
+                    int lastIndex = TotalAnimationFrames - 1;
                     digitCount = lastIndex.ToString().Length;
                 }
-                sldFrameIndex.Maximum = backFiles.Length - 1;
+                sldFrameIndex.Maximum = TotalAnimationFrames - 1;
             }
             UpdateUI();
             frameIndex = 0;
@@ -215,7 +218,7 @@ namespace DHDM
         {
             if (backFiles == null)
                 return;
-            if (frameIndex < 0 || frameIndex >= backFiles.Length)
+            if (frameIndex < 0 || frameIndex >= TotalAnimationFrames)
             {
                 liveVideoEditor.ShowImageBack(null);
                 liveVideoEditor.ShowImageFront(null);
@@ -281,10 +284,13 @@ namespace DHDM
             DrawActiveFrame();
         }
 
+        public int TotalAnimationFrames => backFiles?.Length ?? 0;
+
+
         private void UpdateUI()
         {
             if (backFiles != null)
-                tbTotalFrameCount.Text = backFiles.Length.ToString();
+                tbTotalFrameCount.Text = TotalAnimationFrames.ToString();
         }
 
         void LoadAllImages(string selectedPath)
@@ -342,7 +348,7 @@ namespace DHDM
             if (backFiles == null)
                 return;
             int startFrame = Math.Max(0, frameIndex - extraFramesCount);
-            int lastIndex = backFiles.Length - 1;
+            int lastIndex = TotalAnimationFrames - 1;
             int endFrame = Math.Min(lastIndex, frameIndex + extraFramesCount);
 
             if (relativePathBack != null)
@@ -447,8 +453,8 @@ namespace DHDM
                 if (frameIndex == value)
                     return;
 
-                if (backFiles != null && value >= backFiles.Length)
-                    value = backFiles.Length - 1;
+                if (backFiles != null && value >= TotalAnimationFrames)
+                    value = TotalAnimationFrames - 1;
 
                 if (value < 0)
                     value = 0;
@@ -463,7 +469,9 @@ namespace DHDM
         public string SelectedSceneName { get; set; }
         public string PngPath { get; set; }
         string activeMovementFileName;
-        public string ActiveMovementFileName { get => activeMovementFileName;
+        public string ActiveMovementFileName
+        {
+            get => activeMovementFileName;
             set
             {
                 if (activeMovementFileName == value)
@@ -612,7 +620,7 @@ namespace DHDM
 
         private void btnSaveAnimation_Click(object sender, RoutedEventArgs e)
         {
-            if (backFiles == null || backFiles.Length == 0)
+            if (backFiles == null || TotalAnimationFrames == 0)
                 return;
             SaveAllFrames();
         }
@@ -714,6 +722,19 @@ namespace DHDM
             return Math.Abs(compareValue - currentValue) <= wiggleRoom;
         }
 
+        void UpdatePlayhead()
+        {
+            if (sldFrameIndex.Maximum == 0)
+                return;
+            playheadGraphic.Height = spTimeline.ActualHeight;
+            playheadGraphicInnerLine.Height = spTimeline.ActualHeight;
+            double percentageOfTheWayAcross = FrameIndex / sldFrameIndex.Maximum;
+            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
+            double xPos = opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
+            Canvas.SetLeft(playheadGraphic, xPos - 2);
+            Canvas.SetLeft(playheadGraphicInnerLine, xPos);
+        }
+
         private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             FrameIndex = (int)sldFrameIndex.Value;
@@ -721,6 +742,7 @@ namespace DHDM
             try
             {
                 tbxFrameNumber.Text = FrameIndex.ToString();
+                UpdatePlayhead();
             }
             finally
             {
@@ -853,7 +875,7 @@ namespace DHDM
 
         void RenderCurrentSequence()
         {
-            
+
         }
         private void LoadAllFrames(List<VideoAnimationBinding> allBindings)
         {
@@ -982,7 +1004,7 @@ namespace DHDM
 
         private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
         {
-            if (backFiles == null || FrameIndex >= backFiles.Length - 1)
+            if (backFiles == null || FrameIndex >= TotalAnimationFrames - 1)
                 return;
             SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
             SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight, FrameIndex + 1);

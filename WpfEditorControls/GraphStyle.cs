@@ -7,6 +7,7 @@ namespace WpfEditorControls
     {
         BoxFromAbove,
         BoxFromBelow,
-        SmallSquares
+        SmallSquares,
+        Opacity
     }
 }
