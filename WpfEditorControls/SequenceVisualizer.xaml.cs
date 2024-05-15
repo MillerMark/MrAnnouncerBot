@@ -270,7 +270,7 @@ namespace WpfEditorControls
         private Rectangle AddBar(double xPos, double yPosition, double widthOfTimelineFrame)
         {
             Rectangle rectangle = new Rectangle();
-            rectangle.Width = Math.Ceiling(widthOfTimelineFrame);
+            rectangle.Width = Math.Round(widthOfTimelineFrame + 1);
             rectangle.Height = cvsSequence.ActualHeight * (yPosition - LowerBound) / VerticalRange;
             if (rectangle.Height < 2)
                 rectangle.Height = 2;

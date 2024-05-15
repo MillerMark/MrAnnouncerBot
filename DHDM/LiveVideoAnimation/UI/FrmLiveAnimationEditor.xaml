@@ -8,7 +8,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         SizeToContent="Height"
-        Title="Live Animation Editor" Width="1270" Closed="Window_Closed">
+        Title="Live Animation Editor" Width="1270" Closed="Window_Closed" SizeChanged="Window_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>

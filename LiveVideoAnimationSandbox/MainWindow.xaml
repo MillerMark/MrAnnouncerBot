@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-<Button x:Name="btnShowEditor" Width="120" Height="65" Click="btnShowEditor_Click"  >
+<Button x:Name="btnShowEditor" Width="180" Height="75" Click="btnShowEditor_Click" FontSize="24" >
 	Show Editor
 </Button>
     </Grid>

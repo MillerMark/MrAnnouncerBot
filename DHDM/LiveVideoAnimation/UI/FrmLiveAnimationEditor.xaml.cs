@@ -45,10 +45,10 @@ namespace DHDM
             }
         }
 
-        public LightingSequence LightingSequence { get; set; }
+        public LightingSequence? LightingSequence { get; set; }
 
 
-        List<ObsTransformEdit> allFrames
+        List<ObsTransformEdit>? allFrames
         {
             get
             {
@@ -56,15 +56,15 @@ namespace DHDM
             }
         }
 
-        string[] backFiles;
-        string[] frontFiles;
+        string[]? backFiles;
+        string[]? frontFiles;
         int frameIndex;
         bool settingInternally;
         const double frameRate = 30;  // fps
         const double secondsPerFrame = 1 / frameRate;
         const string STR_EditorPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\Editor";
         List<AnimatorWithTransforms> liveFeedAnimators;
-        AnimatorWithTransforms activeMovement;
+        AnimatorWithTransforms? activeMovement;
 
         void UpdateMovementOnTimeline()
         {
@@ -90,7 +90,7 @@ namespace DHDM
             return hsl.AsRGB;
         }
 
-        AnimatorWithTransforms ActiveMovement
+        AnimatorWithTransforms? ActiveMovement
         {
             get
             {
@@ -110,6 +110,9 @@ namespace DHDM
         void LoadAnimation()
         {
             spSourceRadioButtons.Children.Clear();
+            backFiles = null;
+            frontFiles = null;
+            digitCount = 0;
             ActiveMovementFileName = null;
             List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
             if (allBindings.Count == 0)
@@ -127,20 +130,21 @@ namespace DHDM
             if (backFiles == null)
                 relativePathBack = null;
             else
-            {
                 relativePathBack = GetRelativePathBaseName(backFiles[frameIndex]);
-                if (digitCount == 0)
-                {
-                    int lastIndex = TotalAnimationFrames - 1;
-                    digitCount = lastIndex.ToString().Length;
-                }
-                sldFrameIndex.Maximum = TotalAnimationFrames - 1;
+
+            if (digitCount == 0)
+            {
+                int lastIndex = TotalAnimationFrames - 1;
+                digitCount = lastIndex.ToString().Length;
             }
-            UpdateUI();
+            sldFrameIndex.Maximum = TotalAnimationFrames - 1;
+
+            UpdateTotalFrameCount();
             frameIndex = 0;
             DrawActiveFrame();
             ClearEditorValues();
             UpdateFrameUI();
+            UpdateMovementOnTimeline();
         }
 
         private void CreateRadioButtons(List<VideoAnimationBinding> allBindings)
@@ -284,10 +288,21 @@ namespace DHDM
             DrawActiveFrame();
         }
 
-        public int TotalAnimationFrames => backFiles?.Length ?? 0;
+        public int TotalAnimationFrames
+        {
+            get
+            {
+                int backFilesCount = 0;
+                if (backFiles != null)
+                    backFilesCount = backFiles.Length;
+                int frontFilesCount = 0;
+                if (frontFiles != null)
+                    frontFilesCount = frontFiles.Length;
+                return Math.Max(backFilesCount, frontFilesCount);
+            }
+        }
 
-
-        private void UpdateUI()
+        private void UpdateTotalFrameCount()
         {
             if (backFiles != null)
                 tbTotalFrameCount.Text = TotalAnimationFrames.ToString();
@@ -362,7 +377,9 @@ namespace DHDM
             char[] digits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             string relativePath = GetRelativePath(fileName);
             string baseFileName = System.IO.Path.GetFileNameWithoutExtension(relativePath).TrimEnd(digits);
-            string directoryName = System.IO.Path.GetDirectoryName(relativePath);
+            string? directoryName = System.IO.Path.GetDirectoryName(relativePath);
+            if (directoryName == null)
+                return fileName;
 
             return System.IO.Path.Combine(directoryName, baseFileName);
         }
@@ -385,7 +402,7 @@ namespace DHDM
             if (FramesAreNotGood())
                 return;
 
-            ObsTransformEdit liveFeedEdit = allFrames[frameIndex];
+            ObsTransformEdit liveFeedEdit = allFrames![frameIndex];
 
             changingInternally = true;
             try
@@ -425,13 +442,13 @@ namespace DHDM
             return allFrames == null || frameIndex < 0 || frameIndex > allFrames.Count - 1;
         }
 
-        private void UpdateValuePreviews(ObsTransformEdit liveFeedEdit = null)
+        private void UpdateValuePreviews(ObsTransformEdit? liveFeedEdit = null)
         {
             if (liveFeedEdit == null)
             {
                 if (FramesAreNotGood())
                     return;
-                liveFeedEdit = allFrames[frameIndex];
+                liveFeedEdit = allFrames![frameIndex];
             }
             tbCurrentX.Text = liveFeedEdit.Origin.X.ToString();
             tbNewX.Text = liveFeedEdit.GetX().ToString();
@@ -453,7 +470,7 @@ namespace DHDM
                 if (frameIndex == value)
                     return;
 
-                if (backFiles != null && value >= TotalAnimationFrames)
+                if (value >= TotalAnimationFrames)
                     value = TotalAnimationFrames - 1;
 
                 if (value < 0)
@@ -464,12 +481,23 @@ namespace DHDM
                 UpdateCurrentFrameNumber();
                 PreloadAroundActiveFrame(10);
                 UpdateFrameUI();
+
+                changingInternally = true;
+                try
+                {
+                    sldFrameIndex.Value = frameIndex;
+                }
+                finally
+                {
+                    changingInternally = false;
+                }
+                UpdatePlayhead();
             }
         }
         public string SelectedSceneName { get; set; }
         public string PngPath { get; set; }
-        string activeMovementFileName;
-        public string ActiveMovementFileName
+        string? activeMovementFileName;
+        public string? ActiveMovementFileName
         {
             get => activeMovementFileName;
             set
@@ -495,7 +523,7 @@ namespace DHDM
             settingInternally = true;
             try
             {
-                tbxFrameNumber.Text = frameIndex.ToString();
+                tbxFrameNumber.Text = (frameIndex + 1).ToString();
             }
             finally
             {
@@ -509,7 +537,9 @@ namespace DHDM
                 return;
 
             if (int.TryParse(tbxFrameNumber.Text, out int newFrameIndex))
-                FrameIndex = newFrameIndex;
+            {
+                FrameIndex = newFrameIndex - 1;
+            }
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -625,7 +655,7 @@ namespace DHDM
             SaveAllFrames();
         }
 
-        private string GetMovementFileName()
+        private string? GetMovementFileName()
         {
             if (FramesAreNotGood())
                 return null;
@@ -659,8 +689,9 @@ namespace DHDM
 
         void CopyForward(Attribute attribute)
         {
-            if (frameIndex < 0)
+            if (frameIndex < 0 || allFrames == null)
                 return;
+
             if (frameIndex >= allFrames.Count)
                 return;
 
@@ -737,12 +768,16 @@ namespace DHDM
 
         private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (changingInternally)
+                return;
+
             FrameIndex = (int)sldFrameIndex.Value;
+            UpdatePlayhead();
+
             changingInternally = true;
             try
             {
-                tbxFrameNumber.Text = FrameIndex.ToString();
-                UpdatePlayhead();
+                tbxFrameNumber.Text = (FrameIndex + 1).ToString();
             }
             finally
             {
@@ -755,13 +790,15 @@ namespace DHDM
             if (ActiveMovementFileName == null)
                 return;
             foreach (AnimatorWithTransforms animatorWithTransforms in liveFeedAnimators)
-                SaveFrames(animatorWithTransforms.MovementFileName);
+                CompressAndSaveFrames(animatorWithTransforms.MovementFileName);
 
             SaveLightingData();
         }
 
-        bool HasAnyLightingChanges(LightingSequence lightingSequence)
+        bool HasAnyLightingChanges(LightingSequence? lightingSequence)
         {
+            if (lightingSequence == null)
+                return false;
             foreach (Light light in lightingSequence.Lights)
                 foreach (LightSequenceData lightSequenceData in light.SequenceData)
                     if (lightSequenceData.Lightness > 0)
@@ -769,7 +806,7 @@ namespace DHDM
             return false;
         }
 
-        private void SaveFrames(string movementFileName)
+        private void CompressAndSaveFrames(string movementFileName)
         {
             LiveFeedAnimator liveFeedAnimator = GetLiveFeedAnimator(movementFileName);
 
@@ -777,35 +814,36 @@ namespace DHDM
 
             bool firstTime = true;
 
-            ObsTransform lastLiveFeedSequence = null;
-            foreach (ObsTransformEdit liveFeedEdit in allFrames)
-            {
-                ObsTransform liveFeedSequence = new ObsTransform()
+            ObsTransform? lastLiveFeedSequence = null;
+            if (allFrames != null)
+                foreach (ObsTransformEdit liveFeedEdit in allFrames)
                 {
-                    Camera = liveFeedEdit.Camera,
-                    Rotation = liveFeedEdit.GetRotation(),
-                    Scale = liveFeedEdit.GetScale(),
-                    Opacity = liveFeedEdit.GetOpacity(),
-                    Origin = new CommonCore.Point2d(liveFeedEdit.GetX(), liveFeedEdit.GetY()),
-                    Flipped = liveFeedEdit.Flipped,
-                    Duration = secondsPerFrame
-                };
-                if (firstTime)
-                {
-                    firstTime = false;
-                }
-                else
-                {
-                    if (lastLiveFeedSequence.Matches(liveFeedSequence))  // Compress movement...
+                    ObsTransform liveFeedSequence = new ObsTransform()
                     {
-                        lastLiveFeedSequence.Duration += secondsPerFrame;
-                        continue;
+                        Camera = liveFeedEdit.Camera,
+                        Rotation = liveFeedEdit.GetRotation(),
+                        Scale = liveFeedEdit.GetScale(),
+                        Opacity = liveFeedEdit.GetOpacity(),
+                        Origin = new CommonCore.Point2d(liveFeedEdit.GetX(), liveFeedEdit.GetY()),
+                        Flipped = liveFeedEdit.Flipped,
+                        Duration = secondsPerFrame
+                    };
+                    if (firstTime)
+                    {
+                        firstTime = false;
                     }
-                }
-                liveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
+                    else if (lastLiveFeedSequence != null)
+                    {
+                        if (lastLiveFeedSequence.Matches(liveFeedSequence))  // Compress movement...
+                        {
+                            lastLiveFeedSequence.Duration += secondsPerFrame;
+                            continue;
+                        }
+                    }
+                    liveFeedAnimator.LiveFeedSequences.Add(liveFeedSequence);
 
-                lastLiveFeedSequence = liveFeedSequence;
-            }
+                    lastLiveFeedSequence = liveFeedSequence;
+                }
 
             // Only saves for the active movement file. So if I make changes to two different movement files in
             // the same edit session, I need to save twice - use the radio buttons to decide what I'm saving.
@@ -819,31 +857,32 @@ namespace DHDM
             string fullPathToLightingFile = VideoAnimationManager.GetFullPathToLightsFile(SelectedSceneName);
             if (HasAnyLightingChanges(LightingSequence))
             {
-                LightingSequence compressedLightingSequence = LightingSequence.Compress();
-                string serializedLights = Newtonsoft.Json.JsonConvert.SerializeObject(compressedLightingSequence, Newtonsoft.Json.Formatting.Indented);
+                LightingSequence compressedLightingSequence = LightingSequence!.Compress();
+                string serializedLights = JsonConvert.SerializeObject(compressedLightingSequence, Formatting.Indented);
                 System.IO.File.WriteAllText(fullPathToLightingFile, serializedLights);
             }
             else
             {
-                System.Diagnostics.Debugger.Break();
                 // TODO: Delete the file!!!
             }
         }
 
-        bool HasLight(List<Light> lights, string id)
+        bool HasLight(List<Light>? lights, string id)
         {
-            return lights.Any(x => x.ID == id);
+            return lights?.Any(x => x.ID == id) == true;
         }
 
-        LightingSequence LoadLightingSequence(string sceneName, int totalFrameCount)
+        LightingSequence? LoadLightingSequence(string? sceneName, int totalFrameCount)
         {
+            if (sceneName == null)
+                return null;
             string fullPathToLightsFile = VideoAnimationManager.GetFullPathToLightsFile(sceneName);
             if (System.IO.File.Exists(fullPathToLightsFile))
             {
                 string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
-                LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
+                LightingSequence? lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
 
-                LightingSequence decompressedLightingSequence = lightingSequence.Decompress();
+                LightingSequence? decompressedLightingSequence = lightingSequence?.Decompress();
 
                 AddCenterLightIfNeeded(totalFrameCount, decompressedLightingSequence);
 
@@ -859,10 +898,10 @@ namespace DHDM
             }
         }
 
-        private void AddCenterLightIfNeeded(int totalFrameCount, LightingSequence decompressedLightingSequence)
+        private void AddCenterLightIfNeeded(int totalFrameCount, LightingSequence? decompressedLightingSequence)
         {
-            if (!HasLight(decompressedLightingSequence.Lights, BluetoothLights.Center_ID))
-                decompressedLightingSequence.Lights.Add(NewLight(BluetoothLights.Center_ID, totalFrameCount));
+            if (!HasLight(decompressedLightingSequence?.Lights, BluetoothLights.Center_ID))
+                decompressedLightingSequence?.Lights.Add(NewLight(BluetoothLights.Center_ID, totalFrameCount));
         }
 
         private static Light NewLight(string lightId, int totalFrameCount)
@@ -884,36 +923,37 @@ namespace DHDM
 
             int totalFrameCount = 0;
 
-            LightingSequence = LoadLightingSequence(allBindings.FirstOrDefault().SceneName, totalFrameCount);
+            LightingSequence = LoadLightingSequence(allBindings?.FirstOrDefault()?.SceneName, totalFrameCount);
 
-            foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
-            {
-                AnimatorWithTransforms animatorWithTransforms = new AnimatorWithTransforms();
-                animatorWithTransforms.MovementFileName = videoAnimationBinding.MovementFileName;
-                animatorWithTransforms.LiveFeedAnimator = GetLiveFeedAnimator(videoAnimationBinding.MovementFileName);
-                animatorWithTransforms.ObsTransformEdits = new List<ObsTransformEdit>();
-                int frameIndex = 0;
-                foreach (ObsTransform liveFeedSequence in animatorWithTransforms.LiveFeedAnimator.LiveFeedSequences)
+            if (allBindings != null)
+                foreach (VideoAnimationBinding videoAnimationBinding in allBindings)
                 {
-                    int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
-                    for (int i = 0; i < frameCount; i++)
+                    AnimatorWithTransforms animatorWithTransforms = new AnimatorWithTransforms();
+                    animatorWithTransforms.MovementFileName = videoAnimationBinding.MovementFileName;
+                    animatorWithTransforms.LiveFeedAnimator = GetLiveFeedAnimator(videoAnimationBinding.MovementFileName);
+                    animatorWithTransforms.ObsTransformEdits = new List<ObsTransformEdit>();
+                    int frameIndex = 0;
+                    foreach (ObsTransform liveFeedSequence in animatorWithTransforms.LiveFeedAnimator.LiveFeedSequences)
                     {
-                        animatorWithTransforms.ObsTransformEdits.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
-                        frameIndex++;
+                        int frameCount = (int)Math.Round(liveFeedSequence.Duration / secondsPerFrame);
+                        for (int i = 0; i < frameCount; i++)
+                        {
+                            animatorWithTransforms.ObsTransformEdits.Add(liveFeedSequence.CreateLiveFeedEdit(frameIndex));
+                            frameIndex++;
+                        }
                     }
-                }
-                if (totalFrameCount == 0)
-                    totalFrameCount = frameIndex;
+                    if (totalFrameCount == 0)
+                        totalFrameCount = frameIndex;
 
-                liveFeedAnimators.Add(animatorWithTransforms);
-                if (ActiveMovement == null)
-                    ActiveMovement = animatorWithTransforms;
-            }
+                    liveFeedAnimators.Add(animatorWithTransforms);
+                    if (ActiveMovement == null)
+                        ActiveMovement = animatorWithTransforms;
+                }
 
             RenderCurrentSequence();
         }
 
-        Light GetLightFromId(string id)
+        Light? GetLightFromId(string id)
         {
             if (LightingSequence == null)
                 return null;
@@ -948,12 +988,14 @@ namespace DHDM
             SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight);
         }
 
-        private void SetLightFrame(Light light, FrmColorPicker colorPicker)
+        private void SetLightFrame(Light? light, FrmColorPicker colorPicker)
         {
+            if (light == null)
+                return;
             SetLightFrame(light, colorPicker, FrameIndex);
         }
 
-        private static void SetLightFrame(Light light, FrmColorPicker colorPicker, int frameIndex)
+        private static void SetLightFrame(Light? light, FrmColorPicker colorPicker, int frameIndex)
         {
             if (light == null)
                 return;
@@ -964,7 +1006,7 @@ namespace DHDM
             light.SequenceData[frameIndex].Lightness = (int)colorPicker.Lightness;
         }
 
-        async void SetLightColor(string iD, LightSequenceData lightSequenceData)
+        void SetLightColor(string iD, LightSequenceData lightSequenceData)
         {
             if (settingColorInternally || dragStarted)
                 return;
@@ -1042,6 +1084,11 @@ namespace DHDM
             leftLight.Color = new HueSatLight(parts[0]);
             centerLight.Color = new HueSatLight(parts[1]);
             rightLight.Color = new HueSatLight(parts[2]);
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateMovementOnTimeline();
         }
     }
 }

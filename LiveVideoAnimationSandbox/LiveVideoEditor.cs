@@ -8,9 +8,9 @@ namespace LiveVideoAnimationSandbox
         {
 
         }
-        public void ShowImageFront(string fileName) { }
-        public void ShowImageBack(string fileName) { }
-        public void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount) { }
-        public void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount) { }
+        public void ShowImageFront(string? fileName) { }
+        public void ShowImageBack(string? fileName) { }
+        public void PreloadImageFront(string? fileName, int startIndex, int stopIndex, int digitCount) { }
+        public void PreloadImageBack(string? fileName, int startIndex, int stopIndex, int digitCount) { }
     }
 }
