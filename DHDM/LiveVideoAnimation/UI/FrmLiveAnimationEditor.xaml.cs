@@ -68,14 +68,14 @@ namespace DHDM
 
         void UpdateMovementOnTimeline()
         {
-            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Scale, GraphStyle.BoxFromBelow);
-            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Opacity, GraphStyle.Opacity);
-            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.Rotation, GraphStyle.BoxFromBelow);
-            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
-            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalAnimationFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
-            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, TotalAnimationFrames, x => GetColor(x));
-            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, TotalAnimationFrames, w => GetColor(w));
-            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, TotalAnimationFrames, v => GetColor(v));
+            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Scale, GraphStyle.BoxFromBelow);
+            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Opacity, GraphStyle.Opacity);
+            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Rotation, GraphStyle.BoxFromBelow);
+            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
+            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
+            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, TotalFrames, x => GetColor(x));
+            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, TotalFrames, w => GetColor(w));
+            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, TotalFrames, v => GetColor(v));
         }
 
         Color GetColor(LightSequenceData x)
@@ -134,10 +134,10 @@ namespace DHDM
 
             if (digitCount == 0)
             {
-                int lastIndex = TotalAnimationFrames - 1;
+                int lastIndex = TotalFrames - 1;
                 digitCount = lastIndex.ToString().Length;
             }
-            sldFrameIndex.Maximum = TotalAnimationFrames - 1;
+            //sldFrameIndex.Maximum = TotalAnimationFrames - 1;
 
             UpdateTotalFrameCount();
             frameIndex = 0;
@@ -230,7 +230,7 @@ namespace DHDM
             }
 
             liveVideoEditor.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
-            liveVideoEditor.ShowImageFront(GetRelativePath(frontFiles[frameIndex]));
+            liveVideoEditor.ShowImageFront(GetRelativePath(frontFiles![frameIndex]));
 
             foreach (AnimatorWithTransforms animatorWithTransform in liveFeedAnimators)
             {
@@ -288,6 +288,17 @@ namespace DHDM
             DrawActiveFrame();
         }
 
+        public int TotalFrames
+        {
+            get
+            {
+                if (ActiveMovement != null)
+                    return Math.Max(TotalAnimationFrames, ActiveMovement.ObsTransformEdits.Count);
+                return TotalAnimationFrames;
+            }
+        }
+        
+
         public int TotalAnimationFrames
         {
             get
@@ -305,7 +316,7 @@ namespace DHDM
         private void UpdateTotalFrameCount()
         {
             if (backFiles != null)
-                tbTotalFrameCount.Text = TotalAnimationFrames.ToString();
+                tbTotalFrameCount.Text = TotalFrames.ToString();
         }
 
         void LoadAllImages(string selectedPath)
@@ -394,7 +405,7 @@ namespace DHDM
         void UpdateFrameIndex(ObsTransformEdit liveFeedEdit)
         {
             tbFrameIndexFromMovementFile.Text = FormatFrameIndex(liveFeedEdit.FrameIndex);
-            tbFrameIndexFromMemory.Text = FormatFrameIndex(FrameIndex);
+            //tbFrameIndexFromMemory.Text = FormatFrameIndex(FrameIndex);
         }
 
         void UpdateFrameUI()
@@ -469,9 +480,9 @@ namespace DHDM
             {
                 if (frameIndex == value)
                     return;
-
-                if (value >= TotalAnimationFrames)
-                    value = TotalAnimationFrames - 1;
+                    
+                if (value >= TotalFrames)
+                    value = TotalFrames - 1;
 
                 if (value < 0)
                     value = 0;
@@ -482,15 +493,15 @@ namespace DHDM
                 PreloadAroundActiveFrame(10);
                 UpdateFrameUI();
 
-                changingInternally = true;
-                try
-                {
-                    sldFrameIndex.Value = frameIndex;
-                }
-                finally
-                {
-                    changingInternally = false;
-                }
+                //changingInternally = true;
+                //try
+                //{
+                //    sldFrameIndex.Value = frameIndex;
+                //}
+                //finally
+                //{
+                //    changingInternally = false;
+                //}
                 UpdatePlayhead();
             }
         }
@@ -650,7 +661,7 @@ namespace DHDM
 
         private void btnSaveAnimation_Click(object sender, RoutedEventArgs e)
         {
-            if (backFiles == null || TotalAnimationFrames == 0)
+            if (TotalFrames == 0)
                 return;
             SaveAllFrames();
         }
@@ -755,35 +766,35 @@ namespace DHDM
 
         void UpdatePlayhead()
         {
-            if (sldFrameIndex.Maximum == 0)
+            if (TotalFrames == 0)
                 return;
             playheadGraphic.Height = spTimeline.ActualHeight;
             playheadGraphicInnerLine.Height = spTimeline.ActualHeight;
-            double percentageOfTheWayAcross = FrameIndex / sldFrameIndex.Maximum;
+            double percentageOfTheWayAcross = (double)FrameIndex / TotalFrames;
             double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
             double xPos = opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
             Canvas.SetLeft(playheadGraphic, xPos - 2);
             Canvas.SetLeft(playheadGraphicInnerLine, xPos);
         }
 
-        private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (changingInternally)
-                return;
+        //private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //{
+        //    if (changingInternally)
+        //        return;
 
-            FrameIndex = (int)sldFrameIndex.Value;
-            UpdatePlayhead();
+        //    FrameIndex = (int)sldFrameIndex.Value;
+        //    UpdatePlayhead();
 
-            changingInternally = true;
-            try
-            {
-                tbxFrameNumber.Text = (FrameIndex + 1).ToString();
-            }
-            finally
-            {
-                changingInternally = false;
-            }
-        }
+        //    changingInternally = true;
+        //    try
+        //    {
+        //        tbxFrameNumber.Text = (FrameIndex + 1).ToString();
+        //    }
+        //    finally
+        //    {
+        //        changingInternally = false;
+        //    }
+        //}
 
         void SaveAllFrames()
         {
@@ -1046,7 +1057,7 @@ namespace DHDM
 
         private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
         {
-            if (backFiles == null || FrameIndex >= TotalAnimationFrames - 1)
+            if (backFiles == null || FrameIndex >= TotalFrames - 1)
                 return;
             SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
             SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight, FrameIndex + 1);
@@ -1054,16 +1065,16 @@ namespace DHDM
             FrameIndex++;
         }
 
-        private void sldFrameIndex_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-        {
-            dragStarted = true;
-        }
+        //private void sldFrameIndex_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        //{
+        //    dragStarted = true;
+        //}
 
-        private void sldFrameIndex_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            dragStarted = false;
-            UpdateLights();
-        }
+        //private void sldFrameIndex_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        //{
+        //    dragStarted = false;
+        //    UpdateLights();
+        //}
 
         private void CopyColors_Click(object sender, RoutedEventArgs e)
         {
@@ -1089,6 +1100,22 @@ namespace DHDM
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateMovementOnTimeline();
+        }
+
+        private void cvsInput_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (TotalFrames == 0)
+                return;
+
+            Point position = e.GetPosition(cvsPlayhead);
+
+            if (position.X < scaleSequenceVisualizer.LabelWidth)
+                return;
+
+            double frameWidth = (cvsPlayhead.ActualWidth - scaleSequenceVisualizer.LabelWidth) / TotalFrames;
+
+            int frameAtMousePosition = (int)Math.Round((position.X - scaleSequenceVisualizer.LabelWidth) / frameWidth);
+            FrameIndex = frameAtMousePosition;
         }
     }
 }
