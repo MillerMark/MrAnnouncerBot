@@ -8,7 +8,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         SizeToContent="Height"
-        Title="Live Animation Editor" Width="1270" Closed="Window_Closed" SizeChanged="Window_SizeChanged">
+        Title="Live Animation Editor" Width="1270" Closed="Window_Closed" SizeChanged="Window_SizeChanged" PreviewKeyUp="Window_PreviewKeyUp" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -37,36 +37,39 @@
                 Thumb.DragStarted="sldFrameIndex_DragStarted" Thumb.DragCompleted="sldFrameIndex_DragCompleted"
                 >
         </Slider>-->
-        <StackPanel x:Name="spTimeline" Orientation="Vertical" Grid.Row="2" >
+        <StackPanel x:Name="spTimelineUI" Orientation="Vertical" Grid.Row="2" >
             <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
 
             </StackPanel>
-            <Grid>
-                <StackPanel x:Name="spVisualizers" Orientation="Vertical">
-                    <dataVis:SequenceVisualizer Label="Scale" Color="DeepPink" Height="80" x:Name="scaleSequenceVisualizer"></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer Label="Rotation" LabelSuffix="°" Color="#FFE07C02" Height="80" x:Name="rotationSequenceVisualizer"></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer Label="Opacity" Color="White" Height="80" x:Name="opacitySequenceVisualizer"></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer Label="X" Color="MediumPurple" Height="80" x:Name="xSequenceVisualizer"></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer Label="Y" Color="#FF70DB89" Height="80" x:Name="ySequenceVisualizer"></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Left" Height="40" x:Name="leftLightSequenceVisualizer" ></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Center" Height="40" x:Name="centerLightSequenceVisualizer" ></dataVis:SequenceVisualizer>
-                    <dataVis:SequenceVisualizer InnerBorder="Black" OuterBorder="Black" Label="Right" Height="40" x:Name="rightLightSequenceVisualizer"></dataVis:SequenceVisualizer>
-                </StackPanel>
-                <Canvas x:Name="cvsKeyframes" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
-                </Canvas>
-                <Canvas x:Name="cvsPlayhead" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
-                    <Rectangle x:Name="playheadGraphic" Canvas.Left="-55" Fill="DarkRed" Width="5" Height="500" ></Rectangle>
-                    <Rectangle x:Name="playheadGraphicInnerLine" Canvas.Left="-57" Fill="White" Width="1" Height="500" ></Rectangle>
-                </Canvas>
-                <Canvas x:Name="cvsInput" Background="Transparent" MouseDown="cvsInput_MouseDown" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
-                </Canvas>
-            </Grid>
+            <Canvas x:Name="cvsFeedbackUI" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="20">
+                <TextBlock x:Name="tbFrameIndex" Text="00:00" Width="Auto" Height="Auto" FontSize="16" />
+                <TextBlock x:Name="tbNumFramesSelected" Text="" Width="Auto" Height="Auto" FontSize="16" Visibility="Hidden"/>
+            </Canvas>
+            <StackPanel x:Name="spTimeline" Orientation="Vertical">
+                <Grid>
+                    <StackPanel x:Name="spVisualizers" Orientation="Vertical">
+                        <dataVis:SequenceVisualizer Label="Scale" Color="DeepPink" Height="80" x:Name="scaleSequenceVisualizer" Margin="0, 0, 0, 5"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer Label="Rotation" LabelSuffix="°" Color="#FFE07C02" Height="80" x:Name="rotationSequenceVisualizer" Margin="0, 0, 0, 5"  ></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer Label="Opacity" Color="White" Height="80" x:Name="opacitySequenceVisualizer" Margin="0, 0, 0, 5"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer Label="X" Color="MediumPurple" Height="80" x:Name="xSequenceVisualizer" Margin="0, 0, 0, 5"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer Label="Y" Color="#FF70DB89" Height="80" x:Name="ySequenceVisualizer" Margin="0, 0, 0, 5"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Left" Height="40" x:Name="leftLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer BottomLineColor="#FF2B2B2B" InnerBorder="Black" OuterBorder="Black" Label="Center" Height="40" x:Name="centerLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+                        <dataVis:SequenceVisualizer InnerBorder="Black" OuterBorder="Black" Label="Right" Height="40" x:Name="rightLightSequenceVisualizer"></dataVis:SequenceVisualizer>
+                    </StackPanel>
+                    <Canvas x:Name="cvsKeyframes" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
+                    </Canvas>
+                    <Canvas x:Name="cvsPlayhead" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
+                        <Rectangle x:Name="rectSelection" Canvas.Left="-55" Fill="#60005DFF" Width="5" Height="{Binding ElementName=spTimeline, Path=ActualHeight}" ></Rectangle>
+                        <Rectangle x:Name="playheadGraphic" Canvas.Left="-55" Fill="DarkRed" Width="5" Height="{Binding ElementName=spTimeline, Path=ActualHeight}" ></Rectangle>
+                        <Rectangle x:Name="playheadGraphicInnerLine" Canvas.Left="-57" Fill="White" Width="1" Height="{Binding ElementName=spTimeline, Path=ActualHeight}" ></Rectangle>
+                    </Canvas>
+                    <Canvas x:Name="cvsInput" Background="Transparent" MouseDown="cvsInput_MouseDown" MouseMove="cvsInput_MouseMove" MouseUp="cvsInput_MouseUp" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
+                    </Canvas>
+                </Grid>
+            </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="tbFrameIndexFromMovementFile" Text="00:00" Width="Auto" Height="Auto" FontSize="22"/>
-                <!--<TextBlock x:Name="tbFrameIndexFromMemory" Text="00:00" Width="Auto" Height="Auto" FontSize="22" Foreground="DarkRed" Margin="20, 0, 0, 0"/>-->
-            </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="620, 0, 0, 0"/>
                 <TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>

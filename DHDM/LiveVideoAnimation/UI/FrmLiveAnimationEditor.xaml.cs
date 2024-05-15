@@ -9,7 +9,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Imaging;
@@ -297,7 +296,7 @@ namespace DHDM
                 return TotalAnimationFrames;
             }
         }
-        
+
 
         public int TotalAnimationFrames
         {
@@ -404,8 +403,7 @@ namespace DHDM
 
         void UpdateFrameIndex(ObsTransformEdit liveFeedEdit)
         {
-            tbFrameIndexFromMovementFile.Text = FormatFrameIndex(liveFeedEdit.FrameIndex);
-            //tbFrameIndexFromMemory.Text = FormatFrameIndex(FrameIndex);
+            tbFrameIndex.Text = FormatFrameIndex(liveFeedEdit.FrameIndex);
         }
 
         void UpdateFrameUI()
@@ -480,7 +478,7 @@ namespace DHDM
             {
                 if (frameIndex == value)
                     return;
-                    
+
                 if (value >= TotalFrames)
                     value = TotalFrames - 1;
 
@@ -565,6 +563,9 @@ namespace DHDM
         bool settingColorInternally;
         bool dragStarted;
         LiveVideoEditor liveVideoEditor;
+        int selectionAnchorFrameIndex;
+        bool shiftKeyIsDown;
+        int mouseDragStartingFrameIndex;
         public enum Attribute
         {
             X,
@@ -768,13 +769,67 @@ namespace DHDM
         {
             if (TotalFrames == 0)
                 return;
-            playheadGraphic.Height = spTimeline.ActualHeight;
-            playheadGraphicInnerLine.Height = spTimeline.ActualHeight;
-            double percentageOfTheWayAcross = (double)FrameIndex / TotalFrames;
-            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
-            double xPos = opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
+
+            if (SelectionExists)
+            {
+                DrawSelection();
+
+            }
+            else
+            {
+                ClearSelection();
+            }
+
+            double leftEdge = GetLabelLeftEdgeFromFrameIndex(FrameIndex, tbFrameIndex);
+            Canvas.SetLeft(tbFrameIndex, leftEdge);
+        }
+
+        private bool SelectionExists => selectionAnchorFrameIndex != FrameIndex && selectionAnchorFrameIndex >= 0;
+
+        private double GetLabelLeftEdgeFromFrameIndex(double frameIndex, TextBlock textBlock)
+        {
+            double xPos = GetXFromFrameIndex(frameIndex);
             Canvas.SetLeft(playheadGraphic, xPos - 2);
             Canvas.SetLeft(playheadGraphicInnerLine, xPos);
+            double leftEdge = xPos - textBlock.ActualWidth / 2;
+            if (leftEdge < scaleSequenceVisualizer.LabelWidth)
+                leftEdge = scaleSequenceVisualizer.LabelWidth;
+            double rightEdge = leftEdge + textBlock.ActualWidth;
+            if (rightEdge > spTimeline.ActualWidth)
+            {
+                double deltaX = spTimeline.ActualWidth - rightEdge;
+                leftEdge += deltaX;
+            }
+
+            return leftEdge;
+        }
+
+        private double GetXFromFrameIndex(double frameIndex)
+        {
+            double percentageOfTheWayAcross = (double)frameIndex / TotalFrames;
+            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
+            return opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
+        }
+
+        void DrawSelection()
+        {
+            tbNumFramesSelected.Visibility = Visibility.Visible;
+            double numFramesSelected = Math.Abs(selectionAnchorFrameIndex - FrameIndex);
+            tbNumFramesSelected.Text = $"{numFramesSelected} frames";
+            double numFramesLeftEdge = GetLabelLeftEdgeFromFrameIndex((selectionAnchorFrameIndex + FrameIndex) / 2, tbNumFramesSelected);
+            Canvas.SetLeft(tbNumFramesSelected, numFramesLeftEdge);
+
+            double frameX = GetXFromFrameIndex(FrameIndex);
+            double anchorX = GetXFromFrameIndex(selectionAnchorFrameIndex);
+            rectSelection.Width = Math.Abs(frameX - anchorX);
+            Canvas.SetLeft(rectSelection, Math.Min(frameX, anchorX));
+            rectSelection.Visibility = Visibility.Visible;
+        }
+
+        void ClearSelection()
+        {
+            tbNumFramesSelected.Visibility = Visibility.Hidden;
+            rectSelection.Visibility = Visibility.Hidden;
         }
 
         //private void sldFrameIndex_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -1102,20 +1157,89 @@ namespace DHDM
             UpdateMovementOnTimeline();
         }
 
+        int GetFrameIndexFromMousePosition(MouseEventArgs e)
+        {
+            if (TotalFrames == 0)
+                return 0;
+
+            Point position = e.GetPosition(cvsPlayhead);
+
+            if (position.X < scaleSequenceVisualizer.LabelWidth)
+                return 0;
+
+            double frameWidth = (cvsPlayhead.ActualWidth - scaleSequenceVisualizer.LabelWidth) / TotalFrames;
+
+            return (int)Math.Round((position.X - scaleSequenceVisualizer.LabelWidth) / frameWidth);
+        }
+
         private void cvsInput_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (TotalFrames == 0)
                 return;
 
-            Point position = e.GetPosition(cvsPlayhead);
+            cvsInput.CaptureMouse();
 
-            if (position.X < scaleSequenceVisualizer.LabelWidth)
+            int currentFrameIndex = GetFrameIndexFromMousePosition(e);
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                if (!shiftKeyIsDown)
+                {
+                    shiftKeyIsDown = true;
+                    selectionAnchorFrameIndex = currentFrameIndex; // FrameIndex
+                }
+            }
+            else
+            {
+                mouseDragStartingFrameIndex = currentFrameIndex;
+                selectionAnchorFrameIndex = -1;
+            }
+
+            FrameIndex = currentFrameIndex;
+        }
+
+        private void cvsInput_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (!cvsInput.IsMouseCaptured)
                 return;
+            // We're creating a selection.
+            FrameIndex = GetFrameIndexFromMousePosition(e);
+        }
 
-            double frameWidth = (cvsPlayhead.ActualWidth - scaleSequenceVisualizer.LabelWidth) / TotalFrames;
+        private void cvsInput_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (Math.Abs(selectionAnchorFrameIndex - FrameIndex) < 2)
+                selectionAnchorFrameIndex = FrameIndex;
+            ShiftKeyIsUp();
+            cvsInput.ReleaseMouseCapture();
+            UpdatePlayhead();
+        }
 
-            int frameAtMousePosition = (int)Math.Round((position.X - scaleSequenceVisualizer.LabelWidth) / frameWidth);
-            FrameIndex = frameAtMousePosition;
+        void ShiftKeyIsUp()
+        {
+            shiftKeyIsDown = false;
+        }
+
+        void ShiftKeyIsDown()
+        {
+            if (cvsInput.IsMouseCaptured && selectionAnchorFrameIndex == -1)
+            {
+                selectionAnchorFrameIndex = mouseDragStartingFrameIndex;
+                shiftKeyIsDown = true;
+                UpdatePlayhead();
+            }
+        }
+
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+                ShiftKeyIsUp();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+                ShiftKeyIsDown();
+
         }
     }
 }
