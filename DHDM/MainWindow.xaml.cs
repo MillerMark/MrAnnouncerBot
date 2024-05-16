@@ -101,6 +101,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
+            DmxLight.Enabled = true;
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // !!!                                                                                      !!!
             // !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!

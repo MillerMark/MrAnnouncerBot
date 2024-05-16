@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         SizeToContent="Height"
         Title="Live Animation Editor" Width="1270" Closed="Window_Closed" SizeChanged="Window_SizeChanged" PreviewKeyUp="Window_PreviewKeyUp" PreviewKeyDown="Window_PreviewKeyDown">
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -41,9 +42,14 @@
             <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
 
             </StackPanel>
-            <Canvas x:Name="cvsFeedbackUI" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="20">
-                <TextBlock x:Name="tbFrameIndex" Text="00:00" Width="Auto" Height="Auto" FontSize="16" />
-                <TextBlock x:Name="tbNumFramesSelected" Text="" Width="Auto" Height="Auto" FontSize="16" Visibility="Hidden"/>
+            <Canvas x:Name="cvsFeedbackUI" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="26">
+                <TextBlock x:Name="tbFrameIndex" Text="00:00" Width="Auto" Height="Auto" FontSize="16"/>
+                <Line x:Name="lnFrameSpan" Visibility="Hidden" Stroke="#FF4B4B4B" StrokeThickness="1"></Line>
+                <Polygon x:Name="arrowLeft" Points="0,5 10,0 10,10" Fill="#FFABABAB" Visibility="Hidden" />
+                <Polygon x:Name="arrowRight" Points="0,0 10,5 0,10" Fill="#FFABABAB" Visibility="Hidden"/>
+                <Border x:Name="brdFrame" Background="White" Padding="2" Margin="0, -4, 0, 0">
+                    <TextBlock x:Name="tbNumFramesSelected" Text="" Width="Auto" Height="Auto" FontSize="12" Foreground="#FF4C4C4C"/>
+                </Border>
             </Canvas>
             <StackPanel x:Name="spTimeline" Orientation="Vertical">
                 <Grid>

@@ -770,18 +770,16 @@ namespace DHDM
             if (TotalFrames == 0)
                 return;
 
-            if (SelectionExists)
-            {
-                DrawSelection();
-
-            }
-            else
-            {
-                ClearSelection();
-            }
-
             double leftEdge = GetLabelLeftEdgeFromFrameIndex(FrameIndex, tbFrameIndex);
+            double xPos = GetXFromFrameIndex(frameIndex);
+            Canvas.SetLeft(playheadGraphic, xPos - 2);
+            Canvas.SetLeft(playheadGraphicInnerLine, xPos);
             Canvas.SetLeft(tbFrameIndex, leftEdge);
+
+            if (SelectionExists)
+                DrawSelection();
+            else
+                ClearSelection();
         }
 
         private bool SelectionExists => selectionAnchorFrameIndex != FrameIndex && selectionAnchorFrameIndex >= 0;
@@ -789,8 +787,6 @@ namespace DHDM
         private double GetLabelLeftEdgeFromFrameIndex(double frameIndex, TextBlock textBlock)
         {
             double xPos = GetXFromFrameIndex(frameIndex);
-            Canvas.SetLeft(playheadGraphic, xPos - 2);
-            Canvas.SetLeft(playheadGraphicInnerLine, xPos);
             double leftEdge = xPos - textBlock.ActualWidth / 2;
             if (leftEdge < scaleSequenceVisualizer.LabelWidth)
                 leftEdge = scaleSequenceVisualizer.LabelWidth;
@@ -806,29 +802,118 @@ namespace DHDM
 
         private double GetXFromFrameIndex(double frameIndex)
         {
-            double percentageOfTheWayAcross = (double)frameIndex / TotalFrames;
+            double percentageOfTheWayAcross = frameIndex / TotalFrames;
             double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
             return opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
         }
 
         void DrawSelection()
         {
-            tbNumFramesSelected.Visibility = Visibility.Visible;
+            brdFrame.Visibility = Visibility.Visible;
+            lnFrameSpan.Visibility = Visibility.Visible;
             double numFramesSelected = Math.Abs(selectionAnchorFrameIndex - FrameIndex);
-            tbNumFramesSelected.Text = $"{numFramesSelected} frames";
+            
+            bool pointingFromTheOutside = numFramesSelected < 52;
+            if (pointingFromTheOutside)
+                tbNumFramesSelected.Text = $"{numFramesSelected} frames selected";
+            else if (numFramesSelected < 88)
+                tbNumFramesSelected.Text = $"{numFramesSelected}";
+            else
+                tbNumFramesSelected.Text = $"{numFramesSelected} frames";
             double numFramesLeftEdge = GetLabelLeftEdgeFromFrameIndex((selectionAnchorFrameIndex + FrameIndex) / 2, tbNumFramesSelected);
-            Canvas.SetLeft(tbNumFramesSelected, numFramesLeftEdge);
+
+            bool selectingLeftToRight = FrameIndex > selectionAnchorFrameIndex;
+            const double padding = 10d;
+            double halfWidthOfFrameIndexPlusPadding = tbFrameIndex.ActualWidth / 2 + padding;
+
+            if (selectingLeftToRight)
+            {
+                numFramesLeftEdge -= halfWidthOfFrameIndexPlusPadding / 2;
+            }
+            else
+            {
+                numFramesLeftEdge += halfWidthOfFrameIndexPlusPadding / 2;
+            }
+           
+
+            Canvas.SetTop(brdFrame, cvsFeedbackUI.ActualHeight - brdFrame.ActualHeight);
+
+
+            double leftEdgeOffset;
+            if (selectingLeftToRight)
+                leftEdgeOffset = 0;
+            else
+                leftEdgeOffset = halfWidthOfFrameIndexPlusPadding;
 
             double frameX = GetXFromFrameIndex(FrameIndex);
             double anchorX = GetXFromFrameIndex(selectionAnchorFrameIndex);
             rectSelection.Width = Math.Abs(frameX - anchorX);
-            Canvas.SetLeft(rectSelection, Math.Min(frameX, anchorX));
+            double selectionLeftEdge = Math.Min(frameX, anchorX);
+            double selectionRightEdge = selectionLeftEdge + rectSelection.Width;
+            Canvas.SetLeft(rectSelection, selectionLeftEdge);
+            
+
             rectSelection.Visibility = Visibility.Visible;
+
+            lnFrameSpan.Y1 = cvsFeedbackUI.Height / 2;
+            lnFrameSpan.Y2 = cvsFeedbackUI.Height / 2;
+            lnFrameSpan.X1 = 0;
+
+            bool frameIndexIsLeftOfCenter = (double)FrameIndex / TotalFrames < 0.5;
+            if (pointingFromTheOutside)
+            {
+                const double outsideArrowLength = 33d;
+                lnFrameSpan.X2 = outsideArrowLength;
+                if (frameIndexIsLeftOfCenter)
+                {
+                    arrowLeft.Visibility = Visibility.Visible;
+                    arrowRight.Visibility = Visibility.Hidden;
+                    double arrowLeftIndent;
+                    if (selectingLeftToRight)
+                        arrowLeftIndent = halfWidthOfFrameIndexPlusPadding;
+                    else
+                        arrowLeftIndent = 0;
+                    double frameIndexRight = Canvas.GetLeft(tbFrameIndex) + tbFrameIndex.ActualWidth + padding;
+                    double arrowX = Math.Max(selectionRightEdge + arrowLeftIndent, frameIndexRight);
+                    
+                    Canvas.SetLeft(arrowLeft, arrowX);
+                    Canvas.SetLeft(lnFrameSpan, arrowX);
+                    Canvas.SetLeft(brdFrame, arrowX + lnFrameSpan.X2 + padding / 2);
+                }
+                else
+                {
+                    arrowRight.Visibility = Visibility.Visible;
+                    arrowLeft.Visibility = Visibility.Hidden;
+                    double frameIndexLeft = Canvas.GetLeft(tbFrameIndex) - padding;
+                    double arrowX = Math.Min(selectionLeftEdge, frameIndexLeft) - arrowRight.ActualWidth;
+                    
+                    Canvas.SetLeft(arrowRight, arrowX);
+                    double arrowTailLeft = arrowX - lnFrameSpan.X2 + arrowRight.ActualWidth;
+                    Canvas.SetLeft(lnFrameSpan, arrowTailLeft);
+                    Canvas.SetLeft(brdFrame, arrowTailLeft - brdFrame.ActualWidth - padding / 2);
+                }
+            }
+            else
+            {
+                arrowLeft.Visibility = Visibility.Visible;
+                arrowRight.Visibility = Visibility.Visible;
+                double leftEdge = selectionLeftEdge + leftEdgeOffset;
+                Canvas.SetLeft(lnFrameSpan, leftEdge);
+                lnFrameSpan.X2 = rectSelection.Width - halfWidthOfFrameIndexPlusPadding;
+                Canvas.SetLeft(arrowRight, leftEdge + lnFrameSpan.X2 - arrowRight.ActualWidth);
+                Canvas.SetLeft(arrowLeft, selectionLeftEdge + leftEdgeOffset);
+                Canvas.SetLeft(brdFrame, numFramesLeftEdge - brdFrame.Padding.Left);
+            }
+            Canvas.SetTop(arrowLeft, (cvsFeedbackUI.ActualHeight - arrowLeft.ActualHeight) / 2);
+            Canvas.SetTop(arrowRight, (cvsFeedbackUI.ActualHeight - arrowLeft.ActualHeight) / 2);
         }
 
         void ClearSelection()
         {
-            tbNumFramesSelected.Visibility = Visibility.Hidden;
+            brdFrame.Visibility = Visibility.Hidden;
+            arrowLeft.Visibility = Visibility.Hidden;
+            arrowRight.Visibility = Visibility.Hidden;
+            lnFrameSpan.Visibility = Visibility.Hidden;
             rectSelection.Visibility = Visibility.Hidden;
         }
 
