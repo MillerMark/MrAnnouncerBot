@@ -1,23 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Windows.Controls;
 using Imaging;
 using ObsControl;
-//using InTheHand.Bluetooth;
-using System.Security.Policy;
 using Newtonsoft.Json;
-using System.Windows.Media.Media3D;
 using WpfEditorControls;
+
+
 
 #if LiveVideoAnimationSandbox
 using LiveVideoAnimationSandbox;
@@ -65,13 +57,27 @@ namespace DHDM
         List<AnimatorWithTransforms> liveFeedAnimators;
         AnimatorWithTransforms? activeMovement;
 
+
+        public enum LightKind
+        {
+            None,
+            Left,
+            Center,
+            Right
+        }
+
         void UpdateMovementOnTimeline()
         {
-            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Scale, GraphStyle.BoxFromBelow);
-            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Opacity, GraphStyle.Opacity);
-            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.Rotation, GraphStyle.BoxFromBelow);
+            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetScale(), GraphStyle.BoxFromBelow);
+            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetOpacity(), GraphStyle.Opacity);
+            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetRotation(), GraphStyle.BoxFromBelow);
             xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
             ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
+            UpdateLightsOnTimeline();
+        }
+
+        private void UpdateLightsOnTimeline()
+        {
             leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, TotalFrames, x => GetColor(x));
             centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, TotalFrames, w => GetColor(w));
             rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, TotalFrames, v => GetColor(v));
@@ -261,30 +267,29 @@ namespace DHDM
             ObsControl.ObsManager.SizeAndPositionItem(animatorWithTransform.LiveFeedAnimator, scale, opacity, rotation, liveFeedEdit.Flipped);
         }
 
-        void Change(Attribute attribute, double value)
+        void SetAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
         {
             if (initializing || allFrames == null || frameIndex >= allFrames.Count)
                 return;
             ObsTransformEdit liveFeedEdit = allFrames[frameIndex];
             switch (attribute)
             {
-                case Attribute.X:
+                case ObsFramePropertyAttribute.X:
                     liveFeedEdit.DeltaX = (int)value;
                     break;
-                case Attribute.Y:
+                case ObsFramePropertyAttribute.Y:
                     liveFeedEdit.DeltaY = (int)value;
                     break;
-                case Attribute.Scale:
+                case ObsFramePropertyAttribute.Scale:
                     liveFeedEdit.DeltaScale = value;
                     break;
-                case Attribute.Rotation:
+                case ObsFramePropertyAttribute.Rotation:
                     liveFeedEdit.DeltaRotation = value;
                     break;
-                case Attribute.Opacity:
+                case ObsFramePropertyAttribute.Opacity:
                     liveFeedEdit.DeltaOpacity = value;
                     break;
             }
-            DrawActiveFrame();
         }
 
         public int TotalFrames
@@ -566,18 +571,10 @@ namespace DHDM
         int selectionAnchorFrameIndex;
         bool shiftKeyIsDown;
         int mouseDragStartingFrameIndex;
-        public enum Attribute
-        {
-            X,
-            Y,
-            Scale,
-            Rotation,
-            Opacity
-        }
 
         private void tbxDeltaX_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(Attribute.X, tbxDeltaX, sldDeltaX);
+            TextChanged(ObsFramePropertyAttribute.X, tbxDeltaX, sldDeltaX);
         }
 
         private void sldDeltaX_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -587,7 +584,7 @@ namespace DHDM
 
         private void tbxDeltaY_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(Attribute.Y, tbxDeltaY, sldDeltaY);
+            TextChanged(ObsFramePropertyAttribute.Y, tbxDeltaY, sldDeltaY);
         }
 
         private void sldDeltaY_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -597,7 +594,7 @@ namespace DHDM
 
         private void tbxDeltaScale_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(Attribute.Scale, tbxDeltaScale, sldDeltaScale);
+            TextChanged(ObsFramePropertyAttribute.Scale, tbxDeltaScale, sldDeltaScale);
         }
 
         private void sldDeltaScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -607,7 +604,7 @@ namespace DHDM
 
         private void tbxDeltaRotation_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(Attribute.Rotation, tbxDeltaRotation, sldDeltaRotation);
+            TextChanged(ObsFramePropertyAttribute.Rotation, tbxDeltaRotation, sldDeltaRotation);
         }
 
         private void sldDeltaRotation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -617,7 +614,7 @@ namespace DHDM
 
         private void tbxDeltaOpacity_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(Attribute.Opacity, tbxDeltaOpacity, sldDeltaOpacity);
+            TextChanged(ObsFramePropertyAttribute.Opacity, tbxDeltaOpacity, sldDeltaOpacity);
         }
 
         private void sldDeltaOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -625,7 +622,7 @@ namespace DHDM
             SliderChanged(tbxDeltaOpacity, sldDeltaOpacity);
         }
 
-        private void TextChanged(Attribute attribute, System.Windows.Controls.TextBox textBox, Slider slider)
+        private void TextChanged(ObsFramePropertyAttribute attribute, System.Windows.Controls.TextBox textBox, Slider slider)
         {
             if (initializing)
                 return;
@@ -634,7 +631,19 @@ namespace DHDM
             {
                 if (double.TryParse(textBox.Text, out double value))
                 {
-                    Change(attribute, value);
+                    if (SelectionExists)
+                    {
+                        for (int i = SelectionLeft; i < SelectionRight; i++)
+                            SetAttributeInFrame(i, attribute, value);
+                        UpdateMovementOnTimeline();
+                    }
+                    else
+                    {
+                        SetAttributeInFrame(frameIndex, attribute, value);
+                    }
+
+                    DrawActiveFrame();
+
                     slider.Value = value;
                     UpdateValuePreviews();
                 }
@@ -657,6 +666,7 @@ namespace DHDM
         {
             List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
             LoadAllFrames(allBindings);
+            ClearEditorValues();
             DrawActiveFrame();
         }
 
@@ -676,30 +686,30 @@ namespace DHDM
 
         private void btnCopyDeltaXForward_Click(object sender, RoutedEventArgs e)
         {
-            CopyForward(Attribute.X);
+            CopyForward(ObsFramePropertyAttribute.X);
         }
 
         private void btnCopyDeltaYForward_Click(object sender, RoutedEventArgs e)
         {
-            CopyForward(Attribute.Y);
+            CopyForward(ObsFramePropertyAttribute.Y);
         }
 
         private void btnCopyDeltaRotationForward_Click(object sender, RoutedEventArgs e)
         {
-            CopyForward(Attribute.Rotation);
+            CopyForward(ObsFramePropertyAttribute.Rotation);
         }
 
         private void btnCopyDeltaScaleForward_Click(object sender, RoutedEventArgs e)
         {
-            CopyForward(Attribute.Scale);
+            CopyForward(ObsFramePropertyAttribute.Scale);
         }
 
         private void btnCopyDeltaOpacityForward_Click(object sender, RoutedEventArgs e)
         {
-            CopyForward(Attribute.Opacity);
+            CopyForward(ObsFramePropertyAttribute.Opacity);
         }
 
-        void CopyForward(Attribute attribute)
+        void CopyForward(ObsFramePropertyAttribute attribute)
         {
             if (frameIndex < 0 || allFrames == null)
                 return;
@@ -713,9 +723,10 @@ namespace DHDM
             while (indexToChange < allFrames.Count)
             {
                 ObsTransformEdit frame = allFrames[indexToChange];
+
                 switch (attribute)
                 {
-                    case Attribute.X:
+                    case ObsFramePropertyAttribute.X:
                         if (AreClose(frame.Origin.X, currentFrame.Origin.X, 1))
                         {
                             frame.DeltaX = currentFrame.DeltaX;
@@ -723,7 +734,7 @@ namespace DHDM
                         }
                         else
                             return;
-                    case Attribute.Y:
+                    case ObsFramePropertyAttribute.Y:
                         if (AreClose(frame.Origin.Y, currentFrame.Origin.Y, 1))
                         {
                             frame.DeltaY = currentFrame.DeltaY;
@@ -731,7 +742,7 @@ namespace DHDM
                         }
                         else
                             return;
-                    case Attribute.Rotation:
+                    case ObsFramePropertyAttribute.Rotation:
                         if (AreClose(frame.Rotation, currentFrame.Rotation, 0.1))
                         {
                             frame.DeltaRotation = currentFrame.DeltaRotation;
@@ -739,7 +750,7 @@ namespace DHDM
                         }
                         else
                             return;
-                    case Attribute.Scale:
+                    case ObsFramePropertyAttribute.Scale:
                         if (AreClose(currentFrame.Scale, frame.Scale, 0.01))
                         {
                             frame.DeltaScale = currentFrame.DeltaScale;
@@ -747,7 +758,7 @@ namespace DHDM
                         }
                         else
                             return;
-                    case Attribute.Opacity:
+                    case ObsFramePropertyAttribute.Opacity:
                         if (AreClose(frame.Opacity, currentFrame.Opacity, 0.01))
                         {
                             frame.DeltaOpacity = currentFrame.DeltaOpacity;
@@ -783,6 +794,9 @@ namespace DHDM
         }
 
         private bool SelectionExists => selectionAnchorFrameIndex != FrameIndex && selectionAnchorFrameIndex >= 0;
+
+        public int SelectionLeft => Math.Min(selectionAnchorFrameIndex, FrameIndex);
+        public int SelectionRight => Math.Max(selectionAnchorFrameIndex, FrameIndex);
 
         private double GetLabelLeftEdgeFromFrameIndex(double frameIndex, TextBlock textBlock)
         {
@@ -1118,7 +1132,7 @@ namespace DHDM
 
             DmxLight.Left.SetColor(leftLight.Hue, leftLight.Saturation, leftLight.Lightness);
             //await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
-            SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight);
+            ApplyLightColor(GetLightFromId(BluetoothLights.Left_ID), leftLight);
         }
 
         private void centerLight_ColorChanged(object sender, RoutedEventArgs e)
@@ -1127,7 +1141,7 @@ namespace DHDM
                 return;
 
             DmxLight.Center.SetColor(centerLight.Hue, centerLight.Saturation, centerLight.Lightness);
-            SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight);
+            ApplyLightColor(GetLightFromId(BluetoothLights.Center_ID), centerLight);
         }
 
         private void rightLight_ColorChanged(object sender, RoutedEventArgs e)
@@ -1135,15 +1149,20 @@ namespace DHDM
             if (changingInternally || settingColorInternally)
                 return;
 
-            DmxLight.Right.SetColor(rightLight.Hue, rightLight.Saturation, rightLight.Lightness);
-            SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight);
+            DmxLight.Right.SetColor(rightLightColor.Hue, rightLightColor.Saturation, rightLightColor.Lightness);
+            ApplyLightColor(GetLightFromId(BluetoothLights.Right_ID), rightLightColor);
         }
 
-        private void SetLightFrame(Light? light, FrmColorPicker colorPicker)
+        private void ApplyLightColor(Light? light, FrmColorPicker colorPicker)
         {
-            if (light == null)
-                return;
-            SetLightFrame(light, colorPicker, FrameIndex);
+            if (SelectionExists)
+            {
+                for (int i = SelectionLeft; i < SelectionRight; i++)
+                    SetLightFrame(light, colorPicker, i);
+                UpdateLightsOnTimeline();
+            }
+            else
+                SetLightFrame(light, colorPicker, FrameIndex);
         }
 
         private static void SetLightFrame(Light? light, FrmColorPicker colorPicker, int frameIndex)
@@ -1169,7 +1188,7 @@ namespace DHDM
             else if (iD == BluetoothLights.Right_ID)
             {
                 DmxLight.Right.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
-                SetColorPicker(lightSequenceData, rightLight);
+                SetColorPicker(lightSequenceData, rightLightColor);
             }
             else if (iD == BluetoothLights.Center_ID)
             {
@@ -1199,7 +1218,7 @@ namespace DHDM
         {
             if (backFiles == null || FrameIndex >= TotalFrames - 1)
                 return;
-            SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLight, FrameIndex + 1);
+            SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLightColor, FrameIndex + 1);
             SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight, FrameIndex + 1);
             SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
             FrameIndex++;
@@ -1218,7 +1237,7 @@ namespace DHDM
 
         private void CopyColors_Click(object sender, RoutedEventArgs e)
         {
-            string colorStr = $"{leftLight.Color.AsHtml}\t{centerLight.Color.AsHtml}\t{rightLight.Color.AsHtml}";
+            string colorStr = $"{leftLight.Color.AsHtml}\t{centerLight.Color.AsHtml}\t{rightLightColor.Color.AsHtml}";
             System.Windows.Clipboard.SetText(colorStr);
         }
 
@@ -1234,7 +1253,7 @@ namespace DHDM
 
             leftLight.Color = new HueSatLight(parts[0]);
             centerLight.Color = new HueSatLight(parts[1]);
-            rightLight.Color = new HueSatLight(parts[2]);
+            rightLightColor.Color = new HueSatLight(parts[2]);
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1260,6 +1279,9 @@ namespace DHDM
         private void cvsInput_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (TotalFrames == 0)
+                return;
+
+            if (cvsInput.IsMouseCaptured)
                 return;
 
             cvsInput.CaptureMouse();
@@ -1325,6 +1347,172 @@ namespace DHDM
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
                 ShiftKeyIsDown();
 
+        }
+
+        bool IsMouseOverSequenceVisualizer(SequenceVisualizer sequenceVisualizer, MouseButtonEventArgs e)
+        {
+            Point mousePosition = e.GetPosition(sequenceVisualizer);
+
+            Size controlSize = sequenceVisualizer.RenderSize;
+
+            Rect controlRect = new Rect(new Point(0, 0), controlSize);
+            return controlRect.Contains(mousePosition);
+        }
+
+        LightKind GetLightKindFromPosition(MouseButtonEventArgs e)
+        {
+            if (IsMouseOverSequenceVisualizer(leftLightSequenceVisualizer, e)) 
+                return LightKind.Left;
+            if (IsMouseOverSequenceVisualizer(rightLightSequenceVisualizer, e)) 
+                return LightKind.Right;
+            if (IsMouseOverSequenceVisualizer(centerLightSequenceVisualizer, e))
+                return LightKind.Center;
+
+            return LightKind.None;
+        }
+
+        ObsFramePropertyAttribute GetAttributeFromPosition(MouseButtonEventArgs e)
+        {
+            if (IsMouseOverSequenceVisualizer(opacitySequenceVisualizer, e)) 
+                return ObsFramePropertyAttribute.Opacity;
+            if (IsMouseOverSequenceVisualizer(scaleSequenceVisualizer, e)) 
+                return ObsFramePropertyAttribute.Scale;
+            if (IsMouseOverSequenceVisualizer(xSequenceVisualizer, e)) 
+                return ObsFramePropertyAttribute.X;
+            if (IsMouseOverSequenceVisualizer(ySequenceVisualizer, e)) 
+                return ObsFramePropertyAttribute.Y;
+            if (IsMouseOverSequenceVisualizer(rotationSequenceVisualizer, e)) 
+                return ObsFramePropertyAttribute.Rotation;
+            return ObsFramePropertyAttribute.None;
+        }
+
+        void SelectAllMatchingFrames(ObsFramePropertyAttribute attribute, int frameIndex)
+        {
+            if (allFrames == null)
+                return;
+
+            if (frameIndex < 0 || frameIndex >= allFrames.Count)
+                return;
+
+            ObsTransformEdit obsTransformEdit = allFrames[frameIndex];
+
+            double comparisonValue;
+
+            switch (attribute)
+            {
+                case ObsFramePropertyAttribute.None:
+                    return;
+                case ObsFramePropertyAttribute.X:
+                    comparisonValue = obsTransformEdit.GetX();
+                    break;
+                case ObsFramePropertyAttribute.Y:
+                    comparisonValue = obsTransformEdit.GetY();
+                    break;
+                case ObsFramePropertyAttribute.Scale:
+                    comparisonValue = obsTransformEdit.GetScale();
+                    break;
+                case ObsFramePropertyAttribute.Rotation:
+                    comparisonValue = obsTransformEdit.GetRotation();
+                    break;
+                case ObsFramePropertyAttribute.Opacity:
+                    comparisonValue = obsTransformEdit.GetOpacity();
+                    break;
+                default:
+                    return;
+            }
+
+
+            Func<ObsTransformEdit, bool> isMatch = x => x.Matches(attribute, comparisonValue);
+            int leftMatchingFrame = SearchBackwards(allFrames, frameIndex, isMatch);
+            int rightMatchingFrame = SearchForwards(allFrames, frameIndex, isMatch);
+            SelectRange(leftMatchingFrame, rightMatchingFrame);
+        }
+
+        private void SelectRange(int leftFrame, int rightFrame)
+        {
+            selectionAnchorFrameIndex = leftFrame;
+            FrameIndex = rightFrame;
+            UpdatePlayhead();
+        }
+
+        int SearchBackwards<T>(List<T> sequenceData, int frameIndex, Func<T, bool> isMatch)
+        {
+            while (frameIndex > 0)
+            {
+                if (!isMatch(sequenceData[frameIndex - 1]))
+                    return frameIndex;
+                frameIndex--;
+            }
+            return frameIndex;
+        }
+
+        int SearchForwards<T>(List<T> sequenceData, int frameIndex, Func<T, bool> isMatch)
+        {
+            while (frameIndex < sequenceData.Count - 1)
+            {
+                if (!isMatch(sequenceData[frameIndex + 1]))
+                    return frameIndex;
+                frameIndex++;
+            }
+            return frameIndex;
+        }
+
+        void SelectAllMatchingFrames(LightKind lightKind, int frameIndex)
+        {
+            Light? light = null;
+
+            switch (lightKind)
+            {
+                case LightKind.Left:
+                    light = GetLightFromId(BluetoothLights.Left_ID);
+                    break;
+                case LightKind.Center:
+                    light = GetLightFromId(BluetoothLights.Center_ID);
+                    break;
+                case LightKind.Right:
+                    light = GetLightFromId(BluetoothLights.Right_ID);
+                    break;
+            }
+
+            if (light == null)
+                return;
+
+            if (frameIndex < 0 || frameIndex >= light.SequenceData.Count)
+                return;
+
+
+            int hue = light.SequenceData[frameIndex].Hue;
+            int saturation = light.SequenceData[frameIndex].Saturation;
+            int lightness = light.SequenceData[frameIndex].Lightness;
+
+            Func<LightSequenceData, bool> isMatch = x => x.Hue == hue && x.Saturation == saturation && x.Lightness == lightness;
+            int leftMatchingFrame = SearchBackwards(light.SequenceData, frameIndex, isMatch);
+            int rightMatchingFrame = SearchForwards(light.SequenceData, frameIndex, isMatch);
+            SelectRange(leftMatchingFrame, rightMatchingFrame);
+        }
+
+        private void cvsInput_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                cvsInput.ReleaseMouseCapture();
+
+                int currentFrameIndex = GetFrameIndexFromMousePosition(e);
+                var attribute = GetAttributeFromPosition(e);
+                if (attribute == ObsFramePropertyAttribute.None)
+                {
+                    var lightKind = GetLightKindFromPosition(e);
+                    if (lightKind != LightKind.None)
+                    {
+                        SelectAllMatchingFrames(lightKind, currentFrameIndex);
+                    }
+
+                }
+                else
+                    SelectAllMatchingFrames(attribute, currentFrameIndex);
+
+                e.Handled = true;
+            }
         }
     }
 }

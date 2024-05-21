@@ -2,7 +2,17 @@ using System;
 
 namespace Imaging
 {
-	public class ObsTransformEdit : BaseObsTransform
+    public enum ObsFramePropertyAttribute
+    {
+        None = 0,
+        X,
+        Y,
+        Scale,
+        Rotation,
+        Opacity
+    }
+
+    public class ObsTransformEdit : BaseObsTransform
 	{
 		public double DeltaX { get; set; }
 		public double DeltaY { get; set; }
@@ -39,5 +49,24 @@ namespace Imaging
 		{
 			return Scale * DeltaScale;
 		}
-	}
+
+        public bool Matches(ObsFramePropertyAttribute attribute, double comparisonValue)
+        {
+            switch (attribute)
+            {
+                case ObsFramePropertyAttribute.X:
+                    return comparisonValue == GetX();
+                case ObsFramePropertyAttribute.Y:
+                    return comparisonValue == GetY();
+                case ObsFramePropertyAttribute.Scale:
+                    return comparisonValue == GetScale();
+                case ObsFramePropertyAttribute.Rotation:
+                    return comparisonValue == GetRotation();
+                case ObsFramePropertyAttribute.Opacity:
+                    return comparisonValue == GetOpacity();
+                default:
+                    return false;
+            }
+        }
+    }
 }

@@ -70,7 +70,7 @@
                         <Rectangle x:Name="playheadGraphic" Canvas.Left="-55" Fill="DarkRed" Width="5" Height="{Binding ElementName=spTimeline, Path=ActualHeight}" ></Rectangle>
                         <Rectangle x:Name="playheadGraphicInnerLine" Canvas.Left="-57" Fill="White" Width="1" Height="{Binding ElementName=spTimeline, Path=ActualHeight}" ></Rectangle>
                     </Canvas>
-                    <Canvas x:Name="cvsInput" Background="Transparent" MouseDown="cvsInput_MouseDown" MouseMove="cvsInput_MouseMove" MouseUp="cvsInput_MouseUp" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
+                    <Canvas x:Name="cvsInput" Background="Transparent" MouseLeftButtonDown="cvsInput_MouseLeftButtonDown" MouseDown="cvsInput_MouseDown" MouseMove="cvsInput_MouseMove" MouseUp="cvsInput_MouseUp" Height="{Binding ElementName=spVisualizers, Path=Height}" Width="{Binding ElementName=spVisualizers, Path=Width}">
                     </Canvas>
                 </Grid>
             </StackPanel>
@@ -163,7 +163,7 @@
                     </Canvas>
                 </Viewbox>
             </Button>
-            <local:FrmColorPicker x:Name="rightLight" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
+            <local:FrmColorPicker x:Name="rightLightColor" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Center" Margin="8" >
             <local:FrmColorPicker x:Name="centerLight" Margin="0, 0, 20, 0" ColorChanged="centerLight_ColorChanged"></local:FrmColorPicker>
