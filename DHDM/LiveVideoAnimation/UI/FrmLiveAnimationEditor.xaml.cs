@@ -68,14 +68,23 @@ namespace DHDM
             Right
         }
 
-        void UpdateMovementOnTimeline()
+        void UpdateEverythingOnTimeline()
         {
-            scaleSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetScale(), GraphStyle.BoxFromBelow);
-            opacitySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetOpacity(), GraphStyle.Opacity);
-            rotationSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetRotation(), GraphStyle.BoxFromBelow);
-            xSequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
-            ySequenceVisualizer.VisualizeData(activeMovement?.ObsTransformEdits, TotalFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
+            UpdateMovementOnTimeline();
             UpdateLightsOnTimeline();
+        }
+
+        private void UpdateMovementOnTimeline()
+        {
+            List<ObsTransformEdit>? obsTransformEdits = activeMovement?.ObsTransformEdits;
+            if (obsTransformEdits == null)
+                return;
+
+            scaleSequenceVisualizer.VisualizeData(obsTransformEdits, TotalFrames, x => x.GetScale(), GraphStyle.BoxFromBelow);
+            opacitySequenceVisualizer.VisualizeData(obsTransformEdits, TotalFrames, x => x.GetOpacity(), GraphStyle.Opacity);
+            rotationSequenceVisualizer.VisualizeData(obsTransformEdits, TotalFrames, x => x.GetRotation(), GraphStyle.BoxFromBelow);
+            xSequenceVisualizer.VisualizeData(obsTransformEdits, TotalFrames, x => x.GetX(), GraphStyle.BoxFromBelow);
+            ySequenceVisualizer.VisualizeData(obsTransformEdits, TotalFrames, y => y.GetY(), GraphStyle.BoxFromBelow);
         }
 
         private void UpdateLightsOnTimeline()
@@ -109,7 +118,7 @@ namespace DHDM
                 if (activeMovement == value)
                     return;
                 activeMovement = value;
-                UpdateMovementOnTimeline();
+                UpdateEverythingOnTimeline();
             }
 
         }
@@ -154,7 +163,7 @@ namespace DHDM
             DrawActiveFrame();
             ClearEditorValues();
             UpdateFrameUI();
-            UpdateMovementOnTimeline();
+            UpdateEverythingOnTimeline();
         }
 
         private void CreateRadioButtons(List<VideoAnimationBinding> allBindings)
@@ -652,7 +661,7 @@ namespace DHDM
                     {
                         for (int i = SelectionLeft; i < SelectionRight; i++)
                             SetAttributeInFrame(i, attribute, value);
-                        UpdateMovementOnTimeline();
+                        UpdateEverythingOnTimeline();
                     }
                     else
                     {
@@ -1279,7 +1288,7 @@ namespace DHDM
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            UpdateMovementOnTimeline();
+            UpdateEverythingOnTimeline();
         }
 
         int GetFrameIndexFromMousePosition(MouseEventArgs e)
@@ -1655,6 +1664,17 @@ namespace DHDM
             return index;
         }
 
+        ObsTransformEdit? GetCurrentObsTransformEdit()
+        {
+            if (allFrames == null)
+                return null;
+            var index = FrameIndex;
+            if (index >= allFrames.Count)
+                index = allFrames.Count - 1;
+
+            return allFrames[index];
+        }
+
         int GetNextFrameMatching(Func<ObsTransformEdit, double> getValue)
         {
             if (allFrames == null || allFrames.Count == 0)
@@ -1814,9 +1834,108 @@ namespace DHDM
             }
         }
 
+        void ApplyPlayHeadToSelectionForLights(List<LightSequenceData> sequenceData)
+        {
+            if (!SelectionExists)
+                return;
+            if (allFrames == null)
+                return;
+            if (FrameIndex < 0 || FrameIndex > sequenceData.Count)
+                return;
+            int index = SelectionLeft;
+            int endIndex = SelectionRight;
+            if (endIndex >= sequenceData.Count)
+                endIndex = sequenceData.Count - 1;
+
+            var startingValue = sequenceData[FrameIndex];
+
+            while (index < endIndex)
+            {
+                var lightData = sequenceData[index];
+                lightData.SetFrom(startingValue);
+                index++;
+            }
+        }
+
+        void ApplyPlayHeadToSelection(Action<ObsTransformEdit> setValue)
+        {
+            if (!SelectionExists)
+                return;
+            if (allFrames == null)
+                return;
+            if (FrameIndex < 0 || FrameIndex > allFrames.Count)
+                return;
+            int index = SelectionLeft;
+            int endIndex = SelectionRight;
+            if (endIndex >= allFrames.Count)
+                endIndex = allFrames.Count - 1;
+
+            while (index < endIndex)
+            {
+                ObsTransformEdit obsTransformEdit = allFrames[index];
+                setValue(obsTransformEdit);
+                index++;
+            }
+        }
+
         private void btnApplyPlayheadValueToSelection_Click(object sender, RoutedEventArgs e)
         {
+            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
+            if (selectedVisualizer == null)
+                return;
+            ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
+            ObsTransformEdit? transformEdit = GetCurrentObsTransformEdit();
+            if (transformEdit == null)
+                return;
 
+            if (frameAttribute != ObsFramePropertyAttribute.None)
+            {
+                switch (frameAttribute)
+                {
+                    case ObsFramePropertyAttribute.X:
+                        ApplyPlayHeadToSelection(x => x.Origin = new CommonCore.Point2d(transformEdit.Origin.X, x.Origin.Y));
+                        break;
+
+                    case ObsFramePropertyAttribute.Y:
+                        ApplyPlayHeadToSelection(x => x.Origin = new CommonCore.Point2d(x.Origin.X, transformEdit.Origin.Y));
+                        break;
+                    
+                    case ObsFramePropertyAttribute.Scale:
+                        ApplyPlayHeadToSelection(x => x.Scale = transformEdit.Scale);
+                        break;
+
+                    case ObsFramePropertyAttribute.Rotation:
+                        ApplyPlayHeadToSelection(x => x.Rotation = transformEdit.Rotation);
+                        break;
+
+                    case ObsFramePropertyAttribute.Opacity:
+                        ApplyPlayHeadToSelection(x => x.Opacity = transformEdit.Opacity);
+                        break;
+                }
+
+            }
+            else
+            {
+                LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
+                List<LightSequenceData>? sequenceData = null;
+                switch (lightKind)
+                {
+                    case LightKind.Left:
+                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
+                        break;
+                    case LightKind.Center:
+                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
+                        break;
+                    case LightKind.Right:
+                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
+                        break;
+                }
+
+                if (sequenceData != null)
+                    ApplyPlayHeadToSelectionForLights(sequenceData);
+            }
+
+            UpdateEverythingOnTimeline();
         }
 
         private void btnLinearInterpolateAcrossSelection_Click(object sender, RoutedEventArgs e)

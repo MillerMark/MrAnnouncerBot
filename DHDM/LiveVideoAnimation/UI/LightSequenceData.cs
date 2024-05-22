@@ -61,5 +61,12 @@ namespace DHDM
                 Saturation == currentValue.Saturation &&
                 Lightness == currentValue.Lightness;
         }
+
+        public void SetFrom(LightSequenceData value)
+        {
+            Hue = value.Hue;
+            Saturation = value.Saturation;
+            Lightness = value.Lightness;
+        }
     }
 }
