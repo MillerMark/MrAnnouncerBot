@@ -18,8 +18,21 @@ namespace WpfEditorControls
     /// <summary>
     /// Interaction logic for SequenceVisualizer.xaml
     /// </summary>
-    public partial class SequenceVisualizer : UserControl
+    public partial class SequenceVisualizer : UserControl, ISelectableVisualizer
     {
+        public static readonly DependencyProperty SelectionColorProperty = DependencyProperty.Register("SelectionColor", typeof(Brush), typeof(SequenceVisualizer), new FrameworkPropertyMetadata(Brushes.CornflowerBlue));
+        public Brush SelectionColor
+        {
+            get
+            {
+                return (Brush)GetValue(SelectionColorProperty);
+            }
+            set
+            {
+                SetValue(SelectionColorProperty, value);
+            }
+        }
+
         public static readonly DependencyProperty BottomLineColorProperty = DependencyProperty.Register("BottomLineColor", typeof(Brush), typeof(SequenceVisualizer), new FrameworkPropertyMetadata(Brushes.Transparent));
         
         public Brush BottomLineColor
@@ -140,6 +153,8 @@ namespace WpfEditorControls
         }
 
         Brush? checkeredBrush;
+        Brush saveInnerBorder;
+        Rectangle? bottomBar;
         public Brush CheckeredBrush {
             get
             {
@@ -185,6 +200,8 @@ namespace WpfEditorControls
             // Set the background to black..
             cvsSequence.Background = Brushes.Black;
 
+            AddBottomBar();
+
             if (data == null || data.Count == 0 || totalAnimationFrames == 0)
                 return;
 
@@ -196,21 +213,20 @@ namespace WpfEditorControls
                 AddToTimeline(xPos, widthOfTimelineFrame, color);
                 xPos += widthOfTimelineFrame;
             }
-            AddBottomBar();
         }
 
         void AddBottomBar()
         {
             if (BottomLineColor == Brushes.Transparent)
                 return;
-            Rectangle rectangle = new Rectangle
+            bottomBar = new Rectangle
             {
                 Fill = BottomLineColor,
                 Width = cvsSequence.ActualWidth,
                 Height = 1,
             };
-            cvsSequence.Children.Add(rectangle);
-            Canvas.SetTop(rectangle, cvsSequence.ActualHeight + 1);
+            cvsSequence.Children.Add(bottomBar);
+            Canvas.SetTop(bottomBar, cvsSequence.ActualHeight + 1);
         }
 
         public enum LabelPosition
@@ -319,8 +335,34 @@ namespace WpfEditorControls
             tbSequenceLabel.Text = label;
         }
 
+        public void Select()
+        {
+            InnerBorder = SelectionColor;
+            bdrInner.BorderThickness = new Thickness(3);
+            bdrInner.Padding = new Thickness(1);
+            IsSelected = true;
+            if (bottomBar != null)
+                bottomBar.Visibility = Visibility.Hidden;
+        }
+
+        public void ClearSelection()
+        {
+            InnerBorder = saveInnerBorder;
+            bdrInner.BorderThickness = new Thickness(1);
+            bdrInner.Padding = new Thickness(3);
+            IsSelected = false;
+            if (bottomBar != null)
+                bottomBar.Visibility = Visibility.Visible;
+        }
+
         public double UpperBound { get; set; } = 1;
         public double LowerBound { get; set; } = 0;
         public double VerticalRange { get; set; } = 1;
+        public bool IsSelected { get; set; }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            saveInnerBorder = InnerBorder;
+        }
     }
 }

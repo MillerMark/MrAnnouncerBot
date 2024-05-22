@@ -92,17 +92,17 @@ namespace DHDM
 			if (System.IO.File.Exists(fullPathToLightsFile))
 			{
 				string lightsJson = System.IO.File.ReadAllText(fullPathToLightsFile);
-				LightingSequence lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
-				//log.Clear();
-				foreach (Light light in lightingSequence.Lights)
-				{
-					FrameAnimator frameAnimator = new FrameAnimator(light.SequenceData.Count);
-					frameAnimator.Data = light;
-					frameAnimator.AnimationComplete += FrameAnimator_AnimationComplete;
-					frameAnimator.RenderFrame += FrameAnimator_RenderLights;
-					frameAnimator.Start(startTime);
-					lightAnimators.Add(frameAnimator);
-				}
+				LightingSequence? lightingSequence = JsonConvert.DeserializeObject<LightingSequence>(lightsJson);
+                if (lightingSequence != null)
+				    foreach (Light light in lightingSequence.Lights)
+				    {
+					    FrameAnimator frameAnimator = new FrameAnimator(light.SequenceData.Count);
+					    frameAnimator.Data = light;
+					    frameAnimator.AnimationComplete += FrameAnimator_AnimationComplete;
+					    frameAnimator.RenderFrame += FrameAnimator_RenderLights;
+					    frameAnimator.Start(startTime);
+					    lightAnimators.Add(frameAnimator);
+				    }
 			}
 
 			existingAnimationIsRunning = true;
@@ -122,7 +122,7 @@ namespace DHDM
 
 				LightSequenceData lightData = light.SequenceData[frameAnimator.FrameIndex];
 
-				DmxLight dmxLight = null;
+				DmxLight? dmxLight = null;
 
 				if (light.ID == BluetoothLights.Left_ID)
 				{
@@ -149,7 +149,7 @@ namespace DHDM
 		static List<FrameAnimator> lightAnimators = new List<FrameAnimator>();
         static ILiveVideoEditor liveVideoEditor;
 
-        private static void FrameAnimator_AnimationComplete(object sender, EventArgs e)
+        private static void FrameAnimator_AnimationComplete(object? sender, EventArgs e)
 		{
 			//string str = string.Join(Environment.NewLine, log.ToArray());
 			if (sender is FrameAnimator frameAnimator)

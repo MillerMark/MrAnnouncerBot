@@ -8,7 +8,9 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         SizeToContent="Height"
-        Title="Live Animation Editor" Width="1270" Closed="Window_Closed" SizeChanged="Window_SizeChanged" PreviewKeyUp="Window_PreviewKeyUp" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="Live Animation Editor" Width="1270" Closed="Window_Closed" 
+        Loaded="Window_Loaded"
+        SizeChanged="Window_SizeChanged" PreviewKeyUp="Window_PreviewKeyUp" PreviewKeyDown="Window_PreviewKeyDown">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -39,10 +41,20 @@
                 >
         </Slider>-->
         <StackPanel x:Name="spTimelineUI" Orientation="Vertical" Grid.Row="2" >
-            <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="25"  >
+            <StackPanel x:Name="spSourceRadioButtons" Orientation="Horizontal" Height="15"  Margin="0, 10, 0, 0">
 
             </StackPanel>
-            <Canvas x:Name="cvsFeedbackUI" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="26">
+            <StackPanel x:Name="spVisualizerControls" Orientation="Horizontal" Margin="0, 10, 0, 0">
+                <Button x:Name="btnPreviousDifference" ToolTip="Move to the previous frame that's different from the current frame."  Content="&lt;&lt;" Padding="9, 4, 9, 4" Margin="3" Click="btnPreviousDifference_Click" />
+                <Button x:Name="btnNextDifference" ToolTip="Move to the next frame that's different from the current frame." Content="&gt;&gt;" Padding="9, 4, 9, 4" Margin="3" Click="btnNextDifference_Click" />
+                <Button x:Name="btnApplyPlayheadValueToSelection" Padding="9, 4, 9, 4" Margin="3" Click="btnApplyPlayheadValueToSelection_Click" >
+                    Apply Playhead Value to Selection
+                </Button>
+                <Button x:Name="btnLinearInterpolateAcrossSelection" Padding="9, 4, 9, 4" Margin="3" Click="btnLinearInterpolateAcrossSelection_Click">
+                    Linear Interpolate Across Selection
+                </Button>
+            </StackPanel>
+            <Canvas x:Name="cvsFeedbackUI" Background="Transparent" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="26" MouseDown="cvsInput_MouseDown" MouseMove="cvsInput_MouseMove" MouseUp="cvsInput_MouseUp">
                 <TextBlock x:Name="tbFrameIndex" Text="00:00" Width="Auto" Height="Auto" FontSize="16"/>
                 <Line x:Name="lnFrameSpan" Visibility="Hidden" Stroke="#FF4B4B4B" StrokeThickness="1"></Line>
                 <Polygon x:Name="arrowLeft" Points="0,5 10,0 10,10" Fill="#FFABABAB" Visibility="Hidden" />

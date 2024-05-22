@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WpfEditorControls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <DrawingBrush x:Key="CheckeredBrush" Viewport="0,0,10,10" ViewportUnits="Absolute" TileMode="Tile">
             <DrawingBrush.Drawing>
@@ -34,7 +34,7 @@
             </TextBlock.LayoutTransform>
         </TextBlock>
         <Border x:Name="bdrOuter" BorderBrush="{Binding OuterBorder}" BorderThickness="2" >
-            <Border x:Name="bdrInner" BorderBrush="{Binding InnerBorder}" BorderThickness="1" Padding="2" Background="{Binding OuterBorder}" >
+            <Border x:Name="bdrInner" BorderBrush="{Binding InnerBorder}" BorderThickness="1" Padding="3" Background="{Binding OuterBorder}" >
                 <Canvas x:Name="cvsSequence">
 
                 </Canvas>

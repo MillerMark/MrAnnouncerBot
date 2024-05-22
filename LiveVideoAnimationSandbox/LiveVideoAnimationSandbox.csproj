@@ -32,6 +32,7 @@
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\Light.cs" Link="Light.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightingSequence.cs" Link="LightingSequence.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightSequenceData.cs" Link="LightSequenceData.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\VisualizerSelector.cs" Link="VisualizerSelector.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\VideoAnimationBinding.cs" Link="VideoAnimationBinding.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\VideoAnimationManager.cs" Link="VideoAnimationManager.cs" />
   </ItemGroup>

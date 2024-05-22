@@ -17,11 +17,13 @@ using LiveVideoAnimationSandbox;
 
 namespace DHDM
 {
+
     /// <summary>
     /// Interaction logic for FrmLiveAnimationEditor.xaml
     /// </summary>
     public partial class FrmLiveAnimationEditor : Window
     {
+        VisualizerSelector visualizerSelector = new VisualizerSelector();
         public FrmLiveAnimationEditor()
         {
             initializing = true;
@@ -54,7 +56,7 @@ namespace DHDM
         const double frameRate = 30;  // fps
         const double secondsPerFrame = 1 / frameRate;
         const string STR_EditorPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\Editor";
-        List<AnimatorWithTransforms> liveFeedAnimators;
+        List<AnimatorWithTransforms>? liveFeedAnimators;
         AnimatorWithTransforms? activeMovement;
 
 
@@ -119,6 +121,9 @@ namespace DHDM
             frontFiles = null;
             digitCount = 0;
             ActiveMovementFileName = null;
+            if (SelectedSceneName == null)
+                return;
+
             List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
             if (allBindings.Count == 0)
                 return;
@@ -181,7 +186,9 @@ namespace DHDM
 
         private void RadioButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.RadioButton radioButton)
+            if (liveFeedAnimators == null)
+                return;
+            if (sender is RadioButton radioButton)
             {
                 ActiveMovementFileName = radioButton.Content as string;
                 ActiveMovement = liveFeedAnimators.FirstOrDefault(x => x.MovementFileName == ActiveMovementFileName);
@@ -265,6 +272,13 @@ namespace DHDM
 
             animatorWithTransform.LiveFeedAnimator.SetCamera(liveFeedEdit.Camera);
             ObsControl.ObsManager.SizeAndPositionItem(animatorWithTransform.LiveFeedAnimator, scale, opacity, rotation, liveFeedEdit.Flipped);
+        }
+
+        ObsTransformEdit? GetActiveFrame()
+        {
+            if (allFrames == null || frameIndex >= allFrames.Count || frameIndex < 0)
+                return null;
+            return allFrames[frameIndex];
         }
 
         void SetAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
@@ -508,8 +522,11 @@ namespace DHDM
                 UpdatePlayhead();
             }
         }
-        public string SelectedSceneName { get; set; }
-        public string PngPath { get; set; }
+        public string? SelectedSceneName { get; set; }
+
+        // TODO: Remove this PngPath if we don't need this.
+        public string? PngPath { get; set; }
+
         string? activeMovementFileName;
         public string? ActiveMovementFileName
         {
@@ -664,6 +681,8 @@ namespace DHDM
 
         private void btnReloadAnimation_Click(object sender, RoutedEventArgs e)
         {
+            if (SelectedSceneName == null)
+                return;
             List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
             LoadAllFrames(allBindings);
             ClearEditorValues();
@@ -1019,6 +1038,8 @@ namespace DHDM
 
         private void SaveLightingData()
         {
+            if (SelectedSceneName == null)
+                return;
             string fullPathToLightingFile = VideoAnimationManager.GetFullPathToLightsFile(SelectedSceneName);
             if (HasAnyLightingChanges(LightingSequence))
             {
@@ -1278,6 +1299,10 @@ namespace DHDM
 
         private void cvsInput_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SequenceVisualizer? sequenceVisualizer = GetSequenceVisualizerFromPosition(e);
+            if (sequenceVisualizer != null)
+                visualizerSelector.SelectVisualizer(sequenceVisualizer);
+
             if (TotalFrames == 0)
                 return;
 
@@ -1384,6 +1409,27 @@ namespace DHDM
             if (IsMouseOverSequenceVisualizer(rotationSequenceVisualizer, e)) 
                 return ObsFramePropertyAttribute.Rotation;
             return ObsFramePropertyAttribute.None;
+        }
+
+        SequenceVisualizer? GetSequenceVisualizerFromPosition(MouseButtonEventArgs e)
+        {
+            if (IsMouseOverSequenceVisualizer(opacitySequenceVisualizer, e))
+                return opacitySequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(scaleSequenceVisualizer, e))
+                return scaleSequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(xSequenceVisualizer, e))
+                return xSequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(ySequenceVisualizer, e))
+                return ySequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(rotationSequenceVisualizer, e))
+                return rotationSequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(rightLightSequenceVisualizer, e))
+                return rightLightSequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(leftLightSequenceVisualizer, e))
+                return leftLightSequenceVisualizer;
+            if (IsMouseOverSequenceVisualizer(centerLightSequenceVisualizer, e))
+                return centerLightSequenceVisualizer;
+            return null;
         }
 
         void SelectAllMatchingFrames(ObsFramePropertyAttribute attribute, int frameIndex)
@@ -1513,6 +1559,269 @@ namespace DHDM
 
                 e.Handled = true;
             }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            foreach (UIElement uIElement in spVisualizers.Children)
+            {
+                if (uIElement is ISelectableVisualizer selectableVisualizer)
+                    visualizerSelector.AddSelectableVisualizer(selectableVisualizer);
+            }
+            
+        }
+
+        ObsFramePropertyAttribute GetObsFrameAttributeFromVisualizer(ISelectableVisualizer selectedVisualizer)
+        {
+            if (selectedVisualizer == scaleSequenceVisualizer)
+                return ObsFramePropertyAttribute.Scale;
+            if (selectedVisualizer == rotationSequenceVisualizer)
+                return ObsFramePropertyAttribute.Rotation;
+            if (selectedVisualizer == opacitySequenceVisualizer)
+                return ObsFramePropertyAttribute.Opacity;
+            if (selectedVisualizer == xSequenceVisualizer)
+                return ObsFramePropertyAttribute.X;
+            if (selectedVisualizer == ySequenceVisualizer)
+                return ObsFramePropertyAttribute.Y;
+
+            return ObsFramePropertyAttribute.None;
+        }
+
+        LightKind GetLightKindFromVisualizer(ISelectableVisualizer selectedVisualizer)
+        {
+            if (selectedVisualizer == rightLightSequenceVisualizer)
+                return LightKind.Right;
+            if (selectedVisualizer == leftLightSequenceVisualizer)
+                return LightKind.Left;
+            if (selectedVisualizer == centerLightSequenceVisualizer)
+                return LightKind.Center;
+            return LightKind.None;
+        }
+
+        int GetPreviousFrameMatching(Func<ObsTransformEdit, double> getValue)
+        {
+            if (allFrames == null || allFrames.Count == 0)
+                return 0;
+
+            var index = FrameIndex;
+            if (index >= allFrames.Count)
+                index = allFrames.Count() - 1;
+
+            ObsTransformEdit? activeFrame = allFrames[index];
+
+            if (activeFrame == null)
+                return 0;
+
+            double currentValue = getValue(activeFrame);
+
+            if (index > 1)
+                if (getValue(allFrames[index - 1]) != currentValue)
+                {
+                    currentValue = getValue(allFrames[index - 1]);
+                    index--;
+                }
+
+            while (index > 0 && getValue(allFrames[index]) == currentValue)
+            {
+                index--;
+            }
+            return index;
+        }
+
+        int GetPreviousFrameMatching(List<LightSequenceData> sequenceData)
+        {
+            if (allFrames == null)
+                return 0;
+            var index = FrameIndex;
+
+            if (index >= sequenceData.Count)
+                index = sequenceData.Count() - 1;
+
+            LightSequenceData currentValue = sequenceData[index];
+            if (index >= sequenceData.Count)
+                index = sequenceData.Count - 1;
+
+            if (index > 1)
+                if (!sequenceData[index - 1].Matches(currentValue))
+                {
+                    currentValue = sequenceData[index - 1];
+                    index--;
+                }
+
+            while (index > 0 && sequenceData[index].Matches(currentValue))
+            {
+                index--;
+            }
+            return index;
+        }
+
+        int GetNextFrameMatching(Func<ObsTransformEdit, double> getValue)
+        {
+            if (allFrames == null || allFrames.Count == 0)
+                return 0;
+
+            var index = FrameIndex;
+            if (index >= allFrames.Count)
+                index = allFrames.Count - 1;
+
+            ObsTransformEdit? activeFrame = allFrames[index];
+
+            if (activeFrame == null)
+                return 0;
+
+            double currentValue = getValue(activeFrame);
+
+            if (index < allFrames.Count - 2)
+                if (getValue(allFrames[index + 1]) != currentValue)
+                {
+                    currentValue = getValue(allFrames[index + 1]);
+                    index++;
+                }
+
+            while (index < allFrames.Count - 1 && getValue(allFrames[index]) == currentValue)
+            {
+                index++;
+            }
+            return index;
+        }
+
+        int GetNextFrameMatching(List<LightSequenceData> sequenceData)
+        {
+            if (allFrames == null)
+                return 0;
+            var index = FrameIndex;
+
+            if (index >= sequenceData.Count)
+                index = sequenceData.Count() - 1;
+
+            LightSequenceData currentValue = sequenceData[index];
+            if (index >= sequenceData.Count)
+                index = sequenceData.Count - 1;
+
+            if (index < sequenceData.Count - 2)
+                if (!sequenceData[index + 1].Matches(currentValue))
+                {
+                    currentValue = sequenceData[index + 1];
+                    index++;
+                }
+
+            while (index < sequenceData.Count - 1 && sequenceData[index].Matches(currentValue))
+            {
+                index++;
+            }
+            return index;
+        }
+
+        private void btnPreviousDifference_Click(object sender, RoutedEventArgs e)
+        {
+            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
+            if (selectedVisualizer == null)
+                return;
+            ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
+
+            if (frameAttribute != ObsFramePropertyAttribute.None)
+            {
+                switch (frameAttribute)
+                {
+                    case ObsFramePropertyAttribute.X:
+                        FrameIndex = GetPreviousFrameMatching(x => x.GetX());
+                        break;
+                    case ObsFramePropertyAttribute.Y:
+                        FrameIndex = GetPreviousFrameMatching(y => y.GetY());
+                        break;
+                    case ObsFramePropertyAttribute.Scale:
+                        FrameIndex = GetPreviousFrameMatching(scale => scale.GetScale());
+                        break;
+                    case ObsFramePropertyAttribute.Rotation:
+                        FrameIndex = GetPreviousFrameMatching(rotation => rotation.GetRotation());
+                        break;
+                    case ObsFramePropertyAttribute.Opacity:
+                        FrameIndex = GetPreviousFrameMatching(opacity => opacity.GetOpacity());
+                        break;
+                }
+
+            }
+            else
+            {
+                LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
+                List<LightSequenceData>? sequenceData = null;
+                switch (lightKind)
+                {
+                    case LightKind.Left:
+                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
+                        break;
+                    case LightKind.Center:
+                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
+                        break;
+                    case LightKind.Right:
+                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
+                        break;
+                }
+
+                if (sequenceData != null)
+                    FrameIndex = GetPreviousFrameMatching(sequenceData);
+            }
+        }
+
+        private void btnNextDifference_Click(object sender, RoutedEventArgs e)
+        {
+            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
+            if (selectedVisualizer == null)
+                return;
+            ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
+
+            if (frameAttribute != ObsFramePropertyAttribute.None)
+            {
+                switch (frameAttribute)
+                {
+                    case ObsFramePropertyAttribute.X:
+                        FrameIndex = GetNextFrameMatching(x => x.GetX());
+                        break;
+                    case ObsFramePropertyAttribute.Y:
+                        FrameIndex = GetNextFrameMatching(y => y.GetY());
+                        break;
+                    case ObsFramePropertyAttribute.Scale:
+                        FrameIndex = GetNextFrameMatching(scale => scale.GetScale());
+                        break;
+                    case ObsFramePropertyAttribute.Rotation:
+                        FrameIndex = GetNextFrameMatching(rotation => rotation.GetRotation());
+                        break;
+                    case ObsFramePropertyAttribute.Opacity:
+                        FrameIndex = GetNextFrameMatching(opacity => opacity.GetOpacity());
+                        break;
+                }
+
+            }
+            else
+            {
+                LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
+                List<LightSequenceData>? sequenceData = null;
+                switch (lightKind)
+                {
+                    case LightKind.Left:
+                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
+                        break;
+                    case LightKind.Center:
+                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
+                        break;
+                    case LightKind.Right:
+                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
+                        break;
+                }
+
+                if (sequenceData != null)
+                    FrameIndex = GetNextFrameMatching(sequenceData);
+            }
+        }
+
+        private void btnApplyPlayheadValueToSelection_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnLinearInterpolateAcrossSelection_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

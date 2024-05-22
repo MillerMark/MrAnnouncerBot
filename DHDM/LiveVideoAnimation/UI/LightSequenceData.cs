@@ -54,5 +54,12 @@ namespace DHDM
 		{
 			return new LightSequenceData(Hue, Saturation, Lightness, Duration);
 		}
-	}
+
+        public bool Matches(LightSequenceData currentValue)
+        {
+            return Hue == currentValue.Hue &&
+                Saturation == currentValue.Saturation &&
+                Lightness == currentValue.Lightness;
+        }
+    }
 }
