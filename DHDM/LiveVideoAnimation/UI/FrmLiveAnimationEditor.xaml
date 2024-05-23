@@ -53,6 +53,12 @@
                 <Button x:Name="btnLinearInterpolateAcrossSelection" Padding="9, 4, 9, 4" Margin="3" Click="btnLinearInterpolateAcrossSelection_Click">
                     Linear Interpolate Across Selection
                 </Button>
+                <Button x:Name="btnFadeIn" Padding="9, 4, 9, 4" Margin="3" Click="btnFadeIn_Click">
+                    Fade In
+                </Button>
+                <Button x:Name="btnFadeOut" Padding="9, 4, 9, 4" Margin="3" Click="btnFadeOut_Click">
+                    Fade Out
+                </Button>
             </StackPanel>
             <Canvas x:Name="cvsFeedbackUI" Background="Transparent" Width="{Binding ElementName=spVisualizers, Path=Width}" Height="26" MouseDown="cvsInput_MouseDown" MouseMove="cvsInput_MouseMove" MouseUp="cvsInput_MouseUp">
                 <TextBlock x:Name="tbFrameIndex" Text="00:00" Width="Auto" Height="Auto" FontSize="16"/>
@@ -89,8 +95,9 @@
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="3" Margin="8" >
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="620, 0, 0, 0"/>
-                <TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0"/>
+                <TextBlock Text="Deltas:" Width="70" Height="Auto" TextAlignment="Right" Margin="60, 0, 0, 0" FontWeight="Bold" Foreground="RoyalBlue"/>
+                <TextBlock Text="Current" Width="70" Height="Auto" TextAlignment="Right" Margin="490, 0, 0, 0" FontWeight="Bold" Foreground="RoyalBlue"/>
+                <TextBlock Text="New" Width="70" Height="Auto" TextAlignment="Right" Margin="20, 0, 0, 0" FontWeight="Bold" Foreground="RoyalBlue"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="X:" Width="87" Height="Auto" Margin="4, 1, 4, 4" />
@@ -154,7 +161,7 @@
             </StackPanel>
         </StackPanel>
         <StackPanel Grid.Row="4" Orientation="Horizontal" Height="80">
-            <local:FrmColorPicker x:Name="leftLight" Margin="0, 0, 20, 0" ColorChanged="leftLight_ColorChanged"></local:FrmColorPicker>
+            <local:FrmColorPicker x:Name="lightColorPicker" Margin="0, 0, 20, 0" ColorChanged="lightColorPicker_ColorChanged"></local:FrmColorPicker>
             <Button x:Name="btnPreviousFrame" Click="btnPreviousFrame_Click" Margin="0, 0, 15, 0">
                 <Viewbox Width="80" IsHitTestVisible="False">
                     <Canvas Width="408" Height="573">
@@ -175,14 +182,10 @@
                     </Canvas>
                 </Viewbox>
             </Button>
-            <local:FrmColorPicker x:Name="rightLightColor" ColorChanged="rightLight_ColorChanged"></local:FrmColorPicker>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Center" Margin="8" >
-            <local:FrmColorPicker x:Name="centerLight" Margin="0, 0, 20, 0" ColorChanged="centerLight_ColorChanged"></local:FrmColorPicker>
         </StackPanel>
         <StackPanel x:Name="spButtons" Orientation="Horizontal" Grid.Row="6" Margin="4" >
             <Button x:Name="btnCopyLightsForward" Width="136" Height="30" Click="btnCopyLightsForward_Click">
-                Copy Lights Forward >>
+                Copy Lights Forward One Frame >>
             </Button>
         </StackPanel>
     </Grid>

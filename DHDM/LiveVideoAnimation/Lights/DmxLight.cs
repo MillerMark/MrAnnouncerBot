@@ -70,6 +70,17 @@ namespace DHDM
 			SetColor(new HueSatLight(hue / 360.0, saturation / 100.0, lightness / 100.0));
 		}
 
-		public int ChannelStart { get; set; }
+        public static DmxLight? GetFrom(string id)
+        {
+            if (id == BluetoothLights.Left_ID)
+                return Left;
+            else if (id == BluetoothLights.Right_ID)
+                return Right;
+            else if (id == BluetoothLights.Center_ID)
+                return Center;
+            return null;
+        }
+
+        public int ChannelStart { get; set; }
 	}
 }

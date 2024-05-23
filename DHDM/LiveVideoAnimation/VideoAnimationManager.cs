@@ -122,20 +122,7 @@ namespace DHDM
 
 				LightSequenceData lightData = light.SequenceData[frameAnimator.FrameIndex];
 
-				DmxLight? dmxLight = null;
-
-				if (light.ID == BluetoothLights.Left_ID)
-				{
-					dmxLight = DmxLight.Left;
-				}
-				else if (light.ID == BluetoothLights.Center_ID)
-				{
-					dmxLight = DmxLight.Center;
-				}
-				else if (light.ID == BluetoothLights.Right_ID)
-				{
-					dmxLight = DmxLight.Right;
-				}
+				DmxLight? dmxLight = DmxLight.GetFrom(light.ID);
 
 				if (dmxLight == null)
 					return;

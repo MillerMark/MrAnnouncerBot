@@ -4,14 +4,15 @@ using System.Collections.Generic;
 
 namespace DHDM
 {
-	public class Light
+    // TODO: Consider renaming to LightData.
+    public class Light
 	{
 		public List<LightSequenceData> SequenceData { get; set; } = new List<LightSequenceData>();
-		public string ID { get; set; }
+        public string ID { get; set; } = null!;
 		public Light Compress()
 		{
 			Light result = new Light() { ID = ID };
-			LightSequenceData lastSequenceData = null;
+			LightSequenceData? lastSequenceData = null;
 			foreach (LightSequenceData lightSequenceData in SequenceData)
 			{
 				if (lastSequenceData == null || !lastSequenceData.SameColor(lightSequenceData))

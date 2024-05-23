@@ -8,6 +8,8 @@ using Imaging;
 using ObsControl;
 using Newtonsoft.Json;
 using WpfEditorControls;
+using System.Windows.Media.Media3D;
+
 
 
 
@@ -17,7 +19,6 @@ using LiveVideoAnimationSandbox;
 
 namespace DHDM
 {
-
     /// <summary>
     /// Interaction logic for FrmLiveAnimationEditor.xaml
     /// </summary>
@@ -36,6 +37,7 @@ namespace DHDM
             {
                 initializing = false;
             }
+            visualizerSelector.SelectionChanged += VisualizerSelector_TrackSelectionChanged;
         }
 
         public LightingSequence? LightingSequence { get; set; }
@@ -89,9 +91,29 @@ namespace DHDM
 
         private void UpdateLightsOnTimeline()
         {
-            leftLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Left_ID)?.SequenceData, TotalFrames, x => GetColor(x));
-            centerLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Center_ID)?.SequenceData, TotalFrames, w => GetColor(w));
-            rightLightSequenceVisualizer.VisualizeData(GetLightFromId(BluetoothLights.Right_ID)?.SequenceData, TotalFrames, v => GetColor(v));
+            UpdateLeftLightDataOnTimeline();
+            UpdateCenterLightDataOnTimeline();
+            UpdateRightLightDataOnTimeline();
+        }
+
+        private void UpdateRightLightDataOnTimeline()
+        {
+            UpdateLightDataOnTimeline(rightLightSequenceVisualizer, LightKind.Right);
+        }
+
+        private void UpdateCenterLightDataOnTimeline()
+        {
+            UpdateLightDataOnTimeline(centerLightSequenceVisualizer, LightKind.Center);
+        }
+
+        private void UpdateLeftLightDataOnTimeline()
+        {
+            UpdateLightDataOnTimeline(leftLightSequenceVisualizer, LightKind.Left);
+        }
+
+        private void UpdateLightDataOnTimeline(SequenceVisualizer sequenceVisualizer, LightKind lightKind)
+        {
+            sequenceVisualizer.VisualizeData(GetSequenceDataFrom(lightKind), TotalFrames, x => GetColor(x));
         }
 
         Color GetColor(LightSequenceData x)
@@ -132,6 +154,8 @@ namespace DHDM
             ActiveMovementFileName = null;
             if (SelectedSceneName == null)
                 return;
+
+            frameIndex = 0;
 
             List<VideoAnimationBinding> allBindings = AllVideoBindings.GetAll(SelectedSceneName);
             if (allBindings.Count == 0)
@@ -529,6 +553,7 @@ namespace DHDM
                 //    changingInternally = false;
                 //}
                 UpdatePlayhead();
+                CheckSelection();
             }
         }
         public string? SelectedSceneName { get; set; }
@@ -597,6 +622,8 @@ namespace DHDM
         int selectionAnchorFrameIndex;
         bool shiftKeyIsDown;
         int mouseDragStartingFrameIndex;
+        bool previousSelectionExists;
+        bool lightTrackIsSelected;
 
         private void tbxDeltaX_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -650,6 +677,8 @@ namespace DHDM
 
         private void TextChanged(ObsFramePropertyAttribute attribute, System.Windows.Controls.TextBox textBox, Slider slider)
         {
+            if (changingInternally)
+                return;
             if (initializing)
                 return;
             changingInternally = true;
@@ -1155,88 +1184,103 @@ namespace DHDM
             return LightingSequence.Lights.Find(x => x.ID == id);
         }
 
-        private void leftLight_ColorChanged(object sender, RoutedEventArgs e)
+        LightKind GetActiveLightKind()
         {
-            if (changingInternally || settingColorInternally)
-                return;
-
-            DmxLight.Left.SetColor(leftLight.Hue, leftLight.Saturation, leftLight.Lightness);
-            //await BluetoothLights.Left.SetAsync((int)leftLight.Hue, (int)leftLight.Saturation, (int)leftLight.Lightness);
-            ApplyLightColor(GetLightFromId(BluetoothLights.Left_ID), leftLight);
+            if (visualizerSelector.SelectedVisualizer == leftLightSequenceVisualizer)
+                return LightKind.Left;
+            if (visualizerSelector.SelectedVisualizer == centerLightSequenceVisualizer)
+                return LightKind.Center;
+            if (visualizerSelector.SelectedVisualizer == rightLightSequenceVisualizer)
+                return LightKind.Right;
+            return LightKind.None;
         }
 
-        private void centerLight_ColorChanged(object sender, RoutedEventArgs e)
+        private void lightColorPicker_ColorChanged(object sender, RoutedEventArgs e)
         {
             if (changingInternally || settingColorInternally)
                 return;
 
-            DmxLight.Center.SetColor(centerLight.Hue, centerLight.Saturation, centerLight.Lightness);
-            ApplyLightColor(GetLightFromId(BluetoothLights.Center_ID), centerLight);
-        }
-
-        private void rightLight_ColorChanged(object sender, RoutedEventArgs e)
-        {
-            if (changingInternally || settingColorInternally)
+            LightKind activeLightKind = GetActiveLightKind();
+            if (activeLightKind == LightKind.None)
                 return;
 
-            DmxLight.Right.SetColor(rightLightColor.Hue, rightLightColor.Saturation, rightLightColor.Lightness);
-            ApplyLightColor(GetLightFromId(BluetoothLights.Right_ID), rightLightColor);
+            string? lightId = GetLightIdFrom(activeLightKind);
+
+            if (lightId == null)
+                return;
+
+            DmxLight? dmxLight = DmxLight.GetFrom(lightId);
+            if (dmxLight == null)
+                return;
+
+            dmxLight.SetColor(lightColorPicker.Hue, lightColorPicker.Saturation, lightColorPicker.Lightness);
+            ApplyLightColor(GetLightFrom(activeLightKind), lightColorPicker);
+            switch (activeLightKind)
+            {
+                case LightKind.Left:
+                    UpdateLeftLightDataOnTimeline();
+                    break;
+                case LightKind.Center:
+                    UpdateCenterLightDataOnTimeline();
+                    break;
+                case LightKind.Right:
+                    UpdateRightLightDataOnTimeline();
+                    break;
+            }
         }
 
         private void ApplyLightColor(Light? light, FrmColorPicker colorPicker)
         {
+            ColorHolder colorHolder = new ColorHolder((int)colorPicker.Hue, (int)colorPicker.Saturation, (int)colorPicker.Lightness, colorPicker.Color.AsHtml);
             if (SelectionExists)
             {
                 for (int i = SelectionLeft; i < SelectionRight; i++)
-                    SetLightFrame(light, colorPicker, i);
+                    SetLightFrame(light, colorHolder, i);
                 UpdateLightsOnTimeline();
             }
             else
-                SetLightFrame(light, colorPicker, FrameIndex);
+                SetLightFrame(light, colorHolder, FrameIndex);
         }
 
-        private static void SetLightFrame(Light? light, FrmColorPicker colorPicker, int frameIndex)
+        private static void SetLightFrame(Light? light, IColor? color, int frameIndex)
         {
-            if (light == null)
+            if (light == null || color == null)
                 return;
             while (frameIndex >= light.SequenceData.Count)
                 light.SequenceData.Add(new LightSequenceData());
-            light.SequenceData[frameIndex].Hue = (int)colorPicker.Hue;
-            light.SequenceData[frameIndex].Saturation = (int)colorPicker.Saturation;
-            light.SequenceData[frameIndex].Lightness = (int)colorPicker.Lightness;
+            light.SequenceData[frameIndex].Hue = color.Hue;
+            light.SequenceData[frameIndex].Saturation = color.Saturation;
+            light.SequenceData[frameIndex].Lightness = color.Lightness;
         }
 
-        void SetLightColor(string iD, LightSequenceData lightSequenceData)
+        void SetLightColor(string? id, IColor? lightSequenceData)
         {
+            if (id == null)
+                return;
+
+            if (lightSequenceData == null)
+                return;
+
             if (settingColorInternally || dragStarted)
                 return;
-            if (iD == BluetoothLights.Left_ID)
-            {
-                DmxLight.Left.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
-                SetColorPicker(lightSequenceData, leftLight);
-            }
-            else if (iD == BluetoothLights.Right_ID)
-            {
-                DmxLight.Right.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
-                SetColorPicker(lightSequenceData, rightLightColor);
-            }
-            else if (iD == BluetoothLights.Center_ID)
-            {
-                DmxLight.Center.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
-                SetColorPicker(lightSequenceData, centerLight);
-            }
-            else
-                System.Diagnostics.Debugger.Break();  // What Light is this?
+
+            DmxLight? dmxLight = DmxLight.GetFrom(id);
+            if (dmxLight != null)
+                dmxLight.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
+
+            SetColorPicker(lightSequenceData);
         }
 
-        private void SetColorPicker(LightSequenceData lightSequenceData, FrmColorPicker colorPicker)
+        private void SetColorPicker(IColor? lightSequenceData)
         {
+            if (lightSequenceData == null)
+                return;
             settingColorInternally = true;
             try
             {
-                colorPicker.Hue = (int)lightSequenceData.Hue;
-                colorPicker.Saturation = (int)lightSequenceData.Saturation;
-                colorPicker.Lightness = (int)lightSequenceData.Lightness;
+                lightColorPicker.Hue = (int)lightSequenceData.Hue;
+                lightColorPicker.Saturation = (int)lightSequenceData.Saturation;
+                lightColorPicker.Lightness = (int)lightSequenceData.Lightness;
             }
             finally
             {
@@ -1244,13 +1288,65 @@ namespace DHDM
             }
         }
 
+        void SetLightColor(LightKind lightKind, IColor? value)
+        {
+            SetLightColor(GetLightIdFrom(lightKind), value);
+        }
+
+        IColor? RightLightColor
+        {
+            get
+            {
+                return GetLightColor(GetLightFrom(LightKind.Right), FrameIndex);
+            }
+            set
+            {
+                SetLightColor(LightKind.Right, value);
+            }
+        }
+        IColor? LeftLightColor
+        {
+            get
+            {
+                return GetLightColor(GetLightFrom(LightKind.Left), FrameIndex);
+            }
+            set
+            {
+                Light? lightId = GetLightFrom(LightKind.Left);
+                if (lightId == null)
+                    return;
+                lightId!.SequenceData[FrameIndex].SetFrom(value);
+            }
+        }
+        IColor? CenterLightColor
+        {
+            get
+            {
+                return GetLightColor(GetLightFrom(LightKind.Center), FrameIndex);
+            }
+        }
+
+        private IColor? GetLightColor(Light? lightId, int frameIndex)
+        {
+            if (!LightHasGoodData(lightId, frameIndex))
+                return null;
+
+
+            return lightId!.SequenceData[frameIndex];
+        }
+
+        private static bool LightHasGoodData(Light? lightId, int frameIndex)
+        {
+            return !(lightId == null || frameIndex < 0 || frameIndex > lightId.SequenceData.Count);
+        }
+
         private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
         {
             if (backFiles == null || FrameIndex >= TotalFrames - 1)
                 return;
-            SetLightFrame(GetLightFromId(BluetoothLights.Right_ID), rightLightColor, FrameIndex + 1);
-            SetLightFrame(GetLightFromId(BluetoothLights.Center_ID), centerLight, FrameIndex + 1);
-            SetLightFrame(GetLightFromId(BluetoothLights.Left_ID), leftLight, FrameIndex + 1);
+            SetLightFrame(GetLightFrom(LightKind.Right), RightLightColor, FrameIndex + 1);
+            SetLightFrame(GetLightFrom(LightKind.Center), CenterLightColor, FrameIndex + 1);
+            SetLightFrame(GetLightFrom(LightKind.Left), LeftLightColor, FrameIndex + 1);
             FrameIndex++;
         }
 
@@ -1265,10 +1361,30 @@ namespace DHDM
         //    UpdateLights();
         //}
 
+        bool LightsHaveGoodData()
+        {
+            return 
+                LightHasGoodData(GetLightFrom(LightKind.Left), FrameIndex) &&
+                LightHasGoodData(GetLightFrom(LightKind.Center), FrameIndex) &&
+                LightHasGoodData(GetLightFrom(LightKind.Right), FrameIndex);
+        }
+
         private void CopyColors_Click(object sender, RoutedEventArgs e)
         {
-            string colorStr = $"{leftLight.Color.AsHtml}\t{centerLight.Color.AsHtml}\t{rightLightColor.Color.AsHtml}";
+            if (!LightsHaveGoodData())
+                return;
+            string colorStr = $"{LeftLightColor!.AsHtml}\t{CenterLightColor!.AsHtml}\t{RightLightColor!.AsHtml}";
             System.Windows.Clipboard.SetText(colorStr);
+        }
+
+        void SetLightColor(LightKind lightKind, HueSatLight hueSatLight)
+        {
+            string? id = GetLightIdFrom(lightKind);
+            if (id == null)
+                return;
+            DmxLight? dmxLight = DmxLight.GetFrom(id);
+            if (dmxLight != null)
+                dmxLight.SetColor(hueSatLight.Hue, hueSatLight.Saturation, hueSatLight.Lightness);
         }
 
         private void PasteColors_Click(object sender, RoutedEventArgs e)
@@ -1281,9 +1397,9 @@ namespace DHDM
             if (parts.Length != 3)
                 return;
 
-            leftLight.Color = new HueSatLight(parts[0]);
-            centerLight.Color = new HueSatLight(parts[1]);
-            rightLightColor.Color = new HueSatLight(parts[2]);
+            SetLightColor(LightKind.Left, new HueSatLight(parts[0]));
+            SetLightColor(LightKind.Center, new HueSatLight(parts[1]));
+            SetLightColor(LightKind.Right, new HueSatLight(parts[2]));
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1306,6 +1422,25 @@ namespace DHDM
             return (int)Math.Round((position.X - scaleSequenceVisualizer.LabelWidth) / frameWidth);
         }
 
+        IColor? GetActiveLightColor()
+        {
+            LightKind activeLightKind = GetActiveLightKind();
+            if (activeLightKind == LightKind.None)
+                return null;
+
+            return GetLightColor(GetLightFrom(activeLightKind), FrameIndex);
+        }
+
+        void CheckSelection()
+        {
+            var selectionExists = SelectionExists;
+            if (previousSelectionExists == selectionExists)
+                return;
+            
+            previousSelectionExists = selectionExists;
+            UpdateUIBasedOnTimelineSelectionChanged();
+
+        }
         private void cvsInput_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SequenceVisualizer? sequenceVisualizer = GetSequenceVisualizerFromPosition(e);
@@ -1336,6 +1471,7 @@ namespace DHDM
             }
 
             FrameIndex = currentFrameIndex;
+            SetColorPicker(GetActiveLightColor());
         }
 
         private void cvsInput_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -1512,29 +1648,29 @@ namespace DHDM
             return frameIndex;
         }
 
-        void SelectAllMatchingFrames(LightKind lightKind, int frameIndex)
+        string? GetLightIdFrom(LightKind lightKind)
         {
-            Light? light = null;
-
             switch (lightKind)
             {
                 case LightKind.Left:
-                    light = GetLightFromId(BluetoothLights.Left_ID);
-                    break;
+                    return BluetoothLights.Left_ID;
                 case LightKind.Center:
-                    light = GetLightFromId(BluetoothLights.Center_ID);
-                    break;
+                    return BluetoothLights.Center_ID;
                 case LightKind.Right:
-                    light = GetLightFromId(BluetoothLights.Right_ID);
-                    break;
+                    return BluetoothLights.Right_ID;
             }
+            return null;
+        }
+
+        void SelectAllMatchingFrames(LightKind lightKind, int frameIndex)
+        {
+            Light? light = GetLightFrom(lightKind);
 
             if (light == null)
                 return;
 
             if (frameIndex < 0 || frameIndex >= light.SequenceData.Count)
                 return;
-
 
             int hue = light.SequenceData[frameIndex].Hue;
             int saturation = light.SequenceData[frameIndex].Saturation;
@@ -1544,6 +1680,15 @@ namespace DHDM
             int leftMatchingFrame = SearchBackwards(light.SequenceData, frameIndex, isMatch);
             int rightMatchingFrame = SearchForwards(light.SequenceData, frameIndex, isMatch);
             SelectRange(leftMatchingFrame, rightMatchingFrame);
+        }
+
+        private Light? GetLightFrom(LightKind lightKind)
+        {
+            string? lightId = GetLightIdFrom(lightKind);
+            if (lightId == null)
+                return null;
+
+            return GetLightFromId(lightId);
         }
 
         private void cvsInput_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1737,6 +1882,10 @@ namespace DHDM
             ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
             if (selectedVisualizer == null)
                 return;
+
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                selectionAnchorFrameIndex = FrameIndex;
+
             ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
 
             if (frameAttribute != ObsFramePropertyAttribute.None)
@@ -1764,23 +1913,19 @@ namespace DHDM
             else
             {
                 LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
-                List<LightSequenceData>? sequenceData = null;
-                switch (lightKind)
-                {
-                    case LightKind.Left:
-                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
-                        break;
-                    case LightKind.Center:
-                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
-                        break;
-                    case LightKind.Right:
-                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
-                        break;
-                }
+                List<LightSequenceData>? sequenceData = GetSequenceDataFrom(lightKind);
 
                 if (sequenceData != null)
                     FrameIndex = GetPreviousFrameMatching(sequenceData);
             }
+        }
+
+        private List<LightSequenceData>? GetSequenceDataFrom(LightKind lightKind)
+        {
+            List<LightSequenceData>? sequenceData = null;
+            Light? light = GetLightFrom(lightKind);
+            sequenceData = light?.SequenceData;
+            return sequenceData;
         }
 
         private void btnNextDifference_Click(object sender, RoutedEventArgs e)
@@ -1788,6 +1933,10 @@ namespace DHDM
             ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
             if (selectedVisualizer == null)
                 return;
+
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                selectionAnchorFrameIndex = FrameIndex;
+
             ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
 
             if (frameAttribute != ObsFramePropertyAttribute.None)
@@ -1815,26 +1964,14 @@ namespace DHDM
             else
             {
                 LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
-                List<LightSequenceData>? sequenceData = null;
-                switch (lightKind)
-                {
-                    case LightKind.Left:
-                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
-                        break;
-                    case LightKind.Center:
-                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
-                        break;
-                    case LightKind.Right:
-                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
-                        break;
-                }
+                List<LightSequenceData>? sequenceData = GetSequenceDataFrom(lightKind);
 
                 if (sequenceData != null)
                     FrameIndex = GetNextFrameMatching(sequenceData);
             }
         }
 
-        void ApplyPlayHeadToSelectionForLights(List<LightSequenceData> sequenceData)
+        void ApplyPlayheadToSelectionForLights(List<LightSequenceData> sequenceData)
         {
             if (!SelectionExists)
                 return;
@@ -1857,7 +1994,7 @@ namespace DHDM
             }
         }
 
-        void ApplyPlayHeadToSelection(Action<ObsTransformEdit> setValue)
+        void ApplyPlayheadToSelection(Action<ObsTransformEdit> setValue)
         {
             if (!SelectionExists)
                 return;
@@ -1893,23 +2030,23 @@ namespace DHDM
                 switch (frameAttribute)
                 {
                     case ObsFramePropertyAttribute.X:
-                        ApplyPlayHeadToSelection(x => x.Origin = new CommonCore.Point2d(transformEdit.Origin.X, x.Origin.Y));
+                        ApplyPlayheadToSelection(x => x.Origin = new CommonCore.Point2d(transformEdit.Origin.X, x.Origin.Y));
                         break;
 
                     case ObsFramePropertyAttribute.Y:
-                        ApplyPlayHeadToSelection(x => x.Origin = new CommonCore.Point2d(x.Origin.X, transformEdit.Origin.Y));
+                        ApplyPlayheadToSelection(x => x.Origin = new CommonCore.Point2d(x.Origin.X, transformEdit.Origin.Y));
                         break;
                     
                     case ObsFramePropertyAttribute.Scale:
-                        ApplyPlayHeadToSelection(x => x.Scale = transformEdit.Scale);
+                        ApplyPlayheadToSelection(x => x.Scale = transformEdit.Scale);
                         break;
 
                     case ObsFramePropertyAttribute.Rotation:
-                        ApplyPlayHeadToSelection(x => x.Rotation = transformEdit.Rotation);
+                        ApplyPlayheadToSelection(x => x.Rotation = transformEdit.Rotation);
                         break;
 
                     case ObsFramePropertyAttribute.Opacity:
-                        ApplyPlayHeadToSelection(x => x.Opacity = transformEdit.Opacity);
+                        ApplyPlayheadToSelection(x => x.Opacity = transformEdit.Opacity);
                         break;
                 }
 
@@ -1917,30 +2054,92 @@ namespace DHDM
             else
             {
                 LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
-                List<LightSequenceData>? sequenceData = null;
-                switch (lightKind)
-                {
-                    case LightKind.Left:
-                        sequenceData = GetLightFromId(BluetoothLights.Left_ID)?.SequenceData;
-                        break;
-                    case LightKind.Center:
-                        sequenceData = GetLightFromId(BluetoothLights.Center_ID)?.SequenceData;
-                        break;
-                    case LightKind.Right:
-                        sequenceData = GetLightFromId(BluetoothLights.Right_ID)?.SequenceData;
-                        break;
-                }
-
+                List<LightSequenceData>? sequenceData = GetSequenceDataFrom(lightKind);
+                
                 if (sequenceData != null)
-                    ApplyPlayHeadToSelectionForLights(sequenceData);
+                    ApplyPlayheadToSelectionForLights(sequenceData);
             }
 
             UpdateEverythingOnTimeline();
         }
 
+        private void VisualizerSelector_TrackSelectionChanged(object? sender, ISelectableVisualizer e)
+        {
+            LightKind lightKind = GetLightKindFromVisualizer(e);
+
+            lightTrackIsSelected = lightKind != LightKind.None;
+
+            if (lightTrackIsSelected)
+                lightColorPicker.Visibility = Visibility.Visible;
+            else
+                lightColorPicker.Visibility = Visibility.Hidden;
+
+            UpdateUIBasedOnTimelineSelectionChanged();
+        }
+
+        void UpdateUIBasedOnTimelineSelectionChanged()
+        {
+            bool fadeInButtonsAreEnabled = SelectionExists && lightTrackIsSelected;
+            btnFadeIn.IsEnabled = fadeInButtonsAreEnabled;
+            btnFadeOut.IsEnabled = fadeInButtonsAreEnabled;
+        }
+
+
         private void btnLinearInterpolateAcrossSelection_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void btnFadeIn_Click(object sender, RoutedEventArgs e)
+        {
+            LightKind activeLightKind = GetActiveLightKind();
+            int selectionLeft = SelectionLeft;
+            int selectionRight = SelectionRight;
+            var totalFrames = selectionRight - selectionLeft;
+            IColor? endColor = GetLightColor(GetLightFrom(activeLightKind), selectionRight);
+            if (endColor == null)
+                return;
+
+            double endingLightness = endColor.Lightness;
+            double increment = endingLightness / totalFrames;
+
+            Light? light = GetLightFrom(activeLightKind);
+
+            for (int i = selectionLeft; i < selectionRight; i++)
+            {
+                int distanceIn = i - selectionLeft;
+                int lightnessValue = (int)Math.Round(increment * distanceIn);
+                ColorHolder colorHolder = new ColorHolder(endColor.Hue, lightnessValue, endColor.Saturation, endColor.AsHtml);
+                SetLightFrame(light, colorHolder, i);
+            }
+
+            UpdateLightsOnTimeline();
+        }
+
+        private void btnFadeOut_Click(object sender, RoutedEventArgs e)
+        {
+            LightKind activeLightKind = GetActiveLightKind();
+            int selectionLeft = SelectionLeft;
+            int selectionRight = SelectionRight;
+            var totalFrames = selectionRight - selectionLeft;
+            IColor? startColor = GetLightColor(GetLightFrom(activeLightKind), selectionLeft);
+            if (startColor == null)
+                return;
+
+            double startingLightness = startColor.Lightness;
+            double decrement = startingLightness / totalFrames;
+
+            Light? light = GetLightFrom(activeLightKind);
+
+            for (int i = selectionLeft; i < selectionRight; i++)
+            {
+                int distanceIn = i - selectionLeft;
+                int lightnessValue = (int)Math.Round(startingLightness - decrement * distanceIn);
+                ColorHolder colorHolder = new ColorHolder(startColor.Hue, lightnessValue, startColor.Saturation, startColor.AsHtml);
+                SetLightFrame(light, colorHolder, i);
+            }
+
+            UpdateLightsOnTimeline();
         }
     }
 }

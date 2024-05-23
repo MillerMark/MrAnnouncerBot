@@ -29,6 +29,7 @@
     <Compile Include="..\DHDM\LiveVideoAnimation\LiveFeedAnimator.cs" Link="LiveFeedAnimator.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\AnimatorWithTransforms.cs" Link="AnimatorWithTransforms.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\FrmLiveAnimationEditor.xaml.cs" Link="FrmLiveAnimationEditor.xaml.cs" />
+    <Compile Include="..\DHDM\LiveVideoAnimation\UI\ILightSequenceData.cs" Link="ILightSequenceData.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\Light.cs" Link="Light.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightingSequence.cs" Link="LightingSequence.cs" />
     <Compile Include="..\DHDM\LiveVideoAnimation\UI\LightSequenceData.cs" Link="LightSequenceData.cs" />
