@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using WpfEditorControls;
 
@@ -23,7 +24,7 @@ namespace DHDM
             selectableVisualizers.Add(selectableVisualizer);
         }
 
-        public void SelectVisualizer(ISelectableVisualizer selectedVisualizer)
+        public bool SelectVisualizer(ISelectableVisualizer selectedVisualizer)
         {
             bool shouldFireChangedEvent = SelectedVisualizer != selectedVisualizer;
             SelectedVisualizer = selectedVisualizer;
@@ -34,6 +35,7 @@ namespace DHDM
                     selectableVisualizer.ClearSelection();
             if (shouldFireChangedEvent)
                 OnSelectionChanged(this, selectedVisualizer);
+            return shouldFireChangedEvent;
         }
         public ISelectableVisualizer? SelectedVisualizer { get; set; }
     }

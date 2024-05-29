@@ -52,21 +52,30 @@ namespace Imaging
 
         public bool Matches(ObsFramePropertyAttribute attribute, double comparisonValue)
         {
+            double? valueAtFrame = GetValueAtFrame(attribute);
+            if (valueAtFrame == null)
+                return false;
+
+            return comparisonValue == valueAtFrame;
+        }
+
+        public double? GetValueAtFrame(ObsFramePropertyAttribute attribute)
+        {
             switch (attribute)
             {
                 case ObsFramePropertyAttribute.X:
-                    return comparisonValue == GetX();
+                    return GetX();
                 case ObsFramePropertyAttribute.Y:
-                    return comparisonValue == GetY();
+                    return GetY();
                 case ObsFramePropertyAttribute.Scale:
-                    return comparisonValue == GetScale();
+                    return GetScale();
                 case ObsFramePropertyAttribute.Rotation:
-                    return comparisonValue == GetRotation();
+                    return GetRotation();
                 case ObsFramePropertyAttribute.Opacity:
-                    return comparisonValue == GetOpacity();
-                default:
-                    return false;
+                    return GetOpacity();
             }
+
+            return null;
         }
     }
 }

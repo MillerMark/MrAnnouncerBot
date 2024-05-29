@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DHDM
@@ -9,7 +10,7 @@ namespace DHDM
         public int Lightness { get; set; }
         public int Saturation { get; set; }
         public string AsHtml { get; }
-        public ColorHolder(int hue, int lightness, int saturation, string asHtml)
+        public ColorHolder(int hue, int saturation, int lightness, string asHtml)
         {
             Hue = hue;
             Lightness = lightness;

@@ -1,5 +1,7 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -9,6 +11,8 @@ using ObsControl;
 using Newtonsoft.Json;
 using WpfEditorControls;
 using System.Windows.Media.Media3D;
+using Newtonsoft.Json.Linq;
+
 
 
 
@@ -74,6 +78,7 @@ namespace DHDM
         {
             UpdateMovementOnTimeline();
             UpdateLightsOnTimeline();
+            UpdatePlayhead();
         }
 
         private void UpdateMovementOnTimeline()
@@ -314,7 +319,7 @@ namespace DHDM
             return allFrames[frameIndex];
         }
 
-        void SetAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
+        void SetDeltaAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
         {
             if (initializing || allFrames == null || frameIndex >= allFrames.Count)
                 return;
@@ -335,6 +340,36 @@ namespace DHDM
                     break;
                 case ObsFramePropertyAttribute.Opacity:
                     liveFeedEdit.DeltaOpacity = value;
+                    break;
+            }
+        }
+
+        void SetAbsoluteAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
+        {
+            if (initializing || allFrames == null || frameIndex >= allFrames.Count)
+                return;
+            ObsTransformEdit liveFeedEdit = allFrames[frameIndex];
+            switch (attribute)
+            {
+                case ObsFramePropertyAttribute.X:
+                    liveFeedEdit.Origin = new CommonCore.Point2d((int)value, liveFeedEdit.Origin.Y);
+                    liveFeedEdit.DeltaX = 0;
+                    break;
+                case ObsFramePropertyAttribute.Y:
+                    liveFeedEdit.Origin = new CommonCore.Point2d(liveFeedEdit.Origin.X, (int)value);
+                    liveFeedEdit.DeltaY = 0;
+                    break;
+                case ObsFramePropertyAttribute.Scale:
+                    liveFeedEdit.Scale = value;
+                    liveFeedEdit.DeltaScale = 1;
+                    break;
+                case ObsFramePropertyAttribute.Rotation:
+                    liveFeedEdit.Rotation = value;
+                    liveFeedEdit.DeltaRotation = 0;
+                    break;
+                case ObsFramePropertyAttribute.Opacity:
+                    liveFeedEdit.Opacity = value;
+                    liveFeedEdit.DeltaOpacity = 1;
                     break;
             }
         }
@@ -496,6 +531,8 @@ namespace DHDM
             foreach (Light light in LightingSequence.Lights)
                 if (frameIndex < light.SequenceData.Count)
                     SetLightColor(light.ID, light.SequenceData[frameIndex]);
+
+            SetColorPicker(GetActiveLightColor());
         }
 
         private bool FramesAreNotGood()
@@ -689,12 +726,12 @@ namespace DHDM
                     if (SelectionExists)
                     {
                         for (int i = SelectionLeft; i < SelectionRight; i++)
-                            SetAttributeInFrame(i, attribute, value);
+                            SetDeltaAttributeInFrame(i, attribute, value);
                         UpdateEverythingOnTimeline();
                     }
                     else
                     {
-                        SetAttributeInFrame(frameIndex, attribute, value);
+                        SetDeltaAttributeInFrame(frameIndex, attribute, value);
                     }
 
                     DrawActiveFrame();
@@ -874,8 +911,9 @@ namespace DHDM
         private double GetXFromFrameIndex(double frameIndex)
         {
             double percentageOfTheWayAcross = frameIndex / TotalFrames;
-            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth;
-            return opacitySequenceVisualizer.LabelWidth + percentageOfTheWayAcross * availableWidth;
+            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth 
+                - opacitySequenceVisualizer.TotalBorderThickness;
+            return opacitySequenceVisualizer.LabelWidth + opacitySequenceVisualizer.TotalBorderThickness + percentageOfTheWayAcross * availableWidth;
         }
 
         void DrawSelection()
@@ -1267,14 +1305,13 @@ namespace DHDM
             DmxLight? dmxLight = DmxLight.GetFrom(id);
             if (dmxLight != null)
                 dmxLight.SetColor(lightSequenceData.Hue, lightSequenceData.Saturation, lightSequenceData.Lightness);
-
-            SetColorPicker(lightSequenceData);
         }
 
         private void SetColorPicker(IColor? lightSequenceData)
         {
             if (lightSequenceData == null)
                 return;
+
             settingColorInternally = true;
             try
             {
@@ -1337,7 +1374,7 @@ namespace DHDM
 
         private static bool LightHasGoodData(Light? lightId, int frameIndex)
         {
-            return !(lightId == null || frameIndex < 0 || frameIndex > lightId.SequenceData.Count);
+            return !(lightId == null || frameIndex < 0 || frameIndex >= lightId.SequenceData.Count);
         }
 
         private void btnCopyLightsForward_Click(object sender, RoutedEventArgs e)
@@ -1445,7 +1482,8 @@ namespace DHDM
         {
             SequenceVisualizer? sequenceVisualizer = GetSequenceVisualizerFromPosition(e);
             if (sequenceVisualizer != null)
-                visualizerSelector.SelectVisualizer(sequenceVisualizer);
+                if (visualizerSelector.SelectVisualizer(sequenceVisualizer))
+                    return;
 
             if (TotalFrames == 0)
                 return;
@@ -1586,34 +1624,11 @@ namespace DHDM
                 return;
 
             ObsTransformEdit obsTransformEdit = allFrames[frameIndex];
+            double? comparisonValue = obsTransformEdit.GetValueAtFrame(attribute);
+            if (comparisonValue == null)
+                return;
 
-            double comparisonValue;
-
-            switch (attribute)
-            {
-                case ObsFramePropertyAttribute.None:
-                    return;
-                case ObsFramePropertyAttribute.X:
-                    comparisonValue = obsTransformEdit.GetX();
-                    break;
-                case ObsFramePropertyAttribute.Y:
-                    comparisonValue = obsTransformEdit.GetY();
-                    break;
-                case ObsFramePropertyAttribute.Scale:
-                    comparisonValue = obsTransformEdit.GetScale();
-                    break;
-                case ObsFramePropertyAttribute.Rotation:
-                    comparisonValue = obsTransformEdit.GetRotation();
-                    break;
-                case ObsFramePropertyAttribute.Opacity:
-                    comparisonValue = obsTransformEdit.GetOpacity();
-                    break;
-                default:
-                    return;
-            }
-
-
-            Func<ObsTransformEdit, bool> isMatch = x => x.Matches(attribute, comparisonValue);
+            Func<ObsTransformEdit, bool> isMatch = x => x.Matches(attribute, comparisonValue.Value);
             int leftMatchingFrame = SearchBackwards(allFrames, frameIndex, isMatch);
             int rightMatchingFrame = SearchForwards(allFrames, frameIndex, isMatch);
             SelectRange(leftMatchingFrame, rightMatchingFrame);
@@ -2017,10 +2032,11 @@ namespace DHDM
 
         private void btnApplyPlayheadValueToSelection_Click(object sender, RoutedEventArgs e)
         {
-            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
-            if (selectedVisualizer == null)
+            ObsFramePropertyAttribute frameAttribute = GetSelectedFrameAttribute();
+
+            if (frameAttribute == ObsFramePropertyAttribute.None)
                 return;
-            ObsFramePropertyAttribute frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
+
             ObsTransformEdit? transformEdit = GetCurrentObsTransformEdit();
             if (transformEdit == null)
                 return;
@@ -2036,7 +2052,7 @@ namespace DHDM
                     case ObsFramePropertyAttribute.Y:
                         ApplyPlayheadToSelection(x => x.Origin = new CommonCore.Point2d(x.Origin.X, transformEdit.Origin.Y));
                         break;
-                    
+
                     case ObsFramePropertyAttribute.Scale:
                         ApplyPlayheadToSelection(x => x.Scale = transformEdit.Scale);
                         break;
@@ -2053,14 +2069,31 @@ namespace DHDM
             }
             else
             {
-                LightKind lightKind = GetLightKindFromVisualizer(selectedVisualizer);
+                LightKind lightKind = GetSelectedLightKind();
                 List<LightSequenceData>? sequenceData = GetSequenceDataFrom(lightKind);
-                
+
                 if (sequenceData != null)
                     ApplyPlayheadToSelectionForLights(sequenceData);
             }
 
             UpdateEverythingOnTimeline();
+        }
+
+        private ObsFramePropertyAttribute GetSelectedFrameAttribute()
+        {
+            ObsFramePropertyAttribute frameAttribute = ObsFramePropertyAttribute.None;
+            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
+            if (selectedVisualizer != null)
+                frameAttribute = GetObsFrameAttributeFromVisualizer(selectedVisualizer);
+            return frameAttribute;
+        }
+
+        private LightKind GetSelectedLightKind()
+        {
+            ISelectableVisualizer? selectedVisualizer = visualizerSelector.SelectedVisualizer;
+            if (selectedVisualizer != null)
+                return GetLightKindFromVisualizer(selectedVisualizer);
+            return LightKind.None;
         }
 
         private void VisualizerSelector_TrackSelectionChanged(object? sender, ISelectableVisualizer e)
@@ -2087,7 +2120,50 @@ namespace DHDM
 
         private void btnLinearInterpolateAcrossSelection_Click(object sender, RoutedEventArgs e)
         {
+            if (allFrames == null)
+                return;
 
+            ObsFramePropertyAttribute frameAttribute = GetSelectedFrameAttribute();
+
+            if (frameAttribute == ObsFramePropertyAttribute.None)
+                return;
+
+            if (!SelectionExists)
+                return;
+
+            int numberOfFramesSelected = SelectionRight - SelectionLeft;
+            if (numberOfFramesSelected < 2)
+                return;
+
+            ObsTransformEdit? leftEdit = GetObsTransformEdit(SelectionLeft);
+            ObsTransformEdit? rightEdit = GetObsTransformEdit(SelectionRight);
+            if (leftEdit == null || rightEdit == null)
+                return;
+
+            double leftValue = leftEdit.GetValueAtFrame(frameAttribute)!.Value;
+            double rightValue = rightEdit.GetValueAtFrame(frameAttribute)!.Value;
+
+            double value = leftValue;
+            double incrementalChange = (rightValue - leftValue) / numberOfFramesSelected;
+
+            for (int i = SelectionLeft; i < SelectionRight; i++)
+            {
+                SetAbsoluteAttributeInFrame(i, frameAttribute, value);
+                value += incrementalChange;
+            }
+
+            UpdateEverythingOnTimeline();
+        }
+
+        private ObsTransformEdit? GetObsTransformEdit(int index)
+        {
+            if (allFrames == null)
+                return null;
+
+            if (index < 0 || index >= allFrames.Count)
+                return null;
+
+            return allFrames[index];
         }
 
         private void btnFadeIn_Click(object sender, RoutedEventArgs e)
@@ -2109,7 +2185,7 @@ namespace DHDM
             {
                 int distanceIn = i - selectionLeft;
                 int lightnessValue = (int)Math.Round(increment * distanceIn);
-                ColorHolder colorHolder = new ColorHolder(endColor.Hue, lightnessValue, endColor.Saturation, endColor.AsHtml);
+                ColorHolder colorHolder = new ColorHolder(endColor.Hue, endColor.Saturation, lightnessValue, endColor.AsHtml);
                 SetLightFrame(light, colorHolder, i);
             }
 
@@ -2135,7 +2211,7 @@ namespace DHDM
             {
                 int distanceIn = i - selectionLeft;
                 int lightnessValue = (int)Math.Round(startingLightness - decrement * distanceIn);
-                ColorHolder colorHolder = new ColorHolder(startColor.Hue, lightnessValue, startColor.Saturation, startColor.AsHtml);
+                ColorHolder colorHolder = new ColorHolder(startColor.Hue, startColor.Saturation, lightnessValue, startColor.AsHtml);
                 SetLightFrame(light, colorHolder, i);
             }
 

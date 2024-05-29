@@ -359,6 +359,7 @@ namespace WpfEditorControls
         public double LowerBound { get; set; } = 0;
         public double VerticalRange { get; set; } = 1;
         public bool IsSelected { get; set; }
+        public double TotalBorderThickness => bdrInner.BorderThickness.Left + bdrOuter.BorderThickness.Left + bdrInner.Padding.Left;
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {

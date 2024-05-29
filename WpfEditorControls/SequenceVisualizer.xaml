@@ -15,7 +15,7 @@
                             <RectangleGeometry Rect="0,0,20,20"/>
                         </GeometryDrawing.Geometry>
                     </GeometryDrawing>
-                    <GeometryDrawing Brush="#FF0066FF">
+                    <GeometryDrawing Brush="#FF9277A6">
                         <GeometryDrawing.Geometry>
                             <GeometryGroup>
                                 <RectangleGeometry Rect="0,0,10,10"/>
