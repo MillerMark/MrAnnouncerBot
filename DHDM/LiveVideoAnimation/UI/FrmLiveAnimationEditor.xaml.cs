@@ -26,8 +26,9 @@ namespace DHDM
     /// <summary>
     /// Interaction logic for FrmLiveAnimationEditor.xaml
     /// </summary>
-    public partial class FrmLiveAnimationEditor : Window
+    public partial class FrmLiveAnimationEditor : Window, ICanEditFrames
     {
+        VideoCommandExecutor videoCommandExecutor = new();
         VisualizerSelector visualizerSelector = new VisualizerSelector();
         public FrmLiveAnimationEditor()
         {
@@ -74,7 +75,7 @@ namespace DHDM
             Right
         }
 
-        void UpdateEverythingOnTimeline()
+        public void UpdateEverythingOnTimeline()
         {
             UpdateMovementOnTimeline();
             UpdateLightsOnTimeline();
@@ -270,7 +271,20 @@ namespace DHDM
 
         void DrawActiveFrame()
         {
-            if (backFiles == null)
+            DrawPngFilesForActiveFrame();
+            MoveObsSourcesIntoPosition();
+        }
+
+        public void MoveObsSourcesIntoPosition()
+        {
+            if (liveFeedAnimators != null)
+                foreach (AnimatorWithTransforms animatorWithTransform in liveFeedAnimators)
+                    MoveObsSourceIntoPosition(animatorWithTransform);
+        }
+
+        private void DrawPngFilesForActiveFrame()
+        {
+            if (liveVideoEditor == null)
                 return;
             if (frameIndex < 0 || frameIndex >= TotalAnimationFrames)
             {
@@ -279,17 +293,13 @@ namespace DHDM
                 return;
             }
 
-            liveVideoEditor.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
-            liveVideoEditor.ShowImageFront(GetRelativePath(frontFiles![frameIndex]));
-
-            foreach (AnimatorWithTransforms animatorWithTransform in liveFeedAnimators)
-            {
-                DrawFrameSource(animatorWithTransform);
-            }
-
+            if (backFiles != null)
+                liveVideoEditor.ShowImageBack(GetRelativePath(backFiles[frameIndex]));
+            if (frontFiles != null)
+                liveVideoEditor.ShowImageFront(GetRelativePath(frontFiles[frameIndex]));
         }
 
-        private void DrawFrameSource(AnimatorWithTransforms animatorWithTransform)
+        private void MoveObsSourceIntoPosition(AnimatorWithTransforms animatorWithTransform)
         {
 #if LiveVideoAnimationSandbox
             return;
@@ -319,7 +329,7 @@ namespace DHDM
             return allFrames[frameIndex];
         }
 
-        void SetDeltaAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
+        public void SetDeltaAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute, double value)
         {
             if (initializing || allFrames == null || frameIndex >= allFrames.Count)
                 return;
@@ -540,7 +550,7 @@ namespace DHDM
             return allFrames == null || frameIndex < 0 || frameIndex > allFrames.Count - 1;
         }
 
-        private void UpdateValuePreviews(ObsTransformEdit? liveFeedEdit = null)
+        public void UpdateValuePreviews(ObsTransformEdit? liveFeedEdit = null)
         {
             if (liveFeedEdit == null)
             {
@@ -664,7 +674,7 @@ namespace DHDM
 
         private void tbxDeltaX_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(ObsFramePropertyAttribute.X, tbxDeltaX, sldDeltaX);
+            DeltaTextChanged(ObsFramePropertyAttribute.X, tbxDeltaX, sldDeltaX);
         }
 
         private void sldDeltaX_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -674,7 +684,7 @@ namespace DHDM
 
         private void tbxDeltaY_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(ObsFramePropertyAttribute.Y, tbxDeltaY, sldDeltaY);
+            DeltaTextChanged(ObsFramePropertyAttribute.Y, tbxDeltaY, sldDeltaY);
         }
 
         private void sldDeltaY_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -684,7 +694,7 @@ namespace DHDM
 
         private void tbxDeltaScale_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(ObsFramePropertyAttribute.Scale, tbxDeltaScale, sldDeltaScale);
+            DeltaTextChanged(ObsFramePropertyAttribute.Scale, tbxDeltaScale, sldDeltaScale);
         }
 
         private void sldDeltaScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -694,7 +704,7 @@ namespace DHDM
 
         private void tbxDeltaRotation_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(ObsFramePropertyAttribute.Rotation, tbxDeltaRotation, sldDeltaRotation);
+            DeltaTextChanged(ObsFramePropertyAttribute.Rotation, tbxDeltaRotation, sldDeltaRotation);
         }
 
         private void sldDeltaRotation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -704,7 +714,7 @@ namespace DHDM
 
         private void tbxDeltaOpacity_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextChanged(ObsFramePropertyAttribute.Opacity, tbxDeltaOpacity, sldDeltaOpacity);
+            DeltaTextChanged(ObsFramePropertyAttribute.Opacity, tbxDeltaOpacity, sldDeltaOpacity);
         }
 
         private void sldDeltaOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -712,7 +722,56 @@ namespace DHDM
             SliderChanged(tbxDeltaOpacity, sldDeltaOpacity);
         }
 
-        private void TextChanged(ObsFramePropertyAttribute attribute, System.Windows.Controls.TextBox textBox, Slider slider)
+        double? GetDeltaAttributeInFrame(int frameIndex, ObsFramePropertyAttribute attribute)
+        {
+            if (allFrames == null)
+                return null;
+            switch (attribute)
+            {
+                case ObsFramePropertyAttribute.None:
+                    return null;
+                case ObsFramePropertyAttribute.X:
+                    return allFrames[frameIndex].DeltaX;
+                case ObsFramePropertyAttribute.Y:
+                    return allFrames[frameIndex].DeltaY;
+                case ObsFramePropertyAttribute.Scale:
+                    return allFrames[frameIndex].DeltaScale;
+                case ObsFramePropertyAttribute.Rotation:
+                    return allFrames[frameIndex].DeltaRotation;
+                case ObsFramePropertyAttribute.Opacity:
+                    return allFrames[frameIndex].DeltaOpacity;
+            }
+            return null;
+        }
+        ObsAttributeData GetUndoDataForAttribute(ObsFramePropertyAttribute attribute)
+        {
+            ObsAttributeData undoDataForObsAttributes = new ObsAttributeData();
+            if (SelectionExists)
+            {
+                double? firstValue = GetDeltaAttributeInFrame(SelectionLeft, attribute);
+                ArgumentNullException.ThrowIfNull(firstValue);
+
+                for (int i = SelectionLeft + 1; i < SelectionRight; i++)
+                    if (GetDeltaAttributeInFrame(i, attribute) != firstValue)
+                    {
+                        List<double> existingValues = new List<double>();
+                        for (int i2 = SelectionLeft; i2 < SelectionRight; i2++)
+                        {
+                            double? deltaAttributeInFrame = GetDeltaAttributeInFrame(i2, attribute);
+                            if (deltaAttributeInFrame != null)
+                                existingValues.Add(deltaAttributeInFrame.Value);
+                        }
+                        undoDataForObsAttributes.SetIndividualValues(existingValues, SelectionLeft, SelectionRight);
+                        // TODO: Get individual values for each of the deltas.
+                        return undoDataForObsAttributes;
+                    }
+                undoDataForObsAttributes.SetSingleValue(firstValue.Value, SelectionLeft, SelectionRight);
+                // All the deltas are the same, so we can create just a single undo.
+                //undoDataForObsAttributes;
+            }
+            return undoDataForObsAttributes;
+        }
+        private void DeltaTextChanged(ObsFramePropertyAttribute attribute, System.Windows.Controls.TextBox textBox, Slider slider)
         {
             if (changingInternally)
                 return;
@@ -723,21 +782,13 @@ namespace DHDM
             {
                 if (double.TryParse(textBox.Text, out double value))
                 {
-                    if (SelectionExists)
-                    {
-                        for (int i = SelectionLeft; i < SelectionRight; i++)
-                            SetDeltaAttributeInFrame(i, attribute, value);
-                        UpdateEverythingOnTimeline();
-                    }
-                    else
-                    {
-                        SetDeltaAttributeInFrame(frameIndex, attribute, value);
-                    }
+                    DeltaVideoEditorCommand videoEditorCommand = new DeltaVideoEditorCommand(this, attribute, value);
 
-                    DrawActiveFrame();
+                    videoEditorCommand.SetUndoData(GetUndoDataForAttribute(attribute));
 
+                    videoCommandExecutor.Execute(videoEditorCommand);
+                    
                     slider.Value = value;
-                    UpdateValuePreviews();
                 }
             }
             finally
@@ -887,9 +938,17 @@ namespace DHDM
                 ClearSelection();
         }
 
-        private bool SelectionExists => selectionAnchorFrameIndex != FrameIndex && selectionAnchorFrameIndex >= 0;
+        public bool SelectionExists => selectionAnchorFrameIndex != FrameIndex && selectionAnchorFrameIndex >= 0;
 
-        public int SelectionLeft => Math.Min(selectionAnchorFrameIndex, FrameIndex);
+        public int SelectionLeft
+        {
+            get
+            {
+                if (selectionAnchorFrameIndex == -1)
+                    return FrameIndex;
+                return Math.Min(selectionAnchorFrameIndex, FrameIndex);
+            }
+        }
         public int SelectionRight => Math.Max(selectionAnchorFrameIndex, FrameIndex);
 
         private double GetLabelLeftEdgeFromFrameIndex(double frameIndex, TextBlock textBlock)
@@ -911,7 +970,7 @@ namespace DHDM
         private double GetXFromFrameIndex(double frameIndex)
         {
             double percentageOfTheWayAcross = frameIndex / TotalFrames;
-            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth 
+            double availableWidth = opacitySequenceVisualizer.ActualWidth - opacitySequenceVisualizer.LabelWidth
                 - opacitySequenceVisualizer.TotalBorderThickness;
             return opacitySequenceVisualizer.LabelWidth + opacitySequenceVisualizer.TotalBorderThickness + percentageOfTheWayAcross * availableWidth;
         }
@@ -921,7 +980,7 @@ namespace DHDM
             brdFrame.Visibility = Visibility.Visible;
             lnFrameSpan.Visibility = Visibility.Visible;
             double numFramesSelected = Math.Abs(selectionAnchorFrameIndex - FrameIndex);
-            
+
             bool pointingFromTheOutside = numFramesSelected < 52;
             if (pointingFromTheOutside)
                 tbNumFramesSelected.Text = $"{numFramesSelected} frames selected";
@@ -943,7 +1002,7 @@ namespace DHDM
             {
                 numFramesLeftEdge += halfWidthOfFrameIndexPlusPadding / 2;
             }
-           
+
 
             Canvas.SetTop(brdFrame, cvsFeedbackUI.ActualHeight - brdFrame.ActualHeight);
 
@@ -960,7 +1019,7 @@ namespace DHDM
             double selectionLeftEdge = Math.Min(frameX, anchorX);
             double selectionRightEdge = selectionLeftEdge + rectSelection.Width;
             Canvas.SetLeft(rectSelection, selectionLeftEdge);
-            
+
 
             rectSelection.Visibility = Visibility.Visible;
 
@@ -984,7 +1043,7 @@ namespace DHDM
                         arrowLeftIndent = 0;
                     double frameIndexRight = Canvas.GetLeft(tbFrameIndex) + tbFrameIndex.ActualWidth + padding;
                     double arrowX = Math.Max(selectionRightEdge + arrowLeftIndent, frameIndexRight);
-                    
+
                     Canvas.SetLeft(arrowLeft, arrowX);
                     Canvas.SetLeft(lnFrameSpan, arrowX);
                     Canvas.SetLeft(brdFrame, arrowX + lnFrameSpan.X2 + padding / 2);
@@ -995,7 +1054,7 @@ namespace DHDM
                     arrowLeft.Visibility = Visibility.Hidden;
                     double frameIndexLeft = Canvas.GetLeft(tbFrameIndex) - padding;
                     double arrowX = Math.Min(selectionLeftEdge, frameIndexLeft) - arrowRight.ActualWidth;
-                    
+
                     Canvas.SetLeft(arrowRight, arrowX);
                     double arrowTailLeft = arrowX - lnFrameSpan.X2 + arrowRight.ActualWidth;
                     Canvas.SetLeft(lnFrameSpan, arrowTailLeft);
@@ -1180,6 +1239,7 @@ namespace DHDM
         }
         private void LoadAllFrames(List<VideoAnimationBinding> allBindings)
         {
+            videoCommandExecutor.ClearUndoAndRedoStacks();
             liveFeedAnimators = new List<AnimatorWithTransforms>();
             ActiveMovement = null;
 
@@ -1400,7 +1460,7 @@ namespace DHDM
 
         bool LightsHaveGoodData()
         {
-            return 
+            return
                 LightHasGoodData(GetLightFrom(LightKind.Left), FrameIndex) &&
                 LightHasGoodData(GetLightFrom(LightKind.Center), FrameIndex) &&
                 LightHasGoodData(GetLightFrom(LightKind.Right), FrameIndex);
@@ -1473,7 +1533,7 @@ namespace DHDM
             var selectionExists = SelectionExists;
             if (previousSelectionExists == selectionExists)
                 return;
-            
+
             previousSelectionExists = selectionExists;
             UpdateUIBasedOnTimelineSelectionChanged();
 
@@ -1554,7 +1614,14 @@ namespace DHDM
         {
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
                 ShiftKeyIsDown();
-
+            if (e.Key == Key.Z && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                    videoCommandExecutor.Redo();
+                else
+                    videoCommandExecutor.Undo();
+                e.Handled = true;
+            }
         }
 
         bool IsMouseOverSequenceVisualizer(SequenceVisualizer sequenceVisualizer, MouseButtonEventArgs e)
@@ -1569,9 +1636,9 @@ namespace DHDM
 
         LightKind GetLightKindFromPosition(MouseButtonEventArgs e)
         {
-            if (IsMouseOverSequenceVisualizer(leftLightSequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(leftLightSequenceVisualizer, e))
                 return LightKind.Left;
-            if (IsMouseOverSequenceVisualizer(rightLightSequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(rightLightSequenceVisualizer, e))
                 return LightKind.Right;
             if (IsMouseOverSequenceVisualizer(centerLightSequenceVisualizer, e))
                 return LightKind.Center;
@@ -1581,15 +1648,15 @@ namespace DHDM
 
         ObsFramePropertyAttribute GetAttributeFromPosition(MouseButtonEventArgs e)
         {
-            if (IsMouseOverSequenceVisualizer(opacitySequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(opacitySequenceVisualizer, e))
                 return ObsFramePropertyAttribute.Opacity;
-            if (IsMouseOverSequenceVisualizer(scaleSequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(scaleSequenceVisualizer, e))
                 return ObsFramePropertyAttribute.Scale;
-            if (IsMouseOverSequenceVisualizer(xSequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(xSequenceVisualizer, e))
                 return ObsFramePropertyAttribute.X;
-            if (IsMouseOverSequenceVisualizer(ySequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(ySequenceVisualizer, e))
                 return ObsFramePropertyAttribute.Y;
-            if (IsMouseOverSequenceVisualizer(rotationSequenceVisualizer, e)) 
+            if (IsMouseOverSequenceVisualizer(rotationSequenceVisualizer, e))
                 return ObsFramePropertyAttribute.Rotation;
             return ObsFramePropertyAttribute.None;
         }
@@ -1737,7 +1804,7 @@ namespace DHDM
                 if (uIElement is ISelectableVisualizer selectableVisualizer)
                     visualizerSelector.AddSelectableVisualizer(selectableVisualizer);
             }
-            
+
         }
 
         ObsFramePropertyAttribute GetObsFrameAttributeFromVisualizer(ISelectableVisualizer selectedVisualizer)

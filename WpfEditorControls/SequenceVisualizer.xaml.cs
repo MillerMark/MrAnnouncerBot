@@ -153,7 +153,7 @@ namespace WpfEditorControls
         }
 
         Brush? checkeredBrush;
-        Brush saveInnerBorder;
+        Brush saveInnerBorder = Brushes.Transparent;
         Rectangle? bottomBar;
         public Brush CheckeredBrush {
             get
