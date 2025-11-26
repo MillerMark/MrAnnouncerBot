@@ -1,34 +1,31 @@
-﻿using DndCore;
-using DndUI;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using DndUI;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using DndCore;
+using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using ObsControl;
 
-namespace DHDM
-{
+namespace DHDM {
 
-    public class LiveVideoEditor: ILiveVideoEditor
-    {
-        public void ShowImageFront(string fileName) {
-            HubtasticBaseStation.ShowImageFront(fileName);
-        }
-        public void ShowImageBack(string fileName) {
-            HubtasticBaseStation.ShowImageBack(fileName);
-        }
-        public void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount) {
-            HubtasticBaseStation.PreloadImageFront(fileName, startIndex, stopIndex, digitCount);
-        }
-        public void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount) {
-            HubtasticBaseStation.PreloadImageBack(fileName, startIndex, stopIndex, digitCount);
-        }
-    }
+	public class LiveVideoEditor : ILiveVideoEditor {
+		public void ShowImageFront(string fileName) {
+			HubtasticBaseStation.ShowImageFront(fileName);
+		}
+		public void ShowImageBack(string fileName) {
+			HubtasticBaseStation.ShowImageBack(fileName);
+		}
+		public void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount) {
+			HubtasticBaseStation.PreloadImageFront(fileName, startIndex, stopIndex, digitCount);
+		}
+		public void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount) {
+			HubtasticBaseStation.PreloadImageBack(fileName, startIndex, stopIndex, digitCount);
+		}
+	}
 
-    public static class HubtasticBaseStation
-	{
+	public static class HubtasticBaseStation {
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
 		public delegate void QuestionAnswerMapEventHandler(object sender, QuestionAnswerMapEventArgs ea);
 		public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
@@ -42,87 +39,71 @@ namespace DHDM
 		public static event DiceEventHandler AllDiceDestroyed;
 		public static event QuestionAnswerMapEventHandler ReceivedInGameResponse;
 
-		public static void OnReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
-		{
+		public static void OnReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea) {
 			ReceivedInGameResponse?.Invoke(sender, ea);
 		}
-		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea)
-		{
+		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea) {
 			DiceStoppedRolling?.Invoke(sender, ea);
 		}
-		public static void OnTellDM(object sender, MessageEventArgs ea)
-		{
+		public static void OnTellDM(object sender, MessageEventArgs ea) {
 			TellDungeonMaster?.Invoke(sender, ea);
 		}
 		public static bool DiceOnScreen { get; set; }
-		public static void OnAllDiceDestroyed(object sender, DiceEventArgs ea)
-		{
+		public static void OnAllDiceDestroyed(object sender, DiceEventArgs ea) {
 			DiceOnScreen = false;
 			History.Log("DiceOnScreen = false;");
 			AllDiceDestroyed?.Invoke(sender, ea);
 		}
 
-		static void InGameUIResponse(string response)
-		{
-			try
-			{
+		static void InGameUIResponse(string response) {
+			try {
 				QuestionAnswerMap answerMap = JsonConvert.DeserializeObject<QuestionAnswerMap>(response);
 				OnReceivedInGameResponse(null, new QuestionAnswerMapEventArgs(answerMap));
 			}
 			catch //(Exception ex)
 			{
-				
+
 			}
 		}
 
 
 		static DiceEventArgs diceEventArgs;
 
-		static void OnUpdateVideoFeed(string videoFeedData)
-		{
+		static void OnUpdateVideoFeed(string videoFeedData) {
 			VideoFeedDto videoFeedDto = JsonConvert.DeserializeObject<VideoFeedDto>(videoFeedData);
 			UpdateVideoFeed?.Invoke(null, videoFeedDto);
 		}
 
-		static void DiceHaveStoppedRolling(string diceData)
-		{
+		static void DiceHaveStoppedRolling(string diceData) {
 			if (diceEventArgs == null)
 				diceEventArgs = new DiceEventArgs();
 
 			diceEventArgs.SetDiceData(diceData);
 			OnDiceStoppedRolling(null, diceEventArgs);
 		}
-		
-		static void AllDiceHaveBeenDestroyed(string diceData)
-		{
+
+		static void AllDiceHaveBeenDestroyed(string diceData) {
 			if (diceEventArgs == null)
 				diceEventArgs = new DiceEventArgs();
 
 			diceEventArgs.SetDiceData(diceData);
 			OnAllDiceDestroyed(null, diceEventArgs);
 		}
-		
-		static void TellTheDungeonMaster(string message)
-		{
+
+		static void TellTheDungeonMaster(string message) {
 			OnTellDM(null, new MessageEventArgs(message));
 		}
-		public static HubConnection HubConnection
-		{
-			get
-			{
-				if (hubConnection != null && hubConnection.State == HubConnectionState.Disconnected)
-				{
+		public static HubConnection HubConnection {
+			get {
+				if (hubConnection != null && hubConnection.State == HubConnectionState.Disconnected) {
 					//System.Diagnostics.Debugger.Break();
 				}
-				if (hubConnection == null)
-				{
-					lock(hubConnectionLock)
-					{
+				if (hubConnection == null) {
+					lock (hubConnectionLock) {
 						if (hubConnection == null)  // thread safety is important, kids.
 						{
-							hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
-							if (hubConnection != null)
-							{
+							hubConnection = new HubConnectionBuilder().WithUrl("https://localhost:44343/MrAnnouncerBotHub").Build();
+							if (hubConnection != null) {
 								hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
@@ -135,185 +116,153 @@ namespace DHDM
 						}
 					}
 				}
-				
+
 				return hubConnection;
 			}
 		}
 
-		private static Task HubConnection_Closed(Exception arg)
-		{
+		private static Task HubConnection_Closed(Exception arg) {
 			if ((arg is System.Net.Http.HttpRequestException && arg.Message.Contains("400 (Bad Request)")) ||
 				arg == null || arg.Message.Contains("Server timeout"))
 				return hubConnection.StartAsync(System.Threading.CancellationToken.None);
 			return Task.CompletedTask;
 		}
 
-		public static void PlayerDataChanged(int playerID, ScrollPage pageID, string playerData)
-		{
+		public static void PlayerDataChanged(int playerID, ScrollPage pageID, string playerData) {
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, (int)pageID, playerData);
 		}
 
-		public static void PlayerDataChanged(int playerID, string playerData)
-		{
+		public static void PlayerDataChanged(int playerID, string playerData) {
 			lastStringSent = playerData;
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, -1, playerData);
 		}
 
-		public static void DmDataChanged(string dmData)
-		{
+		public static void DmDataChanged(string dmData) {
 			HubConnection.InvokeAsync("DmDataChanged", dmData);
 		}
 
-		public static void CalibrateLeapMotion(string calibrationData)
-		{
+		public static void CalibrateLeapMotion(string calibrationData) {
 			HubConnection.InvokeAsync("CalibrateLeapMotion", calibrationData);
 		}
 
-		public static void UpdateSkeletalData(string skeletalData)
-		{
+		public static void UpdateSkeletalData(string skeletalData) {
 			HubConnection.InvokeAsync("UpdateSkeletalData", skeletalData);
 		}
 
-		public static void SpeechBubble(string speechStr)
-		{
+		public static void SpeechBubble(string speechStr) {
 			HubConnection.InvokeAsync("SpeechBubble", speechStr);
 		}
 
-		public static void CardCommand(string cardStr)
-		{
+		public static void CardCommand(string cardStr) {
 			HubConnection.InvokeAsync("CardCommand", cardStr);
 		}
 
-		public static void ContestCommand(string contestStr)
-		{
+		public static void ContestCommand(string contestStr) {
 			HubConnection.InvokeAsync("ContestCommand", contestStr);
 		}
 
-		public static void ChangePlayerHealth(string playerData)
-		{
+		public static void ChangePlayerHealth(string playerData) {
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);
 		}
 
-		public static void ChangePlayerStats(string playerStatsData)
-		{
+		public static void ChangePlayerStats(string playerStatsData) {
 			lastStringSent = playerStatsData;
 			HubConnection.InvokeAsync("ChangePlayerStats", playerStatsData);
 		}
 
-		public static void ChangePlayerWealth(string playerData)
-		{
+		public static void ChangePlayerWealth(string playerData) {
 			HubConnection.InvokeAsync("ChangePlayerWealth", playerData);
 		}
 
-		public static void ChangeFrameRate(string frameRateData)
-		{
+		public static void ChangeFrameRate(string frameRateData) {
 			HubConnection.InvokeAsync("ChangeFrameRate", frameRateData);
 		}
 
-		public static void InGameUICommand(QuestionAnswerMap answerMap)
-		{
+		public static void InGameUICommand(QuestionAnswerMap answerMap) {
 			string commandData = JsonConvert.SerializeObject(answerMap);
 			InGameUICommand(commandData);
 		}
 
-		public static void InGameUICommand(string commandData)
-		{
+		public static void InGameUICommand(string commandData) {
 			HubConnection.InvokeAsync("InGameUICommand", commandData);
 		}
 
-		public static void AddWindup(string windupData)
-		{
+		public static void AddWindup(string windupData) {
 			HubConnection.InvokeAsync("AddWindup", windupData);
 		}
 
-		public static void CastSpell(string spellData)
-		{
+		public static void CastSpell(string spellData) {
 			HubConnection.InvokeAsync("CastSpell", spellData);
 		}
 
-		public static void ClearWindup(string windupName)
-		{
+		public static void ClearWindup(string windupName) {
 			HubConnection.InvokeAsync("ClearWindup", windupName);
 		}
 
-		public static void MoveFred(string movement)
-		{
+		public static void MoveFred(string movement) {
 			HubConnection.InvokeAsync("MoveFred", movement);
 		}
 
-		public static void FocusItem(int playerID, ScrollPage pageID, string itemID)
-		{
+		public static void FocusItem(int playerID, ScrollPage pageID, string itemID) {
 			HubConnection.InvokeAsync("FocusItem", playerID, (int)pageID, itemID);
 		}
 
-		public static void UnfocusItem(int playerID, ScrollPage pageID, string itemID)
-		{
+		public static void UnfocusItem(int playerID, ScrollPage pageID, string itemID) {
 			HubConnection.InvokeAsync("UnfocusItem", playerID, (int)pageID, itemID);
 		}
 
-		public static void TriggerEffect(string effectData)
-		{
+		public static void TriggerEffect(string effectData) {
 			HubConnection.InvokeAsync("TriggerEffect", effectData);
 		}
 
-		public static void PlaySound(string soundFileName)
-		{
+		public static void PlaySound(string soundFileName) {
 			HubConnection.InvokeAsync("PlaySound", soundFileName);
 		}
 
-		public static void AnimateSprinkles(string commandData)
-		{
+		public static void AnimateSprinkles(string commandData) {
 			HubConnection.InvokeAsync("AnimateSprinkles", commandData);
 		}
 
 		// TODO: Call this to send in game creatures over SignalR to the TS overlay.
-		public static void UpdateInGameCreatures(string command, List<InGameCreature> creatures)
-		{
+		public static void UpdateInGameCreatures(string command, List<InGameCreature> creatures) {
 			InGameCommand inGameCommand = new InGameCommand(command, creatures);
 			string commandData = JsonConvert.SerializeObject(inGameCommand);
 			HubConnection.InvokeAsync("UpdateInGameCreatures", commandData);
 		}
 
-		public static void UpdateClock(string clockData)
-		{
+		public static void UpdateClock(string clockData) {
 			HubConnection.InvokeAsync("UpdateClock", clockData);
 		}
 
 		public static DateTime LastRollTime { get; set; }
 
-		public static double SecondsSinceLastRoll
-		{
-			get
-			{
+		public static double SecondsSinceLastRoll {
+			get {
 				return (DateTime.Now - LastRollTime).TotalSeconds;
 			}
 		}
-		
-		public static void RollDice(string diceData)
-		{
+
+		public static void RollDice(string diceData) {
 			LastRollTime = DateTime.Now;
 			DiceOnScreen = true;
 			History.Log("DiceOnScreen = true;");
-			
+
 			HubConnection.InvokeAsync("RollDice", diceData);
 		}
 
-		public static void ClearDice(DiceGroup diceGroup)
-		{
+		public static void ClearDice(DiceGroup diceGroup) {
 			HubConnection.InvokeAsync("ClearDice", diceGroup.ToString());
 		}
 
 		static string lastStringSent;
 
-		public static void SetPlayerData(string playerData)
-		{
+		public static void SetPlayerData(string playerData) {
 			if (playerData == null)
 				return;
 			lastStringSent = playerData;
 			string dataToSend = playerData;
 			const int maxLength = 27000;
-			while (dataToSend.Length > maxLength)
-			{
+			while (dataToSend.Length > maxLength) {
 				string portion = dataToSend.Substring(0, maxLength);
 				HubConnection.InvokeAsync("SetPlayerData", "portion: " + portion);
 				dataToSend = dataToSend.Substring(maxLength);
@@ -322,23 +271,19 @@ namespace DHDM
 				HubConnection.InvokeAsync("SetPlayerData", dataToSend);
 		}
 
-		public static void SendScrollLayerCommand(string commandData)
-		{
+		public static void SendScrollLayerCommand(string commandData) {
 			HubConnection.InvokeAsync("SendScrollLayerCommand", commandData);
 		}
 
-		public static void ExecuteSoundCommand(string commandData)
-		{
+		public static void ExecuteSoundCommand(string commandData) {
 			HubConnection.InvokeAsync("ExecuteSoundCommand", commandData);
 		}
 
-		public static void FloatPlayerText(int playerID, string message, string fillColor, string outlineColor)
-		{
+		public static void FloatPlayerText(int playerID, string message, string fillColor, string outlineColor) {
 			HubConnection.InvokeAsync("FloatPlayerText", playerID, message, fillColor, outlineColor);
 		}
 
-		public static void ShowValidationIssue(int activePlayerId, ValidationAction validationAction, string floatText)
-		{
+		public static void ShowValidationIssue(int activePlayerId, ValidationAction validationAction, string floatText) {
 			ValidationIssueDto validationIssueDto = new ValidationIssueDto();
 			validationIssueDto.PlayerId = activePlayerId;
 			validationIssueDto.ValidationAction = validationAction;
@@ -346,23 +291,19 @@ namespace DHDM
 			HubConnection.InvokeAsync("ShowValidationIssue", JsonConvert.SerializeObject(validationIssueDto));
 		}
 
-		public static void ShowImageFront(string fileName)
-		{
+		public static void ShowImageFront(string fileName) {
 			HubConnection.InvokeAsync("ShowImageFront", fileName);
 		}
 
-		public static void ShowImageBack(string fileName)
-		{
+		public static void ShowImageBack(string fileName) {
 			HubConnection.InvokeAsync("ShowImageBack", fileName);
 		}
 
-		public static void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount)
-		{
+		public static void PreloadImageFront(string fileName, int startIndex, int stopIndex, int digitCount) {
 			HubConnection.InvokeAsync("PreloadImageFront", fileName, startIndex, stopIndex, digitCount);
 		}
 
-		public static void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount)
-		{
+		public static void PreloadImageBack(string fileName, int startIndex, int stopIndex, int digitCount) {
 			HubConnection.InvokeAsync("PreloadImageBack", fileName, startIndex, stopIndex, digitCount);
 		}
 	}
