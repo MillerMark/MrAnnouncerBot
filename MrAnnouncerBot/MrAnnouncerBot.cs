@@ -32,37 +32,37 @@ using DndCore;
 
 namespace MrAnnouncerBot
 {
-    // TODO: Move these classes to a new file.
-    public static class IEnumerableExtensionMethods
-    {
-        public static T PickOne<T>(this IEnumerable<T> source)
-        {
-            if (source.Count() == 1)
-                return source.ElementAt(0);
+	// TODO: Move these classes to a new file.
+	public static class IEnumerableExtensionMethods
+	{
+		public static T PickOne<T>(this IEnumerable<T> source)
+		{
+			if (source.Count() == 1)
+				return source.ElementAt(0);
 
-            var index = new Random((int)DateTime.Now.Ticks).Next(source.Count());
-            return source.ElementAt(index);
-        }
-    }
+			var index = new Random((int)DateTime.Now.Ticks).Next(source.Count());
+			return source.ElementAt(index);
+		}
+	}
 
 
-    [Document("Mr. Announcer Guy")]
-    [Sheet("Special Fanfares")]
-    public class SpecialFanfare
-    {
-        [Column]
-        public string UserId { get; set; }
-        [Column]
-        public string DisplayName { get; set; }
-        [Column]
-        public string KeyPhrase { get; set; }
-        [Column]
-        public string SceneName { get; set; }
-        [Column]
-        public double Duration { get; set; }
-    }
+	[Document("Mr. Announcer Guy")]
+	[Sheet("Special Fanfares")]
+	public class SpecialFanfare
+	{
+		[Column]
+		public string UserId { get; set; }
+		[Column]
+		public string DisplayName { get; set; }
+		[Column]
+		public string KeyPhrase { get; set; }
+		[Column]
+		public string SceneName { get; set; }
+		[Column]
+		public double Duration { get; set; }
+	}
 
-    public partial class MrAnnouncerBot
+	public partial class MrAnnouncerBot
 	{
 		MySecureString mrAnnouncerGuyClientId;
 		MySecureString mrAnnouncerGuyAccessToken;
@@ -82,8 +82,8 @@ namespace MrAnnouncerBot
 		private static List<SceneDto> scenes;
 		private static List<RestrictedSceneDto> restrictedScenes;
 		private static List<ChannelPointAction> channelPointActions;
-        private static List<SpecialFanfare> specialFanfares;
-        private string activeSceneName;
+		private static List<SpecialFanfare> specialFanfares;
+		private string activeSceneName;
 		private Timer checkChatRoomTimer;
 		private Timer autoSaveTimer;
 		private OBSWebsocket obsWebsocket = new OBSWebsocket();
@@ -95,10 +95,10 @@ namespace MrAnnouncerBot
 		private bool useObs = true;
 		HubConnection hubConnection;
 
-        public MrAnnouncerBot()
+		public MrAnnouncerBot()
 		{
-            FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
-            RegisterSpreadsheets();
+			FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
+			RegisterSpreadsheets();
 			CheckDocs();
 			InitChatRoomTimer();
 			LoadPersistentData();
@@ -117,7 +117,7 @@ namespace MrAnnouncerBot
 			new BotCommand("dh", HandleDragonHCommand);
 			new BotCommand("dhn", HandleDragonHNewTimeCommand);
 			new BotCommand("book*", HandleBookCommand);
-			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
+			hubConnection = new HubConnectionBuilder().WithUrl("https://localhost:44343/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
 				//hubConnection.Closed += HubConnection_Closed;
@@ -132,7 +132,7 @@ namespace MrAnnouncerBot
 			InitializeKidzCodeBot();
 			mrAnnouncerGuyClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
 			mrAnnouncerGuyAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
-        }
+		}
 
 		void ChangeScene(string sceneName)
 		{
@@ -226,10 +226,10 @@ namespace MrAnnouncerBot
 		{
 			if (useObs)
 				InitializeObsWebSocket();
-            HookupCoreEvents(Twitch.FredGptClient);
-            HookupCoreEvents(Twitch.RoryGptClient);
-            HookupCoreEvents(Twitch.MarksVoiceClient);
-            HookupTwitchEvents(Twitch.CodeRushedClient);
+			HookupCoreEvents(Twitch.FredGptClient);
+			HookupCoreEvents(Twitch.RoryGptClient);
+			HookupCoreEvents(Twitch.MarksVoiceClient);
+			HookupTwitchEvents(Twitch.CodeRushedClient);
 			HookupPubSubEvents(Twitch.CodeRushedPubSub);
 			HookupTwitchEvents(Twitch.DroneCommandsClient);
 		}
@@ -269,13 +269,13 @@ namespace MrAnnouncerBot
 
 		void QueueSceneToPlay(string scenesToPlay)
 		{
-            string sceneToPlay;
-            if (scenesToPlay.Contains(";"))
-                sceneToPlay = scenesToPlay.Split(";", StringSplitOptions.RemoveEmptyEntries).PickOne();
-            else
-                sceneToPlay = scenesToPlay;
+			string sceneToPlay;
+			if (scenesToPlay.Contains(";"))
+				sceneToPlay = scenesToPlay.Split(";", StringSplitOptions.RemoveEmptyEntries).PickOne();
+			else
+				sceneToPlay = scenesToPlay;
 
-            obsWebsocket.SetCurrentProgramScene(sceneToPlay);
+			obsWebsocket.SetCurrentProgramScene(sceneToPlay);
 		}
 
 		void SetState(string stateToSet)
@@ -315,23 +315,23 @@ namespace MrAnnouncerBot
 			return ChannelPointActions.FirstOrDefault(x => string.Compare(x.Title, title, true) == 0);
 		}
 
-        void HookupCoreEvents(TwitchClient client)
-        {
-            client.OnError += Client_OnError;
-            client.OnDisconnected += Client_OnDisconnected;
-        }
-
-        void UnhookCoreEvents(TwitchClient client)
-        {
-            client.OnError -= Client_OnError;
-            client.OnDisconnected -= Client_OnDisconnected;
-        }
-
-        void HookupTwitchEvents(TwitchClient client)
+		void HookupCoreEvents(TwitchClient client)
 		{
-            HookupCoreEvents(client);
+			client.OnError += Client_OnError;
+			client.OnDisconnected += Client_OnDisconnected;
+		}
 
-            client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+		void UnhookCoreEvents(TwitchClient client)
+		{
+			client.OnError -= Client_OnError;
+			client.OnDisconnected -= Client_OnDisconnected;
+		}
+
+		void HookupTwitchEvents(TwitchClient client)
+		{
+			HookupCoreEvents(client);
+
+			client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
 			client.OnMessageReceived += TwitchClient_OnMessageReceived;
 			client.OnUserJoined += TwitchClient_OnUserJoined;
@@ -349,9 +349,9 @@ namespace MrAnnouncerBot
 			client.OnUserLeft -= TwitchClient_OnUserLeft;
 			client.OnChannelStateChanged -= Client_OnChannelStateChanged;
 			client.OnLog -= Client_OnLog;
-            UnhookCoreEvents(client);
+			UnhookCoreEvents(client);
 
-        }
+		}
 
 		private void Client_OnLog(object sender, OnLogArgs e)
 		{
@@ -421,10 +421,10 @@ namespace MrAnnouncerBot
 		}
 
 		Dictionary<string, DateTime> playedFanfares = new Dictionary<string, DateTime>();
-        Dictionary<string, DateTime> playedGreetingFromFred = new Dictionary<string, DateTime>();
-        Dictionary<string, DateTime> playedGreetingFromRory = new Dictionary<string, DateTime>();
+		Dictionary<string, DateTime> playedGreetingFromFred = new Dictionary<string, DateTime>();
+		Dictionary<string, DateTime> playedGreetingFromRory = new Dictionary<string, DateTime>();
 
-        Queue<string> fanfareQueue = new Queue<string>();
+		Queue<string> fanfareQueue = new Queue<string>();
 		List<FanfareDto> fanfares = new List<FanfareDto>();
 		DateTime lastFanfareActivated = DateTime.Now;
 		double lastFanfareDuration;
@@ -472,37 +472,37 @@ namespace MrAnnouncerBot
 		const string STR_RorySaysOrThinks = "!rory";
 		const string STR_RichardSaysOrThinks = "!richard";
 
-        bool TriggersSpecialFanfare(string displayName, string message)
-        {
-            if (specialFanfares == null)
-            {
-                specialFanfares = GoogleSheets.Get<SpecialFanfare>();
-            }
-            SpecialFanfare specialFanfare = specialFanfares.FirstOrDefault(x => x.UserId == displayName);
-            if (specialFanfare != null && message.Contains(specialFanfare.KeyPhrase, StringComparison.InvariantCultureIgnoreCase))
-            {
-                string sceneName = specialFanfare.SceneName;
-                ActivatingSceneByName(sceneName, "SpecialFanfare");
-                try
-                {
-                    hubConnection.InvokeAsync("SuppressVolume", specialFanfare.Duration);
-                    obsWebsocket.SetCurrentProgramScene(sceneName);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Unable to play special fanfare: {sceneName}. Exception: {ex.Message}");
-                }
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool PlayFanfare(string displayName, string message = emptyString, string id = emptyString)
+		bool TriggersSpecialFanfare(string displayName, string message)
 		{
-            if (TriggersSpecialFanfare(id, message))
-                return false;
-            string fanfareKey = displayName.ToLower();
+			if (specialFanfares == null)
+			{
+				specialFanfares = GoogleSheets.Get<SpecialFanfare>();
+			}
+			SpecialFanfare specialFanfare = specialFanfares.FirstOrDefault(x => x.UserId == displayName);
+			if (specialFanfare != null && message.Contains(specialFanfare.KeyPhrase, StringComparison.InvariantCultureIgnoreCase))
+			{
+				string sceneName = specialFanfare.SceneName;
+				ActivatingSceneByName(sceneName, "SpecialFanfare");
+				try
+				{
+					hubConnection.InvokeAsync("SuppressVolume", specialFanfare.Duration);
+					obsWebsocket.SetCurrentProgramScene(sceneName);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Unable to play special fanfare: {sceneName}. Exception: {ex.Message}");
+				}
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool PlayFanfare(string displayName, string message = emptyString, string id = emptyString)
+		{
+			if (TriggersSpecialFanfare(id, message))
+				return false;
+			string fanfareKey = displayName.ToLower();
 			if (playedFanfares.ContainsKey(fanfareKey) && playedFanfares[fanfareKey].DayOfYear == DateTime.Now.DayOfYear)
 				return true;
 
@@ -664,148 +664,148 @@ namespace MrAnnouncerBot
 			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs, backTrackStr);
 		}
 
-        public enum Greeter
-        {
-            Fred,
-            Rory
-        }
-
-        string GetGreeting(Greeter greeter, string userName, string userId)
-        {
-            string settingName;
-            if (greeter == Greeter.Rory)
-                settingName = "rory";
-            else
-                settingName = "fred";
-            
-            DataRow viewerSetting = AllViewerListSettings.Instance.GetViewerSetting(userId, userName, settingName);
-            if (viewerSetting == null)
-                return null;
-
-            return viewerSetting.SelectRandom();
-        }
-
-        public enum PlayGreetingResult
-        {
-            NothingPlayed,
-            RoryPlayed,
-            FredPlayed
-        }
-
-        PlayGreetingResult PlayGreetingIfNeeded(Dictionary<string, DateTime> greetingCache, string userName, string userId, Greeter greeter)
-        {
-            if (greetingCache.ContainsKey(userId) && greetingCache[userId].DayOfYear == DateTime.Now.DayOfYear)
-                return PlayGreetingResult.NothingPlayed;  // Already played the greeting today.
-
-            string greeting = GetGreeting(greeter, userName, userId);
-            if (greeting == null)
-                return PlayGreetingResult.NothingPlayed;
-
-            greetingCache[userId] = DateTime.Now;
-
-            if (greeter == Greeter.Fred)
-            {
-                SayOrThinkIt("fred", greeting);
-                return PlayGreetingResult.FredPlayed;
-            }
-            else
-            {
-                SayOrThinkIt("rory", greeting);
-                return PlayGreetingResult.RoryPlayed;
-            }
-        }
-
-        Random randominator = new Random();
-
-        void PlayGreetingsFromAvatars(ChatMessage chatMessage)
-        {
-            PlayGreetingResult playGreetingResult;
-            if (randominator.Next(100) < 50)
-            {
-                playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
-                if (playGreetingResult == PlayGreetingResult.NothingPlayed)
-                    playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
-            }
-            else
-            {
-                playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
-                if (playGreetingResult == PlayGreetingResult.NothingPlayed)
-                    playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
-            }
-        }
-
-        void MarkThatWeAlreadyGreetedFromFred(string userId)
-        {
-            playedGreetingFromFred[userId] = DateTime.Now;
-        }
-
-        public static Color ColorFromHSV(double hue, double saturation, double value)
-        {
-            int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
-            double f = hue / 60 - Math.Floor(hue / 60);
-
-            value = value * 255;
-            int v = Convert.ToInt32(value);
-            int p = Convert.ToInt32(value * (1 - saturation));
-            int q = Convert.ToInt32(value * (1 - f * saturation));
-            int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
-
-            if (hi == 0)
-                return Color.FromArgb(255, v, t, p);
-            else if (hi == 1)
-                return Color.FromArgb(255, q, v, p);
-            else if (hi == 2)
-                return Color.FromArgb(255, p, v, t);
-            else if (hi == 3)
-                return Color.FromArgb(255, p, q, v);
-            else if (hi == 4)
-                return Color.FromArgb(255, t, p, v);
-            else
-                return Color.FromArgb(255, v, p, q);
-        }
-
-        Color GetHighContrastTextColorAgainstWhiteBackground(Color color)
-        {
-            float hue = color.GetHue();
-            float saturation = color.GetSaturation();
-            float brightness = color.GetBrightness();
-            if (brightness > 0.4)
-            {
-                brightness = 0.4f;
-                return ColorFromHSV(hue, saturation, brightness);
-            }
-            return color;
-        }
-
-        bool IsNotFred(string userId)
-        {
-            return userId != "904388657";
-        }
-
-        bool IsNotMarksVoice(string userId)
-        {
-            return userId != "907014337";
-        }
-
-        private async void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+		public enum Greeter
 		{
-            if (IsNotFred(e.ChatMessage.UserId) && IsNotMarksVoice(e.ChatMessage.UserId) && FredGpt.IsTalkingToFred(e.ChatMessage.Message))
-            {
-                MarkThatWeAlreadyGreetedFromFred(e.ChatMessage.UserId);
-                string response = await FredGpt.GetResponse(e.ChatMessage.UserId, e.ChatMessage.Username, e.ChatMessage.Message);
-                if (string.IsNullOrWhiteSpace(response))
-                    PlayGreetingsFromAvatars(e.ChatMessage);
-                else
-                {
-                    SayOrThinkIt("fred", response, ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)));
-                    string trimmedResponse = response.TrimStart('"').TrimEnd('"');
-                    Twitch.FredChat(trimmedResponse);
-                }
-            }
-            else
-                PlayGreetingsFromAvatars(e.ChatMessage);
+			Fred,
+			Rory
+		}
 
-            HandleUserFanfare(e.ChatMessage);
+		string GetGreeting(Greeter greeter, string userName, string userId)
+		{
+			string settingName;
+			if (greeter == Greeter.Rory)
+				settingName = "rory";
+			else
+				settingName = "fred";
+
+			DataRow viewerSetting = AllViewerListSettings.Instance.GetViewerSetting(userId, userName, settingName);
+			if (viewerSetting == null)
+				return null;
+
+			return viewerSetting.SelectRandom();
+		}
+
+		public enum PlayGreetingResult
+		{
+			NothingPlayed,
+			RoryPlayed,
+			FredPlayed
+		}
+
+		PlayGreetingResult PlayGreetingIfNeeded(Dictionary<string, DateTime> greetingCache, string userName, string userId, Greeter greeter)
+		{
+			if (greetingCache.ContainsKey(userId) && greetingCache[userId].DayOfYear == DateTime.Now.DayOfYear)
+				return PlayGreetingResult.NothingPlayed;  // Already played the greeting today.
+
+			string greeting = GetGreeting(greeter, userName, userId);
+			if (greeting == null)
+				return PlayGreetingResult.NothingPlayed;
+
+			greetingCache[userId] = DateTime.Now;
+
+			if (greeter == Greeter.Fred)
+			{
+				SayOrThinkIt("fred", greeting);
+				return PlayGreetingResult.FredPlayed;
+			}
+			else
+			{
+				SayOrThinkIt("rory", greeting);
+				return PlayGreetingResult.RoryPlayed;
+			}
+		}
+
+		Random randominator = new Random();
+
+		void PlayGreetingsFromAvatars(ChatMessage chatMessage)
+		{
+			PlayGreetingResult playGreetingResult;
+			if (randominator.Next(100) < 50)
+			{
+				playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
+				if (playGreetingResult == PlayGreetingResult.NothingPlayed)
+					playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+			}
+			else
+			{
+				playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromRory, chatMessage.Username, chatMessage.UserId, Greeter.Rory);
+				if (playGreetingResult == PlayGreetingResult.NothingPlayed)
+					playGreetingResult = PlayGreetingIfNeeded(playedGreetingFromFred, chatMessage.Username, chatMessage.UserId, Greeter.Fred);
+			}
+		}
+
+		void MarkThatWeAlreadyGreetedFromFred(string userId)
+		{
+			playedGreetingFromFred[userId] = DateTime.Now;
+		}
+
+		public static Color ColorFromHSV(double hue, double saturation, double value)
+		{
+			int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
+			double f = hue / 60 - Math.Floor(hue / 60);
+
+			value = value * 255;
+			int v = Convert.ToInt32(value);
+			int p = Convert.ToInt32(value * (1 - saturation));
+			int q = Convert.ToInt32(value * (1 - f * saturation));
+			int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
+
+			if (hi == 0)
+				return Color.FromArgb(255, v, t, p);
+			else if (hi == 1)
+				return Color.FromArgb(255, q, v, p);
+			else if (hi == 2)
+				return Color.FromArgb(255, p, v, t);
+			else if (hi == 3)
+				return Color.FromArgb(255, p, q, v);
+			else if (hi == 4)
+				return Color.FromArgb(255, t, p, v);
+			else
+				return Color.FromArgb(255, v, p, q);
+		}
+
+		Color GetHighContrastTextColorAgainstWhiteBackground(Color color)
+		{
+			float hue = color.GetHue();
+			float saturation = color.GetSaturation();
+			float brightness = color.GetBrightness();
+			if (brightness > 0.4)
+			{
+				brightness = 0.4f;
+				return ColorFromHSV(hue, saturation, brightness);
+			}
+			return color;
+		}
+
+		bool IsNotFred(string userId)
+		{
+			return userId != "904388657";
+		}
+
+		bool IsNotMarksVoice(string userId)
+		{
+			return userId != "907014337";
+		}
+
+		private async void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+		{
+			if (IsNotFred(e.ChatMessage.UserId) && IsNotMarksVoice(e.ChatMessage.UserId) && FredGpt.IsTalkingToFred(e.ChatMessage.Message))
+			{
+				MarkThatWeAlreadyGreetedFromFred(e.ChatMessage.UserId);
+				string response = await FredGpt.GetResponse(e.ChatMessage.UserId, e.ChatMessage.Username, e.ChatMessage.Message);
+				if (string.IsNullOrWhiteSpace(response))
+					PlayGreetingsFromAvatars(e.ChatMessage);
+				else
+				{
+					SayOrThinkIt("fred", response, ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)));
+					string trimmedResponse = response.TrimStart('"').TrimEnd('"');
+					Twitch.FredChat(trimmedResponse);
+				}
+			}
+			else
+				PlayGreetingsFromAvatars(e.ChatMessage);
+
+			HandleUserFanfare(e.ChatMessage);
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
@@ -1011,20 +1011,20 @@ namespace MrAnnouncerBot
 			{
 				Debugger.Break();
 
-                UnhookPubSubEvents(Twitch.CodeRushedPubSub);
+				UnhookPubSubEvents(Twitch.CodeRushedPubSub);
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
-                UnHookTwitchEvents(Twitch.DroneCommandsClient);
-                UnhookCoreEvents(Twitch.FredGptClient);
-                UnhookCoreEvents(Twitch.RoryGptClient);
-                UnhookCoreEvents(Twitch.MarksVoiceClient);
-                Twitch.InitializeConnections();
+				UnHookTwitchEvents(Twitch.DroneCommandsClient);
+				UnhookCoreEvents(Twitch.FredGptClient);
+				UnhookCoreEvents(Twitch.RoryGptClient);
+				UnhookCoreEvents(Twitch.MarksVoiceClient);
+				Twitch.InitializeConnections();
 				HookupTwitchEvents(Twitch.DroneCommandsClient);
 				HookupTwitchEvents(Twitch.CodeRushedClient);
 				HookupPubSubEvents(Twitch.CodeRushedPubSub);
-                HookupCoreEvents(Twitch.FredGptClient);
-                HookupCoreEvents(Twitch.RoryGptClient);
-                HookupCoreEvents(Twitch.MarksVoiceClient);
-            }
+				HookupCoreEvents(Twitch.FredGptClient);
+				HookupCoreEvents(Twitch.RoryGptClient);
+				HookupCoreEvents(Twitch.MarksVoiceClient);
+			}
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
 
@@ -1063,9 +1063,9 @@ namespace MrAnnouncerBot
 		private void Chat(string msg)
 		{
 			Twitch.Chat(Twitch.CodeRushedClient, Twitch.TruncateIfNeeded(msg));
-        }
+		}
 
-        public void Run()
+		public void Run()
 		{
 			Twitch.InitializeConnections();
 			InitializeConnections();
@@ -1346,7 +1346,7 @@ namespace MrAnnouncerBot
 			await hubConnection.InvokeAsync(methodName, parameters);
 		}
 
-        async void ThinkIt(int playerId, string phrase)
+		async void ThinkIt(int playerId, string phrase)
 		{
 			string colorStr = ExtractColorStr(ref phrase);
 			string offsetStr = ExtractOffsetStr(ref phrase);
@@ -1400,66 +1400,66 @@ namespace MrAnnouncerBot
 		}
 
 		void SayOrThinkIt(ChatMessage chatMessage)
-        {
-            //if (DateTime.Now.Hour > 16)
-            //{
-            //	Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
-            //	return;
-            //}
+		{
+			//if (DateTime.Now.Hour > 16)
+			//{
+			//	Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
+			//	return;
+			//}
 
-            if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
-            {
-                Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
-                return;
-            }
+			if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
+			{
+				Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
+				return;
+			}
 
-            string msg = chatMessage.Message.Trim();
-            GetNameAndPhrase(msg, out string name, out string phrase);
+			string msg = chatMessage.Message.Trim();
+			GetNameAndPhrase(msg, out string name, out string phrase);
 
-            SayOrThinkIt(name, phrase);
-        }
+			SayOrThinkIt(name, phrase);
+		}
 
-        private void SayOrThinkIt(string name, string phrase, string colorOverride = null)
-        {
+		private void SayOrThinkIt(string name, string phrase, string colorOverride = null)
+		{
             string colorStr = "";
-            int playerId;
-            if (name == "mark")
-            {
-                playerId = 2;
-                colorStr = "(#3600d1)";
-            }
-            else if (name == "fred" || name == "richard")
-            {
-                playerId = 4;
-                colorStr = "(#284974)";
-            }
-            else if (name == "campbell")
-                playerId = 5;
-            else if (name == "rory")
-            {
-                playerId = 5;
-                colorStr = "(#880000)";
-            }
-            else
-                return;
+			int playerId;
+			if (name == "mark")
+			{
+				playerId = 2;
+				colorStr = "(#3600d1)";
+			}
+			else if (name == "fred" || name == "richard")
+			{
+				playerId = 4;
+				colorStr = "(#284974)";
+			}
+			else if (name == "campbell")
+				playerId = 5;
+			else if (name == "rory")
+			{
+				playerId = 5;
+				colorStr = "(#880000)";
+			}
+			else
+				return;
 
-            if (!string.IsNullOrWhiteSpace(colorOverride))
-            {
-                colorStr = $"({colorOverride})";
-            }
+			if (!string.IsNullOrWhiteSpace(colorOverride))
+			{
+				colorStr = $"({colorOverride})";
+			}
 
-            var censoredPhrase = CensorText(phrase);
+			var censoredPhrase = CensorText(phrase);
 
-            if (censoredPhrase.Contains("(#"))  // Already specifies a color?
+			if (censoredPhrase.Contains("(#"))  // Already specifies a color?
                 colorStr = "";
 
-            if (phrase.StartsWith("("))
-                ThinkIt(playerId, censoredPhrase + colorStr);
-            else
-                SayIt(playerId, censoredPhrase + colorStr);
-        }
+			if (phrase.StartsWith("("))
+				ThinkIt(playerId, censoredPhrase + colorStr);
+			else
+				SayIt(playerId, censoredPhrase + colorStr);
+		}
 
-        private static void GetNameAndPhrase(string msg, out string name, out string phrase)
+		private static void GetNameAndPhrase(string msg, out string name, out string phrase)
 		{
 			name = null;
 			phrase = null;
@@ -1503,7 +1503,7 @@ namespace MrAnnouncerBot
 			if (BotCommands.Execute(e.Command.CommandText, e) > 0)
 				return;
 
-            if (e.Command.ChatMessage.DisplayName == "CodeRushed")
+			if (e.Command.ChatMessage.DisplayName == "CodeRushed")
 			{
 				if (e.Command.CommandText == "Reset" && e.Command.ArgumentsAsString == "Fanfare")
 					ResetFanfares();
@@ -1545,10 +1545,10 @@ namespace MrAnnouncerBot
 			scenes = null;
 			restrictedScenes = null;
 			channelPointActions = null;
-            AllViewerListSettings.Instance.Invalidate();
-            playedGreetingFromFred.Clear();
-            playedGreetingFromRory.Clear();
-        }
+			AllViewerListSettings.Instance.Invalidate();
+			playedGreetingFromFred.Clear();
+			playedGreetingFromRory.Clear();
+		}
 
 		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
 		{
@@ -1696,5 +1696,5 @@ namespace MrAnnouncerBot
 		{
 			GoogleSheets.RegisterDocumentID("Mr. Announcer Guy", "1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g");
 		}
-    }
+	}
 }
