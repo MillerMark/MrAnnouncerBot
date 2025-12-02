@@ -12,12 +12,12 @@ namespace DHDM
 
 		static Dmx()
 		{
-			dmxController.Open(0);
+			//dmxController.Open(0);
 		}
 
 		public static void ShutDown()
 		{
-			dmxController.Dispose();
+			//dmxController.Dispose();
 		}
 
 	}

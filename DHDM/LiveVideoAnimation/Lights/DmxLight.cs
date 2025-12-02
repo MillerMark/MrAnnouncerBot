@@ -8,8 +8,8 @@ namespace DHDM
 {
 	public class DmxLight
 	{
-        public static bool Enabled { get; set; }
-        static DmxLight left;
+		public static bool Enabled { get; set; }
+		static DmxLight left;
 		public static DmxLight Left
 		{
 			get
@@ -52,12 +52,12 @@ namespace DHDM
 
 		private void SetColor(HueSatLight hueSatLight)
 		{
-            if (!Enabled)
-                return;
+			if (!Enabled)
+				return;
 			Color asRGB = hueSatLight.AsRGB;
-			Dmx.Controller.SetChannel(ChannelStart, asRGB.R);
-			Dmx.Controller.SetChannel(ChannelStart + 1, asRGB.G);
-			Dmx.Controller.SetChannel(ChannelStart + 2, asRGB.B);
+			//Dmx.Controller.SetChannel(ChannelStart, asRGB.R);
+			//Dmx.Controller.SetChannel(ChannelStart + 1, asRGB.G);
+			//Dmx.Controller.SetChannel(ChannelStart + 2, asRGB.B);
 		}
 
 		public void SetColor(LightSequenceData lightData)
@@ -70,17 +70,17 @@ namespace DHDM
 			SetColor(new HueSatLight(hue / 360.0, saturation / 100.0, lightness / 100.0));
 		}
 
-        public static DmxLight? GetFrom(string id)
-        {
-            if (id == BluetoothLights.Left_ID)
-                return Left;
-            else if (id == BluetoothLights.Right_ID)
-                return Right;
-            else if (id == BluetoothLights.Center_ID)
-                return Center;
-            return null;
-        }
+		public static DmxLight? GetFrom(string id)
+		{
+			if (id == BluetoothLights.Left_ID)
+				return Left;
+			else if (id == BluetoothLights.Right_ID)
+				return Right;
+			else if (id == BluetoothLights.Center_ID)
+				return Center;
+			return null;
+		}
 
-        public int ChannelStart { get; set; }
+		public int ChannelStart { get; set; }
 	}
 }
