@@ -2,33 +2,33 @@
 using System.IO;
 using System.Net;
 using System.Linq;
+using System.Drawing;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Threading;
 using System.Diagnostics;
+using System.Configuration;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using System.Speech.Recognition;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using BotCore;
+using DndCore;
 using CsvHelper;
+using TwitchLib.Client;
+using TwitchLib.PubSub;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub.Models.Responses.Messages;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
+using SheetsPersist;
 using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
-using TwitchLib.Client;
-using TwitchLib.PubSub;
 using OBSWebsocketDotNet.Types;
-using SheetsPersist;
 using static MrAnnouncerBot.MrAnnouncerBot;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
-using System.Configuration;
-using System.Drawing;
-using System.Speech.Recognition;
-using DndCore;
 
 namespace MrAnnouncerBot
 {
@@ -117,7 +117,7 @@ namespace MrAnnouncerBot
 			new BotCommand("dh", HandleDragonHCommand);
 			new BotCommand("dhn", HandleDragonHNewTimeCommand);
 			new BotCommand("book*", HandleBookCommand);
-			hubConnection = new HubConnectionBuilder().WithUrl("https://localhost:44343/MrAnnouncerBotHub").Build();
+			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:64304/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
 				//hubConnection.Closed += HubConnection_Closed;
@@ -204,15 +204,15 @@ namespace MrAnnouncerBot
 				{
 					Console.Beep();
 					Console.BackgroundColor = ConsoleColor.DarkRed;
-					Console.WriteLine("");
+					Console.WriteLine(string.Empty);
 					Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 					Console.WriteLine("!!                                                             !!");
 					Console.WriteLine("!!  Possible corruption detected in the AllViewers.json file!  !!");
 					Console.WriteLine("!!                                                             !!");
 					Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-					Console.WriteLine("");
+					Console.WriteLine(string.Empty);
 					Console.WriteLine($"allViewers.Viewers.Count = {allViewers.Viewers.Count}");
-					Console.WriteLine("");
+					Console.WriteLine(string.Empty);
 				}
 			}
 			catch (Exception ex)
@@ -350,7 +350,6 @@ namespace MrAnnouncerBot
 			client.OnChannelStateChanged -= Client_OnChannelStateChanged;
 			client.OnLog -= Client_OnLog;
 			UnhookCoreEvents(client);
-
 		}
 
 		private void Client_OnLog(object sender, OnLogArgs e)
@@ -639,8 +638,8 @@ namespace MrAnnouncerBot
 			bool sendAlex = false;
 			bool sendPerf = false;
 			bool sendAllDevs = false;
-			string message = "";
-			string backTrackStr = "";
+			string message = string.Empty;
+			string backTrackStr = string.Empty;
 			foreach (string arg in obj.Command.ArgumentsAsList)
 			{
 				if (arg == "-log")
@@ -797,7 +796,8 @@ namespace MrAnnouncerBot
 					PlayGreetingsFromAvatars(e.ChatMessage);
 				else
 				{
-					SayOrThinkIt("fred", response, ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)));
+					string textColor = ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)) ?? "#000";
+					SayOrThinkIt("fred", response, textColor);
 					string trimmedResponse = response.TrimStart('"').TrimEnd('"');
 					Twitch.FredChat(trimmedResponse);
 				}
@@ -813,8 +813,8 @@ namespace MrAnnouncerBot
 		{
 			string showStartURL;
 
-			string durationStr = "";
-			string errors = "";
+			string durationStr = string.Empty;
+			string errors = string.Empty;
 
 			if (startTimeURL == null)
 			{
@@ -965,6 +965,11 @@ namespace MrAnnouncerBot
 			catch (ErrorResponseException ex)
 			{
 				Console.WriteLine($"Connect failed. {ex.Message}");
+				Debugger.Break();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Unexpected exception. {ex.Message}");
 				Debugger.Break();
 			}
 		}
@@ -1421,7 +1426,7 @@ namespace MrAnnouncerBot
 
 		private void SayOrThinkIt(string name, string phrase, string colorOverride = null)
 		{
-            string colorStr = "";
+			string colorStr = string.Empty;
 			int playerId;
 			if (name == "mark")
 			{
@@ -1451,7 +1456,7 @@ namespace MrAnnouncerBot
 			var censoredPhrase = CensorText(phrase);
 
 			if (censoredPhrase.Contains("(#"))  // Already specifies a color?
-                colorStr = "";
+				colorStr = string.Empty;
 
 			if (phrase.StartsWith("("))
 				ThinkIt(playerId, censoredPhrase + colorStr);

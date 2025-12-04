@@ -1,8 +1,8 @@
-﻿using Imaging;
-using OpenDMX.NET;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows.Media;
+using Imaging;
+using OpenDMX.NET;
 
 namespace DHDM
 {

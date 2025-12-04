@@ -1,43 +1,38 @@
-using BotCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using TwitchLib.Client.Models;
-using SheetsPersist;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TwitchLib.Client;
+using System.Collections.Generic;
+using BotCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
+using TwitchLib.Client;
+using TwitchLib.Client.Models;
+using SheetsPersist;
 using OverlayManager.Hubs;
 
-namespace OverlayManager
-{
-	public class BackgroundWorker : IHostedService
-	{
+namespace OverlayManager {
+	public class BackgroundWorker : IHostedService {
 		List<ChatCommand> chatCommands = new List<ChatCommand>();
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> hub;
-		public BackgroundWorker(IConfiguration configuration, IHubContext<CodeRushedHub, IOverlayCommands> hub)
-		{
+		public BackgroundWorker(IConfiguration configuration, IHubContext<CodeRushedHub, IOverlayCommands> hub) {
 			this.hub = hub;
 			Configuration = configuration;
 			//OldInitializeChatCommands();
 			LoadChatCommands();
 		}
 
-		public Task StartAsync(CancellationToken cancellationToken)
-		{
+		public Task StartAsync(CancellationToken cancellationToken) {
 			Twitch.InitializeConnections();
-            HookEvents();
-            return Task.CompletedTask;
+			HookEvents();
+			return Task.CompletedTask;
 		}
 
-		public void HookEvents()
-		{
+		public void HookEvents() {
 			Twitch.CodeRushedClient.OnLog += TwitchClient_OnLog;
 			Twitch.CodeRushedClient.OnConnectionError += TwitchClient_OnConnectionError;
 			Twitch.CodeRushedClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
@@ -51,18 +46,15 @@ namespace OverlayManager
 			Twitch.DroneCommandsClient.OnMessageReceived += TwitchClient_OnMessageReceived;
 		}
 
-		private void TwitchClient_OnUserLeft(object sender, TwitchLib.Client.Events.OnUserLeftArgs e)
-		{
+		private void TwitchClient_OnUserLeft(object sender, TwitchLib.Client.Events.OnUserLeftArgs e) {
 
 		}
 
-		private void TwitchClient_OnUserJoined(object sender, TwitchLib.Client.Events.OnUserJoinedArgs e)
-		{
+		private void TwitchClient_OnUserJoined(object sender, TwitchLib.Client.Events.OnUserJoinedArgs e) {
 
 		}
 
-		CommandExpansion GetCommandExpansion(string msg)
-		{
+		CommandExpansion GetCommandExpansion(string msg) {
 			string message = msg.ToLower();
 			if (message.StartsWith('!'))
 				message = message.Substring(1);
@@ -71,12 +63,10 @@ namespace OverlayManager
 
 			bool secondCharIsNumberOrSpaceOrNull = (message.Length == 1 || message[1] == ' ' || message[1] == '-' || int.TryParse(message[1].ToString(), out int number));
 
-			if (secondCharIsNumberOrSpaceOrNull)
-			{
+			if (secondCharIsNumberOrSpaceOrNull) {
 				char firstChar = message[0];
 
-				switch (firstChar)
-				{
+				switch (firstChar) {
 					case 'd':
 					case 'u':
 					case 'f':
@@ -90,11 +80,9 @@ namespace OverlayManager
 			return null;
 		}
 
-		private void TwitchClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
-		{
+		private void TwitchClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e) {
 			string msg = e.ChatMessage.Message;
-			switch (msg)
-			{
+			switch (msg) {
 				case "1":
 				case "2":
 				case "3":
@@ -115,12 +103,10 @@ namespace OverlayManager
 				HandleCommand(commandExpansion.Command, commandExpansion.Arguments, e.ChatMessage);
 		}
 
-		private void TwitchClient_OnWhisperReceived(object sender, TwitchLib.Client.Events.OnWhisperReceivedArgs e)
-		{
+		private void TwitchClient_OnWhisperReceived(object sender, TwitchLib.Client.Events.OnWhisperReceivedArgs e) {
 			WhisperMessage whisperMessage = e.WhisperMessage;
 			string msg = whisperMessage.Message;
-			switch (msg)
-			{
+			switch (msg) {
 				case "1":
 				case "2":
 				case "3":
@@ -138,36 +124,31 @@ namespace OverlayManager
 			}
 		}
 
-		async void AnswerQuiz(string args, ChatMessage chatMessage)
-		{
+		async void AnswerQuiz(string args, ChatMessage chatMessage) {
 			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, 0);
 			await hub.Clients.All.ExecuteCommand("AnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
 		}
 
-		async void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
-		{
+		async void SilentAnswerQuiz(string args, WhisperMessage chatMessage) {
 			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, 0);
 			await hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
 		}
 
-		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
-		{
+		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e) {
 			string cmdText = e.Command.CommandText.ToLower();
 			string args = e.Command.ArgumentsAsString;
 			ChatMessage chatMessage = e.Command.ChatMessage;
 			HandleCommand(cmdText, args, chatMessage);
 		}
 
-		private void HandleCommand(string cmdText, string args, ChatMessage chatMessage)
-		{
+		private void HandleCommand(string cmdText, string args, ChatMessage chatMessage) {
 			ChatCommand command = FindCommand(cmdText);
 
 			if (command == null)
 				return;
 
-			if (command.Command == "reload")
-			{
-                LoadChatCommands();
+			if (command.Command == "reload") {
+				LoadChatCommands();
 				return;
 			}
 
@@ -176,34 +157,29 @@ namespace OverlayManager
 			return;
 		}
 
-		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
-		{
+		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e) {
 
 		}
 
-		private void TwitchClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
-		{
+		private void TwitchClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e) {
 
 		}
 
-		private void TwitchClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
-		{
+		private void TwitchClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e) {
 
 		}
 
-		public Task StopAsync(CancellationToken cancellationToken)
-		{
+		public Task StopAsync(CancellationToken cancellationToken) {
 			//twitchClient.Disconnect();
-			return null;
+			return Task.CompletedTask;
 		}
 
 
-        /// <summary>
-        /// This is deprecated. Commands are now all loaded from the Mr. Announcer Guy spreadsheet.
-        /// https://docs.google.com/spreadsheets/d/1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g/edit#gid=1390191191
-        /// </summary>
-		void OldInitializeChatCommands()
-		{
+		/// <summary>
+		/// This is deprecated. Commands are now all loaded from the Mr. Announcer Guy spreadsheet.
+		/// https://docs.google.com/spreadsheets/d/1s-j-4EF3KbI8ZH0nSj4G4a1ApNFPz_W5DK9A9JTyb3g/edit#gid=1390191191
+		/// </summary>
+		void OldInitializeChatCommands() {
 			// Changing planets:
 			chatCommands.Add(new ChatCommand("planet", "ChangePlanet"));
 			chatCommands.Add(new ChatCommand("earth", "ChangePlanet").AddAliases("jupiter", "mars", "mercury", "moon", "neptune", "pluto", "saturn", "sun", "uranus", "venus").SetCommandBecomesArg());
@@ -256,23 +232,20 @@ namespace OverlayManager
 
 		}
 
-		ChatCommand FindCommand(string cmdText)
-		{
+		ChatCommand FindCommand(string cmdText) {
 			foreach (ChatCommand chatCommand in chatCommands)
 				if (chatCommand.Matches(cmdText))
 					return chatCommand;
 			return null;
 		}
 
-		void LoadChatCommands()
-		{
+		void LoadChatCommands() {
 			chatCommands = GoogleSheets.Get<ChatCommand>();
-            AllViewerListSettings.Instance.Invalidate();
-            AllViewerSettings.Instance.Invalidate();
-        }
+			AllViewerListSettings.Instance.Invalidate();
+			AllViewerSettings.Instance.Invalidate();
+		}
 
-		static BackgroundWorker()
-		{
+		static BackgroundWorker() {
 			ChatCommand.RegisterSheet();
 		}
 

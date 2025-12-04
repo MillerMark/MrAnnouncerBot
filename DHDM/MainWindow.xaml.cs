@@ -1,56 +1,54 @@
 ﻿//#define profiling
 //#define FullLoad
-using Microsoft.AspNetCore.SignalR.Client;
-using TwitchLib.Client;
-using TwitchLib.Client.Models;
+using DHDM.FlyMark;
+using DndUI;
 using System;
-using SuperAvalonEdit;
-using SharedCore;
-using Streamloots;
-using DndCore;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using TimeLineControl;
-using DndUI;
-using BotCore;
 using System.Threading;
-using OBSWebsocketDotNet;
-using OBSWebsocketDotNet.Types;
-using Newtonsoft.Json;
-using System.IO;
-using SheetsPersist;
-using TaleSpireCore;
 using System.Reflection;
 using System.Diagnostics;
-using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using LeapTools;
-using TwitchLib.PubSub;
+using System.Windows.Shapes;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Threading;
+using System.Windows.Navigation;
+using System.Collections.Generic;
+using System.Windows.Media.Imaging;
+using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
+using System.Windows.Controls.Primitives;
+using DndCore;
+using BotCore;
+using Microsoft.AspNetCore.SignalR.Client;
+using TwitchLib.Client;
+using TwitchLib.PubSub;
+using TwitchLib.Client.Models;
+using LeapTools;
+using SharedCore;
+using Newtonsoft.Json;
 using ObsControl;
-using DHDM.FlyMark;
+using Streamloots;
+using SheetsPersist;
+using TaleSpireCore;
+using SuperAvalonEdit;
+using TimeLineControl;
+using OBSWebsocketDotNet;
+using OBSWebsocketDotNet.Types;
 
-namespace DHDM
-{
+namespace DHDM {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window, IDungeonMasterApp, IDiceRoller
-	{
+	public partial class MainWindow : Window, IDungeonMasterApp, IDiceRoller {
 		MySecureString dragonHumpersClientId;
 		MySecureString dragonHumpersAccessToken;
 		bool _changingInternally;
@@ -78,8 +76,8 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
-        DispatcherTimer showThinkingTimer;
-        DispatcherTimer delayRollTimer;
+		DispatcherTimer showThinkingTimer;
+		DispatcherTimer delayRollTimer;
 		DispatcherTimer reconnectToTwitchDungeonMasterTimer;
 		DispatcherTimer reconnectToTwitchDragonHumpersTimer;
 		DispatcherTimer showClearPlayerDiceButtonTimer;
@@ -99,21 +97,19 @@ namespace DHDM
 		int keepExistingModifier = int.MaxValue;
 		DndGame game = null;
 
-		public MainWindow()
-		{
-            DmxLight.Enabled = true;
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // !!!                                                                                      !!!
-            // !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-            // !!!                                                                                      !!!
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
+		public MainWindow() {
+			DmxLight.Enabled = true;
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			// !!!                                                                                      !!!
+			// !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+			// !!!                                                                                      !!!
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			FredGpt.SetApiKey(new MySecureString(Twitch.Configuration["Secrets:openaiApiKey"]));
 
-            GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
+			GoogleSheets.ExceptionHandlingOption = ExceptionHandlingOption.LogToConsole;
 			MarkFliesManager.Initialize();
 			ChangingInternally = true;
-			try
-			{
+			try {
 				InitializeGame();
 				SpellManager.Initialize(Game);
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -127,35 +123,31 @@ namespace DHDM
 
 				dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchClientId"]);
 				dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchAccessToken"]);
-				
+
 				//dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
 				//dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
 			}
-			finally
-			{
+			finally {
 				ChangingInternally = false;
 			}
 
-            StartSpeechUI();
-            HookKeyboardEvents();
-        }
+			StartSpeechUI();
+			HookKeyboardEvents();
+		}
 
-        static void HookKeyboardEvents()
-        {
-            //WpfHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
-            //WpfHooks.MouseEventFired += GlobalHooks_MouseEventFired;
-            //WpfHooks.Start();
-        }
+		static void HookKeyboardEvents() {
+			//WpfHooks.ControlKeyStateChanged += GlobalHooks_ControlKeyStateChanged;
+			//WpfHooks.MouseEventFired += GlobalHooks_MouseEventFired;
+			//WpfHooks.Start();
+		}
 
-        static void UnhookKeyboardEvents()
-        {
-            //WpfHooks.Stop();
-        }
+		static void UnhookKeyboardEvents() {
+			//WpfHooks.Stop();
+		}
 
-        //SpeechUI speechUI;
+		//SpeechUI speechUI;
 
-        void CheckActionQueue(object sender, EventArgs e)
-		{
+		void CheckActionQueue(object sender, EventArgs e) {
 			if (askingQuestion)
 				return;
 			DeueueNextAction();
@@ -163,8 +155,7 @@ namespace DHDM
 
 		Character viewerSpellcaster;
 
-		void CreateViewerSpellcaster()
-		{
+		void CreateViewerSpellcaster() {
 			viewerSpellcaster = new Character();
 			viewerSpellcaster.kind = CreatureKinds.Humanoid;
 			viewerSpellcaster.name = "Viewer";
@@ -174,7 +165,7 @@ namespace DHDM
 			viewerSpellcaster.alignmentStr = "Chaotic Neutral";
 			viewerSpellcaster.baseArmorClass = 12;
 			viewerSpellcaster.remainingHitDice = "1 d8";
-			viewerSpellcaster.inspiration = "";
+			viewerSpellcaster.inspiration = string.Empty;
 			viewerSpellcaster.initiative = 2;
 			viewerSpellcaster.baseWalkingSpeed = 30;
 			viewerSpellcaster.HitPoints = 50;
@@ -190,8 +181,7 @@ namespace DHDM
 		DmMoodManager dmMoodManager;
 		ContestManager contestManager;
 
-		private void InitializeGame()
-		{
+		private void InitializeGame() {
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			game = new DndGame();
@@ -221,8 +211,8 @@ namespace DHDM
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
 			CreateDungeonMasterClient();
 			CreateDragonHumpersClient();
-            InitializeVoiceConnectionToFred();  
-            CreateDhPubSub();
+			InitializeVoiceConnectionToFred();
+			CreateDhPubSub();
 
 			dmChatBot.Initialize(this);
 
@@ -240,25 +230,23 @@ namespace DHDM
 			//TaleSpireEvents.StartSocketServer();
 		}
 
-        void InitializeVoiceConnectionToFred()
-        {
-            Twitch.InitializeMarksVoiceClient();
-            Twitch.InitializeFredGptClient();
-            Twitch.InitializeCodeRushedConnection();
-            Twitch.CodeRushedClient.OnChatCommandReceived += CodeRushedClient_OnChatCommandReceived;
-            Twitch.CodeRushedClient.OnConnectionError += CodeRushedClient_OnConnectionError;
-        }
+		void InitializeVoiceConnectionToFred() {
+			Twitch.InitializeMarksVoiceClient();
+			Twitch.InitializeFredGptClient();
+			Twitch.InitializeCodeRushedConnection();
+			Twitch.CodeRushedClient.OnChatCommandReceived += CodeRushedClient_OnChatCommandReceived;
+			Twitch.CodeRushedClient.OnConnectionError += CodeRushedClient_OnConnectionError;
+		}
 
-        private void CreateTimers()
-		{
+		private void CreateTimers() {
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
-            showThinkingTimer = new DispatcherTimer(DispatcherPriority.Send);
-            showThinkingTimer.Tick += new EventHandler(ShowThinkingTimerHandler);
-            showThinkingTimer.Interval = TimeSpan.FromMilliseconds(850);
+			showThinkingTimer = new DispatcherTimer(DispatcherPriority.Send);
+			showThinkingTimer.Tick += new EventHandler(ShowThinkingTimerHandler);
+			showThinkingTimer.Interval = TimeSpan.FromMilliseconds(850);
 
-            delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
+			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
 			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
 
 			reconnectToTwitchDungeonMasterTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -319,23 +307,19 @@ namespace DHDM
 			actionQueueTimer.Interval = TimeSpan.FromSeconds(2);
 		}
 
-		private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Escape && Modifiers.NoModifiersDown && !codeEditor.CodeCompletionWindowIsUp())
-			{
+		private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e) {
+			if (e.Key == Key.Escape && Modifiers.NoModifiersDown && !codeEditor.CodeCompletionWindowIsUp()) {
 				// TODO: Change this if/when we add support for markers.
 				FocusSelectedItem(lstEvents);
 				e.Handled = true;
 			}
 		}
 
-		private void CodeEditor_CodeChanged(object sender, EventArgs e)
-		{
+		private void CodeEditor_CodeChanged(object sender, EventArgs e) {
 			CodeChanged();
 		}
 
-		void RegisterSpreadsheetIDs()
-		{
+		void RegisterSpreadsheetIDs() {
 			GoogleSheets.RegisterDocumentID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
 			GoogleSheets.RegisterDocumentID("Live Video Animation", "1_axdPNFXyWqGkdwGtLkmqHWdgTFLq4nMbacKHa0b5mQ");
 			GoogleSheets.RegisterDocumentID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
@@ -345,33 +329,28 @@ namespace DHDM
 			GoogleSheets.RegisterDocumentID("D&D Deck Data", "1vk8ov_AltA9RUdiXFXrwJTQO96lZdMMbKAy-hoFoGmw");
 		}
 
-		private void CreateDhPubSub()
-		{
+		private void CreateDhPubSub() {
 			dhPubSub = new TwitchPubSub();
 			dhPubSub.OnChannelPointsRewardRedeemed += DhPubSub_OnChannelPointsRewardRedeemed;
 			dhPubSub.ListenToChannelPoints("CodeRushed");
 			dhPubSub.Connect();
 		}
 
-		private void DhPubSub_OnChannelPointsRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnChannelPointsRewardRedeemedArgs e)
-		{
-			
+		private void DhPubSub_OnChannelPointsRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnChannelPointsRewardRedeemedArgs e) {
+
 		}
 
 		// ResendExistingData
 
-		void ReconnectToTwitchDungeonMasterHandler(object sender, EventArgs e)
-		{
+		void ReconnectToTwitchDungeonMasterHandler(object sender, EventArgs e) {
 			CreateDungeonMasterClient();
 		}
 
-		void ReconnectToTwitchDragonHumpersHandler(object sender, EventArgs e)
-		{
+		void ReconnectToTwitchDragonHumpersHandler(object sender, EventArgs e) {
 			CreateDragonHumpersClient();
 		}
 
-		private void HookGameEvents()
-		{
+		private void HookGameEvents() {
 			game.SpellDispelled += Game_SpellDispelled;
 			game.PickWeapon += Game_PickWeapon;
 			game.PickAmmunition += Game_PickAmmunition;
@@ -388,8 +367,7 @@ namespace DHDM
 			game.ConcentratedSpellChanged += Game_ConcentratedSpellChanged;
 		}
 
-		private void Game_PlayerDamaged(object sender, CreatureDamagedEventArgs ea)
-		{
+		private void Game_PlayerDamaged(object sender, CreatureDamagedEventArgs ea) {
 			TaleSpireClient.ShowDamage(ea.Creature.taleSpireId, (int)ea.DamageAmount, ea.Creature.bloodColor);
 			if (ea.Creature is Character player)
 				if (player.concentratedSpell != null)
@@ -399,10 +377,8 @@ namespace DHDM
 
 		// TODO: Delete playerShowStateDispatchTimers...
 		List<DispatcherTimer> playerShowStateDispatchTimers = new List<DispatcherTimer>();
-		void WaitToShowPlayerState(PlayerShowStateEventArgs ea)
-		{
-			Dispatcher.Invoke(() =>
-			{
+		void WaitToShowPlayerState(PlayerShowStateEventArgs ea) {
+			Dispatcher.Invoke(() => {
 				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
 				delayFloatTextTimer.Interval = TimeSpan.FromMilliseconds(ea.DelayMs);
 				ea.DelayMs = 0;
@@ -413,10 +389,8 @@ namespace DHDM
 		}
 
 
-		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
-		{
-			if (ea.DelayMs > 0)
-			{
+		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea) {
+			if (ea.DelayMs > 0) {
 				WaitToShowPlayerState(ea);
 				return;
 			}
@@ -431,8 +405,7 @@ namespace DHDM
 			HubtasticBaseStation.FloatPlayerText(ea.Player.IntId, ea.Message, fillColor, outlineColor);
 		}
 
-		void DelayFloatTextNow(object sender, EventArgs e)
-		{
+		void DelayFloatTextNow(object sender, EventArgs e) {
 			if (!(sender is DispatcherTimer dispatcherTimer))
 				return;
 
@@ -443,35 +416,30 @@ namespace DHDM
 			if (!(dispatcherTimer.Tag is PlayerShowStateEventArgs ea))
 				return;
 
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				Game_PlayerShowState(this, ea);
 			});
 		}
 
 
-		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
-		{
+		private void Game_RoundStarting(object sender, DndGameEventArgs ea) {
 			if (game.InCombat)
 				clockMessage = $"Round {ea.Game.RoundIndex + 1}";
 		}
 
-		private async void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
-		{
+		private async void Game_PickWeapon(object sender, PickWeaponEventArgs ea) {
 			List<string> weapons = new List<string>();
 			List<CarriedWeapon> filteredWeapons = new List<CarriedWeapon>();
 			int weaponNumber = 1;
 			string filterLower = null;
 			if (ea.WeaponFilter != null)
 				filterLower = ea.WeaponFilter.ToLower();
-			for (int i = 0; i < ea.Player.CarriedWeapons.Count; i++)
-			{
+			for (int i = 0; i < ea.Player.CarriedWeapons.Count; i++) {
 				CarriedWeapon carriedWeapon = ea.Player.CarriedWeapons[i];
 				string weaponName = carriedWeapon.Name;
 				string weaponKind = carriedWeapon.Weapon.Name;
 				string weaponKindLower = weaponKind.ToLower();
-				if (!string.IsNullOrEmpty(filterLower))
-				{
+				if (!string.IsNullOrEmpty(filterLower)) {
 					if (!filterLower.Contains(weaponKindLower))
 						continue;
 				}
@@ -489,8 +457,7 @@ namespace DHDM
 				ea.Weapon = filteredWeapons[result - 1];
 		}
 
-		private async void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
-		{
+		private async void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea) {
 			List<string> ammunitionList = new List<string>();
 
 			List<CarriedAmmunition> filteredAmmunition = new List<CarriedAmmunition>();
@@ -498,15 +465,13 @@ namespace DHDM
 			string filterLower = null;
 			if (ea.AmmunitionKind != null)
 				filterLower = ea.AmmunitionKind.ToLower();
-			for (int i = 0; i < ea.Player.CarriedAmmunition.Count; i++)
-			{
+			for (int i = 0; i < ea.Player.CarriedAmmunition.Count; i++) {
 				CarriedAmmunition carriedAmmunition = ea.Player.CarriedAmmunition[i];
 				if (carriedAmmunition.Count <= 0)
 					continue;
 				string ammunitionName = carriedAmmunition.Name;
 				string ammunitionKind = carriedAmmunition.Kind;
-				if (!string.IsNullOrEmpty(filterLower))
-				{
+				if (!string.IsNullOrEmpty(filterLower)) {
 					if (!filterLower.Contains(ammunitionKind.ToLower()))
 						continue;
 				}
@@ -517,8 +482,7 @@ namespace DHDM
 				ammunitionNumber++;
 			}
 
-			if (ammunitionList.Count <= 0)
-			{
+			if (ammunitionList.Count <= 0) {
 				// TODO: Show player is out of ammunition.
 				return;
 			}
@@ -527,8 +491,7 @@ namespace DHDM
 				ea.Ammunition = filteredAmmunition[result - 1];
 		}
 
-		private void HookEvents()
-		{
+		private void HookEvents() {
 			DeltaTargetFunction.RequestPropertyChange += DeltaTargetFunction_RequestPropertyChange;
 			AnimateLiveFeed.RequestLiveFeedResize += AnimateLiveFeed_RequestLiveFeedResize;
 			UnleashSpellEffectsFunction.RequestUnleashSpellEffects += UnleashSpellEffectsFunction_RequestUnleashSpellEffects;
@@ -562,37 +525,29 @@ namespace DHDM
 			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
 		}
 
-		private void DeltaTargetFunction_RequestPropertyChange(object sender, PropertyChangeEventArgs ea)
-		{
-			if (ea.PropertyName == "HitPoints")
-			{
+		private void DeltaTargetFunction_RequestPropertyChange(object sender, PropertyChangeEventArgs ea) {
+			if (ea.PropertyName == "HitPoints") {
 				ApplyDamageHealthChange(new DamageHealthChange() { DamageHealth = (int)ea.DeltaValue, IsTempHitPoints = false, PlayerIds = { ea.Creature.SafeId } });
 			}
-			else
-			{
+			else {
 				System.Diagnostics.Debugger.Break();
 				// TODO: Implement this.
 			}
 		}
 
-		private void UnleashSpellEffectsFunction_RequestUnleashSpellEffects(object sender, int playerId)
-		{
+		private void UnleashSpellEffectsFunction_RequestUnleashSpellEffects(object sender, int playerId) {
 			UnleashSpellEffectsNow(playerId);
 		}
 
-		public class SceneTimer : System.Timers.Timer
-		{
+		public class SceneTimer : System.Timers.Timer {
 			public ObsSceneFilterEventArgs ea;
-			public SceneTimer()
-			{
+			public SceneTimer() {
 
 			}
 		}
 
-		private void SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility(object sender, ObsSceneFilterEventArgs ea)
-		{
-			if (ea.DelayMs > 0)
-			{
+		private void SetSceneFilterVisibilityFunction_RequestSetObsSceneFilterVisibility(object sender, ObsSceneFilterEventArgs ea) {
+			if (ea.DelayMs > 0) {
 				SceneTimer timer = new SceneTimer();
 				timer.Interval = ea.DelayMs;
 				timer.Elapsed += Timer_Elapsed;
@@ -603,28 +558,23 @@ namespace DHDM
 			ObsManager.SetFilterVisibility(ea.SourceName, ea.FilterName, ea.FilterEnabled);
 		}
 
-		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-		{
-			if (sender is SceneTimer sceneTimer)
-			{
+		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
+			if (sender is SceneTimer sceneTimer) {
 				sceneTimer.Stop();
 				ObsManager.SetFilterVisibility(sceneTimer.ea.SourceName, sceneTimer.ea.FilterName, sceneTimer.ea.FilterEnabled);
 			}
 		}
 
-		private void AddViewerChargeFunction_RequestAddViewerCharge(object sender, RequestAddViewerChargeEventArgs ea)
-		{
+		private void AddViewerChargeFunction_RequestAddViewerCharge(object sender, RequestAddViewerChargeEventArgs ea) {
 			int totalChargeCount = AllViewers.AddCharge(ea.UserName, ea.ChargeName, ea.ChargeCount);
 			TellViewers($"{ea.UserName} now has {totalChargeCount} \"{ea.ChargeName}\" charges.");
 		}
 
-		private void DispelMagic_RequestDispelMagic(DispelMagicEventArgs ea)
-		{
+		private void DispelMagic_RequestDispelMagic(DispelMagicEventArgs ea) {
 			ea.Recipient.Magic.Expire();
 		}
 
-		private void RevealCard_RequestCardReveal(CreaturePlusModIdEventArgs ea)
-		{
+		private void RevealCard_RequestCardReveal(CreaturePlusModIdEventArgs ea) {
 			Magic magic = ea.CreaturePlusModId.Magic;
 			string cardGuid = magic.GetParameter<string>("CardGuid");
 			if (string.IsNullOrWhiteSpace(cardGuid))
@@ -635,8 +585,7 @@ namespace DHDM
 
 
 
-		private void TriggerEffect_RequestEffectTrigger(object sender, EffectEventArgs ea)
-		{
+		private void TriggerEffect_RequestEffectTrigger(object sender, EffectEventArgs ea) {
 			EffectGroup effectGroup = new EffectGroup();
 
 			VisualEffectTarget chestTarget, bottomTarget;
@@ -652,33 +601,27 @@ namespace DHDM
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
-		private void GetNumTargets_RequestTargetCount(object sender, TargetCountEventArgs ea)
-		{
+		private void GetNumTargets_RequestTargetCount(object sender, TargetCountEventArgs ea) {
 			int playerCount = 0;
 			if (ea.WhatSide.HasFlag(DndCore.WhatSide.Friendly))
 				playerCount = GetNumPlayersTargeted();
 			ea.Count = playerCount + AllInGameCreatures.GetTargetCount(ea.WhatSide);
 		}
 
-		int GetNumPlayersTargeted()
-		{
+		int GetNumPlayersTargeted() {
 			return PlayerStatManager.Players.Count(p => p.IsTargeted);
 		}
 
-		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
-		{
+		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea) {
 			DndObsManager.SetSourceVisibility(ea);
 		}
 
-		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
-		{
+		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea) {
 			HubtasticBaseStation.ClearWindup(ea.Name);
 		}
 
-		private void SelectMonsterFunction_RequestSelectMonster(object sender, SelectMonsterEventArgs ea)
-		{
-			if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
-			{
+		private void SelectMonsterFunction_RequestSelectMonster(object sender, SelectMonsterEventArgs ea) {
+			if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer)) {
 				ea.Monster = AllMonsters.GetByKind(ActivePlayer.NextAnswer);
 				ActivePlayer.SetNextAnswer(null);
 				if (ea.Monster != null)
@@ -693,23 +636,18 @@ namespace DHDM
 			ea.Monster = frmMonsterPicker.SelectedMonster;
 		}
 
-		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
-		{
+		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea) {
 			bool foundAny = false;
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
-			foreach (CreatureStats playerStats in PlayerStatManager.Players)
-			{
-				if (playerStats.IsTargeted)
-				{
+			foreach (CreatureStats playerStats in PlayerStatManager.Players) {
+				if (playerStats.IsTargeted) {
 					ea.Target.PlayerIds.Add(playerStats.CreatureId);
 					foundAny = true;
 				}
 			}
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
-				if (inGameCreature.IsTargeted)
-				{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
+				if (inGameCreature.IsTargeted) {
 					ea.Target.AddCreature(inGameCreature.Creature);
 					foundAny = true;
 				}
@@ -720,16 +658,12 @@ namespace DHDM
 			//Old_SelectInGameTargets(ea);
 			AskQuestionBlockUI("Select Target:", GetTargetAnswers(ea.WhatSide, ea.MaxTargets), 1, ea.MaxTargets);
 			if (lastRemoteAnswers != null)
-				foreach (AnswerEntry answerEntry in lastRemoteAnswers)
-				{
-					if (answerEntry.IsSelected)
-					{
-						if (answerEntry.Value >= 0)
-						{
+				foreach (AnswerEntry answerEntry in lastRemoteAnswers) {
+					if (answerEntry.IsSelected) {
+						if (answerEntry.Value >= 0) {
 							ea.Target.PlayerIds.Add(answerEntry.Value);
 						}
-						else
-						{ // It's a in-game creature
+						else { // It's a in-game creature
 							ea.Target.Creatures.Add(AllInGameCreatures.GetByIndex(-answerEntry.Value)?.Creature);
 
 						}
@@ -738,35 +672,29 @@ namespace DHDM
 
 		}
 
-		List<AnswerEntry> GetTargetAnswers(DndCore.WhatSide whatSide, int maxSelected)
-		{
+		List<AnswerEntry> GetTargetAnswers(DndCore.WhatSide whatSide, int maxSelected) {
 			int numSelected = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
 			if (whatSide.HasFlag(DndCore.WhatSide.Friendly))
-				foreach (CreatureStats playerStats in PlayerStatManager.Players)
-				{
+				foreach (CreatureStats playerStats in PlayerStatManager.Players) {
 					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.CreatureId, AllPlayers.GetFromId(playerStats.CreatureId).Name);
 					result.Add(answer);
-					if (result.Count < maxSelected && playerStats.IsTargeted)
-					{
+					if (result.Count < maxSelected && playerStats.IsTargeted) {
 						numSelected++;
 						answer.IsSelected = true;
 					}
 				}
 
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 				if (!inGameCreature.OnScreen)
 					continue;
 
 				if (whatSide.HasFlag(DndCore.WhatSide.Friendly) && inGameCreature.IsAlly ||
 					whatSide.HasFlag(DndCore.WhatSide.Enemy) && inGameCreature.IsEnemy ||
-					whatSide.HasFlag(DndCore.WhatSide.All))
-				{
+					whatSide.HasFlag(DndCore.WhatSide.All)) {
 					AnswerEntry answer = new AnswerEntry(result.Count, InGameCreature.GetUniversalIndex(inGameCreature.Index), inGameCreature.Name);
 					result.Add(answer);
-					if (numSelected < maxSelected && inGameCreature.IsTargeted)
-					{
+					if (numSelected < maxSelected && inGameCreature.IsTargeted) {
 						numSelected++;
 						answer.IsSelected = true;
 					}
@@ -793,13 +721,11 @@ namespace DHDM
 		//	}
 		//}
 
-		void PlaySceneAfter(string sceneName, int delayMs, int returnMs = -1)
-		{
+		void PlaySceneAfter(string sceneName, int delayMs, int returnMs = -1) {
 			obsManager.PlaySceneAfter(sceneName, delayMs, returnMs);
 		}
 
-		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
-		{
+		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea) {
 			if (ea.DelayMs > 0)
 				PlaySceneAfter(ea.SceneName, ea.DelayMs, ea.ReturnMs);
 			else
@@ -807,8 +733,7 @@ namespace DHDM
 
 		}
 
-		void AddBooleanAsk(AskUI askUI)
-		{
+		void AddBooleanAsk(AskUI askUI) {
 			CheckBox booleanAsk = new CheckBox();
 			booleanAsk.Margin = new Thickness(2, 2, 8, 2);
 			booleanAsk.Tag = askUI;
@@ -819,14 +744,12 @@ namespace DHDM
 			wpAskUI.Children.Add(booleanAsk);
 		}
 
-		private void BooleanAsk_CheckChanged(object sender, RoutedEventArgs e)
-		{
+		private void BooleanAsk_CheckChanged(object sender, RoutedEventArgs e) {
 			SetBooleanPropertyFromCheckbox(sender);
 			SetShortcutVisibility();
 		}
 
-		private static void SetBooleanPropertyFromCheckbox(object sender)
-		{
+		private static void SetBooleanPropertyFromCheckbox(object sender) {
 			if (!(sender is CheckBox checkBox))
 				return;
 			if (!(checkBox.Tag is AskUI askUI))
@@ -834,21 +757,16 @@ namespace DHDM
 			askUI.SetBooleanProperty(checkBox.IsChecked);
 		}
 
-		void AddStringAsk(AskUI askUI)
-		{
+		void AddStringAsk(AskUI askUI) {
 			System.Diagnostics.Debugger.Break();
 		}
 
-		void UpdateAskUI(Character player)
-		{
+		void UpdateAskUI(Character player) {
 			if (!askUIs.ContainsKey(player))
 				return;
-			foreach (var uIElement in wpAskUI.Children)
-			{
-				if (uIElement is CheckBox checkBox)
-				{
-					if (checkBox.Tag is AskUI askUI)
-					{
+			foreach (var uIElement in wpAskUI.Children) {
+				if (uIElement is CheckBox checkBox) {
+					if (checkBox.Tag is AskUI askUI) {
 						checkBox.IsChecked = askUI.GetBooleanValue();
 					}
 				}
@@ -856,8 +774,7 @@ namespace DHDM
 			}
 		}
 
-		void RebuildAskUI(Creature player)
-		{
+		void RebuildAskUI(Creature player) {
 			wpAskUI.Children.Clear();
 			if (player == null)
 				return;
@@ -866,11 +783,9 @@ namespace DHDM
 			List<AskUI> asks = askUIs[player];
 
 			List<AskUI> dupList = asks.ToList();
-			for (int i = 0; i < dupList.Count; i++)
-			{
+			for (int i = 0; i < dupList.Count; i++) {
 				AskUI askUI = dupList[i];
-				switch (askUI.MemberTypeName)
-				{
+				switch (askUI.MemberTypeName) {
 					case "Boolean":
 						AddBooleanAsk(askUI);
 						break;
@@ -881,18 +796,15 @@ namespace DHDM
 			}
 		}
 
-		private void DndCharacterProperty_AskingValue(object sender, AskValueEventArgs ea)
-		{
+		private void DndCharacterProperty_AskingValue(object sender, AskValueEventArgs ea) {
 			bool needToRebuildAskUI = false;
-			if (!askUIs.ContainsKey(ea.Player))
-			{
+			if (!askUIs.ContainsKey(ea.Player)) {
 				askUIs.Add(ea.Player, new List<AskUI>());
 				needToRebuildAskUI = true;
 			}
 			List<AskUI> asks = askUIs[ea.Player];
 			AskUI foundAsk = asks.FirstOrDefault(x => x.MemberName == ea.MemberName);
-			if (foundAsk == null)
-			{
+			if (foundAsk == null) {
 				foundAsk = new AskUI(ea);
 				asks.Add(foundAsk);
 				needToRebuildAskUI = true;
@@ -904,15 +816,12 @@ namespace DHDM
 			ea.Value = foundAsk.Value;
 		}
 
-		private void Expressions_ExecutionChanged(object sender, CodingSeb.ExpressionEvaluator.ExecutionPointerChangedEventArgs ea)
-		{
+		private void Expressions_ExecutionChanged(object sender, CodingSeb.ExpressionEvaluator.ExecutionPointerChangedEventArgs ea) {
 
 		}
 
-		void SetupSpellsChangedFileWatcher()
-		{
-			spellsChangedFileWatcher = new FileSystemWatcher
-			{
+		void SetupSpellsChangedFileWatcher() {
+			spellsChangedFileWatcher = new FileSystemWatcher {
 				Path = Folders.CoreData,
 				NotifyFilter = NotifyFilters.LastWrite,
 				Filter = "DnD - Spells*.csv"
@@ -922,20 +831,17 @@ namespace DHDM
 		}
 
 		string newSpellFileName;
-		void ReplaceSpellsDataFile(string fullPath)
-		{
+		void ReplaceSpellsDataFile(string fullPath) {
 			newSpellFileName = fullPath;
 
 			reloadSpellsTimer.Stop();
 			reloadSpellsTimer.Start();
 		}
 
-		void CheckForNewSpells(object sender, EventArgs e)
-		{
+		void CheckForNewSpells(object sender, EventArgs e) {
 			reloadSpellsTimer.Stop();
 
-			try
-			{
+			try {
 				if (!newSpellFileName.Contains('(')) // Chrome adds "(1)", "(2)", etc onto files saved to prevent name collision.
 					return;  // If no parens exist, user saved with an overwrite, so no need to replace.
 				string spellDataFileName = System.IO.Path.Combine(Folders.CoreData, "DnD - Spells.csv");
@@ -946,20 +852,16 @@ namespace DHDM
 				File.Delete(spellDataFileName);
 				File.Move(newSpellFileName, spellDataFileName);
 			}
-			finally
-			{
-				SafeInvoke(() =>
-				{
+			finally {
+				SafeInvoke(() => {
 					SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
 					string spellName = selectedItem?.name;
 					ReloadSpells();
 					if (string.IsNullOrWhiteSpace(spellName))
 						return;
 
-					foreach (object item in lstAllSpells.Items)
-					{
-						if (item is SpellDto spellDto && spellDto.name == spellName)
-						{
+					foreach (object item in lstAllSpells.Items) {
+						if (item is SpellDto spellDto && spellDto.name == spellName) {
 							Character player = game.GetPlayerFromId(ActivePlayerId);
 							player.ClearAllCasting();
 
@@ -970,26 +872,21 @@ namespace DHDM
 				});
 			}
 		}
-		private void SpellsUpdated(object sender, FileSystemEventArgs e)
-		{
+		private void SpellsUpdated(object sender, FileSystemEventArgs e) {
 			ReplaceSpellsDataFile(e.FullPath);
 		}
 
-		private void AddReminderFunction_AddReminderRequest(object sender, AddReminderEventArgs ea)
-		{
-			if (ea.NowDuration == "1 round")
-			{
+		private void AddReminderFunction_AddReminderRequest(object sender, AddReminderEventArgs ea) {
+			if (ea.NowDuration == "1 round") {
 				game.TellDmInRounds(1, ea.Reminder);
 			}
-			else if (ea.NowDuration == "end of turn")
-			{
+			else if (ea.NowDuration == "end of turn") {
 				game.TellDmInRounds(0, ea.Reminder, TurnPoint.End);
 			}
 		}
 
 		Dictionary<string, int> savedRolls;
-		private void GetRoll_GetRollRequest(object sender, GetRollEventArgs ea)
-		{
+		private void GetRoll_GetRollRequest(object sender, GetRollEventArgs ea) {
 			if (savedRolls == null)
 				return;
 			lock (savedRolls)
@@ -997,24 +894,19 @@ namespace DHDM
 					ea.Result = savedRolls[ea.RollName];
 		}
 
-		void SaveNamedResults(RollResults stopRollingData)
-		{
+		void SaveNamedResults(RollResults stopRollingData) {
 			if (savedRolls == null)
 				savedRolls = new Dictionary<string, int>();
-			lock (savedRolls)
-			{
+			lock (savedRolls) {
 				CalculateDamageFromIndividualRollType(stopRollingData.individualRolls, savedRolls);
 			}
 		}
 
-		private void CalculateDamageFromIndividualRollType(List<IndividualRoll> individualRolls, Dictionary<string, int> results)
-		{
+		private void CalculateDamageFromIndividualRollType(List<IndividualRoll> individualRolls, Dictionary<string, int> results) {
 			results.Clear();
 			if (individualRolls != null)
-				foreach (IndividualRoll individualRoll in individualRolls)
-				{
-					if (!string.IsNullOrWhiteSpace(individualRoll.type))
-					{
+				foreach (IndividualRoll individualRoll in individualRolls) {
+					if (!string.IsNullOrWhiteSpace(individualRoll.type)) {
 						if (results.ContainsKey(individualRoll.type))
 							results[individualRoll.type] += individualRoll.value;
 						else
@@ -1022,8 +914,7 @@ namespace DHDM
 					}
 				}
 		}
-		private Dictionary<DamageType, int> CalculateDamageByType(List<IndividualRoll> Rolls)
-		{
+		private Dictionary<DamageType, int> CalculateDamageByType(List<IndividualRoll> Rolls) {
 			Dictionary<DamageType, int> results = new Dictionary<DamageType, int>();
 			if (Rolls == null)
 				return results;
@@ -1038,8 +929,7 @@ namespace DHDM
 					else
 						results.Add(roll.damageType, roll.value);
 
-			if (results.Count == 0)
-			{
+			if (results.Count == 0) {
 				results.Add(DamageType.None, 0);
 			}
 
@@ -1048,8 +938,7 @@ namespace DHDM
 					foreach (DamageType damageType in results.Keys)
 						results[damageType] += roll.value;
 				else if (roll.damageType == DamageType.DamageSubtract)
-					foreach (DamageType damageType in results.Keys)
-					{
+					foreach (DamageType damageType in results.Keys) {
 						results[damageType] -= roll.value;
 						if (results[damageType] < 1)
 							results[damageType] = 1;
@@ -1058,42 +947,33 @@ namespace DHDM
 			return results;
 		}
 
-		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
-		{
+		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea) {
 			TellDungeonMaster(ea.Message);
 		}
 
-		private void Game_RequestMessageToAll(object sender, MessageEventArgs ea)
-		{
+		private void Game_RequestMessageToAll(object sender, MessageEventArgs ea) {
 			TellAll(ea.Message);
 		}
 
-		void EnsureEverythingRemainsHookedUpAsExpected()
-		{
+		void EnsureEverythingRemainsHookedUpAsExpected() {
 			game.Clock.TimeChanged -= DndTimeClock_TimeChanged;
 			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 		}
 
-		void SetShortcutVisibility(Panel panel)
-		{
-			foreach (UIElement uIElement in panel.Children)
-			{
-				if (uIElement is ShortcutPanel shortcutPanel)
-				{
+		void SetShortcutVisibility(Panel panel) {
+			foreach (UIElement uIElement in panel.Children) {
+				if (uIElement is ShortcutPanel shortcutPanel) {
 					PlayerActionShortcut shortcut = shortcutPanel.Shortcut;
-					if (shortcut.Spell != null)
-					{
+					if (shortcut.Spell != null) {
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
 						KnownSpell matchingSpell = player.GetMatchingSpell(shortcut.Spell.Name);
-						if (matchingSpell != null && matchingSpell.CanBeRecharged())
-						{
+						if (matchingSpell != null && matchingSpell.CanBeRecharged()) {
 							if (matchingSpell.HasAnyCharges())
 								shortcutPanel.Visibility = Visibility.Visible;
 							else
 								shortcutPanel.Visibility = Visibility.Collapsed;
 						}
-						else if (shortcut.Spell.SpellSlotLevel > 0)
-						{
+						else if (shortcut.Spell.SpellSlotLevel > 0) {
 							if (player.HasRemainingSpellSlotCharges(shortcut.Spell.SpellSlotLevel))
 								shortcutPanel.Visibility = Visibility.Visible;
 							else
@@ -1104,15 +984,13 @@ namespace DHDM
 					if (string.IsNullOrWhiteSpace(availableWhen))
 						availableWhen = shortcut.AvailableWhen;
 
-					if (!string.IsNullOrEmpty(availableWhen))
-					{
+					if (!string.IsNullOrEmpty(availableWhen)) {
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
 						bool shortcutIsAvailable = Expressions.GetBool(availableWhen, player);
-						if (shortcutIsAvailable != shortcut.Available)
-						{
+						if (shortcutIsAvailable != shortcut.Available) {
 							shortcut.Available = shortcutIsAvailable;
 							if (shortcut.SourceFeature != null)
-								shortcut.SourceFeature.ShortcutAvailabilityChange("", player);
+								shortcut.SourceFeature.ShortcutAvailabilityChange(string.Empty, player);
 						}
 						if (shortcutIsAvailable)
 							shortcutPanel.Visibility = Visibility.Visible;
@@ -1123,10 +1001,8 @@ namespace DHDM
 			}
 		}
 
-		void SetShortcutVisibility()
-		{
-			SafeInvoke(() =>
-			{
+		void SetShortcutVisibility() {
+			SafeInvoke(() => {
 				SetShortcutVisibility(wpActionsActivePlayer);
 				SetShortcutVisibility(spBonusActionsActivePlayer);
 				SetShortcutVisibility(spReactionsActivePlayer);
@@ -1134,37 +1010,30 @@ namespace DHDM
 			});
 		}
 
-		void ClearAllSpellSlots()
-		{
-			foreach (Character player in game.Players)
-			{
+		void ClearAllSpellSlots() {
+			foreach (Character player in game.Players) {
 				CharacterSheets sheetForCharacter = GetSheetForCharacter(player.playerID);
 				sheetForCharacter?.ClearAllSpellSlots();
 			}
 		}
 
 		bool updatingRechargeables;
-		private void Game_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
-		{
+		private void Game_PlayerStateChanged(object sender, PlayerStateEventArgs ea) {
 			if (updatingRechargeables)
 				return;
 
-			if (ea.Contains("Rechargeables"))
-			{
+			if (ea.Contains("Rechargeables")) {
 				UpdateStateUIForPlayer(ea.Player);
 			}
-			else if (ea.IsRechargeable)
-			{
+			else if (ea.IsRechargeable) {
 				updatingRechargeables = true;
-				try
-				{
+				try {
 					int playerID = ea.Player.playerID;
 					CharacterSheets sheetForCharacter = GetSheetForCharacter(playerID);
 					sheetForCharacter?.UpdateRechargeableUI(ea.Key, (int)ea.NewValue);
 					UpdateStateUIForPlayer(ea.Player);
 				}
-				finally
-				{
+				finally {
 					updatingRechargeables = false;
 				}
 			}
@@ -1177,13 +1046,11 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void Game_CreatureStateChanged(object sender, CreatureStateEventArgs ea)
-		{
+		private void Game_CreatureStateChanged(object sender, CreatureStateEventArgs ea) {
 			CreatureStateChanged(ea, ea.Creature);
 		}
 
-		private static void CreatureStateChanged(StateChangedEventArgs ea, Creature creature)
-		{
+		private static void CreatureStateChanged(StateChangedEventArgs ea, Creature creature) {
 			if (ea.Contains("Visible"))
 				CreatureVisibilityChanged(ea, creature);
 
@@ -1191,10 +1058,8 @@ namespace DHDM
 				CreatureManager.NeedToUpdateInGameStats();
 		}
 
-		private static void CreatureVisibilityChanged(StateChangedEventArgs ea, Creature creature)
-		{
-			if (creature != null)
-			{
+		private static void CreatureVisibilityChanged(StateChangedEventArgs ea, Creature creature) {
+			if (creature != null) {
 				StateChangedData visibleStateChange = ea.GetStateChange("Visible");
 
 				if (visibleStateChange != null)
@@ -1206,8 +1071,7 @@ namespace DHDM
 		}
 
 		bool updatingUI;
-		private void UpdateStateUIForPlayer(Character player, bool fromTimer = false)
-		{
+		private void UpdateStateUIForPlayer(Character player, bool fromTimer = false) {
 			if (player == null)
 				return;
 
@@ -1215,16 +1079,13 @@ namespace DHDM
 				return;
 
 			updatingUI = true;
-			try
-			{
+			try {
 				if (!fromTimer)
 					UpdatePlayerScrollInGame(player);
 
-				SafeInvoke(() =>
-				{
+				SafeInvoke(() => {
 					ListBox stateList = GetStateListForCharacter(player.playerID);
-					if (stateList != null)
-					{
+					if (stateList != null) {
 						stateList.Items.Clear();
 						List<string> stateReport = player.GetStateReport();
 						stateReport.Sort();
@@ -1242,26 +1103,21 @@ namespace DHDM
 					SetClearSpellVisibility(player);
 				});
 			}
-			finally
-			{
+			finally {
 				updatingUI = false;
 			}
 		}
 
 		Dictionary<DispatcherTimer, PlayerActionShortcut> shortcutTimers = new Dictionary<DispatcherTimer, PlayerActionShortcut>();
-		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
-		{
-			SafeInvoke(() =>
-			{
-				if (ea.DelayMs == 0)
-				{
+		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea) {
+			SafeInvoke(() => {
+				if (ea.DelayMs == 0) {
 					if (waitingToClearPlayerDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
 						shortcutToActivateAfterClearingDice = ea.Shortcut;
 					else
 						ActivateShortcut(ea.Shortcut);
 				}
-				else
-				{
+				else {
 					DispatcherTimer dispatcherTimer = new DispatcherTimer();
 					dispatcherTimer.Interval = TimeSpan.FromMilliseconds(ea.DelayMs);
 					shortcutTimers.Add(dispatcherTimer, ea.Shortcut);
@@ -1272,8 +1128,7 @@ namespace DHDM
 
 		}
 
-		private void ActivateShortcutTimer_Tick(object sender, EventArgs e)
-		{
+		private void ActivateShortcutTimer_Tick(object sender, EventArgs e) {
 			if (!(sender is DispatcherTimer dispatcherTimer))
 				return;
 
@@ -1290,19 +1145,15 @@ namespace DHDM
 		}
 
 		// TODO: Spell Expired
-		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
-		{
-			if (ea.Alarm.Name.StartsWith(DndGame.STR_EndSpell))
-			{
+		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea) {
+			if (ea.Alarm.Name.StartsWith(DndGame.STR_EndSpell)) {
 				string spellToEnd = ea.Alarm.Name.Substring(DndGame.STR_EndSpell.Length);
 				EndSpellEffects(spellToEnd);
 			}
 		}
 
-		private void CreateDungeonMasterClient()
-		{
-			SafeInvoke(() =>
-			{
+		private void CreateDungeonMasterClient() {
+			SafeInvoke(() => {
 				reconnectToTwitchDungeonMasterTimer.Stop();
 				Background = Brushes.White;
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
@@ -1311,10 +1162,8 @@ namespace DHDM
 			HookTwitchClientDungeonMasterEvents();
 		}
 
-		private void CreateDragonHumpersClient()
-		{
-			SafeInvoke(() =>
-			{
+		private void CreateDragonHumpersClient() {
+			SafeInvoke(() => {
 				reconnectToTwitchDragonHumpersTimer.Stop();
 				Background = Brushes.White;
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
@@ -1323,8 +1172,7 @@ namespace DHDM
 			HookTwitchClientDragonHumpersEvents();
 		}
 
-		private void HookTwitchClientDungeonMasterEvents()
-		{
+		private void HookTwitchClientDungeonMasterEvents() {
 			if (dungeonMasterClient == null)
 				return;
 			dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
@@ -1335,14 +1183,13 @@ namespace DHDM
 			dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
 			dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
 			dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
-			dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
+			//dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
 			dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
 			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
 		}
 
 		int dragonHumpersClientEventHookCount = 0;
-		private void HookTwitchClientDragonHumpersEvents()
-		{
+		private void HookTwitchClientDragonHumpersEvents() {
 			if (dhClient == null)
 				return;
 			dhClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
@@ -1350,8 +1197,7 @@ namespace DHDM
 			dragonHumpersClientEventHookCount++;
 		}
 
-		private void UnhookTwitchClientDragonHumpersEvents()
-		{
+		private void UnhookTwitchClientDragonHumpersEvents() {
 			if (dhClient == null)
 				return;
 			dhClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
@@ -1359,8 +1205,7 @@ namespace DHDM
 			dragonHumpersClientEventHookCount--;
 		}
 
-		private void UnhookTwitchClientDungeonMasterEvents()
-		{
+		private void UnhookTwitchClientDungeonMasterEvents() {
 			if (dungeonMasterClient == null)
 				return;
 			dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
@@ -1371,75 +1216,64 @@ namespace DHDM
 			dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
 			dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
 			dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
-			dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
+			//dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
 			dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
 			dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
 		}
 
-		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
-		{
+		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e) {
 			if (sendTwitchChannelMessagesToHistory)
 				History.Log($"Channel ({e.Channel}) state changed ({e.ChannelState.Channel})");
 		}
 
-		private void DungeonMasterClient_OnNoPermissionError(object sender, EventArgs e)
-		{
+		private void DungeonMasterClient_OnNoPermissionError(object sender, EventArgs e) {
 			History.Log("DungeonMasterClient_OnNoPermissionError");
 		}
 
-		private void DungeonMasterClient_OnMessageThrottled(object sender, TwitchLib.Communication.Events.OnMessageThrottledEventArgs e)
-		{
-			History.Log($"Message (\"{e.Message}\") throttled ({e.SentMessageCount} messages sent in {e.Period.TotalSeconds} seconds - only {e.AllowedInPeriod} allowed)");
-		}
+		//private void DungeonMasterClient_OnMessageThrottled(object sender, TwitchLib.Communication.Events.OnMessageThrottledEventArgs e)
+		//{
+		//	History.Log($"Message (\"{e.Message}\") throttled ({e.SentMessageCount} messages sent in {e.Period.TotalSeconds} seconds - only {e.AllowedInPeriod} allowed)");
+		//}
 
 		bool sendTwitchLogMessagesToHistory;
 		bool sendMessageSendsToHistory;
 		bool sendTwitchChannelMessagesToHistory;
-		private void DungeonMasterClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
-		{
+		private void DungeonMasterClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e) {
 			if (sendTwitchLogMessagesToHistory)
 				History.Log($"BotUsername (\"{e.BotUsername}\") logged ({e.Data})");
 		}
 
-		private void DungeonMasterClient_OnLeftChannel(object sender, TwitchLib.Client.Events.OnLeftChannelArgs e)
-		{
+		private void DungeonMasterClient_OnLeftChannel(object sender, TwitchLib.Client.Events.OnLeftChannelArgs e) {
 			if (sendTwitchChannelMessagesToHistory)
 				History.Log($"User (\"{e.BotUsername}\") left channel ({e.Channel})");
 		}
 
-		private void DungeonMasterClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
-		{
+		private void DungeonMasterClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e) {
 			if (sendTwitchChannelMessagesToHistory)
 				History.Log($"User (\"{e.BotUsername}\") joined channel ({e.Channel})");
 		}
 
-		private void DungeonMasterClient_OnFailureToReceiveJoinConfirmation(object sender, TwitchLib.Client.Events.OnFailureToReceiveJoinConfirmationArgs e)
-		{
+		private void DungeonMasterClient_OnFailureToReceiveJoinConfirmation(object sender, TwitchLib.Client.Events.OnFailureToReceiveJoinConfirmationArgs e) {
 			if (sendTwitchChannelMessagesToHistory)
 				History.Log($"Channel (\"{e.Exception.Channel}\") FailureToReceiveJoinConfirmation ({e.Exception.Details})");
 		}
 
-		private void DungeonMasterClient_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
-		{
+		private void DungeonMasterClient_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e) {
 			if (System.Diagnostics.Debugger.IsAttached)
 				System.Diagnostics.Debugger.Break();
 		}
 
-		void SafeInvoke(Action action)
-		{
+		void SafeInvoke(Action action) {
 			if (uiThreadSleepingWhileWaitingForAnswerToQuestion)
 				return;  // Sorry kids, but we have to get out of here. Otherwise we will lock!
 
-			Dispatcher.Invoke(() =>
-			{
+			Dispatcher.Invoke(() => {
 				action();
 			});
 		}
 
-		private void DungeonMasterClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
-		{
-			SafeInvoke(() =>
-			{
+		private void DungeonMasterClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e) {
+			SafeInvoke(() => {
 				Background = new SolidColorBrush(Color.FromRgb(148, 81, 81));
 				btnReconnectTwitchClient.Visibility = Visibility.Visible;
 				reconnectToTwitchDungeonMasterTimer.Start();
@@ -1450,10 +1284,8 @@ namespace DHDM
 			History.Log($"DungeonMasterClient_OnDisconnected");
 		}
 
-		private void DragonHumpersClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
-		{
-			SafeInvoke(() =>
-			{
+		private void DragonHumpersClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e) {
+			SafeInvoke(() => {
 				Background = new SolidColorBrush(Color.FromRgb(81, 88, 148));
 				reconnectToTwitchDragonHumpersTimer.Start();
 			});
@@ -1463,27 +1295,21 @@ namespace DHDM
 			History.Log($"DragonHumpersClient_OnDisconnected");
 		}
 
-		private void DungeonMasterClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
-		{
+		private void DungeonMasterClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e) {
 			History.Log($"Connection error for \"{e.BotUsername}\" with message \"{e.Error.Message}\"");
 		}
 
-		void PlayScene(string sceneName)
-		{
+		void PlayScene(string sceneName) {
 			obsManager.PlayScene(sceneName);
 		}
 
-		public void PlayScene(string sceneName, int returnMs = -1)
-		{
+		public void PlayScene(string sceneName, int returnMs = -1) {
 			obsManager.PlayScene(sceneName, returnMs);
 		}
 
-		private void Feature_FeatureDeactivated(object sender, FeatureEventArgs ea)
-		{
-			if (ea.Feature.Name == "WildSurgeRage")
-			{
-				if (obsManager.lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive")
-				{
+		private void Feature_FeatureDeactivated(object sender, FeatureEventArgs ea) {
+			if (ea.Feature.Name == "WildSurgeRage") {
+				if (obsManager.lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive") {
 					PlayScene("DH.WildSurge.PlantGrowth.Leave");
 					BackToPlayersIn(10);
 				}
@@ -1494,14 +1320,12 @@ namespace DHDM
 
 		List<AnswerEntry> prebuiltAnswers;
 
-		async Task<int> AskQuestion(string question, List<string> answers)
-		{
+		async Task<int> AskQuestion(string question, List<string> answers) {
 			bool timerWasRunning = realTimeAdvanceTimer.IsEnabled;
 			if (timerWasRunning)
 				realTimeAdvanceTimer.Stop();
 			uiThreadSleepingWhileWaitingForAnswerToQuestion = true;
-			try
-			{
+			try {
 				AnswerEntry selectedAnswer = GetNextAnswer(answers);
 
 				if (selectedAnswer != null)
@@ -1509,8 +1333,7 @@ namespace DHDM
 
 				return await AskQuestionAsync(question, prebuiltAnswers);
 			}
-			finally
-			{
+			finally {
 				uiThreadSleepingWhileWaitingForAnswerToQuestion = false;
 				prebuiltAnswers = null;
 				if (timerWasRunning)
@@ -1518,8 +1341,7 @@ namespace DHDM
 			}
 		}
 
-		private AnswerEntry GetNextAnswer(List<string> answers)
-		{
+		private AnswerEntry GetNextAnswer(List<string> answers) {
 			BuildAnswerMap(answers);
 
 			if (ActivePlayer == null || string.IsNullOrEmpty(ActivePlayer.NextAnswer))
@@ -1528,13 +1350,11 @@ namespace DHDM
 			return selectedAnswer;
 		}
 
-		private AnswerEntry GetNextAnswer(List<AnswerEntry> answers)
-		{
+		private AnswerEntry GetNextAnswer(List<AnswerEntry> answers) {
 			AnswerEntry selectedAnswer;
 			if (ActivePlayer.NextAnswer == null)
 				return null;
-			if (ActivePlayer.NextAnswer.EndsWith("*"))
-			{
+			if (ActivePlayer.NextAnswer.EndsWith("*")) {
 				string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
 				selectedAnswer = answers.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
 			}
@@ -1553,8 +1373,7 @@ namespace DHDM
 		{
 			askingQuestion = true;
 			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answers, minAnswers, maxAnswers));
-			while (askingQuestion)
-			{
+			while (askingQuestion) {
 				// TODO: Check to see if we lose SignalR so we don't infinite loop here. This can happen when debugging at a breakpoint for a long time it seems.
 				await Task.Delay(300);
 			}
@@ -1562,8 +1381,7 @@ namespace DHDM
 		}
 
 		//! It seems like we need to call AskQuestionBlockUI any time we are answering a question from a Script.
-		private int AskQuestionBlockUI(string question, List<AnswerEntry> answerEntries, int minTargets = 1, int maxTargets = 1)
-		{
+		private int AskQuestionBlockUI(string question, List<AnswerEntry> answerEntries, int minTargets = 1, int maxTargets = 1) {
 			AnswerEntry selectedAnswer = GetNextAnswer(answerEntries);
 
 			if (selectedAnswer != null)
@@ -1576,29 +1394,25 @@ namespace DHDM
 			const int SleepMs = 300;
 			const int TimeoutSec = 15;
 			const int maxSleeps = 1000 * TimeoutSec / SleepMs;
-			while (askingQuestion && count < maxSleeps)
-			{
+			while (askingQuestion && count < maxSleeps) {
 				// TODO: Check to see if we lose SignalR so we don't infinite loop here. This can happen when debugging at a breakpoint for a long time it seems.
 				Thread.Sleep(SleepMs);
 				count++;
 			}
 			uiThreadSleepingWhileWaitingForAnswerToQuestion = false;
-			if (count == maxSleeps)
-			{
+			if (count == maxSleeps) {
 				// We timed out.
 				HubtasticBaseStation.InGameUICommand("OK");
 			}
 			return answerResponse;
 		}
 
-		private void BuildAnswerMap(List<string> answers)
-		{
+		private void BuildAnswerMap(List<string> answers) {
 			prebuiltAnswers = new List<AnswerEntry>();
 			List<string> textAnswers = new List<string>();
 			int index = 1;
 			bool firstTimeIn = true;
-			foreach (string answer in answers)
-			{
+			foreach (string answer in answers) {
 				if (firstTimeIn && answer.ToLower().IndexOf("zero") >= 0)
 					index = 0;
 				firstTimeIn = false;
@@ -1610,21 +1424,17 @@ namespace DHDM
 			}
 		}
 
-		private void AskFunction_AskQuestion(object sender, AskEventArgs ea)
-		{
+		private void AskFunction_AskQuestion(object sender, AskEventArgs ea) {
 			ea.Result = AskQuestionBlockUI(ea.Question, GetAnswerEntries(ea.Answers));
 		}
 
-		List<AnswerEntry> GetAnswerEntries(List<string> answers)
-		{
+		List<AnswerEntry> GetAnswerEntries(List<string> answers) {
 			int index = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
 
-			foreach (string answer in answers)
-			{
+			foreach (string answer in answers) {
 				Match match = Regex.Match(answer, "\"(\\d+):(.+)\"");
-				if (match.Success)
-				{
+				if (match.Success) {
 					string trimmedAnswer = match.Groups[2].Value;
 					int value = int.Parse(match.Groups[1].Value);
 					result.Add(new AnswerEntry(index, value, trimmedAnswer));
@@ -1638,19 +1448,15 @@ namespace DHDM
 
 		}
 
-		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
-		{
+		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea) {
 			MessageBox.Show(ea.Ex.Message, "Unhandled Exception");
 		}
 
-		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
-		{
+		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.ExtraOnly);
-			if (ea.DiceRollStr == RollTargetSavingThrowsFunction.CMD_RollTargetSavingThrows)
-			{
+			if (ea.DiceRollStr == RollTargetSavingThrowsFunction.CMD_RollTargetSavingThrows) {
 				diceRoll.Type = DiceRollType.OnlyTargetsSavingThrow;
-				if (spellToCastOnRoll != null && spellToCastOnRoll.Spell != null)
-				{
+				if (spellToCastOnRoll != null && spellToCastOnRoll.Spell != null) {
 
 					diceRoll.SavingThrow = spellToCastOnRoll.Spell.SavingThrowAbility;
 					if (ActivePlayer != null)
@@ -1660,10 +1466,8 @@ namespace DHDM
 				}
 				//Get spell saving throw ability.
 				//
-				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				{
-					if (inGameCreature.IsTargeted)
-					{
+				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
+					if (inGameCreature.IsTargeted) {
 						DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, DiceRollType.SavingThrow, diceRoll.SavingThrow);
 						diceRoll.DiceDtos.Add(diceDto);
 					}
@@ -1674,12 +1478,10 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-		bool JoinedChannel(string channel)
-		{
+		bool JoinedChannel(string channel) {
 			if (dungeonMasterClient == null)
 				return false;
-			foreach (JoinedChannel joinedChannel in dungeonMasterClient.JoinedChannels)
-			{
+			foreach (JoinedChannel joinedChannel in dungeonMasterClient.JoinedChannels) {
 				if (string.Compare(joinedChannel.Channel, channel, true) == 0)
 					return true;
 			}
@@ -1687,13 +1489,11 @@ namespace DHDM
 		}
 
 		List<BaseChatBot> commandParsers = new List<BaseChatBot>();
-		BaseChatBot GetCommandParser(string userId)
-		{
+		BaseChatBot GetCommandParser(string userId) {
 			return commandParsers.Find(x => x.ListensTo(userId));
 		}
 
-		public string GetPlayFirstNameFromId(int playerId)
-		{
+		public string GetPlayFirstNameFromId(int playerId) {
 			if (game == null)
 				return string.Empty;
 			Character player = game.GetPlayerFromId(playerId);
@@ -1702,10 +1502,8 @@ namespace DHDM
 			return player.firstName;
 		}
 
-		public void SetBoolProperty(int playerId, string propertyName, bool value)
-		{
-			SafeInvoke(() =>
-			{
+		public void SetBoolProperty(int playerId, string propertyName, bool value) {
+			SafeInvoke(() => {
 				Character player = game.GetPlayerFromId(playerId);
 				if (player == null)
 					return;
@@ -1715,26 +1513,22 @@ namespace DHDM
 			});
 		}
 
-		public bool GetBoolProperty(int playerId, string propertyName)
-		{
+		public bool GetBoolProperty(int playerId, string propertyName) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return false;
 			return Character.GetBoolProperty(player, propertyName);
 		}
 
-		public void SetSaveHiddenThreshold(int hiddenThreshold)
-		{
-			SafeInvoke(() =>
-			{
+		public void SetSaveHiddenThreshold(int hiddenThreshold) {
+			SafeInvoke(() => {
 				tbxSaveThreshold.Text = hiddenThreshold.ToString();
 			});
 
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden SAVE threshold");
 		}
 
-		bool IsPlayer(string userId)
-		{
+		bool IsPlayer(string userId) {
 			const string karen = "240735151";
 			const string mark = "270998178";
 			const string lara = "496519211";
@@ -1746,12 +1540,9 @@ namespace DHDM
 			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent || userId == maddy;
 		}
 
-		bool ColorStringIsValid(string substring)
-		{
-			if (substring.Length == 3 || substring.Length == 6)
-			{
-				foreach (char character in substring)
-				{
+		bool ColorStringIsValid(string substring) {
+			if (substring.Length == 3 || substring.Length == 6) {
+				foreach (char character in substring) {
 					if (char.IsDigit(character))
 						continue;
 					char lowerChar = char.ToLower(character);
@@ -1764,8 +1555,7 @@ namespace DHDM
 			return false;
 		}
 
-		void SetDiceColor(string substring, string username)
-		{
+		void SetDiceColor(string substring, string username) {
 			string colorStr = substring.Trim();
 			if (string.IsNullOrWhiteSpace(colorStr))
 				return;
@@ -1773,8 +1563,7 @@ namespace DHDM
 			if (!colorStr.StartsWith("#"))
 				colorStr = "#" + colorStr;
 
-			if (!ColorStringIsValid(colorStr.Substring(1)))
-			{
+			if (!ColorStringIsValid(colorStr.Substring(1))) {
 				TellViewers($"{username}, specify die colors with a six-digit hex color string, like this: #47259b");
 				return;
 			}
@@ -1784,12 +1573,10 @@ namespace DHDM
 			TellViewers($"{username}, your die back color is now {viewer.DieBackColor}.");
 		}
 
-		void SetDiceTrailingEffects(string effectName, string username)
-		{
+		void SetDiceTrailingEffects(string effectName, string username) {
 			DndViewer viewer = AllViewers.Get(username);
 			TrailingEffect foundEffect = AllTrailingEffects.GetSoft(effectName);
-			if (foundEffect == null)
-			{
+			if (foundEffect == null) {
 				TellViewers($"{username}, could not find an effect starting with \"{effectName}\". Please select one of: {AllTrailingEffects.GetList(", ")}");
 				return;
 			}
@@ -1798,15 +1585,13 @@ namespace DHDM
 			TellViewers($"{username}, your dice trailing effect is now {viewer.TrailingEffects}.");
 		}
 
-		bool ExecuteSpellCommand(string message, ChatMessage chatMessage)
-		{
+		bool ExecuteSpellCommand(string message, ChatMessage chatMessage) {
 			if (!message.StartsWith("!"))
 				return false;
 
 			string possibleSpellName = message.Substring(1);
 			Spell spell = AllSpells.Get(possibleSpellName);
-			if (spell != null)
-			{
+			if (spell != null) {
 				TellViewers($"{spell.Name}: {spell.GetShortDescription()}");
 				// https://www.dndbeyond.com/search?q=mage+hand
 				TellViewers($"For more information on {spell.Name}, see {spell.GetSpellSearchQueryDndBeyond()}");
@@ -1815,8 +1600,7 @@ namespace DHDM
 			return false;
 		}
 
-		void ExecuteDragonHumpersChatCommand(ChatMessage chatMessage)
-		{
+		void ExecuteDragonHumpersChatCommand(ChatMessage chatMessage) {
 			string message = chatMessage.Message;
 			string lowerMessage = message.ToLower();
 
@@ -1828,23 +1612,20 @@ namespace DHDM
 				TellViewers("Use the !te command to set trailing effects for custom die rolls (triggered by playing cards from streamloots.com/DragonHumpers ). Choose from: " + AllTrailingEffects.GetList(", "));
 			else if (lowerMessage == "!dc" || lowerMessage == "!dc ")
 				TellViewers("Use the !dc command followed by an HTML color string to set your custom die roll color (triggered by playing cards from streamloots.com/DragonHumpers ). Example: !dc #690096");
-			else
-			{
+			else {
 				if (ExecuteSpellCommand(message, chatMessage))
 					return;
 			}
 		}
 
-		void UseViewerCharge(string username)
-		{
+		void UseViewerCharge(string username) {
 			if (DndViewer.TestingSayAnything)
 #pragma warning disable CS0162 // Can be reachable if we flip the TestingSayAnything bool.
 				username = "SayAnythingTester";
 
 			DndViewer viewer = AllViewers.Get(username);
 			int remainingCharges = viewer.UseCharge("Say Anything");
-			if (remainingCharges == 0)
-			{
+			if (remainingCharges == 0) {
 				TellViewers($"{viewer.UserName} - you have depleted all your \"Say Anything\" charges!");
 				TellViewers($"Get more Dragon Humpers D&D game cards at https://www.streamloots.com/dragonhumpers");
 			}
@@ -1856,54 +1637,46 @@ namespace DHDM
 				TellViewers($"{viewer.UserName} - you have ten \"Say Anything\" charges remaining!");
 		}
 
-		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
-		{
+		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e) {
 			viewerManager.UserChats(e.ChatMessage.Username);
 			if (IsPlayer(e.ChatMessage.UserId) && (!DndViewer.TestingSayAnything || e.ChatMessage.UserId != "270998178"))
 				CharacterSaysSomething(e.ChatMessage.Message);
 			else if (ViewerCanUseChargeToSaySomething(e.ChatMessage.Username))
 				if (CharacterSaysSomething(e.ChatMessage.Message))
 					UseViewerCharge(e.ChatMessage.Username);
-			if (e.ChatMessage.Message.StartsWith("!"))
-			{
+			if (e.ChatMessage.Message.StartsWith("!")) {
 				ExecuteDragonHumpersChatCommand(e.ChatMessage);
 			}
 		}
 
-		private static bool CharacterSaysSomething(string message)
-		{
+		private static bool CharacterSaysSomething(string message) {
 			if (!message.StartsWith("!") || !message.Contains(":"))
 				return false;
 			string textColor = string.Empty;
 			message = message.Substring(1, message.Length - 1);
 			int colonPos = message.IndexOf(":");
-			if (colonPos > 0)
-			{
+			if (colonPos > 0) {
 				string playerName = message.Substring(0, colonPos);
 				int playerId = AllPlayers.GetPlayerIdFromName(playerName);
 				if (playerId == 100) // DM
 				{
 					textColor = "(#4b107c)";
 				}
-				if (playerId < 0)
-				{
+				if (playerId < 0) {
 					InGameCreature creature = AllInGameCreatures.GetActiveCreatureByFirstName(playerName);
 					if (creature == null)
 						return false;
 					playerId = -creature.Index;
 				}
-				else
-				{
+				else {
 					Character player = AllPlayers.GetFromId(playerId);
-					if (player != null)
-					{
+					if (player != null) {
 						textColor = $"({player.bubbleTextColor})";
 					}
 				}
 				message = message.Substring(colonPos + 1).Trim();
 				string speechCommand = null;
-				if (message.StartsWith("("))
-				{
+				if (message.StartsWith("(")) {
 					speechCommand = "thinks";
 					message = message.TrimStart('(');
 					if (!message.Contains("("))
@@ -1917,13 +1690,11 @@ namespace DHDM
 					message = message.Trim('”');
 				}
 
-				if (DateTime.Now.Hour < 15)
-				{
+				if (DateTime.Now.Hour < 15) {
 					ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
 					message = profanityFilter.CensorString(message);
 				}
-				if (speechCommand != null)
-				{
+				if (speechCommand != null) {
 					SaySomething(message, textColor, playerId, speechCommand);
 					return true;
 				}
@@ -1931,8 +1702,7 @@ namespace DHDM
 			return false;
 		}
 
-		bool ViewerCanUseChargeToSaySomething(string username)
-		{
+		bool ViewerCanUseChargeToSaySomething(string username) {
 			if (username == "dragonhumpersdm")
 				return false;
 
@@ -1944,8 +1714,7 @@ namespace DHDM
 			return viewer.HasCharges("Say Anything");
 		}
 
-		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
-		{
+		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e) {
 			//UnhookTwitchClientDungeonMasterEvents();
 			//HookTwitchClientDungeonMasterEvents();
 			string message = e.ChatMessage.Message;
@@ -1963,11 +1732,9 @@ namespace DHDM
 			//				String.Format("   Thread ID: {0}\n", thread.ManagedThreadId);
 			//}
 
-			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(message.Trim(), out int result) && prebuiltAnswers != null)
-			{
+			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(message.Trim(), out int result) && prebuiltAnswers != null) {
 				AnswerEntry answer = prebuiltAnswers.FirstOrDefault(x => x.Index == result);
-				if (answer != null)
-				{
+				if (answer != null) {
 					FrmAsk.TryAnswer(answer.Value);
 					return;
 				}
@@ -1975,8 +1742,7 @@ namespace DHDM
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
-			try
-			{
+			try {
 				commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient, ActivePlayer);
 			}
 			catch //(Exception ex)
@@ -1985,10 +1751,8 @@ namespace DHDM
 			}
 		}
 
-		private void History_LogUpdated(object sender, EventArgs e)
-		{
-			SafeInvoke(() =>
-			{
+		private void History_LogUpdated(object sender, EventArgs e) {
+			SafeInvoke(() => {
 				History.UpdateQueuedEntries();
 				logListBox.SelectedIndex = logListBox.Items.Count - 1;
 				logListBox.ScrollIntoView(logListBox.SelectedItem);
@@ -1996,14 +1760,11 @@ namespace DHDM
 		}
 
 		int activePlayerId;
-		public int ActivePlayerId
-		{
-			get
-			{
+		public int ActivePlayerId {
+			get {
 				return activePlayerId;
 			}
-			set
-			{
+			set {
 				if (activePlayerId == value)
 					return;
 
@@ -2012,54 +1773,43 @@ namespace DHDM
 			}
 		}
 
-		private void ShowTabForPlayer(int playerId)
-		{
-			SafeInvoke(() =>
-			{
-				if (tabPlayers.SelectedItem is PlayerTabItem selectedPlayerTab)
-				{
+		private void ShowTabForPlayer(int playerId) {
+			SafeInvoke(() => {
+				if (tabPlayers.SelectedItem is PlayerTabItem selectedPlayerTab) {
 					if (selectedPlayerTab.PlayerId == playerId)
 						return;
 				}
 
 				foreach (object item in tabPlayers.Items)
-					if (item is PlayerTabItem playerTabItem && playerTabItem.PlayerId == playerId)
-					{
+					if (item is PlayerTabItem playerTabItem && playerTabItem.PlayerId == playerId) {
 						tabPlayers.SelectedItem = playerTabItem;
 						return;
 					}
 			});
 		}
 
-		public Character ActivePlayer
-		{
-			get
-			{
+		public Character ActivePlayer {
+			get {
 				return activePlayer;
 			}
 		}
 
-		private void FocusHelper_FocusedControlsChanged(object sender, FocusedControlsChangedEventArgs e)
-		{
-			foreach (StatBox statBox in e.Active)
-			{
+		private void FocusHelper_FocusedControlsChanged(object sender, FocusedControlsChangedEventArgs e) {
+			foreach (StatBox statBox in e.Active) {
 				HubtasticBaseStation.FocusItem(ActivePlayerId, activePage, statBox.FocusItem);
 			}
 
-			foreach (StatBox statBox in e.Deactivated)
-			{
+			foreach (StatBox statBox in e.Deactivated) {
 				HubtasticBaseStation.UnfocusItem(ActivePlayerId, activePage, statBox.FocusItem);
 			}
 		}
 
 		Dictionary<int, Rectangle> highlightRectangles;
 
-		object GetToolTip(string description)
-		{
+		object GetToolTip(string description) {
 			if (string.IsNullOrWhiteSpace(description))
 				return null;
-			if (description.StartsWith("$"))
-			{
+			if (description.StartsWith("$")) {
 				description = Expressions.GetStr(description, ActivePlayer);
 			}
 			ToolTip toolTip = new ToolTip();
@@ -2070,8 +1820,7 @@ namespace DHDM
 			toolTip.Content = textBlock;
 			return toolTip;
 		}
-		UIElement BuildShortcutButton(PlayerActionShortcut playerActionShortcut)
-		{
+		UIElement BuildShortcutButton(PlayerActionShortcut playerActionShortcut) {
 			if (highlightRectangles == null)
 				highlightRectangles = new Dictionary<int, Rectangle>();
 			ShortcutPanel shortcutPanel = new ShortcutPanel();
@@ -2097,24 +1846,20 @@ namespace DHDM
 			return shortcutPanel;
 		}
 
-		PlayerActionShortcut GetActionShortcut(object tag)
-		{
+		PlayerActionShortcut GetActionShortcut(object tag) {
 			//PlayerActionShortcut sneak = actionShortcuts.LastOrDefault(x => x.Name.StartsWith("Sneak"));
 			if (int.TryParse(tag.ToString(), out int index))
 				return actionShortcuts.FirstOrDefault(x => x.Index == index);
 			return null;
 		}
-		void HidePlayerShortcutHighlightsUI()
-		{
+		void HidePlayerShortcutHighlightsUI() {
 			if (highlightRectangles == null)
 				return;
-			foreach (Rectangle rectangle in highlightRectangles.Values)
-			{
+			foreach (Rectangle rectangle in highlightRectangles.Values) {
 				rectangle.Visibility = Visibility.Hidden;
 			}
 		}
-		void HighlightPlayerShortcutUI(int index)
-		{
+		void HighlightPlayerShortcutUI(int index) {
 			HidePlayerShortcutHighlightsUI();
 			if (highlightRectangles == null)
 				return;
@@ -2122,19 +1867,14 @@ namespace DHDM
 				highlightRectangles[index].Visibility = Visibility.Visible;
 		}
 
-		void SetActivePlayerVantageUI(VantageKind vantageMod)
-		{
+		void SetActivePlayerVantageUI(VantageKind vantageMod) {
 			SetPlayerVantageUI(ActivePlayerId, vantageMod);
 		}
 
-		public void SetPlayerVantageUI(int playerId, VantageKind vantageMod)
-		{
-			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-			{
-				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == playerId)
-				{
-					switch (vantageMod)
-					{
+		public void SetPlayerVantageUI(int playerId, VantageKind vantageMod) {
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == playerId) {
+					switch (vantageMod) {
 						case VantageKind.Normal:
 							checkbox.RbNormal.IsChecked = true;
 							break;
@@ -2150,8 +1890,7 @@ namespace DHDM
 			}
 		}
 
-		private void Game_SpellDispelled(object sender, CastedSpellEventArgs ea)
-		{
+		private void Game_SpellDispelled(object sender, CastedSpellEventArgs ea) {
 			if (ea.CastedSpell.SpellCaster == null)
 				return;
 
@@ -2163,12 +1902,11 @@ namespace DHDM
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell, ea.CastedSpell.SpellCaster.IntId);
 			EndSpellEffects(spellToEnd);
 
-			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
-			{
+			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell) {
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
 				CreatureStats playerStats = PlayerStatManager.GetPlayerStats(ea.CastedSpell.SpellCaster.IntId);
 				playerStats.PercentConcentrationComplete = 100;
-				playerStats.ConcentratedSpell = "";
+				playerStats.ConcentratedSpell = string.Empty;
 				playerStats.ConcentratedSpellDurationSeconds = 0;
 				playerStats.JustBrokeConcentration = false;
 				CreatureManager.UpdatePlayerStatsInGame();
@@ -2176,10 +1914,8 @@ namespace DHDM
 
 			bool conditionsChanged = false;
 			foreach (Creature creature in Game.AllCreatures)
-				if (creature.RemoveSpellCondition(ea.CastedSpell.ID))
-				{
-					if (creature is Character player)
-					{
+				if (creature.RemoveSpellCondition(ea.CastedSpell.ID)) {
+					if (creature is Character player) {
 						CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 						if (playerStats != null)
 							playerStats.Conditions = player.AllConditions;
@@ -2193,8 +1929,7 @@ namespace DHDM
 			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
 
-		private void EndSpellEffects(string spellToEnd)
-		{
+		private void EndSpellEffects(string spellToEnd) {
 			if (!spellToEnd.StartsWith(PlayerActionShortcut.SpellWindupPrefix))
 				spellToEnd = PlayerActionShortcut.SpellWindupPrefix + spellToEnd;
 			HubtasticBaseStation.ClearWindup(spellToEnd);
@@ -2202,13 +1937,11 @@ namespace DHDM
 
 			string casterId = string.Empty;
 			string casterEmote = string.Empty;
-			if (parenPos > 0)
-			{
+			if (parenPos > 0) {
 				string playerIdStr = spellToEnd.Substring(parenPos + 1);
 				char[] endChars = { ')' };
 				playerIdStr = playerIdStr.Trim(endChars);
-				if (int.TryParse(playerIdStr, out int playerId))
-				{
+				if (int.TryParse(playerIdStr, out int playerId)) {
 					Character player = game.GetPlayerFromId(playerId);
 					casterEmote = player.emoticon + " ";
 					//BreakConcentration(playerId);
@@ -2224,27 +1957,22 @@ namespace DHDM
 
 		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
 
-		void ClearSpellWindupsInGame(Spell spell, int playerId)
-		{
+		void ClearSpellWindupsInGame(Spell spell, int playerId) {
 			HubtasticBaseStation.ClearWindup(PlayerActionShortcut.SpellWindupPrefix + DndGame.GetSimpleSpellPlayerName(spell, playerId));
 		}
 
-		public void BreakConcentration(int playerId)
-		{
+		public void BreakConcentration(int playerId) {
 			game.BreakConcentration(playerId);
 		}
 
 
-		void PrepareToCastSpell(Spell spell, int playerId)
-		{
+		void PrepareToCastSpell(Spell spell, int playerId) {
 			spell.OwnerId = playerId;
 			TellAll($"{GetPlayerName(playerId)} casts {spell.Name} at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
-		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (sender is Button button)
-			{
+		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e) {
+			if (sender is Button button) {
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
@@ -2257,30 +1985,25 @@ namespace DHDM
 		CastedSpell castedSpellNeedingCompletion = null;
 		Character spellCaster = null;
 
-		private void ActivateShortcut(string shortcutName)
-		{
+		private void ActivateShortcut(string shortcutName) {
 			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == ActivePlayerId);
 			if (shortcut == null && tbTabs.SelectedItem == tbDebug)
 				shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText.StartsWith(shortcutName) && x.PlayerId == ActivePlayerId);
 			if (shortcut != null)
-				SafeInvoke(() =>
-				{
+				SafeInvoke(() => {
 					ActivateShortcut(shortcut);
 				});
 		}
 
-		void HideShortcutUI(Panel panel, PlayerActionShortcut actionShortcut)
-		{
+		void HideShortcutUI(Panel panel, PlayerActionShortcut actionShortcut) {
 			foreach (UIElement uIElement in panel.Children)
-				if (uIElement is ShortcutPanel shortcutPanel && shortcutPanel.Shortcut == actionShortcut)
-				{
+				if (uIElement is ShortcutPanel shortcutPanel && shortcutPanel.Shortcut == actionShortcut) {
 					shortcutPanel.Visibility = Visibility.Collapsed;
 					return;
 				}
 		}
 
-		void HideShortcutUI(PlayerActionShortcut actionShortcut)
-		{
+		void HideShortcutUI(PlayerActionShortcut actionShortcut) {
 			if (actionShortcut == null)
 				return;
 			HideShortcutUI(wpActionsActivePlayer, actionShortcut);
@@ -2289,20 +2012,15 @@ namespace DHDM
 			HideShortcutUI(spSpecialActivePlayer, actionShortcut);
 		}
 
-		void SetRollTypeUI(PlayerActionShortcut actionShortcut)
-		{
+		void SetRollTypeUI(PlayerActionShortcut actionShortcut) {
 			EnableRollDiceButton(actionShortcut.Type);
 		}
 
-		void SetSelectedItemFromText(ComboBox comboBox, string str)
-		{
+		void SetSelectedItemFromText(ComboBox comboBox, string str) {
 
-			foreach (object item in comboBox.Items)
-			{
-				if (item is ComboBoxItem comboBoxItem)
-				{
-					if (comboBoxItem.Content.ToString().ToLower() == str.ToLower())
-					{
+			foreach (object item in comboBox.Items) {
+				if (item is ComboBoxItem comboBoxItem) {
+					if (comboBoxItem.Content.ToString().ToLower() == str.ToLower()) {
 						comboBox.SelectedItem = comboBoxItem;
 						return;
 					}
@@ -2310,15 +2028,13 @@ namespace DHDM
 			}
 			comboBox.SelectedItem = null;
 		}
-		void SetRollComboBoxUI(DiceRoll diceRoll)
-		{
+		void SetRollComboBoxUI(DiceRoll diceRoll) {
 			SetSelectedItemFromText(cbDamage, diceRoll.DamageType.ToString());
 			SetSelectedItemFromText(cbAbility, diceRoll.SavingThrow.ToString());
 			SetSelectedItemFromText(cbSkillFilter, DndUtils.ToSkillDisplayString(diceRoll.SkillCheck));
 		}
 
-		private void EnableRollDiceButton(DiceRollType type)
-		{
+		private void EnableRollDiceButton(DiceRollType type) {
 			btnRollPlayerDice.IsEnabled = type != DiceRollType.None;
 		}
 
@@ -2349,8 +2065,7 @@ namespace DHDM
 #endif
 		DiceRoll currentRoll;
 
-		void SetRollScopeUI(DiceRoll diceRoll)
-		{
+		void SetRollScopeUI(DiceRoll diceRoll) {
 			// Mark says this method will never need to change. CodeBaseAlpha says "Let's see."
 			// ![](9920C0D4E763C7314FD8A6EAF74D5FB3.png)
 			if (diceRoll.RollScope == RollScope.ActivePlayer)
@@ -2365,11 +2080,9 @@ namespace DHDM
 				rbIndividuals.IsChecked = true;
 		}
 
-		void SetControlUIFromRoll(DiceRoll diceRoll)
-		{
+		void SetControlUIFromRoll(DiceRoll diceRoll) {
 			settingInternally = true;
-			try
-			{
+			try {
 				// ![](CC2A109973BFCC3ADA17563004698A52.png;;968,241,1780,655;0.04000,0.04000)
 
 				ckbUseMagic.IsChecked = diceRoll.IsMagic;
@@ -2383,8 +2096,7 @@ namespace DHDM
 				SetRollComboBoxUI(diceRoll);
 				SetRollScopeUI(diceRoll);
 			}
-			finally
-			{
+			finally {
 				settingInternally = false;
 			}
 
@@ -2392,10 +2104,8 @@ namespace DHDM
 
 		bool settingAttackRadioButtonInternally;
 
-		private void SetRollTypeUI(DiceRollType type)
-		{
-			switch (type)
-			{
+		private void SetRollTypeUI(DiceRollType type) {
+			switch (type) {
 				case DiceRollType.SkillCheck:
 					rbSkillCheck.IsChecked = true;
 					break;
@@ -2448,12 +2158,10 @@ namespace DHDM
 					break;
 				case DiceRollType.ChaosBolt:
 					settingAttackRadioButtonInternally = true;
-					try
-					{
+					try {
 						rbAttack.IsChecked = true;
 					}
-					finally
-					{
+					finally {
 						settingAttackRadioButtonInternally = false;
 					}
 					break;
@@ -2481,16 +2189,13 @@ namespace DHDM
 			}
 		}
 
-		void TellDmWeAreReady(Character player, PlayerActionShortcut actionShortcut)
-		{
+		void TellDmWeAreReady(Character player, PlayerActionShortcut actionShortcut) {
 			if (actionShortcut.Spell != null)
 				if (actionShortcut.Spell.MorePowerfulWhenCastAtHigherLevels)
-					if (actionShortcut.Spell.BonusThreshold != null && actionShortcut.Spell.BonusThreshold.StartsWith("c"))
-					{
+					if (actionShortcut.Spell.BonusThreshold != null && actionShortcut.Spell.BonusThreshold.StartsWith("c")) {
 						string className = "character";
 						DndCore.CharacterClass firstMatchingClass = player.FirstSpellCastingClass();
-						if (firstMatchingClass != null)
-						{
+						if (firstMatchingClass != null) {
 							className = firstMatchingClass.Name;
 							TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} as a level-{firstMatchingClass.Level} {className}...");
 						}
@@ -2501,35 +2206,29 @@ namespace DHDM
 						TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
 				else
 					TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
-			else if (actionShortcut.CarriedWeapon != null)
-			{
+			else if (actionShortcut.CarriedWeapon != null) {
 				string weaponName = actionShortcut.CarriedWeapon.Name;
 				if (string.IsNullOrEmpty(weaponName))
 					weaponName = actionShortcut.CarriedWeapon.Weapon.Name;
 				TellAll($"{player.firstName} is ready to attack with {player.hisHer} {weaponName}...");
 			}
-			else if (actionShortcut.Type == DiceRollType.WildMagicD20Check)
-			{
+			else if (actionShortcut.Type == DiceRollType.WildMagicD20Check) {
 				TellAll($"{player.firstName} is checking wild magic...");
 			}
-			else if (actionShortcut.Type == DiceRollType.WildMagic)
-			{
+			else if (actionShortcut.Type == DiceRollType.WildMagic) {
 				TellAll($"{player.firstName}'s wild magic roll...");
 			}
 		}
 
-		void SetPlayerPropertiesBasedOnShortcut(PlayerActionShortcut actionShortcut, Character player)
-		{
+		void SetPlayerPropertiesBasedOnShortcut(PlayerActionShortcut actionShortcut, Character player) {
 			player.TwoHanded = actionShortcut.HandsOnWeapon == HandsOnWeapon.Two;
 			UpdateAskUI(player);
 		}
-		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
-		{
+		private void ActivateShortcut(PlayerActionShortcut actionShortcut) {
 			preparedSpell = null;
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
-			try
-			{
+			try {
 				SetPlayerPropertiesBasedOnShortcut(actionShortcut, player);
 
 				ActionType activationResult = ActivateShortcutForPlayer(actionShortcut, player);
@@ -2540,42 +2239,34 @@ namespace DHDM
 				if (activationResult == ActionType.CreatesNew)
 					NewShortcutActivated(actionShortcut, player);
 			}
-			finally
-			{
+			finally {
 				SetPlayerShortcutUI(actionShortcut, player);
 				SetShortcutVisibility();
 				UpdateAskUI(player);
 			}
 		}
 
-		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut)
-		{
+		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut) {
 			PlayerStatManager.ClearReadyToRollState();
 
-			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt)
-			{
+			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt) {
 				DieRollDetails dieRollDetails = new DieRollDetails();
 				dieRollDetails.AddRoll("1d20");
 				if (actionShortcut.Spell != null)
 					dieRollDetails.AddRoll(actionShortcut.Spell.DieStr);
-				else
-				{
+				else {
 					dieRollDetails.AddRoll(actionShortcut.Dice);
 				}
 				PlayerStatManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 			}
-			else if (DiceDto.IsDamage(actionShortcut.Type))
-			{
-				if (actionShortcut.Spell != null)
-				{
+			else if (DiceDto.IsDamage(actionShortcut.Type)) {
+				if (actionShortcut.Spell != null) {
 					string dieStr = actionShortcut.Spell.DieStr;
-					if (!string.IsNullOrWhiteSpace(dieStr))
-					{
+					if (!string.IsNullOrWhiteSpace(dieStr)) {
 						DieRollDetails dieRollDetails = null;
 						if (actionShortcut.Spell != null)
 							dieRollDetails = DieRollDetails.From(actionShortcut.Spell.DieStr);
-						else
-						{
+						else {
 							System.Diagnostics.Debugger.Break();
 						}
 						PlayerStatManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
@@ -2585,17 +2276,14 @@ namespace DHDM
 
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
-		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player) {
 			settingInternally = true;
-			try
-			{
+			try {
 				currentRoll = DiceRoll.GetFrom(actionShortcut, player);
 				TellDmWeAreReady(player, actionShortcut);
 				NextDieRollType = actionShortcut.Type;
 			}
-			finally
-			{
+			finally {
 				settingInternally = false;
 				SetInGameDiceForShortcut(actionShortcut);
 				HighlightPlayerShortcutUI(actionShortcut.Index);
@@ -2636,8 +2324,7 @@ namespace DHDM
 		//	}
 		//}
 
-		private void RollInstantDiceIfNecessary(PlayerActionShortcut actionShortcut)
-		{
+		private void RollInstantDiceIfNecessary(PlayerActionShortcut actionShortcut) {
 			if (!actionShortcut.HasInstantDice())
 				return;
 			DiceRollType type = actionShortcut.Type;
@@ -2649,32 +2336,27 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-		public enum ActionType
-		{
+		public enum ActionType {
 			Abort,
 			ModifiesExisting,
 			CreatesNew
 		}
 
-		private void SetPlayerShortcutUI(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private void SetPlayerShortcutUI(PlayerActionShortcut actionShortcut, Character player) {
 			if (actionShortcut.ModifiesExistingRoll)
 				ModifyExistingRollUI(actionShortcut, player);
-			else
-			{
+			else {
 				SetRollTypeUI(actionShortcut);
 				SetModifierUI(actionShortcut);
 			}
 		}
 
-		private ActionType ActivateShortcutForPlayer(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private ActionType ActivateShortcutForPlayer(PlayerActionShortcut actionShortcut, Character player) {
 			ResetWildMagicChecks(actionShortcut);
 			ResetActiveFields();
 			AssignDieRollEffects(actionShortcut);
 
-			if (actionShortcut.ModifiesExistingRoll)
-			{
+			if (actionShortcut.ModifiesExistingRoll) {
 				actionShortcut.ExecuteCommands(player);
 				return ActionType.ModifiesExisting;
 			}
@@ -2698,8 +2380,7 @@ namespace DHDM
 			return ActionType.CreatesNew;
 		}
 
-		private void ResetWildMagicChecks(PlayerActionShortcut actionShortcut)
-		{
+		private void ResetWildMagicChecks(PlayerActionShortcut actionShortcut) {
 			if (actionShortcut.Type != DiceRollType.WildMagic)
 				return;
 			Character activePlayer = GetPlayer(actionShortcut.PlayerId);
@@ -2707,42 +2388,35 @@ namespace DHDM
 				activePlayer.NumWildMagicChecks = 0;
 		}
 
-		private void SetModifierUI(PlayerActionShortcut actionShortcut)
-		{
+		private void SetModifierUI(PlayerActionShortcut actionShortcut) {
 			settingInternally = true;
-			try
-			{
+			try {
 				if (actionShortcut.ToHitModifier > 0)
 					tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
 				else
 					tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
 			}
-			finally
-			{
+			finally {
 				settingInternally = false;
 			}
 		}
 
-		private void ShowPreparedPhysicalActionInGame(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private void ShowPreparedPhysicalActionInGame(PlayerActionShortcut actionShortcut, Character player) {
 			if (!IsWildMagicRoll(actionShortcut))
 				SwitchToMainPageInGame();
 
 			SendShortcutWindups(actionShortcut, player);
 		}
 
-		private static bool IsWildMagicRoll(PlayerActionShortcut actionShortcut)
-		{
+		private static bool IsWildMagicRoll(PlayerActionShortcut actionShortcut) {
 			return actionShortcut.DisplayText.IndexOf("Wild Magic") >= 0;
 		}
 
-		private void SwitchToMainPageInGame()
-		{
+		private void SwitchToMainPageInGame() {
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
 		}
 
-		private void ShowPreparedSpellInGame(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private void ShowPreparedSpellInGame(PlayerActionShortcut actionShortcut, Character player) {
 			Spell spell = actionShortcut.Spell;
 			if (spell == null)
 				return;
@@ -2758,37 +2432,30 @@ namespace DHDM
 
 		CastedSpell preparedSpell;
 
-		private void SwitchToSpellPageInGame()
-		{
+		private void SwitchToSpellPageInGame() {
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
 		}
 
-		private void UpdateSpellPageUI(Spell spell)
-		{
+		private void UpdateSpellPageUI(Spell spell) {
 			if (tbTabs.SelectedItem == tbDebug)
 				UpdateSpellEvents(spell);
 		}
 
-		public enum ActionResult
-		{
+		public enum ActionResult {
 			GoodToGo,
 			MustAbort
 		}
 
-		private ActionResult PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private ActionResult PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player) {
 			player.ReadiedWeapon = null;
 			if (actionShortcut.Part != TurnPart.Reaction)
 				game.CreatureTakingAction(player);
 
 			// TODO: Fix the targeting.
-			if (DndUtils.IsAttack(actionShortcut.Type))
-			{
-				if (actionShortcut.CarriedWeapon != null && actionShortcut.CarriedWeapon.Weapon.RequiresAmmunition())
-				{
+			if (DndUtils.IsAttack(actionShortcut.Type)) {
+				if (actionShortcut.CarriedWeapon != null && actionShortcut.CarriedWeapon.Weapon.RequiresAmmunition()) {
 					string ammunitionKind = actionShortcut.CarriedWeapon.Weapon.AmmunitionKind;
-					if (!player.HasAmmunition(ammunitionKind))
-					{
+					if (!player.HasAmmunition(ammunitionKind)) {
 						TellAll($"{player.firstName} is out of {ammunitionKind}s.");
 						return ActionResult.MustAbort;
 					}
@@ -2807,22 +2474,18 @@ namespace DHDM
 			return ActionResult.GoodToGo;
 		}
 
-		private static void ClearWeaponAndSpellEffects(Character player)
-		{
+		private static void ClearWeaponAndSpellEffects(Character player) {
 			ClearExistingWindupsInGame();
 			player.ClearAdditionalSpellEffects();
 		}
 
-		private static void ClearExistingWindupsInGame()
-		{
+		private static void ClearExistingWindupsInGame() {
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			HubtasticBaseStation.ClearWindup("Windup.*");
 		}
 
-		private void ModifyExistingRollUI(PlayerActionShortcut actionShortcut, Character player)
-		{
-			switch (actionShortcut.VantageMod)
-			{
+		private void ModifyExistingRollUI(PlayerActionShortcut actionShortcut, Character player) {
+			switch (actionShortcut.VantageMod) {
 				case VantageKind.Advantage:
 				case VantageKind.Disadvantage:
 					SetActivePlayerVantageUI(actionShortcut.VantageMod);
@@ -2832,23 +2495,20 @@ namespace DHDM
 				tbxDamageDice.Text += "," + actionShortcut.AddDice;
 		}
 
-		private void AssignDieRollEffects(PlayerActionShortcut actionShortcut)
-		{
+		private void AssignDieRollEffects(PlayerActionShortcut actionShortcut) {
 			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
 				activeTrailingEffects = actionShortcut.TrailingEffects;
 			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
 				activeDieRollEffects = actionShortcut.DieRollEffects;
 		}
 
-		private void ResetActiveFields()
-		{
+		private void ResetActiveFields() {
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			SpellManager.activeSpellName = null;
 		}
 
-		private void SetControlUiFromShortcut(PlayerActionShortcut actionShortcut)
-		{
+		private void SetControlUiFromShortcut(PlayerActionShortcut actionShortcut) {
 			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
 				tbxDamageDice.Text += "," + actionShortcut.AddDice;
 			else if (actionShortcut.Spell == null)
@@ -2863,31 +2523,24 @@ namespace DHDM
 			ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
 		}
 
-		private void SendWindupFunction_SendWindup(object sender, WindupEventArgs ea)
-		{
+		private void SendWindupFunction_SendWindup(object sender, WindupEventArgs ea) {
 			List<WindupDto> windups = new List<WindupDto>();
 			windups.Add(ea.WindupDto);
 			string serializedObject = JsonConvert.SerializeObject(windups);
 			HubtasticBaseStation.AddWindup(serializedObject);
 		}
 
-		private void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
-		{
+		private void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player) {
 			double scale = DieRollManager.GetPlayerDieScaleById(player.playerID);
-			if (actionShortcut.Windups.Count > 0)
-			{
+			if (actionShortcut.Windups.Count > 0) {
 				List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
-				foreach (WindupDto windupDto in windups)
-				{
+				foreach (WindupDto windupDto in windups) {
 					windupDto.Scale *= scale;
 
 
-					if (windupDto.IsForAmmunition)
-					{
-						if (player.ReadiedAmmunition != null)
-						{
-							if (!string.IsNullOrEmpty(player.ReadiedAmmunition.HueShift))
-							{
+					if (windupDto.IsForAmmunition) {
+						if (player.ReadiedAmmunition != null) {
+							if (!string.IsNullOrEmpty(player.ReadiedAmmunition.HueShift)) {
 								actionShortcut.SetHueFromStr(windupDto, player, player.ReadiedAmmunition.HueShift);
 								windupDto.HueStr = player.ReadiedAmmunition.HueShift;
 							}
@@ -2900,8 +2553,7 @@ namespace DHDM
 			}
 		}
 
-		void CastingSpellSoon(DndTimeSpan castingTime, PlayerActionShortcut actionShortcut)
-		{
+		void CastingSpellSoon(DndTimeSpan castingTime, PlayerActionShortcut actionShortcut) {
 			string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
 			string spellName = actionShortcut.Spell.Name;
 			string timeSpanStr = actionShortcut.Spell.CastingTimeStr;
@@ -2910,10 +2562,8 @@ namespace DHDM
 			game.CreateAlarm(alarmName, castingTime, DndAlarm_CastSpellNow, actionShortcut, null);
 		}
 
-		private void DndAlarm_CastSpellNow(object sender, DndTimeEventArgs ea)
-		{
-			if (ea.Alarm.Data is PlayerActionShortcut actionShortcut)
-			{
+		private void DndAlarm_CastSpellNow(object sender, DndTimeEventArgs ea) {
+			if (ea.Alarm.Data is PlayerActionShortcut actionShortcut) {
 				string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
 				string spellName = actionShortcut.Spell.Name;
 				TellAll($"{playerName} is now casting {spellName}!");
@@ -2921,8 +2571,7 @@ namespace DHDM
 			}
 		}
 
-		private async Task<bool> ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
-		{
+		private async Task<bool> ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false) {
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
 			SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 
@@ -2942,8 +2591,7 @@ namespace DHDM
 
 			bool castingForFirstTimeNow = playerSpellCastState != PlayerSpellCastState.AlreadyCasting || !forceRepeat;
 
-			if (forceRepeat && ActivePlayer.concentratedSpell != null)
-			{
+			if (forceRepeat && ActivePlayer.concentratedSpell != null) {
 				// Use original spellId so TaleSpire moveable effects move!!!
 				SpellManager.nextSpellIdWeAreCasting = ActivePlayer.concentratedSpell.ID;
 				castedSpell.ID = ActivePlayer.concentratedSpell.ID;
@@ -2952,8 +2600,7 @@ namespace DHDM
 			if (castingForFirstTimeNow)
 				castedSpell.PreparationStarted(game);  // Triggers onPreparing event here.
 
-			if (castingForFirstTimeNow && actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
-			{
+			if (castingForFirstTimeNow && actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction) {
 				actionShortcut.LongCastingSpell = castedSpell;
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
 				return true;
@@ -2966,18 +2613,15 @@ namespace DHDM
 			return true;
 		}
 
-		private CastedSpell CastSpellNow(PlayerActionShortcut actionShortcut, CastedSpell castedSpell = null)
-		{
+		private CastedSpell CastSpellNow(PlayerActionShortcut actionShortcut, CastedSpell castedSpell = null) {
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			Spell spell = actionShortcut.Spell;
 			SpellManager.activeSpellName = spell.Name;
 			KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
-			if (matchingSpell != null && matchingSpell.CanBeRecharged())
-			{
+			if (matchingSpell != null && matchingSpell.CanBeRecharged()) {
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 				UseRechargeableItem(actionShortcut, matchingSpell);
-				if (castedSpell == null)
-				{
+				if (castedSpell == null) {
 					castedSpell = new CastedSpell(spell, player);
 					SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 				}
@@ -2987,16 +2631,14 @@ namespace DHDM
 				game.CompleteCast(spellCaster, castedSpell);
 				ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 			}
-			else
-			{
+			else {
 				castedSpell = CastActionSpell(actionShortcut, player, spell, castedSpell);
 			}
 			spellCaster = player;
 			return castedSpell;
 		}
 
-		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
-		{
+		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell) {
 			if (matchingSpell.ChargesRemaining > 0)
 				matchingSpell.ChargesRemaining--;
 			if (matchingSpell.ChargesRemaining == 0)
@@ -3004,14 +2646,11 @@ namespace DHDM
 
 		}
 
-		private CastedSpell CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell, CastedSpell castedSpell = null)
-		{
+		private CastedSpell CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell, CastedSpell castedSpell = null) {
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
-			if (castedSpell == null)
-			{
-				if (actionShortcut.LongCastingSpell != null)
-				{
+			if (castedSpell == null) {
+				if (actionShortcut.LongCastingSpell != null) {
 					castedSpell = actionShortcut.LongCastingSpell;
 					actionShortcut.LongCastingSpell = null;
 					game.Cast(player, spell, castedSpell);
@@ -3026,14 +2665,12 @@ namespace DHDM
 
 			SetClearSpellVisibility(player);
 
-			if (spell.MustRollDiceToCast())
-			{
+			if (spell.MustRollDiceToCast()) {
 				castedSpellNeedingCompletion = castedSpell;
 				actionShortcut.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
 				actionShortcut.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			}
-			else
-			{
+			else {
 				ShowSpellHitOrMissInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(castedSpell);
 			}
@@ -3042,23 +2679,20 @@ namespace DHDM
 			return castedSpell;
 		}
 
-		void UpdatePlayerPositions()
-		{
+		void UpdatePlayerPositions() {
 			ApiResponse response = TaleSpireClient.GetCreatures();
 			if (response == null || response.Result == ResponseType.Failure)
 				return;
 
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
 
-			foreach (CharacterPosition characterPosition in characterPositions.Characters)
-			{
+			foreach (CharacterPosition characterPosition in characterPositions.Characters) {
 				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
 				if (creature != null)
 					creature.SetMapPosition(characterPosition.Position.x, characterPosition.Position.y, characterPosition.Position.z);
 			}
 		}
-		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
-		{
+		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell) {
 			if (castedSpell.Target == null)  // && (castedSpell.Spell.MinTargetsToCast > 0 || castedSpell.Spell.MaxTargetsToCast > 0)
 				AddCurrentTargets(castedSpell);
 
@@ -3068,17 +2702,14 @@ namespace DHDM
 
 			DndCore.ValidationResult validationResult = castedSpell.GetValidation(player, castedSpell.Target);
 
-			if (validationResult.ValidationAction == ValidationAction.Stop)
-			{
+			if (validationResult.ValidationAction == ValidationAction.Stop) {
 				ReportValidation(player, validationResult);
 				return PlayerSpellCastState.ValidationFailed;
 			}
 
-			if (validationResult.ValidationAction == ValidationAction.Warn)
-			{
+			if (validationResult.ValidationAction == ValidationAction.Warn) {
 				// If we haven't warned yet, let's do that and get out. Otherwise, we allow the DM to push through warnings.
-				if (player.JustWarnedAbout != castedSpell.Spell)
-				{
+				if (player.JustWarnedAbout != castedSpell.Spell) {
 					player.JustWarnedAbout = castedSpell.Spell;
 					ReportValidation(player, validationResult);
 					return PlayerSpellCastState.ValidationFailed;
@@ -3088,20 +2719,16 @@ namespace DHDM
 			player.JustWarnedAbout = null;
 
 			PlayerSpellCastState playerSpellState = PlayerSpellCastState.FreeToCast;
-			if (castedSpell.Spell.RequiresConcentration && player.concentratedSpell != null)
-			{
+			if (castedSpell.Spell.RequiresConcentration && player.concentratedSpell != null) {
 				Spell concentratedSpell = player.concentratedSpell.Spell;
 
-				try
-				{
+				try {
 					if (game.ClockIsRunning())
 						realTimeAdvanceTimer.Stop();
-					if (concentratedSpell.Name == castedSpell.Spell.Name)
-					{
+					if (concentratedSpell.Name == castedSpell.Spell.Name) {
 						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
 						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, player.concentratedSpell);
-						if (remainingSpellTime.TotalSeconds > 0)
-						{
+						if (remainingSpellTime.TotalSeconds > 0) {
 							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell)} remaining)");
 							return PlayerSpellCastState.AlreadyCasting;
 						}
@@ -3118,8 +2745,7 @@ namespace DHDM
 					else
 						playerSpellState = PlayerSpellCastState.Concentrating;
 				}
-				finally
-				{
+				finally {
 					if (game.ClockIsRunning())
 						StartRealTimeTimer();
 				}
@@ -3128,8 +2754,7 @@ namespace DHDM
 			return playerSpellState;
 		}
 
-		private static void AddCurrentTargets(CastedSpell castedSpell)
-		{
+		private static void AddCurrentTargets(CastedSpell castedSpell) {
 			Target target = new Target();
 			target.Type = AttackTargetType.Spell;
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -3143,27 +2768,23 @@ namespace DHDM
 			castedSpell.Target = target;
 		}
 
-		private void ReportValidation(Character player, DndCore.ValidationResult validationResult)
-		{
+		private void ReportValidation(Character player, DndCore.ValidationResult validationResult) {
 			HubtasticBaseStation.ShowValidationIssue(player.playerID, validationResult.ValidationAction, validationResult.MessageOverPlayer);
 			TellDungeonMaster(validationResult.MessageToDm);
 		}
 
-		public enum PlayerSpellCastState
-		{
+		public enum PlayerSpellCastState {
 			ValidationFailed,
 			FreeToCast,
 			Concentrating,
 			AlreadyCasting
 		}
 
-		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell)
-		{
+		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell) {
 			ShowSpellEffects(actionShortcut, spell, "Windup");
 		}
 
-		private static void ShowSpellEffects(PlayerActionShortcut actionShortcut, Spell spell, string prefix)
-		{
+		private static void ShowSpellEffects(PlayerActionShortcut actionShortcut, Spell spell, string prefix) {
 			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new Target() { CasterId = actionShortcut.PlayerId });
 
 			spellToCastDto.Windups = actionShortcut.WindupsReversed.Where(x => x != null && x.Name != null && x.Name.StartsWith(prefix)).ToList();
@@ -3173,16 +2794,14 @@ namespace DHDM
 			HubtasticBaseStation.CastSpell(serializedObject);
 		}
 
-		private void SetClearSpellVisibility(Character player)
-		{
+		private void SetClearSpellVisibility(Character player) {
 			if (player.spellActivelyCasting == null && player.spellPreviouslyCasting != null)
 				btnClearSpell.Visibility = Visibility.Visible;
 			else
 				btnClearSpell.Visibility = Visibility.Hidden;
 		}
 
-		void SetActionShortcuts(int playerID)
-		{
+		void SetActionShortcuts(int playerID) {
 			AddShortcutButtons(wpActionsActivePlayer, playerID, TurnPart.Action);
 			AddShortcutButtons(spBonusActionsActivePlayer, playerID, TurnPart.BonusAction);
 			AddShortcutButtons(spReactionsActivePlayer, playerID, TurnPart.Reaction);
@@ -3190,8 +2809,7 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void AddShortcutButtons(Panel panel, int playerID, TurnPart part)
-		{
+		private void AddShortcutButtons(Panel panel, int playerID, TurnPart part) {
 			ClearExistingButtons(panel);
 
 			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerId == playerID).Where(x => x.Part == part).ToList();
@@ -3201,16 +2819,13 @@ namespace DHDM
 			else
 				panel.Visibility = Visibility.Visible;
 
-			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
-			{
+			foreach (PlayerActionShortcut playerActionShortcut in playerActions) {
 				panel.Children.Add(BuildShortcutButton(playerActionShortcut));
 			}
 		}
 
-		private void ClearExistingButtons(Panel panel)
-		{
-			for (int i = panel.Children.Count - 1; i >= 0; i--)
-			{
+		private void ClearExistingButtons(Panel panel) {
+			for (int i = panel.Children.Count - 1; i >= 0; i--) {
 				UIElement uIElement = panel.Children[i];
 				if (uIElement is StackPanel)
 					panel.Children.RemoveAt(i);
@@ -3219,10 +2834,8 @@ namespace DHDM
 
 		Character activePlayer;
 
-		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
-			{
+		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e) {
+			if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem) {
 				activePlayerId = playerTabItem.PlayerId;
 				activePlayer = game.GetPlayerFromId(playerTabItem.PlayerId);
 			}
@@ -3231,8 +2844,7 @@ namespace DHDM
 			ActivatePendingPlayerShortcuts();
 			if (buildingTabs)
 				return;
-			if (rbActivePlayer.IsChecked == true)
-			{
+			if (rbActivePlayer.IsChecked == true) {
 				CheckOnlyOnePlayer(ActivePlayerId);
 			}
 			game.TellPlayerTheyAreActive(ActivePlayerId);
@@ -3250,15 +2862,13 @@ namespace DHDM
 			UpdateAllUIForPlayer(player);
 			TellDmActivePlayer(ActivePlayerId);
 		}
-		void UpdateAllUIForPlayer(Character player)
-		{
+		void UpdateAllUIForPlayer(Character player) {
 			UpdateStateUIForPlayer(player);
 			UpdateEventsUIForPlayer(player);
 			RebuildAskUI(player);
 		}
 
-		void UpdateEventsUIForPlayer(Character player)
-		{
+		void UpdateEventsUIForPlayer(Character player) {
 			if (player == null)
 				return;
 
@@ -3267,8 +2877,7 @@ namespace DHDM
 			lstEvents.ItemsSource = null;
 		}
 
-		private void InitializeActivePlayerData()
-		{
+		private void InitializeActivePlayerData() {
 			castedSpellNeedingCompletion = null;
 			spellCaster = null;
 			activeTrailingEffects = string.Empty;
@@ -3279,52 +2888,42 @@ namespace DHDM
 			FocusHelper.ClearActiveStatBoxes();
 		}
 
-		void CheckOnlyOnePlayer(int playerID)
-		{
-			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-			{
+		void CheckOnlyOnePlayer(int playerID) {
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
 				if (uIElement is PlayerRollCheckBox checkbox)
 					checkbox.IsChecked = checkbox.PlayerId == playerID;
 			}
 		}
 
-		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
-		{
-			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page)
-			{
+		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea) {
+			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page) {
 				activePage = characterSheets.Page;
 				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 		}
 
-		void SetActivePlayerFromCharacter(Character character)
-		{
+		void SetActivePlayerFromCharacter(Character character) {
 			if (character.playerID != ActivePlayerId)
 				return;
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 			player.CopyUIChangeableAttributesFrom(character);
 		}
-		private void HandleCharacterSheetDataChanged(object sender, RoutedEventArgs e)
-		{
-			if (sender is CharacterSheets characterSheets)
-			{
+		private void HandleCharacterSheetDataChanged(object sender, RoutedEventArgs e) {
+			if (sender is CharacterSheets characterSheets) {
 				Character character = characterSheets.GetCharacter();
 				SetActivePlayerFromCharacter(character);
 			}
 		}
 
-		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e) {
 			EffectGroup effectGroup = new EffectGroup();
-			foreach (TimeLineEffect timeLineEffect in groupEffectBuilder.Entries)
-			{
+			foreach (TimeLineEffect timeLineEffect in groupEffectBuilder.Entries) {
 				Effect effect = null;
 
 				if (timeLineEffect.Effect != null)
 					effect = timeLineEffect.Effect.GetPrimaryEffect();
 
-				if (effect != null)
-				{
+				if (effect != null) {
 					effect.timeOffsetMs = (int)Math.Round(timeLineEffect.Start.TotalMilliseconds);
 					effectGroup.Add(effect);
 				}
@@ -3334,8 +2933,7 @@ namespace DHDM
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
-		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 			if (e.RemovedItems != null && e.RemovedItems.Count > 0)
 				if (e.RemovedItems[0] is TabItem tabItem)
 					if (tabItem == tbEffects)
@@ -3344,8 +2942,7 @@ namespace DHDM
 						lstItems.Save();
 		}
 
-		public class MyOtherClass
-		{
+		public class MyOtherClass {
 
 			public double X { get; set; }
 			public double Y { get; set; }
@@ -3357,42 +2954,34 @@ namespace DHDM
 		bool rollInspirationAfterwards;
 
 
-		void TriggerMagicEvents(DiceRoll diceRoll)
-		{
+		void TriggerMagicEvents(DiceRoll diceRoll) {
 			cardHandManager.BeginUpdate();
-			try
-			{
+			try {
 				SystemVariables.SavingThrowAbility = Ability.none;
 				SystemVariables.SkillCheckKind = Skills.none;
 				SystemVariables.SkillCheckAbility = Ability.none;
 
 				DiceRollType diceRollType = diceRoll.Type;
-				if (diceRollType == DiceRollType.SavingThrow)
-				{
+				if (diceRollType == DiceRollType.SavingThrow) {
 					SystemVariables.SavingThrowAbility = diceRoll.SavingThrow;
 					CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
 				}
-				else if (IsAttack(diceRollType))
-				{
+				else if (IsAttack(diceRollType)) {
 					CreatureAttacks(diceRoll.GetCreatureIds());
 				}
-				else if (diceRollType == DiceRollType.SkillCheck)
-				{
+				else if (diceRollType == DiceRollType.SkillCheck) {
 					SystemVariables.SkillCheckKind = diceRoll.SkillCheck;
 					SystemVariables.SkillCheckAbility = DndUtils.ToAbility(diceRoll.SkillCheck);
 					CreaturesRollingSkillCheck(diceRoll.GetCreatureIds());
 				}
 			}
-			finally
-			{
+			finally {
 				cardHandManager.EndUpdate();
 			}
 		}
 
-		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0)
-		{
-			if (delayMs > 0)
-			{
+		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0) {
+			if (delayMs > 0) {
 				delayedDiceRoll = diceRoll;
 				delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
 				delayRollTimer.Start();
@@ -3402,8 +2991,7 @@ namespace DHDM
 			RollTheDiceNow(diceRoll);
 		}
 
-		private void RollTheDiceNow(DiceRoll diceRoll)
-		{
+		private void RollTheDiceNow(DiceRoll diceRoll) {
 			DieRollManager.RollingDiceNow(diceRoll);
 
 			CompleteCast(diceRoll);
@@ -3413,22 +3001,18 @@ namespace DHDM
 			Character player = null;
 			if (diceRoll.DiceGroup == DiceGroup.Players)
 				player = InitializeForPlayerRoll(diceRoll);
-			else
-			{
+			else {
 				// TODO: Call ProcessAddOnsForDtos(diceRoll) so players can get benefits of bane/bless for viewer rolls.
 			}
 
-			SafeInvoke(() =>
-			{
-				if (diceRoll.DiceGroup == DiceGroup.Players)
-				{
+			SafeInvoke(() => {
+				if (diceRoll.DiceGroup == DiceGroup.Players) {
 					showClearPlayerDiceButtonTimer.Start();
 					updateClearPlayerDiceButtonTimer.Stop();
 					EnablePlayerDiceRollButtons(false);
 					btnClearPlayerDice.Visibility = Visibility.Hidden;
 				}
-				else
-				{
+				else {
 					showClearViewerDiceButtonTimer.Start();
 					updateClearViewerDiceButtonTimer.Stop();
 					btnClearViewerDice.Visibility = Visibility.Hidden;
@@ -3443,34 +3027,28 @@ namespace DHDM
 				ResetPlayerState(diceRoll, player);
 		}
 
-		private void ResetPlayerState(DiceRoll diceRoll, Character player)
-		{
+		private void ResetPlayerState(DiceRoll diceRoll, Character player) {
 			if (diceRoll.IsOnePlayer)
 				player?.ResetPlayerRollBasedState();
-			else
-			{
-				foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
-				{
+			else {
+				foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions) {
 					player = game.GetPlayerFromId(playerRollOption.PlayerID);
 					player?.ResetPlayerRollBasedState();
 				}
 			}
 		}
 
-		void ProcessAddOnsForDtos(DiceRoll diceRoll)
-		{
+		void ProcessAddOnsForDtos(DiceRoll diceRoll) {
 			List<int> creatureIds = diceRoll.GetCreatureIds();
 			List<Creature> creatures = GetAllCreaturesFromIds(creatureIds);
 			foreach (Creature creature in creatures)
 				ProcessAddOns(diceRoll, creature);
 		}
 
-		private static List<Creature> GetAllCreaturesFromDiceDtos(DiceRoll diceRoll)
-		{
+		private static List<Creature> GetAllCreaturesFromDiceDtos(DiceRoll diceRoll) {
 			List<Creature> creatures = new List<Creature>();
 			foreach (DiceDto diceDto in diceRoll.DiceDtos)
-				if (diceDto.CreatureId < 0)
-				{
+				if (diceDto.CreatureId < 0) {
 					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-diceDto.CreatureId);
 					if (inGameCreature != null && !creatures.Contains(inGameCreature.Creature))
 						creatures.Add(inGameCreature.Creature);
@@ -3478,12 +3056,10 @@ namespace DHDM
 			return creatures;
 		}
 
-		private List<Creature> GetAllCreaturesFromIds(List<int> creatureIds)
-		{
+		private List<Creature> GetAllCreaturesFromIds(List<int> creatureIds) {
 			List<Creature> creatures = new List<Creature>();
 			foreach (int creatureId in creatureIds)
-				if (creatureId < 0)
-				{
+				if (creatureId < 0) {
 					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
 					if (inGameCreature != null && !creatures.Contains(inGameCreature.Creature))
 						creatures.Add(inGameCreature.Creature);
@@ -3493,17 +3069,14 @@ namespace DHDM
 			return creatures;
 		}
 
-		private Character InitializeForPlayerRoll(DiceRoll diceRoll)
-		{
+		private Character InitializeForPlayerRoll(DiceRoll diceRoll) {
 			// TODO: Figure out where to trigger the saving throw and attack events.
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 
 			forcedWildMagicThisRoll = false;
-			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
-			{
+			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName)) {
 				Spell spell = AllSpells.Get(diceRoll.SpellName);
-				if (spell != null && spell.MustRollDiceToCast())
-				{
+				if (spell != null && spell.MustRollDiceToCast()) {
 					DiceRollType diceRollType = PlayerActionShortcut.GetDiceRollType(PlayerActionShortcut.GetDiceRollTypeStr(spell));
 					if (!DndUtils.IsAttack(diceRollType) && diceRoll.PlayerRollOptions.Count == 1)
 						ShowSpellHitOrMissInGame(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
@@ -3515,13 +3088,11 @@ namespace DHDM
 			lastRoll = diceRoll;
 			Character player = null;
 
-			if (diceRoll.PlayerRollOptions.Count == 1)
-			{
+			if (diceRoll.PlayerRollOptions.Count == 1) {
 				PlayerRollOptions playerRollOptions = diceRoll.PlayerRollOptions[0];
 				player = game.GetPlayerFromId(playerRollOptions.PlayerID);
 
-				if (DndUtils.IsAttack(diceRoll.Type))
-				{
+				if (DndUtils.IsAttack(diceRoll.Type)) {
 					// TODO: Pass the targetCreature into AttackingNow when mapping is complete and targets are known.
 					player.AttackingNow(null);
 				}
@@ -3532,16 +3103,14 @@ namespace DHDM
 			ProcessAddOnsForDtos(diceRoll);
 
 
-			if (diceRoll.IsOnePlayer && player != null)
-			{
+			if (diceRoll.IsOnePlayer && player != null) {
 				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageHealthExtraDice, (int)Math.Round(diceRoll.HiddenThreshold));
 			}
 
 			return player;
 		}
 
-		static void AddAdditionalDiceDtos(DiceRoll diceRoll, Creature creature)
-		{
+		static void AddAdditionalDiceDtos(DiceRoll diceRoll, Creature creature) {
 			if (creature.additionalDice == null)
 				return;
 			foreach (string diceStr in creature.additionalDice)
@@ -3550,13 +3119,11 @@ namespace DHDM
 			creature.additionalDiceThisRoll = null;
 		}
 
-		private static void ProcessAddOns(DiceRoll diceRoll, Creature creature)
-		{
+		private static void ProcessAddOns(DiceRoll diceRoll, Creature creature) {
 			if (creature == null)
 				return;
 
-			if (!string.IsNullOrWhiteSpace(creature.additionalDiceThisRoll))
-			{
+			if (!string.IsNullOrWhiteSpace(creature.additionalDiceThisRoll)) {
 				AddAdditionalDiceDtos(diceRoll, creature);
 				//if (diceRoll.SuppressLegacyRoll)
 				//	AddAdditionalDiceDtos(diceRoll, creature);
@@ -3571,10 +3138,8 @@ namespace DHDM
 				diceRoll.AddTrailingEffects(creature.trailingEffectsThisRoll);
 		}
 
-		private void DynamicThrottlingForDieRoll()
-		{
-			if (dynamicThrottling)
-			{
+		private void DynamicThrottlingForDieRoll() {
+			if (dynamicThrottling) {
 				ChangeFrameRateAndUI(Overlays.Back, 30);
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 30);
@@ -3582,8 +3147,7 @@ namespace DHDM
 		}
 
 		Dictionary<string, Target> diceRollTargets = new Dictionary<string, Target>();
-		void BindTargetToDiceRoll(DiceRoll diceRoll, Target target)
-		{
+		void BindTargetToDiceRoll(DiceRoll diceRoll, Target target) {
 			diceRoll.CreateRollIdIfMissing();
 			if (!diceRollTargets.ContainsKey(diceRoll.RollID))
 				diceRollTargets.Add(diceRoll.RollID, target);
@@ -3591,37 +3155,30 @@ namespace DHDM
 				diceRollTargets[diceRoll.RollID] = target;
 		}
 
-		private void CompleteCast(DiceRoll diceRoll)
-		{
+		private void CompleteCast(DiceRoll diceRoll) {
 			if (diceRoll.DiceGroup == DiceGroup.Viewers)
 				return;
 
-			if (castedSpellNeedingCompletion != null)
-			{
+			if (castedSpellNeedingCompletion != null) {
 				BindTargetToDiceRoll(diceRoll, castedSpellNeedingCompletion.Target);
 				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
 				diceRoll.DamageHealthExtraDice = castedSpellNeedingCompletion.DieStr;
 				spellCaster = null;
 				castedSpellNeedingCompletion = null;
 			}
-			else
-			{
-				if (!string.IsNullOrWhiteSpace(diceRoll.SpellID))
-				{
+			else {
+				if (!string.IsNullOrWhiteSpace(diceRoll.SpellID)) {
 
 				}
 			}
 		}
 
-		void PrepareForClear()
-		{
+		void PrepareForClear() {
 			//showClearButtonTimer.Start();
 		}
 
-		void ActivatePendingPlayerShortcuts()
-		{
-			if (shortcutToActivateAfterClearingDice != null)
-			{
+		void ActivatePendingPlayerShortcuts() {
+			if (shortcutToActivateAfterClearingDice != null) {
 				PlayerActionShortcut shortcutToActivate = shortcutToActivateAfterClearingDice;
 				shortcutToActivateAfterClearingDice = null;
 				ActivateShortcut(shortcutToActivate);
@@ -3633,15 +3190,12 @@ namespace DHDM
 #pragma warning disable CS0414 // Used for testing.
 		bool waitingToClearViewerDice;
 
-		void ActivatePendingPlayerShortcutsIn(int seconds)
-		{
+		void ActivatePendingPlayerShortcutsIn(int seconds) {
 			pendingShortcutsTimer.Interval = TimeSpan.FromSeconds(seconds);
 			pendingShortcutsTimer.Start();
 		}
-		public void ClearTheDice(DiceGroup diceGroup)
-		{
-			if (diceGroup == DiceGroup.Players)
-			{
+		public void ClearTheDice(DiceGroup diceGroup) {
+			if (diceGroup == DiceGroup.Players) {
 				updateClearPlayerDiceButtonTimer.Stop();
 				btnClearPlayerDice.Visibility = Visibility.Hidden;
 				btnRollPlayerDice.IsEnabled = true;
@@ -3649,8 +3203,7 @@ namespace DHDM
 				waitingToClearPlayerDice = false;
 				ActivatePendingPlayerShortcutsIn(1);
 			}
-			else
-			{
+			else {
 				updateClearViewerDiceButtonTimer.Stop();
 				btnClearViewerDice.Visibility = Visibility.Hidden;
 				waitingToClearViewerDice = false;
@@ -3660,22 +3213,18 @@ namespace DHDM
 			HubtasticBaseStation.ClearDice(diceGroup);
 		}
 
-		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e) {
 			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
-		bool CanIncludeVantageDice(DiceRollType type)
-		{
+		bool CanIncludeVantageDice(DiceRollType type) {
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type) || type == DiceRollType.SkillCheck);
 		}
 
-		private DiceRoll PrepareRoll(DiceRollType type)
-		{
+		private DiceRoll PrepareRoll(DiceRollType type) {
 			VantageKind diceRollKind = VantageKind.Normal;
 
-			if (CanIncludeVantageDice(type))
-			{
+			if (CanIncludeVantageDice(type)) {
 				//if (rbTestAdvantageDieRoll.IsChecked == true)
 				//	diceRollKind = VantageKind.Advantage;
 				//else if (rbTestDisadvantageDieRoll.IsChecked == true)
@@ -3697,26 +3246,21 @@ namespace DHDM
 			else
 				diceRoll.MinDamage = 0;
 
-			if (type == DiceRollType.Initiative)
-			{
+			if (type == DiceRollType.Initiative) {
 				AllInGameCreatures.AddD20sForSelected(diceRoll.DiceDtos, DiceRollType.Initiative);
 			}
 
-			if (type == DiceRollType.SkillCheck)
-			{
+			if (type == DiceRollType.SkillCheck) {
 				ComboBoxItem selectedItem = (ComboBoxItem)cbSkillFilter.SelectedItem;
-				if (selectedItem != null && selectedItem.Content != null)
-				{
+				if (selectedItem != null && selectedItem.Content != null) {
 					string skillStr = selectedItem.Content.ToString();
 					diceRoll.SkillCheck = DndUtils.ToSkill(skillStr);
 				}
 			}
 
-			if (DiceDto.IsSavingThrow(type))
-			{
+			if (DiceDto.IsSavingThrow(type)) {
 				ComboBoxItem selectedItem = (ComboBoxItem)cbAbility.SelectedItem;
-				if (selectedItem != null && selectedItem.Content != null)
-				{
+				if (selectedItem != null && selectedItem.Content != null) {
 					string abilityStr = selectedItem.Content.ToString();
 					diceRoll.SavingThrow = DndUtils.ToAbility(abilityStr);
 				}
@@ -3724,8 +3268,7 @@ namespace DHDM
 
 			diceRoll.DamageType = DamageType.None;
 
-			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type))
-			{
+			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type)) {
 				//if (rbActivePlayer.IsChecked == true)
 				//	diceRoll.RollScope = RollScope.ActivePlayer;
 				//else
@@ -3735,52 +3278,42 @@ namespace DHDM
 				diceRoll.RollScope = RollScope.ActivePlayer;
 
 			diceRoll.Modifier = 0;
-			if (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt)
-			{
+			if (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt) {
 				if (NextRollScope != RollScope.ActiveInGameCreature)
 					if (double.TryParse(tbxModifier.Text, out double modifierResult))
 						diceRoll.Modifier = modifierResult;
 			}
 
-			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow)
-			{
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow) {
 				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
-				if (selectedItem != null && selectedItem.Content != null)
-				{
+				if (selectedItem != null && selectedItem.Content != null) {
 					string damageStr = selectedItem.Content.ToString();
 					diceRoll.DamageType = DndUtils.ToDamage(damageStr);
 				}
 			}
 
-			if (NextRollScope == RollScope.ActiveInGameCreature)
-			{
+			if (NextRollScope == RollScope.ActiveInGameCreature) {
 				diceRoll.RollScope = RollScope.ActiveInGameCreature;
 				InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
-				if (activeTurnCreature != null)
-				{
+				if (activeTurnCreature != null) {
 					AllInGameCreatures.AddDiceForCreature(diceRoll.DiceDtos, NextDieStr, activeTurnCreature.Index, type);
 					diceRoll.SingleOwnerId = -activeTurnCreature.Index;
 				}
 			}
-			else if (NextRollScope == RollScope.TargetedInGameCreatures)
-			{
+			else if (NextRollScope == RollScope.TargetedInGameCreatures) {
 				diceRoll.RollScope = RollScope.TargetedInGameCreatures;
 				AllInGameCreatures.AddDiceForTargeted(diceRoll.DiceDtos, NextDieStr);
 				List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 				if (targetedCreatures.Count == 1)
 					diceRoll.SingleOwnerId = -targetedCreatures[0].Index;
 			}
-			else if (NextDieRollType == DiceRollType.Contest)
-			{
+			else if (NextDieRollType == DiceRollType.Contest) {
 				PrepareContestRoll(contestManager.ContestDto, diceRoll);
 			}
-			else
-			{
+			else {
 				bool foundPlayer = false;
-				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-				{
-					if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
-					{
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
+					if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true) {
 						VantageKind vantageKind = VantageKind.Normal;
 						if (checkbox.RbAdvantage.IsChecked == true)
 							vantageKind = VantageKind.Advantage;
@@ -3797,7 +3330,7 @@ namespace DHDM
 						else
 							diceRoll.SingleOwnerId = checkbox.PlayerId;
 
-						string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
+						string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? string.Empty : checkbox.TbxInspiration.Text;
 						//BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
 						//diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
 						// Will add advantage/disadvantage later.
@@ -3806,8 +3339,7 @@ namespace DHDM
 					}
 				}
 
-				if (!foundPlayer)
-				{
+				if (!foundPlayer) {
 					diceRoll.SingleOwnerId = ActivePlayerId;
 					//BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
 					//diceRoll.VantageKind = diceRollKind;
@@ -3835,27 +3367,23 @@ namespace DHDM
 
 			// TODO: Make this data-driven:
 
-			if (type == DiceRollType.WildMagicD20Check)
-			{
+			if (type == DiceRollType.WildMagicD20Check) {
 				diceRoll.IsMagic = true;
 				diceRoll.AddTrailingEffects("SmallSparks");
-				if (diceRoll.PlayerRollOptions != null && diceRoll.PlayerRollOptions.Count == 1)
-				{
+				if (diceRoll.PlayerRollOptions != null && diceRoll.PlayerRollOptions.Count == 1) {
 					Character activePlayer = GetPlayer(diceRoll.PlayerRollOptions[0].PlayerID);
 					activePlayer.NumWildMagicChecks++;
 					diceRoll.Modifier = activePlayer.NumWildMagicChecks;
 				}
 			}
 
-			if (type == DiceRollType.WildMagic)
-			{
+			if (type == DiceRollType.WildMagic) {
 				diceRoll.Modifier = 0;
 				diceRoll.HiddenThreshold = 0;
 				diceRoll.IsMagic = true;
 				diceRoll.OnThrowSound = "WildMagicRoll";
 				diceRoll.Type = DiceRollType.WildMagic;
-				diceRoll.TrailingEffects.Add(new TrailingEffect()
-				{
+				diceRoll.TrailingEffects.Add(new TrailingEffect() {
 					EffectType = "SparkTrail",
 					RotationOffset = 180,
 					RotationOffsetRandom = 15,
@@ -3869,8 +3397,7 @@ namespace DHDM
 			return diceRoll;
 		}
 
-		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e) {
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))  // Ctrl + Click affects only the active player.
 			{
 				if (ActivePlayer == null)
@@ -3878,8 +3405,7 @@ namespace DHDM
 				ActivePlayer.RechargeAfterLongRest();
 				TellAll($"{ActivePlayer.firstName} has had a long rest.");
 			}
-			else
-			{
+			else {
 				TellAll("All players have recharged after a long rest.");
 				game?.RechargePlayersAfterLongRest();
 				Rest(8);
@@ -3887,8 +3413,7 @@ namespace DHDM
 			}
 		}
 
-		private void BtnAddShortRest_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddShortRest_Click(object sender, RoutedEventArgs e) {
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))  // Ctrl + Click affects only the active player.
 			{
 				if (ActivePlayer == null)
@@ -3896,8 +3421,7 @@ namespace DHDM
 				ActivePlayer.RechargeAfterShortRest();
 				TellAll($"{ActivePlayer.firstName} has had a short rest.");
 			}
-			else
-			{
+			else {
 				TellAll("All players have had a short rest.");
 				game?.RechargePlayersAfterShortRest();
 				Rest(2);
@@ -3905,41 +3429,32 @@ namespace DHDM
 			}
 		}
 
-		void TellDungeonMasterTheTime()
-		{
+		void TellDungeonMasterTheTime() {
 			TellDungeonMaster($"The time is now {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
-		private void Rest(int hours)
-		{
+		private void Rest(int hours) {
 			resting = true;
-			try
-			{
+			try {
 				clockMessage = $"+{hours} hours";
 				game.Clock.Advance(DndTimeSpan.FromHours(hours));
 			}
-			finally
-			{
+			finally {
 				resting = false;
 			}
 		}
 
-		void UpdateConcentratedSpells()
-		{
+		void UpdateConcentratedSpells() {
 			List<Character> players = AllPlayers.GetActive();
 
 			bool changeOccurred = false;
-			foreach (Character player in players)
-			{
-				if (player.concentratedSpell != null)
-				{
+			foreach (Character player in players) {
+				if (player.concentratedSpell != null) {
 					CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
-					if (playerStats != null)
-					{
+					if (playerStats != null) {
 						// TODO: Consider adding side-effect to PercentConcentrationComplete property setter to trigger event.
 						double newPercent = DndUtils.GetSpellPercentComplete(player.concentratedSpell, game);
-						if (Math.Round(newPercent, 2) != Math.Round(playerStats.PercentConcentrationComplete, 2))
-						{
+						if (Math.Round(newPercent, 2) != Math.Round(playerStats.PercentConcentrationComplete, 2)) {
 							playerStats.PercentConcentrationComplete = newPercent;
 							changeOccurred = true;
 						}
@@ -3951,14 +3466,12 @@ namespace DHDM
 				UpdateConcentratedSpellHourglassesInGame();
 		}
 
-		private void DndTimeClock_TimeChanged(object sender, TimeClockEventArgs e)
-		{
+		private void DndTimeClock_TimeChanged(object sender, TimeClockEventArgs e) {
 			bool bigUpdate = e.SpanSinceLastUpdate.TotalSeconds > 60;
 			UpdateClock(bigUpdate, e.SpanSinceLastUpdate.TotalDays);
 
 			// TODO: Update time-based curses, spells, and diseases.
-			if (resting)
-			{
+			if (resting) {
 				// TODO: Update character stats.
 			}
 			UpdateConcentratedSpells();
@@ -3966,10 +3479,8 @@ namespace DHDM
 
 		string clockMessage;
 
-		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
-		{
-			SafeInvoke(() =>
-			{
+		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0) {
+			SafeInvoke(() => {
 				if (txtTime == null)
 					return;
 				string timeStr = game.Clock.AsFullDndDateTimeString();
@@ -3983,8 +3494,7 @@ namespace DHDM
 				txtTime.Text = timeStr;
 
 				TimeSpan timeIntoToday = game.Clock.Time - new DateTime(game.Clock.Time.Year, game.Clock.Time.Month, game.Clock.Time.Day);
-				if (Math.Abs(timeIntoToday.TotalHours - lastHourUpdated) > 0.05)
-				{
+				if (Math.Abs(timeIntoToday.TotalHours - lastHourUpdated) > 0.05) {
 					lastHourUpdated = timeIntoToday.TotalHours;
 					TaleSpireClient.SendMessageToServer("SetTime", TaleSpireUtils.HoursToNormalizedTime(timeIntoToday.TotalHours));
 				}
@@ -3995,21 +3505,17 @@ namespace DHDM
 
 				if (daysSinceLastUpdate > 0.08)  // Short rest or greater
 				{
-					if (timeIntoToday.TotalHours < 2 || timeIntoToday.TotalHours > 22)
-					{
+					if (timeIntoToday.TotalHours < 2 || timeIntoToday.TotalHours > 22) {
 						afterSpinMp3 = "midnightWolf";
 					}
-					else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8)
-					{
+					else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8) {
 						afterSpinMp3 = "morningRooster";
 
 					}
-					else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14)
-					{
+					else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14) {
 						afterSpinMp3 = "birdsNoon";
 					}
-					else if (timeIntoToday.TotalHours > 16 && timeIntoToday.TotalHours < 20)
-					{
+					else if (timeIntoToday.TotalHours > 16 && timeIntoToday.TotalHours < 20) {
 						if (new Random().Next(100) > 50)
 							afterSpinMp3 = "eveningCrickets";
 						else
@@ -4021,8 +3527,7 @@ namespace DHDM
 						lastAmbientSoundPlayed = afterSpinMp3;
 				}
 
-				ClockDto clockDto = new ClockDto()
-				{
+				ClockDto clockDto = new ClockDto() {
 					HideClock = ckShowClock.IsChecked != true,
 					Message = clockMessage,
 					Time = timeStr,
@@ -4041,13 +3546,11 @@ namespace DHDM
 			});
 		}
 
-		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e) {
 			game.AdvanceRound();
 		}
 
-		private void Window_Loaded(object sender, RoutedEventArgs e)
-		{
+		private void Window_Loaded(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.DiceStoppedRolling += HubtasticBaseStation_DiceStoppedRolling;
 			HubtasticBaseStation.AllDiceDestroyed += HubtasticBaseStation_AllDiceDestroyed;
 			HubtasticBaseStation.ReceivedInGameResponse += HubtasticBaseStation_ReceivedInGameResponse;
@@ -4057,13 +3560,11 @@ namespace DHDM
 			StartRealTimeTimer();
 		}
 
-		private void HubtasticBaseStation_TellDM(object sender, MessageEventArgs ea)
-		{
+		private void HubtasticBaseStation_TellDM(object sender, MessageEventArgs ea) {
 			TellDungeonMaster(ea.Message);
 		}
 
-		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
-		{
+		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea) {
 			//SafeInvoke(() =>
 			//{
 			//	Title = "All Dice Destroyed.";
@@ -4074,8 +3575,7 @@ namespace DHDM
 			DeueueNextAction();
 		}
 
-		private void DynamicallyThrottleFrameRate()
-		{
+		private void DynamicallyThrottleFrameRate() {
 			if (!dynamicThrottling)
 				return;
 
@@ -4087,29 +3587,24 @@ namespace DHDM
 			ChangeFrameRateAndUI(Overlays.Dice, 1);
 		}
 
-		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddDay_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+1 Day";
 			game.Clock.Advance(DndTimeSpan.FromDays(1), -1, Modifiers.ShiftDown);
 		}
 
-		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+10 Days";
 			game.Clock.Advance(DndTimeSpan.FromDays(10), -1, Modifiers.ShiftDown);
 		}
 
-		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddMonth_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+1 Month";
 			game.Clock.Advance(DndTimeSpan.FromDays(30), -1, Modifiers.ShiftDown);
 		}
 
-		public DiceRollType NextDieRollType
-		{
+		public DiceRollType NextDieRollType {
 			get => nextDieRollType;
-			set
-			{
+			set {
 				if (nextDieRollType == value)
 					return;
 
@@ -4121,11 +3616,9 @@ namespace DHDM
 		RollScope nextRollScope;
 
 		string NextDieStr;
-		public RollScope NextRollScope
-		{
+		public RollScope NextRollScope {
 			get => nextRollScope;
-			set
-			{
+			set {
 				if (nextRollScope == value)
 					return;
 
@@ -4134,17 +3627,15 @@ namespace DHDM
 			}
 		}
 
-		private void SetNextRollTypeUI()
-		{
+		private void SetNextRollTypeUI() {
 			if (nextDieRollType != DiceRollType.None)
 				tbNextDieRoll.Text = $"({nextDieRollType})";
 			else
-				tbNextDieRoll.Text = "";
+				tbNextDieRoll.Text = string.Empty;
 			btnRollPlayerDice.IsEnabled = true;
 		}
 
-		private void SetNextRollScopeUI()
-		{
+		private void SetNextRollScopeUI() {
 			if (nextRollScope == RollScope.ActiveInGameCreature)
 				rbActiveNpc.IsChecked = true;
 			else if (nextRollScope == RollScope.ActivePlayer)
@@ -4159,45 +3650,37 @@ namespace DHDM
 			btnRollPlayerDice.IsEnabled = true;
 		}
 
-		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAddHour_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+1 Hour";
 			game.Clock.Advance(DndTimeSpan.FromHours(1), -1, Modifiers.ShiftDown);
 		}
 
-		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+10 Minutes";
 			game.Clock.Advance(DndTimeSpan.FromMinutes(10), -1, Modifiers.ShiftDown);
 		}
 
-		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e) {
 			clockMessage = "+1 Minute";
 			game.Clock.Advance(DndTimeSpan.FromMinutes(1), -1, Modifiers.ShiftDown);
 		}
 
 
 
-		void enableDiceRollButtons()
-		{
+		void enableDiceRollButtons() {
 			btnRollPlayerDice.IsEnabled = true;
 			spSpecialPlayerThrows.IsEnabled = true;
 		}
 
-		void EnablePlayerDiceRollButtons(bool enable)
-		{
-			SafeInvoke(() =>
-			{
+		void EnablePlayerDiceRollButtons(bool enable) {
+			SafeInvoke(() => {
 				btnRollPlayerDice.IsEnabled = enable;
 				spSpecialPlayerThrows.IsEnabled = enable;
 			});
 		}
 
-		string GetSkillCheckStr(Skills skillCheck)
-		{
-			switch (skillCheck)
-			{
+		string GetSkillCheckStr(Skills skillCheck) {
+			switch (skillCheck) {
 				case Skills.acrobatics: return "Acrobatics";
 				case Skills.animalHandling: return "Animal Handling";
 				case Skills.arcana: return "Arcana";
@@ -4227,10 +3710,8 @@ namespace DHDM
 			return "None";
 		}
 
-		string GetAbilityStr(Ability savingThrow)
-		{
-			switch (savingThrow)
-			{
+		string GetAbilityStr(Ability savingThrow) {
+			switch (savingThrow) {
 				case Ability.charisma: return "Charisma";
 				case Ability.constitution: return "Constitution";
 				case Ability.dexterity: return "Dexterity";
@@ -4243,12 +3724,10 @@ namespace DHDM
 
 		bool forcedWildMagicThisRoll;
 
-		void HandleWildMagicD20Check(int playerId, IndividualRoll individualRoll)
-		{
+		void HandleWildMagicD20Check(int playerId, IndividualRoll individualRoll) {
 			if (forcedWildMagicThisRoll)
 				return;
-			if (individualRoll.value == 1)
-			{
+			if (individualRoll.value == 1) {
 				forcedWildMagicThisRoll = true;
 				PlayScene("DH.WildMagicRoll", 27000);
 				EnqueueWildMagicRoll(playerId);
@@ -4258,34 +3737,28 @@ namespace DHDM
 				//wildMagicRollTimer.Start();
 				TellAll("It's a one! Need to roll wild magic!");
 			}
-			else
-			{
+			else {
 				// TellAll($"Wild Magic roll: {individualRoll.value}.");
 			}
 		}
-		void EnqueueWildMagicRoll(int playerId)
-		{
+		void EnqueueWildMagicRoll(int playerId) {
 			WildMagicQueueEntry wildMagicQueueEntry = new WildMagicQueueEntry();
 			wildMagicQueueEntry.PlayerId = playerId;
 			EnqueueAction(wildMagicQueueEntry);
 		}
 
-		void IndividualDiceStoppedRolling(RollResults stopRollingData)
-		{
+		void IndividualDiceStoppedRolling(RollResults stopRollingData) {
 			if (stopRollingData.individualRolls?.Count > 0)
 				IndividualDiceStoppedRolling(stopRollingData.singleOwnerId, stopRollingData.individualRolls);
 		}
 
-		void IndividualDiceStoppedRolling(int playerId, List<IndividualRoll> individualRolls)
-		{
+		void IndividualDiceStoppedRolling(int playerId, List<IndividualRoll> individualRolls) {
 			foreach (IndividualRoll individualRoll in individualRolls)
 				IndividualDiceStoppedRolling(playerId, individualRoll);
 		}
 
-		void IndividualDiceStoppedRolling(int playerId, IndividualRoll individualRoll)
-		{
-			switch (individualRoll.type)
-			{
+		void IndividualDiceStoppedRolling(int playerId, IndividualRoll individualRoll) {
+			switch (individualRoll.type) {
 				case "WildMagicD20Check":
 				case "Wild Magic Check":
 				case "\"Wild Magic Check\"":
@@ -4295,15 +3768,12 @@ namespace DHDM
 			}
 		}
 
-		bool ChaosBoltRolledDoubles(RollResults diceStoppedRollingData)
-		{
+		bool ChaosBoltRolledDoubles(RollResults diceStoppedRollingData) {
 			if (!diceStoppedRollingData.success)
 				return false;
 			bool isChaosBolt = false;
-			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls)
-			{
-				if (individualRoll.numSides == 20 && individualRoll.type == "ChaosBolt")
-				{
+			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls) {
+				if (individualRoll.numSides == 20 && individualRoll.type == "ChaosBolt") {
 					isChaosBolt = true;
 				}
 			}
@@ -4312,13 +3782,11 @@ namespace DHDM
 
 			int firstValue = -1;
 			int secondValue = -1;
-			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls)
-			{
+			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls) {
 				if (individualRoll.numSides == 8)
 					if (firstValue == -1)
 						firstValue = individualRoll.value;
-					else
-					{
+					else {
 						secondValue = individualRoll.value;
 						break;
 					}
@@ -4326,44 +3794,36 @@ namespace DHDM
 			return firstValue == secondValue;
 		}
 
-		void CheckForFollowUpRolls(RollResults diceStoppedRollingData)
-		{
+		void CheckForFollowUpRolls(RollResults diceStoppedRollingData) {
 			if (diceStoppedRollingData == null)
 				return;
 
 			// TODO: Trigger After Roll Effects for all players if multiple players rolled at the same time.
 
-			if (ChaosBoltRolledDoubles(diceStoppedRollingData))
-			{
+			if (ChaosBoltRolledDoubles(diceStoppedRollingData)) {
 				DiceRoll chaosBoltRoll = lastRoll;
 				if (lastRoll.Type == DiceRollType.WildMagicD20Check)
 					chaosBoltRoll = secondToLastRoll;
-				if (chaosBoltRoll == null)
-				{
+				if (chaosBoltRoll == null) {
 					return;
 				}
-				SafeInvoke(async () =>
-				{
-					if (await AnswersYes("Doubles! Fire **Chaos Bolt** again?"))
-					{
+				SafeInvoke(async () => {
+					if (await AnswersYes("Doubles! Fire **Chaos Bolt** again?")) {
 						RollTheDice(chaosBoltRoll);
 					}
 				});
 			}
 		}
 
-		private static void TriggerAfterRollEffects(RollResults diceStoppedRollingData, Character singlePlayer)
-		{
+		private static void TriggerAfterRollEffects(RollResults diceStoppedRollingData, Character singlePlayer) {
 			if (singlePlayer == null)
 				return;
 
 			// TODO: Add support for OnPlayerSaves event.
 			singlePlayer.lastRollWasSuccessful = diceStoppedRollingData.success;
 
-			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName))
-			{
-				if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellId))
-				{
+			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName)) {
+				if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellId)) {
 					CastedSpell activeSpell = singlePlayer.Game.GetActiveSpellById(singlePlayer, diceStoppedRollingData.spellId);
 					if (activeSpell != null)
 						singlePlayer.JustCastSpell(activeSpell);
@@ -4371,8 +3831,7 @@ namespace DHDM
 				else
 					singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
 			}
-			else if (diceStoppedRollingData.type == DiceRollType.Attack)
-			{
+			else if (diceStoppedRollingData.type == DiceRollType.Attack) {
 				singlePlayer.AfterPlayerSwingsWeapon();
 			}
 
@@ -4385,40 +3844,33 @@ namespace DHDM
 		//	RollTheDice(lastRoll);
 		//}
 
-		void NotifyPlayersRollHasStopped(RollResults stopRollingData)
-		{
+		void NotifyPlayersRollHasStopped(RollResults stopRollingData) {
 			if (stopRollingData.multiplayerSummary != null)
-				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
-				{
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary) {
 					Character player = game.GetPlayerFromId(playerRoll.id);
 					player?.RollHasStopped();
 				}
-			else
-			{
+			else {
 				Character player = game.GetPlayerFromId(stopRollingData.singleOwnerId);
 				player?.RollHasStopped();
 			}
 		}
 
-		public enum SpellHitType
-		{
+		public enum SpellHitType {
 			Miss,
 			Hit
 		}
 
-		void ShowSpellEffectsInGame(int playerId, string spellName, Queue<SpellEffect> additionalSpellEffects, Queue<SoundEffect> additionalSoundEffects, SpellHitType spellHitType = SpellHitType.Hit)
-		{
+		void ShowSpellEffectsInGame(int playerId, string spellName, Queue<SpellEffect> additionalSpellEffects, Queue<SoundEffect> additionalSoundEffects, SpellHitType spellHitType = SpellHitType.Hit) {
 			EffectGroup effectGroup = new EffectGroup();
 
 			VisualEffectTarget chestTarget, bottomTarget;
 			GetTargets(playerId, out chestTarget, out bottomTarget);
 
-			if (spellHitType != SpellHitType.Hit)
-			{
+			if (spellHitType != SpellHitType.Hit) {
 				effectGroup.Add(AnimationEffect.CreateEffect("SpellMiss", chestTarget, 0, 100, 0));
 			}
-			else
-			{
+			else {
 				double scale = 1;
 				double autoRotation = 140;
 				const double scaleIncrement = 1.1;
@@ -4431,10 +3883,8 @@ namespace DHDM
 				int timeOffset = 200;
 
 				Spell spell = AllSpells.Get(spellName);
-				if (spell != null)
-				{
-					if (!string.IsNullOrWhiteSpace(spell.Hue1))
-					{
+				if (spell != null) {
+					if (!string.IsNullOrWhiteSpace(spell.Hue1)) {
 						AnimationEffect effectBonus1 = CreateSpellEffect(EffectGroup.GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
 						effectBonus1.timeOffsetMs = timeOffset;
 						effectBonus1.scale = scale;
@@ -4444,8 +3894,7 @@ namespace DHDM
 						effectGroup.Add(effectBonus1);
 					}
 					timeOffset += 200;
-					if (!string.IsNullOrWhiteSpace(spell.Hue2))
-					{
+					if (!string.IsNullOrWhiteSpace(spell.Hue2)) {
 						AnimationEffect effectBonus2 = CreateSpellEffect(EffectGroup.GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
 						effectBonus2.timeOffsetMs = timeOffset;
 						effectBonus2.scale = scale;
@@ -4465,30 +3914,25 @@ namespace DHDM
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
-		private void GetTargets(int playerId, out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget)
-		{
-			if (playerId == ActivePlayerId)
-			{
+		private void GetTargets(int playerId, out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget) {
+			if (playerId == ActivePlayerId) {
 				chestTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, DndCore.Vector.zero, new DndCore.Vector(0, -150));
 				bottomTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, DndCore.Vector.zero, DndCore.Vector.zero);
 			}
-			else
-			{
+			else {
 				chestTarget = new VisualEffectTarget(VisualTargetType.ByPlayerId, DndCore.Vector.zero, new DndCore.Vector(0, -150), playerId);
 				bottomTarget = new VisualEffectTarget(VisualTargetType.ByPlayerId, DndCore.Vector.zero, DndCore.Vector.zero, playerId);
 			}
 		}
 
-		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName)
-		{
+		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
 			ShowSpellEffectsInGame(playerId, spellName, player.additionalSpellHitEffects, player.additionalSpellHitSoundEffects, spellHitType);
 		}
 
-		void UnleashSpellEffectsNow(int playerId)
-		{
+		void UnleashSpellEffectsNow(int playerId) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
@@ -4497,40 +3941,32 @@ namespace DHDM
 			player.ClearAdditionalSpellEffects();
 		}
 
-		void ShowSpellCastEffectsInGame(int playerId, string spellName)
-		{
+		void ShowSpellCastEffectsInGame(int playerId, string spellName) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
 			ShowSpellEffectsInGame(playerId, spellName, player.additionalSpellCastEffects, player.additionalSpellCastSoundEffects);
 		}
 
-		void DequeueSoundEffects(Queue<SoundEffect> additionalSoundEffects, EffectGroup effectGroup)
-		{
-			while (additionalSoundEffects.Count > 0)
-			{
+		void DequeueSoundEffects(Queue<SoundEffect> additionalSoundEffects, EffectGroup effectGroup) {
+			while (additionalSoundEffects.Count > 0) {
 				effectGroup.Add(additionalSoundEffects.Dequeue());
 			}
 		}
 
-		private static void DequeueSpellEffects(EffectGroup effectGroup, Queue<SpellEffect> additionalSpellEffects, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset)
-		{
-			while (additionalSpellEffects.Count > 0)
-			{
+		private static void DequeueSpellEffects(EffectGroup effectGroup, Queue<SpellEffect> additionalSpellEffects, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset) {
+			while (additionalSpellEffects.Count > 0) {
 				SpellEffect spellEffect = additionalSpellEffects.Dequeue();
 				effectGroup.AddSpellEffect(chestTarget, bottomTarget, ref scale, scaleIncrement, ref autoRotation, ref timeOffset, spellEffect);
 			}
 		}
 
-		AnimationEffect CreateSpellEffect(string spriteName, VisualEffectTarget target, string hueShiftStr, string brightnessStr = null)
-		{
+		AnimationEffect CreateSpellEffect(string spriteName, VisualEffectTarget target, string hueShiftStr, string brightnessStr = null) {
 			int hueShift;
-			if (hueShiftStr == "player")
-			{
+			if (hueShiftStr == "player") {
 				hueShift = ActivePlayer.hueShift;
 			}
-			else
-			{
+			else {
 				if (!int.TryParse(hueShiftStr, out hueShift))
 					hueShift = 0;
 			}
@@ -4539,8 +3975,7 @@ namespace DHDM
 			return AnimationEffect.CreateEffect(spriteName, target, hueShift, 100, brightness);
 		}
 
-		void CheckSpellHitResults(RollResults stopRollingData)
-		{
+		void CheckSpellHitResults(RollResults stopRollingData) {
 			if (!DndUtils.IsAttack(stopRollingData.type))
 				return;
 
@@ -4556,15 +3991,12 @@ namespace DHDM
 		int lastHealth;
 		Dictionary<DamageType, int> latestDamage = new Dictionary<DamageType, int>();
 
-		async Task CalculateLatestDamage(DiceEventArgs ea)
-		{
+		async Task CalculateLatestDamage(DiceEventArgs ea) {
 			if (ea.StopRollingData == null)
 				return;
 
-			switch (ea.StopRollingData.type)
-			{
-				case DiceRollType.ChaosBolt:
-					{
+			switch (ea.StopRollingData.type) {
+				case DiceRollType.ChaosBolt: {
 						await ProcessChaosBoltDamage(ea);
 						break;
 					}
@@ -4572,10 +4004,8 @@ namespace DHDM
 				case DiceRollType.DamageOnly:
 				case DiceRollType.DamagePlusSavingThrow:
 					latestDamage.Clear();
-					lock (latestDamage)
-					{
-						foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
-						{
+					lock (latestDamage) {
+						foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls) {
 							if (individualRoll.damageType == DamageType.None || individualRoll.damageType == DamageType.Condition)
 								continue;
 							if (!latestDamage.ContainsKey(individualRoll.damageType))
@@ -4588,15 +4018,12 @@ namespace DHDM
 			}
 		}
 
-		private async Task ProcessChaosBoltDamage(DiceEventArgs ea)
-		{
+		private async Task ProcessChaosBoltDamage(DiceEventArgs ea) {
 			if (!ea.StopRollingData.success)
 				return;
 			List<DamageType> damageChoices = new List<DamageType>();
-			foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
-			{
-				if (individualRoll.numSides == 8)
-				{
+			foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls) {
+				if (individualRoll.numSides == 8) {
 					DamageType damageType = DndUtils.GetChaosBoltDamage(individualRoll.value);
 					if (!damageChoices.Contains(damageType))
 						damageChoices.Add(damageType);
@@ -4605,11 +4032,9 @@ namespace DHDM
 
 			DamageType chaosBoltDamageType = DamageType.None;
 
-			if (damageChoices.Count > 1)
-			{
+			if (damageChoices.Count > 1) {
 				List<string> answers = new List<string>();
-				for (int i = 0; i < damageChoices.Count; i++)
-				{
+				for (int i = 0; i < damageChoices.Count; i++) {
 					answers.Add($"{i}:{damageChoices[i]}");
 				}
 
@@ -4625,10 +4050,8 @@ namespace DHDM
 
 			ea.StopRollingData.additionalDieRollMessage = $"({chaosBoltDamageType})";
 			latestDamage.Clear();
-			lock (latestDamage)
-			{
-				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
-				{
+			lock (latestDamage) {
+				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls) {
 					if (individualRoll.damageType == DamageType.None || individualRoll.damageType == DamageType.Condition)
 						continue;
 					if (!latestDamage.ContainsKey(chaosBoltDamageType))
@@ -4664,8 +4087,7 @@ namespace DHDM
 		//	}
 		//}
 
-		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> playerRolls, string damageExpression, string spellName)
-		{
+		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> playerRolls, string damageExpression, string spellName) {
 			if (playerRolls.Count == 0)
 				return;
 			Spell spell = AllSpells.Get(spellName);
@@ -4703,8 +4125,7 @@ namespace DHDM
 		//	}
 		//}
 
-		void BreakSpellConcentrationFromLastSavingThrow(List<PlayerRoll> playerRolls)
-		{
+		void BreakSpellConcentrationFromLastSavingThrow(List<PlayerRoll> playerRolls) {
 			if (playerRolls.Count == 0)
 				return;
 
@@ -4713,8 +4134,7 @@ namespace DHDM
 					BreakPlayerConcentration(playerRoll.id);
 		}
 
-		private void BreakPlayerConcentration(int playerId)
-		{
+		private void BreakPlayerConcentration(int playerId) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null || player.concentratedSpell == null)
 				return;
@@ -4726,14 +4146,12 @@ namespace DHDM
 			player.BreakConcentration();
 		}
 
-		string ToDisplayList(List<PlayerRoll> playerRolls)
-		{
+		string ToDisplayList(List<PlayerRoll> playerRolls) {
 			if (playerRolls == null || playerRolls.Count == 0)
 				return string.Empty;
 
-			string result = "";
-			foreach (PlayerRoll playerRoll in playerRolls)
-			{
+			string result = string.Empty;
+			foreach (PlayerRoll playerRoll in playerRolls) {
 				if (playerRoll.id > 0)
 					result += GetPlayerName(playerRoll.id);
 				else
@@ -4744,26 +4162,21 @@ namespace DHDM
 			return result.TrimEnd(',', ' ');
 		}
 
-		void TriggerAfterRollEvents(RollResults stopRollingData)
-		{
+		void TriggerAfterRollEvents(RollResults stopRollingData) {
 			if (stopRollingData == null)
 				return;
 			if (stopRollingData.individualRolls == null || stopRollingData.individualRolls.Count == 0)
 				return;
-			if (DiceDto.IsSavingThrow(stopRollingData.type))
-			{
-				if (!string.IsNullOrWhiteSpace(stopRollingData.spellName))
-				{
+			if (DiceDto.IsSavingThrow(stopRollingData.type)) {
+				if (!string.IsNullOrWhiteSpace(stopRollingData.spellName)) {
 					Creature creature = CreatureHelper.GetCreatureFromId(stopRollingData.singleOwnerId);
-					if (creature == null)
-					{
+					if (creature == null) {
 						History.Log("Error: stopRollingData.singleOwnerId not set!");
 						//System.Diagnostics.Debugger.Break();
 						return;
 					}
 
-					if (string.IsNullOrWhiteSpace(stopRollingData.spellId))
-					{
+					if (string.IsNullOrWhiteSpace(stopRollingData.spellId)) {
 						History.Log("Error: stopRollingData.spellId not set!");
 						System.Diagnostics.Debugger.Break();
 						return;
@@ -4772,17 +4185,14 @@ namespace DHDM
 					CastedSpell castedSpell = game.GetActiveSpellById(creature, stopRollingData.spellId);
 					Target target = new Target();
 					target.Type = AttackTargetType.Spell;
-					foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
-					{
-						if (individualRoll.dieCountsAs == DieCountsAs.savingThrow)
-						{
+					foreach (IndividualRoll individualRoll in stopRollingData.individualRolls) {
+						if (individualRoll.dieCountsAs == DieCountsAs.savingThrow) {
 							if (individualRoll.value == 20)  // Nat 20.
 								continue;
 							if (individualRoll.value + individualRoll.modifier >= stopRollingData.hiddenThreshold)  // Saved
 								continue;
 							Creature targetCreature = null;
-							if (individualRoll.creatureId < 0)
-							{
+							if (individualRoll.creatureId < 0) {
 								InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-individualRoll.creatureId);
 								if (inGameCreature != null)
 									targetCreature = inGameCreature.Creature;
@@ -4804,11 +4214,9 @@ namespace DHDM
 
 
 
-		void ResetRollBasedState(RollResults stopRollingData)
-		{
+		void ResetRollBasedState(RollResults stopRollingData) {
 			List<Creature> creatures = new List<Creature>();
-			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
-			{
+			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls) {
 				Creature creature = CreatureHelper.GetCreatureFromId(individualRoll.creatureId);
 				if (creature != null && creatures.IndexOf(creature) < 0)
 					creatures.Add(creature);
@@ -4818,8 +4226,7 @@ namespace DHDM
 				creature.ResetPlayerRollBasedState();
 		}
 
-		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
-		{
+		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea) {
 			RollResults stopRollingData = ea.StopRollingData;
 			ResetRollBasedState(stopRollingData);
 			SaveNamedResults(stopRollingData);
@@ -4874,8 +4281,7 @@ namespace DHDM
 			//}
 		}
 
-		private void ApplyDamageToTargets(RollResults stopRollingData)
-		{
+		private void ApplyDamageToTargets(RollResults stopRollingData) {
 			if (stopRollingData.type == DiceRollType.Attack && stopRollingData.success)
 				ApplyDamageToTargets(stopRollingData.totalDamagePlusModifiers);
 
@@ -4883,94 +4289,77 @@ namespace DHDM
 				ApplySavingThrowDamage(stopRollingData);
 		}
 
-		private void TriggerAfterRollEffects(RollResults stopRollingData)
-		{
+		private void TriggerAfterRollEffects(RollResults stopRollingData) {
 			Character singlePlayer = stopRollingData.GetSingleRollingPlayer();
-			if (singlePlayer != null)
-			{
+			if (singlePlayer != null) {
 				TriggerAfterRollEffects(stopRollingData, singlePlayer);
 			}
 			else if (stopRollingData.multiplayerSummary != null)
-				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
-				{
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary) {
 					Character player = game.GetPlayerFromId(playerRoll.id);
 					TriggerAfterRollEffects(stopRollingData, player);
 				}
 		}
 
-		private void DynamicallyThrottleFrameRatesIfNecessary()
-		{
-			if (dynamicThrottling)
-			{
+		private void DynamicallyThrottleFrameRatesIfNecessary() {
+			if (dynamicThrottling) {
 				ChangeFrameRateAndUI(Overlays.Back, 30);
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 			}
 		}
 
-		private void SetWaitingToClearDice(DiceGroup diceGroup)
-		{
+		private void SetWaitingToClearDice(DiceGroup diceGroup) {
 			if (diceGroup == DiceGroup.Players)
 				waitingToClearPlayerDice = true;
 			else
 				waitingToClearViewerDice = true;
 		}
 
-		private void StoreLastDamageOrHealth(RollResults stopRollingData)
-		{
-			if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
-			{
+		private void StoreLastDamageOrHealth(RollResults stopRollingData) {
+			if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow) {
 				// TODO: Store last damage type...
 				lastDamage = stopRollingData.totalDamagePlusModifiers;
 			}
-			else if (stopRollingData.type == DiceRollType.HealthOnly)
-			{
+			else if (stopRollingData.type == DiceRollType.HealthOnly) {
 				lastHealth = stopRollingData.health;
 			}
 		}
 
-		private void ClearDieRollEffects()
-		{
+		private void ClearDieRollEffects() {
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 		}
 
-		private void ShowClearDiceButton(DiceGroup diceGroup)
-		{
+		private void ShowClearDiceButton(DiceGroup diceGroup) {
 			if (diceGroup == DiceGroup.Players)
 				ShowClearPlayerDiceButton(null, EventArgs.Empty);
 			else
 				ShowClearViewerDiceButton(null, EventArgs.Empty);
 		}
 
-		List<int> GetTargetIdsTryingToSave(RollResults stopRollingData)
-		{
+		List<int> GetTargetIdsTryingToSave(RollResults stopRollingData) {
 			List<int> results = new List<int>();
 			if (stopRollingData.individualRolls == null)
 				return results;
 			if (stopRollingData.individualRolls.Count == 0)
 				return results;
-			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
-			{
+			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls) {
 				if (individualRoll.damageType == DamageType.None && individualRoll.dieCountsAs == DieCountsAs.savingThrow)
 					results.Add(individualRoll.creatureId);
 			}
 			return results;
 		}
 
-		private void ApplySavingThrowDamage(RollResults stopRollingData)
-		{
+		private void ApplySavingThrowDamage(RollResults stopRollingData) {
 			List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
 			ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
 
-			if (stopRollingData.type == DiceRollType.SavingThrow)
-			{
-				if (BreakSpellConcentrationSavingThrowQueueEntry.RollWasToSaveConcentration(stopRollingData.rollId))
-				{
+			if (stopRollingData.type == DiceRollType.SavingThrow) {
+				if (BreakSpellConcentrationSavingThrowQueueEntry.RollWasToSaveConcentration(stopRollingData.rollId)) {
 					BreakSpellConcentrationSavingThrowQueueEntry.RemoveRoll(stopRollingData.rollId);
 					if (stopRollingData.multiplayerSummary != null)
 						BreakSpellConcentrationForGroup(stopRollingData.multiplayerSummary);
-					else if (stopRollingData.roll < stopRollingData.hiddenThreshold)
-					{
+					else if (stopRollingData.roll < stopRollingData.hiddenThreshold) {
 						Character player = stopRollingData.GetSingleRollingPlayer();
 						if (player != null)
 							BreakPlayerConcentration(player.playerID);
@@ -4987,14 +4376,12 @@ namespace DHDM
 			//}
 		}
 
-		private void ApplyMultiplayerSavingThrowDamage(RollResults stopRollingData)
-		{
+		private void ApplyMultiplayerSavingThrowDamage(RollResults stopRollingData) {
 			List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
 			List<PlayerRoll> thoseWhoCritSaved = new List<PlayerRoll>();
 			List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
 			List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
-			foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
-			{
+			foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary) {
 				if (playerRoll.isCompleteFail)
 					thoseWhoCritFailed.Add(playerRoll);
 				else if (playerRoll.isCrit)
@@ -5016,12 +4403,10 @@ namespace DHDM
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private void BreakSpellConcentrationForGroup(List<PlayerRoll> multiplayerSummary)
-		{
+		private void BreakSpellConcentrationForGroup(List<PlayerRoll> multiplayerSummary) {
 			List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
 			List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
-			foreach (PlayerRoll playerRoll in multiplayerSummary)
-			{
+			foreach (PlayerRoll playerRoll in multiplayerSummary) {
 				if (playerRoll.isCompleteFail)
 					thoseWhoCritFailed.Add(playerRoll);
 				else if (!playerRoll.isCrit && !playerRoll.success)
@@ -5032,8 +4417,7 @@ namespace DHDM
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		string GetPlayerEmoticon(int playerId)
-		{
+		string GetPlayerEmoticon(int playerId) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return string.Empty;
@@ -5043,29 +4427,25 @@ namespace DHDM
 
 		bool suppressMessagesToCodeRushedChannel;
 
-		void ReportInitiativeResults(RollResults stopRollingData, string title)
-		{
-			if (stopRollingData.multiplayerSummary == null)
-			{
+		void ReportInitiativeResults(RollResults stopRollingData, string title) {
+			if (stopRollingData.multiplayerSummary == null) {
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unexpected issue - no multiplayer results.");
 				return;
 			}
 
 			suppressMessagesToCodeRushedChannel = true;
 
-			try
-			{
+			try {
 				TellAll(title);
 				lastInitiativeResults.Clear();
 				int count = 1;
 				game.ClearInitiativeOrder();
-				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
-				{
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary) {
 					game.AddCreatureToInitiativeOrder(playerRoll.id);
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
 					string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
 					if (emoticon == "Player ")
-						emoticon = "";
+						emoticon = string.Empty;
 					int rollValue = playerRoll.GetTotalRollValue();
 					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
@@ -5074,24 +4454,20 @@ namespace DHDM
 					count++;
 				}
 			}
-			finally
-			{
+			finally {
 				suppressMessagesToCodeRushedChannel = false;
 			}
 		}
 
-		private void ReportOnDieRoll(RollResults stopRollingData)
-		{
+		private void ReportOnDieRoll(RollResults stopRollingData) {
 			if (stopRollingData.diceGroup == DiceGroup.Players)
 				ReportOnPlayerDieRoll(stopRollingData);
 		}
 
-		Target GetTargetFromDieRoll(string rollId)
-		{
+		Target GetTargetFromDieRoll(string rollId) {
 			if (rollId == null)
 				return null;
-			if (diceRollTargets.ContainsKey(rollId))
-			{
+			if (diceRollTargets.ContainsKey(rollId)) {
 				Target target = diceRollTargets[rollId];
 				diceRollTargets.Remove(rollId);
 				return target;
@@ -5099,19 +4475,16 @@ namespace DHDM
 			return null;
 		}
 
-		private void ReportOnPlayerDieRoll(RollResults stopRollingData)
-		{
+		private void ReportOnPlayerDieRoll(RollResults stopRollingData) {
 			if (stopRollingData == null)
 				return;
 
-			if (stopRollingData.type == DiceRollType.Initiative)
-			{
+			if (stopRollingData.type == DiceRollType.Initiative) {
 				ReportInitiativeResults(stopRollingData, "Initiative: ");
 				return;
 			}
 
-			if (stopRollingData.type == DiceRollType.NonCombatInitiative)
-			{
+			if (stopRollingData.type == DiceRollType.NonCombatInitiative) {
 				ReportInitiativeResults(stopRollingData, "Non-combat Initiative: ");
 				return;
 			}
@@ -5119,10 +4492,8 @@ namespace DHDM
 			int rollValue = stopRollingData.roll;
 
 
-			if (rollValue == 0 && stopRollingData.individualRolls != null && stopRollingData.individualRolls.Count > 0)
-			{
-				foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
-				{
+			if (rollValue == 0 && stopRollingData.individualRolls != null && stopRollingData.individualRolls.Count > 0) {
+				foreach (IndividualRoll individualRoll in stopRollingData.individualRolls) {
 					if (stopRollingData.type != DiceRollType.DamagePlusSavingThrow || individualRoll.dieCountsAs == DieCountsAs.damage)
 						rollValue += individualRoll.value;
 				}
@@ -5131,14 +4502,13 @@ namespace DHDM
 			string additionalMessage = stopRollingData.additionalDieRollMessage;
 			if (!String.IsNullOrEmpty(additionalMessage))
 				additionalMessage = " " + additionalMessage;
-			string rollTitle = "";
-			string damageStr = "";
-			string bonusStr = "";
+			string rollTitle = string.Empty;
+			string damageStr = string.Empty;
+			string bonusStr = string.Empty;
 			if (stopRollingData.bonus > 0)
 				bonusStr = " - bonus: " + stopRollingData.bonus.ToString();
 			string successStr = GetSuccessStr(stopRollingData.success, stopRollingData.type);
-			switch (stopRollingData.type)
-			{
+			switch (stopRollingData.type) {
 				case DiceRollType.SkillCheck:
 					rollTitle = GetSkillCheckStr(stopRollingData.skillCheck) + " Skill Check: ";
 					break;
@@ -5201,19 +4571,17 @@ namespace DHDM
 					rollTitle = "wild magic check: ";
 					break;
 			}
-			if (rollTitle == "")
+			if (rollTitle == string.Empty)
 				rollTitle = "Dice roll: ";
 
 			string message = string.Empty;
 			Character singlePlayer = null;
-			if (stopRollingData.multiplayerSummary != null && stopRollingData.multiplayerSummary.Count > 0)
-			{
+			if (stopRollingData.multiplayerSummary != null && stopRollingData.multiplayerSummary.Count > 0) {
 				if (stopRollingData.multiplayerSummary.Count == 1)
 					singlePlayer = AllPlayers.GetFromId(stopRollingData.multiplayerSummary[0].id);
-				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
-				{
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary) {
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
-					if (playerName != "")
+					if (playerName != string.Empty)
 						playerName = playerName + "'s ";
 
 					rollValue = playerRoll.skillSaveInitiativeScoreModifier + playerRoll.cardModifierDamageOffset + playerRoll.rawTotalScore;
@@ -5223,7 +4591,7 @@ namespace DHDM
 					if (success)
 						localDamageStr = damageStr;
 					else
-						localDamageStr = "";
+						localDamageStr = string.Empty;
 					if (!string.IsNullOrWhiteSpace(message))
 						message += "; ";
 
@@ -5232,33 +4600,28 @@ namespace DHDM
 					message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
 				}
 			}
-			else
-			{
-				SafeInvoke(() =>
-				{
+			else {
+				SafeInvoke(() => {
 					Title = $"ea.StopRollingData.playerID = {stopRollingData.singleOwnerId}";
 				});
 
 				singlePlayer = AllPlayers.GetFromId(stopRollingData.singleOwnerId);
 				string playerName = GetPlayerName(stopRollingData.singleOwnerId);
-				if (singlePlayer == null)
-				{
-					if (stopRollingData.singleOwnerId < 0)
-					{
+				if (singlePlayer == null) {
+					if (stopRollingData.singleOwnerId < 0) {
 						InGameCreature creature = AllInGameCreatures.GetByIndex(-stopRollingData.singleOwnerId);
 						if (creature != null)
 							playerName = creature.Name;
 					}
 				}
 
-				if (playerName != "")
+				if (playerName != string.Empty)
 					playerName = playerName + "'s ";
-				else
-				{
+				else {
 
 				}
 				if (!stopRollingData.success)
-					damageStr = "";
+					damageStr = string.Empty;
 
 
 				if (stopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
@@ -5276,11 +4639,9 @@ namespace DHDM
 
 			//DieRollStopped
 
-			if (message != null)
-			{
+			if (message != null) {
 				message += additionalMessage;
-				if (!string.IsNullOrWhiteSpace(message))
-				{
+				if (!string.IsNullOrWhiteSpace(message)) {
 					if (stopRollingData.type == DiceRollType.WildMagicD20Check && rollValue == 0)
 						message = message.Replace(": 0", ": no ones rolled (safe).");
 					TellAll(message);
@@ -5288,8 +4649,7 @@ namespace DHDM
 			}
 		}
 
-		private async Task<bool> AnswersYes(string question)
-		{
+		private async Task<bool> AnswersYes(string question) {
 			List<string> answers = new List<string>();
 			answers.Add("1:Yes");
 			answers.Add("2:No");
@@ -5297,11 +4657,9 @@ namespace DHDM
 			return yes;
 		}
 
-		private static string GetSuccessStr(bool success, DiceRollType type)
-		{
-			string successStr = "";
-			switch (type)
-			{
+		private static string GetSuccessStr(bool success, DiceRollType type) {
+			string successStr = string.Empty;
+			switch (type) {
 				case DiceRollType.FlatD20:
 				case DiceRollType.SavingThrow:
 				case DiceRollType.DamagePlusSavingThrow:
@@ -5324,35 +4682,29 @@ namespace DHDM
 			return successStr;
 		}
 
-		string GetPlayerName(int playerID)
-		{
-			foreach (Character player in game.Players)
-			{
+		string GetPlayerName(int playerID) {
+			foreach (Character player in game.Players) {
 				if (player.playerID == playerID)
 					return DndUtils.GetFirstName(player.name);
 			}
 
-			return "";
+			return string.Empty;
 		}
 
-		string GetCreatureName(int creatureID)
-		{
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
+		string GetCreatureName(int creatureID) {
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 				if (inGameCreature.Index == creatureID)
 					return inGameCreature.Name;
 			}
 
-			return "";
+			return string.Empty;
 		}
 
-		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e) {
 			ClearAllInGameActiveTurnIndicators();
 
 			game.Clock.InCombat = !game.Clock.InCombat;
-			if (game.Clock.InCombat)
-			{
+			if (game.Clock.InCombat) {
 				GetRandomEnterCombatClockMessage();
 				ChangeThemeMusic("Battle");
 				ckbUseMagic.IsChecked = false;
@@ -5360,8 +4712,7 @@ namespace DHDM
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
 			}
-			else
-			{
+			else {
 				GetRandomExitCombatClockMessage();
 				ChangeThemeMusic("Travel");
 				game.ExitingCombat();
@@ -5371,8 +4722,7 @@ namespace DHDM
 			OnCombatChanged();
 		}
 
-		private void ClearAllInGameActiveTurnIndicators()
-		{
+		private void ClearAllInGameActiveTurnIndicators() {
 			game.ClearInitiativeOrder();
 			AllInGameCreatures.ClearAllActiveTurns();
 			PlayerStatManager.ClearAllActiveTurns();
@@ -5380,10 +4730,8 @@ namespace DHDM
 			TaleSpireClient.ClearActiveTurnIndicator();
 		}
 
-		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e)
-		{
-			if (game.Clock.InCombat)
-			{
+		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e) {
+			if (game.Clock.InCombat) {
 				if (game.Clock.InTimeFreeze)
 					game.Clock.InTimeFreeze = false;
 				TellDungeonMaster($"{Icons.WarningSign} -- Exit combat before rolling non-combat initiative.");
@@ -5393,8 +4741,7 @@ namespace DHDM
 			ClearAllInGameActiveTurnIndicators();
 
 			game.Clock.InTimeFreeze = !game.Clock.InTimeFreeze;
-			if (game.Clock.InTimeFreeze)
-			{
+			if (game.Clock.InTimeFreeze) {
 				GetRandomEnterTimeFreezeClockMessage();
 				ChangeThemeMusic("Suspense");
 				ckbUseMagic.IsChecked = false;
@@ -5402,8 +4749,7 @@ namespace DHDM
 				btnEnterExitTimeFreeze.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollNonCombatInitiative();
 			}
-			else
-			{
+			else {
 				GetRandomExitTimeFreezeClockMessage();
 				ChangeThemeMusic("Travel");
 				game.ExitingTimeFreeze();
@@ -5413,10 +4759,8 @@ namespace DHDM
 			OnTimeFreezeChanged();
 		}
 
-		private void GetRandomEnterTimeFreezeClockMessage()
-		{
-			switch (new Random().Next(4))
-			{
+		private void GetRandomEnterTimeFreezeClockMessage() {
+			switch (new Random().Next(4)) {
 				case 0:
 					clockMessage = "Stopping!";
 					break;
@@ -5432,10 +4776,8 @@ namespace DHDM
 			}
 		}
 
-		private void GetRandomExitTimeFreezeClockMessage()
-		{
-			switch (new Random().Next(3))
-			{
+		private void GetRandomExitTimeFreezeClockMessage() {
+			switch (new Random().Next(3)) {
 				case 0:
 					clockMessage = "Running!";
 					break;
@@ -5448,12 +4790,10 @@ namespace DHDM
 			}
 		}
 
-		private void GetRandomEnterCombatClockMessage()
-		{
+		private void GetRandomEnterCombatClockMessage() {
 			DateTime dateTime = DateTime.Now;
 			bool isLikelyEarlyCodeRushedShow = dateTime.Hour < 16;
-			switch (new Random().Next(8))
-			{
+			switch (new Random().Next(8)) {
 				case 0:
 					clockMessage = "Combat!";
 					break;
@@ -5493,10 +4833,8 @@ namespace DHDM
 			}
 		}
 
-		private void GetRandomExitCombatClockMessage()
-		{
-			switch (new Random().Next(8))
-			{
+		private void GetRandomExitCombatClockMessage() {
+			switch (new Random().Next(8)) {
 				case 0:
 					clockMessage = "It's cool!";
 					break;
@@ -5525,25 +4863,21 @@ namespace DHDM
 		}
 
 
-		private static void ChangeThemeMusic(string theme)
-		{
+		private static void ChangeThemeMusic(string theme) {
 			SoundCommand soundCommand = new SoundCommand(SoundPlayerFolders.Music);
 			soundCommand.strData = theme;
 			soundCommand.type = SoundCommandType.ChangeFolder;
 			Execute(soundCommand);
 		}
 
-		private void OnCombatChanged()
-		{
-			if (game.Clock.InCombat)
-			{
+		private void OnCombatChanged() {
+			if (game.Clock.InCombat) {
 				tbEnterExitCombat.Text = "Exit Combat";
 				realTimeAdvanceTimer.Stop();
 				spTimeDirectModifiers.IsEnabled = false;
 				btnAdvanceTurn.IsEnabled = true;
 			}
-			else
-			{
+			else {
 				tbEnterExitCombat.Text = "Enter Combat";
 				StartRealTimeTimer();
 				spTimeDirectModifiers.IsEnabled = true;
@@ -5552,17 +4886,14 @@ namespace DHDM
 			UpdateClock(true);
 		}
 
-		private void OnTimeFreezeChanged()
-		{
-			if (game.Clock.InTimeFreeze)
-			{
+		private void OnTimeFreezeChanged() {
+			if (game.Clock.InTimeFreeze) {
 				tbEnterExitTimeFreeze.Text = "Start Clock";
 				realTimeAdvanceTimer.Stop();
 				spTimeDirectModifiers.IsEnabled = false;
 				btnAdvanceTurn.IsEnabled = true;
 			}
-			else
-			{
+			else {
 				tbEnterExitTimeFreeze.Text = "Freeze Time";
 				StartRealTimeTimer();
 				spTimeDirectModifiers.IsEnabled = true;
@@ -5571,8 +4902,7 @@ namespace DHDM
 			UpdateClock(true);
 		}
 
-		private void StartRealTimeTimer()
-		{
+		private void StartRealTimeTimer() {
 			realTimeAdvanceTimer.Start();
 			lastUpdateTime = DateTime.Now;
 		}
@@ -5582,33 +4912,27 @@ namespace DHDM
 		DateTime clearViewerDiceButtonShowTime;
 		private static readonly TimeSpan timeToAutoClear = TimeSpan.FromSeconds(2); // Delete this.
 
-        void RealTimeClockHandler(object sender, EventArgs e)
-		{
+		void RealTimeClockHandler(object sender, EventArgs e) {
 			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;
 			lastUpdateTime = DateTime.Now;
 			game.Clock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
 
-		void PrepareUiForClearPlayerDiceButton()
-		{
-			SafeInvoke(() =>
-			{
+		void PrepareUiForClearPlayerDiceButton() {
+			SafeInvoke(() => {
 				rectPlayerProgressToClear.Width = 0;
 				btnClearPlayerDice.Visibility = Visibility.Visible;
 			});
 		}
 
-		void PrepareUiForClearViewerDiceButton()
-		{
-			SafeInvoke(() =>
-			{
+		void PrepareUiForClearViewerDiceButton() {
+			SafeInvoke(() => {
 				rectViewerProgressToClear.Width = 0;
 				btnClearViewerDice.Visibility = Visibility.Visible;
 			});
 		}
 
-		void ShowClearPlayerDiceButton(object sender, EventArgs e)
-		{
+		void ShowClearPlayerDiceButton(object sender, EventArgs e) {
 			clearPlayerDicePauseTime = TimeSpan.Zero;
 			clearPlayerDiceButtonShowTime = DateTime.Now;
 			showClearPlayerDiceButtonTimer.Stop();
@@ -5617,8 +4941,7 @@ namespace DHDM
 			PrepareUiForClearPlayerDiceButton();
 		}
 
-		void ShowClearViewerDiceButton(object sender, EventArgs e)
-		{
+		void ShowClearViewerDiceButton(object sender, EventArgs e) {
 			clearViewerDicePauseTime = TimeSpan.Zero;
 			clearViewerDiceButtonShowTime = DateTime.Now;
 			showClearViewerDiceButtonTimer.Stop();
@@ -5628,8 +4951,7 @@ namespace DHDM
 		}
 
 
-		void UpdateStateFromTimer(object sender, EventArgs e)
-		{
+		void UpdateStateFromTimer(object sender, EventArgs e) {
 			if (CreatureManager.ShouldUpdateInGameStats)
 				CreatureManager.UpdateInGameStatsIfNecessary();
 
@@ -5655,25 +4977,20 @@ namespace DHDM
 		//	});
 		//}
 
-		void BackToPlayersIn(double seconds)
-		{
+		void BackToPlayersIn(double seconds) {
 			switchBackToPlayersTimer.Interval = TimeSpan.FromSeconds(seconds);
 			switchBackToPlayersTimer.Start();
 		}
-		void SwitchBackToPlayersHandler(object sender, EventArgs e)
-		{
+		void SwitchBackToPlayersHandler(object sender, EventArgs e) {
 			switchBackToPlayersTimer.Stop();
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				PlayScene(DndObsManager.STR_PlayerScene);
 			});
 		}
 
-		private void UpdateClearDiceButton(DiceGroup diceGroup, Button btnClearDice, Rectangle rectProgressToClear, DateTime clearDiceButtonShowTime, TimeSpan clearDicePauseTime, double timeToAutoClear)
-		{
+		private void UpdateClearDiceButton(DiceGroup diceGroup, Button btnClearDice, Rectangle rectProgressToClear, DateTime clearDiceButtonShowTime, TimeSpan clearDicePauseTime, double timeToAutoClear) {
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearDiceButtonShowTime) - clearDicePauseTime;
-			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
-			{
+			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear) {
 				ClearTheDice(diceGroup);
 				rectProgressToClear.Width = 0;
 				return;
@@ -5683,27 +5000,23 @@ namespace DHDM
 			rectProgressToClear.Width = Math.Max(0, progress * btnClearDice.Width);
 		}
 
-		void UpdateClearPlayerDiceButton(object sender, EventArgs e)
-		{
+		void UpdateClearPlayerDiceButton(object sender, EventArgs e) {
 			UpdateClearDiceButton(DiceGroup.Players, btnClearPlayerDice, rectPlayerProgressToClear, clearPlayerDiceButtonShowTime, clearPlayerDicePauseTime, 14000);
 		}
 
-		void UpdateClearViewerDiceButton(object sender, EventArgs e)
-		{
+		void UpdateClearViewerDiceButton(object sender, EventArgs e) {
 			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 14000);
 		}
 
 		bool justClickedTheClearPlayerDiceButton;
 		bool justClickedTheClearViewerDiceButton;
 
-		private void BtnClearPlayerDice_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnClearPlayerDice_Click(object sender, RoutedEventArgs e) {
 			justClickedTheClearPlayerDiceButton = true;
 			ClearTheDice(DiceGroup.Players);
 		}
 
-		private void BtnClearViewerDice_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnClearViewerDice_Click(object sender, RoutedEventArgs e) {
 			justClickedTheClearViewerDiceButton = true;
 			ClearTheDice(DiceGroup.Viewers);
 		}
@@ -5713,40 +5026,33 @@ namespace DHDM
 		DateTime updateClearPlayerDicePaused;
 		DateTime updateClearViewerDicePaused;
 
-		private void BtnClearPlayerDice_MouseEnter(object sender, MouseEventArgs e)
-		{
+		private void BtnClearPlayerDice_MouseEnter(object sender, MouseEventArgs e) {
 			updateClearPlayerDicePaused = DateTime.Now;
 			updateClearPlayerDiceButtonTimer.Stop();
 		}
 
-		private void BtnClearPlayerDice_MouseLeave(object sender, MouseEventArgs e)
-		{
+		private void BtnClearPlayerDice_MouseLeave(object sender, MouseEventArgs e) {
 			clearPlayerDicePauseTime += DateTime.Now - updateClearPlayerDicePaused;
 			if (!justClickedTheClearPlayerDiceButton)
 				updateClearPlayerDiceButtonTimer.Start();
 		}
-		private void BtnClearViewerDice_MouseEnter(object sender, MouseEventArgs e)
-		{
+		private void BtnClearViewerDice_MouseEnter(object sender, MouseEventArgs e) {
 			updateClearViewerDicePaused = DateTime.Now;
 			updateClearViewerDiceButtonTimer.Stop();
 		}
 
-		private void BtnClearViewerDice_MouseLeave(object sender, MouseEventArgs e)
-		{
+		private void BtnClearViewerDice_MouseLeave(object sender, MouseEventArgs e) {
 			clearViewerDicePauseTime += DateTime.Now - updateClearViewerDicePaused;
 			if (!justClickedTheClearViewerDiceButton)
 				updateClearViewerDiceButtonTimer.Start();
 		}
 
 
-		public static FrameworkElement FindChild(DependencyObject parent, string childName)
-		{
+		public static FrameworkElement FindChild(DependencyObject parent, string childName) {
 			int childCount = VisualTreeHelper.GetChildrenCount(parent);
-			for (int i = 0; i < childCount; i++)
-			{
+			for (int i = 0; i < childCount; i++) {
 				FrameworkElement child = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
-				if (child != null)
-				{
+				if (child != null) {
 					if (child.Name == childName)
 						return child;
 					child = FindChild(child, childName);
@@ -5757,20 +5063,17 @@ namespace DHDM
 			return null;
 		}
 
-		public enum Flavors
-		{
+		public enum Flavors {
 			Vanilla,
 			Chocolate,
 			Strawberry,
 			Mint
 		}
 
-		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
 			diceRoll.OnFirstContactSound = "WildForm";
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
+			diceRoll.TrailingEffects.Add(new TrailingEffect() {
 				EffectType = "PawPrint",
 				Scale = 0.5,
 				LeftRightDistanceBetweenPrints = 25,
@@ -5781,8 +5084,7 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-		private void Window_Unloaded(object sender, RoutedEventArgs e)
-		{
+		private void Window_Unloaded(object sender, RoutedEventArgs e) {
 			if (frmCropPreview != null)
 				frmCropPreview.Close();
 			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
@@ -5791,65 +5093,55 @@ namespace DHDM
 			HubtasticBaseStation.TellDungeonMaster -= HubtasticBaseStation_TellDM;
 		}
 
-		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckAdd);
 			AddTrailingSparks(diceRoll);
 			diceRoll.SecondRollTitle = "Bending Luck!";
 			RollTheDice(diceRoll);
 		}
 
-		private void BtnBendLuckSubtract_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnBendLuckSubtract_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckSubtract);
 			AddTrailingSparks(diceRoll);
 			diceRoll.SecondRollTitle = "Bending Luck!";
 			RollTheDice(diceRoll);
 		}
 
-		private void BtnLuckRollHigh_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnLuckRollHigh_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollHigh);
 			AddTrailingSparks(diceRoll);
 			diceRoll.SecondRollTitle = "Sorcerer's Luck!";
 			RollTheDice(diceRoll);
 		}
 
-		private static void AddTrailingSparks(DiceRoll diceRoll)
-		{
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
+		private static void AddTrailingSparks(DiceRoll diceRoll) {
+			diceRoll.TrailingEffects.Add(new TrailingEffect() {
 				EffectType = "SmallSparks",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 33
 			});
 		}
 
-		private void BtnLuckRollLow_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnLuckRollLow_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollLow);
 			AddTrailingSparks(diceRoll);
 			diceRoll.SecondRollTitle = "Sorcerer's Luck!";
 			RollTheDice(diceRoll);
 		}
 
-		void RollInitiative()
-		{
+		void RollInitiative() {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Initiative);
 			RollTheDice(diceRoll);
 		}
 
-		private void BtnModifier_Click(object sender, RoutedEventArgs e)
-		{
-			if (sender is Button button)
-			{
+		private void BtnModifier_Click(object sender, RoutedEventArgs e) {
+			if (sender is Button button) {
 				tbxModifier.Text = button.Tag.ToString();
 			}
 		}
 
 		DiceRollType nextDieRollType;
-		void InitializeAttackShortcuts()
-		{
+		void InitializeAttackShortcuts() {
 			highlightRectangles = null;
 			actionShortcuts = AllActionShortcuts.AllShortcuts;
 		}
@@ -5857,45 +5149,38 @@ namespace DHDM
 
 		bool settingInternally;
 
-		private void TbxDamageDice_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxDamageDice_TextChanged(object sender, TextChangedEventArgs e) {
 			if (settingInternally)
 				return;
 			HidePlayerShortcutHighlightsUI();
 		}
 
-		private void TbxModifier_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxModifier_TextChanged(object sender, TextChangedEventArgs e) {
 			if (settingInternally)
 				return;
 			HidePlayerShortcutHighlightsUI();
 		}
 
-		private void CkbUseMagic_Checked(object sender, RoutedEventArgs e)
-		{
+		private void CkbUseMagic_Checked(object sender, RoutedEventArgs e) {
 			if (settingInternally)
 				return;
 			HidePlayerShortcutHighlightsUI();
 		}
 
-		Character GetPlayer(int playerId)
-		{
+		Character GetPlayer(int playerId) {
 			foreach (Character player in game.Players)
 				if (player.playerID == playerId)
 					return player;
 			return null;
 		}
 
-		void BuildPlayerTabs()
-		{
+		void BuildPlayerTabs() {
 			buildingTabs = true;
 
-			try
-			{
+			try {
 				tabPlayers.Items.Clear();
 
-				foreach (Character player in game.Players)
-				{
+				foreach (Character player in game.Players) {
 					PlayerTabItem tabItem = new PlayerTabItem();
 					tabItem.Header = player.firstName;
 					tabPlayers.Items.Add(tabItem);
@@ -5954,30 +5239,25 @@ namespace DHDM
 					scrollControlStack.Children.Add(stateList);
 				}
 			}
-			finally
-			{
+			finally {
 				buildingTabs = false;
 			}
 		}
 
-		private void ShowPlayerNameplate_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void ShowPlayerNameplate_CheckedChanged(object sender, RoutedEventArgs e) {
 			if (!(sender is CheckBox checkBox))
 				return;
 			if (!(checkBox.Tag is int playerID))
 				return;
 
-			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-			{
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
 				checkBox.IsChecked = true;
-				foreach (Character player in game.Players)
-				{
+				foreach (Character player in game.Players) {
 					player.ShowingNameplate = player.playerID == playerID;
 					// TODO: Update checkboxes to match player.ShowingNameplate setting.
 				}
 			}
-			else
-			{
+			else {
 				Character singlePlayer = game.GetPlayerFromId(playerID);
 				singlePlayer.ShowingNameplate = checkBox.IsChecked == true;
 			}
@@ -5985,8 +5265,7 @@ namespace DHDM
 			SendPlayerData();
 		}
 
-		private void CharacterSheets_ChargesChanged(object sender, ChargesChangedEventArgs e)
-		{
+		private void CharacterSheets_ChargesChanged(object sender, ChargesChangedEventArgs e) {
 			if (!(sender is CharacterSheets characterSheets))
 				return;
 			Character player
@@ -5996,36 +5275,28 @@ namespace DHDM
 			player.SetState(e.Key, e.NewValue);
 		}
 
-		private void CharacterSheets_SkillCheckConsidered(object sender, SkillCheckEventArgs e)
-		{
+		private void CharacterSheets_SkillCheckConsidered(object sender, SkillCheckEventArgs e) {
 			SelectSkill(e.Skill);
 		}
 
-		private void CharacterSheets_SavingThrowConsidered(object sender, AbilityEventArgs e)
-		{
+		private void CharacterSheets_SavingThrowConsidered(object sender, AbilityEventArgs e) {
 			SelectSavingThrowAbility(e.Ability);
 		}
 
-		private void CharacterSheets_SavingThrowRequested(object sender, AbilityEventArgs e)
-		{
+		private void CharacterSheets_SavingThrowRequested(object sender, AbilityEventArgs e) {
 			SelectSavingThrowAbility(e.Ability);
 			rbActivePlayer.IsChecked = true;
 			SetActivePlayerVantageUI(e.VantageKind);
 			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
-		void SelectSavingThrowAbility(Ability ability)
-		{
+		void SelectSavingThrowAbility(Ability ability) {
 			string lowerCaseAbility = ability.ToString().ToLower();
-			for (int i = 0; i < cbAbility.Items.Count; i++)
-			{
-				if (cbAbility.Items[i] is ComboBoxItem item)
-				{
-					if (item.Content is string displayText)
-					{
+			for (int i = 0; i < cbAbility.Items.Count; i++) {
+				if (cbAbility.Items[i] is ComboBoxItem item) {
+					if (item.Content is string displayText) {
 						string displayTextLower = displayText.ToLower();
-						if (displayTextLower == lowerCaseAbility)
-						{
+						if (displayTextLower == lowerCaseAbility) {
 							cbAbility.SelectedIndex = i;
 							return;
 						}
@@ -6034,8 +5305,7 @@ namespace DHDM
 			}
 		}
 
-		void SelectSkill(Skills skill)
-		{
+		void SelectSkill(Skills skill) {
 			string lowerCaseSkillName = skill.ToString().ToLower();
 			if (skill == Skills.animalHandling)
 				lowerCaseSkillName = "animal handling";
@@ -6043,15 +5313,11 @@ namespace DHDM
 				lowerCaseSkillName = "sleight of hand";
 			else if (skill == Skills.randomShit)
 				lowerCaseSkillName = "random shit";
-			for (int i = 0; i < cbSkillFilter.Items.Count; i++)
-			{
-				if (cbSkillFilter.Items[i] is ComboBoxItem item)
-				{
-					if (item.Content is string displayText)
-					{
+			for (int i = 0; i < cbSkillFilter.Items.Count; i++) {
+				if (cbSkillFilter.Items[i] is ComboBoxItem item) {
+					if (item.Content is string displayText) {
 						string displayTextLower = displayText.ToLower();
-						if (displayTextLower == lowerCaseSkillName)
-						{
+						if (displayTextLower == lowerCaseSkillName) {
 							cbSkillFilter.SelectedIndex = i;
 							return;
 						}
@@ -6061,26 +5327,22 @@ namespace DHDM
 			//cbSkillFilter.SelectedItem
 		}
 
-		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
-		{
+		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e) {
 			SetActivePlayerVantageUI(e.VantageKind);
 			List<int> playerIds = new List<int>();
 			playerIds.Add(ActivePlayerId);
 			InvokeSkillCheck(e.Skill, playerIds);
 		}
 
-		void RollDiceNowHandler(object sender, EventArgs e)
-		{
+		void RollDiceNowHandler(object sender, EventArgs e) {
 			delayRollTimer.Stop();
 			RollTheDice(delayedDiceRoll);
 		}
 
 		DiceRoll delayedDiceRoll;
 
-		public void InvokeSkillCheck(Skills skill, List<int> playerIds, int delayMs = 0)
-		{
-			SafeInvoke(() =>
-			{
+		public void InvokeSkillCheck(Skills skill, List<int> playerIds, int delayMs = 0) {
+			SafeInvoke(() => {
 				SelectSkill(skill);
 				SetRollScopeForPlayers(playerIds);
 				ckbUseMagic.IsChecked = false;
@@ -6090,31 +5352,25 @@ namespace DHDM
 			});
 		}
 
-		private void SetRollScopeForPlayers(List<int> creatureIds)
-		{
+		private void SetRollScopeForPlayers(List<int> creatureIds) {
 			if (IncludesAllPlayers(creatureIds))
 				rbEveryone.IsChecked = true;
-			else if (creatureIds.Count > 1)
-			{
+			else if (creatureIds.Count > 1) {
 				rbIndividuals.IsChecked = true;
 				// TODO: Check each individual identified by the player id's.
 			}
-			else
-			{
+			else {
 				ActivePlayerId = creatureIds[0];
 				rbActivePlayer.IsChecked = true;
 			}
 		}
 
-		private static bool IncludesAllPlayers(List<int> playerIds)
-		{
+		private static bool IncludesAllPlayers(List<int> playerIds) {
 			return playerIds == null || playerIds.Count == 0 || playerIds.First() == int.MaxValue;
 		}
 
-		public void InvokeSavingThrow(Ability ability, List<int> playerIds, int delayRollMs = 0)
-		{
-			SafeInvoke(() =>
-			{
+		public void InvokeSavingThrow(Ability ability, List<int> playerIds, int delayRollMs = 0) {
+			SafeInvoke(() => {
 				SelectSavingThrowAbility(ability);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
@@ -6122,26 +5378,20 @@ namespace DHDM
 			});
 		}
 
-		void ReportLastInitiativeResults()
-		{
-			foreach (string initiativeResult in lastInitiativeResults)
-			{
+		void ReportLastInitiativeResults() {
+			foreach (string initiativeResult in lastInitiativeResults) {
 				TellDungeonMaster(initiativeResult);
 			}
 		}
 
-		void EnterCombat()
-		{
-			SafeInvoke(() =>
-			{
+		void EnterCombat() {
+			SafeInvoke(() => {
 				TargetManager.ClearTargetHistory();
-				if (game.Clock.InCombat)
-				{
+				if (game.Clock.InCombat) {
 					TellDungeonMaster($"{Icons.WarningSign} Already in combat!");
 					ReportLastInitiativeResults();
 				}
-				else
-				{
+				else {
 					if (game.Clock.InTimeFreeze)
 						game.Clock.InTimeFreeze = false;
 					TellAll($"{Icons.EnteringCombat} Entering combat...");
@@ -6150,63 +5400,49 @@ namespace DHDM
 			});
 		}
 
-		void EnterTimeFreeze()
-		{
-			SafeInvoke(() =>
-			{
-				if (game.Clock.InTimeFreeze)
-				{
+		void EnterTimeFreeze() {
+			SafeInvoke(() => {
+				if (game.Clock.InTimeFreeze) {
 					TellDungeonMaster($"{Icons.WarningSign} Already in a time freeze!");
 					ReportLastInitiativeResults();
 				}
-				else
-				{
+				else {
 					TellAll($"Entering time freeze...");
 					BtnEnterExitTimeFreeze_Click(null, null);
 				}
 			});
 		}
 
-		void ExitCombat()
-		{
-			SafeInvoke(() =>
-			{
+		void ExitCombat() {
+			SafeInvoke(() => {
 				if (!game.Clock.InCombat)
 					TellDungeonMaster($"{Icons.WarningSign} Already NOT in combat!");
-				else
-				{
+				else {
 					TellAll($"{Icons.ExitCombat} Exiting combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
 		}
 
-		void ExitTimeFreeze()
-		{
-			SafeInvoke(() =>
-			{
+		void ExitTimeFreeze() {
+			SafeInvoke(() => {
 				if (!game.Clock.InTimeFreeze)
 					TellDungeonMaster($"{Icons.WarningSign} Already NOT in a time freeze.");
-				else
-				{
+				else {
 					TellAll($"{Icons.ExitCombat} Restarting the clock...");
 					BtnEnterExitTimeFreeze_Click(null, null);
 				}
 			});
 		}
 
-		void RollNonCombatInitiative()
-		{
-			SafeInvoke(() =>
-			{
+		void RollNonCombatInitiative() {
+			SafeInvoke(() => {
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.NonCombatInitiative);
 				RollTheDice(diceRoll);
 			});
 		}
-		public void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand)
-		{
-			switch (dungeonMasterCommand)
-			{
+		public void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand) {
+			switch (dungeonMasterCommand) {
 				case DungeonMasterCommand.ClearScrollEmphasis:
 					HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
 					TellDungeonMaster("Clearing emphasis...");
@@ -6230,42 +5466,34 @@ namespace DHDM
 			}
 		}
 
-		string PlusHiddenThresholdDisplayStr(TextBox textBox)
-		{
+		string PlusHiddenThresholdDisplayStr(TextBox textBox) {
 			string returnMessage = string.Empty;
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				returnMessage = $" (against a hidden threshold of {textBox.Text})";
 			});
 
 			return returnMessage;
 		}
 
-		CharacterSheets GetSheetForCharacter(int playerID)
-		{
-			foreach (TabItem tabItem in tabPlayers.Items)
-			{
+		CharacterSheets GetSheetForCharacter(int playerID) {
+			foreach (TabItem tabItem in tabPlayers.Items) {
 				if ((tabItem is PlayerTabItem playerTabItem) && (playerTabItem.PlayerId == playerID))
 					return playerTabItem.CharacterSheets;
 			}
 			return null;
 		}
 
-		ListBox GetStateListForCharacter(int playerID)
-		{
-			foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
-			{
+		ListBox GetStateListForCharacter(int playerID) {
+			foreach (PlayerTabItem playerTabItem in tabPlayers.Items) {
 				if (playerTabItem.PlayerId == playerID)
 					return playerTabItem.StateList;
 			}
 			return null;
 		}
 
-		public void RollSkillCheck(Skills skill, List<int> playerIds)
-		{
+		public void RollSkillCheck(Skills skill, List<int> playerIds) {
 			int delayRollMs = 0;
-			if (playerIds == null)
-			{
+			if (playerIds == null) {
 				playerIds = PlayerStatManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
@@ -6273,14 +5501,12 @@ namespace DHDM
 
 			InvokeSkillCheck(skill, playerIds, delayRollMs);
 
-			if (activePage != ScrollPage.skills)
-			{
+			if (activePage != ScrollPage.skills) {
 				activePage = ScrollPage.skills;
 				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSkill(skill);
 			});
@@ -6288,13 +5514,11 @@ namespace DHDM
 			string articlePlusSkillDisplay = DndUtils.ToArticlePlusSkillDisplayString(skill);
 			string who;
 			string icon;
-			if (IncludesAllPlayers(playerIds))
-			{
+			if (IncludesAllPlayers(playerIds)) {
 				who = "all players";
 				icon = Icons.SkillTest;
 			}
-			else
-			{
+			else {
 				who = GetPlayerName(ActivePlayerId);
 				icon = Icons.MultiplayerSkillCheck;
 			}
@@ -6303,10 +5527,8 @@ namespace DHDM
 			TellViewers($"{firstPart}...");
 		}
 
-		public void RollAttack()
-		{
-			SafeInvoke(() =>
-			{
+		public void RollAttack() {
+			SafeInvoke(() => {
 				if (NextDieRollType == DiceRollType.None)
 					NextDieRollType = DiceRollType.Attack;
 				BtnRollDice_Click(null, null);
@@ -6315,11 +5537,9 @@ namespace DHDM
 			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxSaveThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
 		}
 
-		public void RollSavingThrow(Ability ability, List<int> playerIds)
-		{
+		public void RollSavingThrow(Ability ability, List<int> playerIds) {
 			int delayRollMs = 0;
-			if (playerIds == null)
-			{
+			if (playerIds == null) {
 				playerIds = PlayerStatManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
@@ -6328,8 +5548,7 @@ namespace DHDM
 			InvokeSavingThrow(ability, playerIds, delayRollMs);
 			ChangeScrollPage(ActivePlayerId, ScrollPage.main);
 
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSavingAbility(ability);
 			});
@@ -6347,8 +5566,7 @@ namespace DHDM
 			TellViewers($"{firstPart}...");
 		}
 
-		private void ChangeScrollPage(int playerId, ScrollPage page)
-		{
+		private void ChangeScrollPage(int playerId, ScrollPage page) {
 			//			if (activePage != page)
 			{
 				activePage = page;
@@ -6356,21 +5574,18 @@ namespace DHDM
 			}
 		}
 
-		private void SelectedPlayersAboutToRoll()
-		{
+		private void SelectedPlayersAboutToRoll() {
 			PlayerStatManager.RollingTheDiceNow = true;
 			CreatureManager.UpdatePlayerStatsInGame();
 			PlayerStatManager.RollingTheDiceNow = false;
 			PlayerStatManager.ClearReadyToRollState();
 		}
 
-		public void InstantDiceRolledByTargets(DiceRollType diceRollType, string dieStr)
-		{
+		public void InstantDiceRolledByTargets(DiceRollType diceRollType, string dieStr) {
 			string creatures = AllInGameCreatures.GetTargetedCreatureDisplayList();
 			TellAll($"Rolling {dieStr} for {creatures}...");
 
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				SetRollTypeUI(diceRollType);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
 				if (diceRoll.PlayerRollOptions != null)
@@ -6382,40 +5597,33 @@ namespace DHDM
 			});
 		}
 
-		void CreaturesRollingSavingThrow(List<int> creatureIds)
-		{
+		void CreaturesRollingSavingThrow(List<int> creatureIds) {
 			List<Creature> creatures = GetCreaturesFromIds(creatureIds);
 			foreach (Creature creature in creatures)
 				creature.RollingSavingThrowNow();
 		}
 
-		void CreaturesRollingSkillCheck(List<int> creatureIds)
-		{
+		void CreaturesRollingSkillCheck(List<int> creatureIds) {
 			List<Creature> creatures = GetCreaturesFromIds(creatureIds);
 			foreach (Creature creature in creatures)
 				creature.RollingSkillCheckNow();
 		}
 
-		void CreatureAttacks(List<int> creatureIds)
-		{
+		void CreatureAttacks(List<int> creatureIds) {
 			List<Creature> creatureAttacks = GetCreaturesFromIds(creatureIds);
 			foreach (Creature creature in creatureAttacks)
 				creature.CreatureAttacksNow();
 		}
 
-		private static List<Creature> GetCreaturesFromIds(List<int> creatureIds)
-		{
+		private static List<Creature> GetCreaturesFromIds(List<int> creatureIds) {
 			List<Creature> creatures = new List<Creature>();
-			foreach (int creatureId in creatureIds)
-			{
-				if (creatureId < 0)
-				{
+			foreach (int creatureId in creatureIds) {
+				if (creatureId < 0) {
 					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
 					if (inGameCreature != null && inGameCreature.Creature != null)
 						creatures.Add(inGameCreature.Creature);
 				}
-				else
-				{
+				else {
 					Character player = AllPlayers.GetFromId(creatureId);
 					if (player != null)
 						creatures.Add(player);
@@ -6425,28 +5633,23 @@ namespace DHDM
 			return creatures;
 		}
 
-		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> creatureIds)
-		{
+		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> creatureIds) {
 			VantageKind vantageKind = VantageKind.Normal;
-			if (dieStr.EndsWith("[adv]"))
-			{
+			if (dieStr.EndsWith("[adv]")) {
 				dieStr = dieStr.EverythingBeforeLast("[");
 				vantageKind = VantageKind.Advantage;
 			}
-			else if (dieStr.EndsWith("[disadv]"))
-			{
+			else if (dieStr.EndsWith("[disadv]")) {
 				dieStr = dieStr.EverythingBeforeLast("[");
 				vantageKind = VantageKind.Disadvantage;
 			}
 			NextDieStr = dieStr;
 
 			string who;
-			if (creatureIds?.Count == 1 && creatureIds[0] < 0)
-			{
+			if (creatureIds?.Count == 1 && creatureIds[0] < 0) {
 				InGameCreature creature = AllInGameCreatures.GetByIndex(-creatureIds[0]);
 				who = creature.Name;
-				Dispatcher.Invoke(() =>
-				{
+				Dispatcher.Invoke(() => {
 					NextRollScope = RollScope.ActiveInGameCreature;
 				});
 			}
@@ -6455,7 +5658,7 @@ namespace DHDM
 			else
 				who = GetPlayerName(ActivePlayerId);
 
-			string vantageStr = "";
+			string vantageStr = string.Empty;
 			if (vantageKind == VantageKind.Advantage)
 				vantageStr = " (with advantage)";
 			else if (vantageKind == VantageKind.Disadvantage)
@@ -6463,19 +5666,16 @@ namespace DHDM
 
 			TellAll($"Rolling {dieStr}{vantageStr} for {who}...");
 
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(creatureIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
 				// TODO: Set Modifier for this roll if it's a d20 for a creature (NextRollScope = RollScope.ActiveInGameCreature;).
 				diceRoll.VantageKind = vantageKind;
 
-				if (vantageKind != VantageKind.Normal)
-				{
+				if (vantageKind != VantageKind.Normal) {
 					if (diceRoll.DiceDtos != null)
-						foreach (DiceDto diceDto in diceRoll.DiceDtos)
-						{
+						foreach (DiceDto diceDto in diceRoll.DiceDtos) {
 							diceDto.Vantage = vantageKind;
 							// TODO: Double-check this DieCountsAs.totalScore assignment - is this correct in all cases? E.g., what about saving throws with advantage?
 							diceDto.DieCountsAs = DieCountsAs.totalScore;
@@ -6495,28 +5695,23 @@ namespace DHDM
 			});
 		}
 
-		private static bool IsAttack(DiceRollType diceRollType)
-		{
+		private static bool IsAttack(DiceRollType diceRollType) {
 			return diceRollType == DiceRollType.Attack || diceRollType == DiceRollType.ChaosBolt;
 		}
 
-		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
-		{
+		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
 		}
 
-		private void Button_ClearScrollClick(object sender, RoutedEventArgs e)
-		{
+		private void Button_ClearScrollClick(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.SendScrollLayerCommand("Close");
 		}
 
-		private void BtnReloadEverything_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnReloadEverything_Click(object sender, RoutedEventArgs e) {
 			LoadEverything();
 		}
 
-		private void LoadEverything()
-		{
+		private void LoadEverything() {
 			dmMoodManager.Invalidate();
 			contestManager.Invalidate();
 			AllKnownCards.Invalidate();
@@ -6566,45 +5761,38 @@ namespace DHDM
 #endif
 		}
 
-		private void AddPlayersToGame()
-		{
+		private void AddPlayersToGame() {
 			List<Character> players = AllPlayers.GetActive();
 
-			foreach (Character player in players)
-			{
+			foreach (Character player in players) {
 				player.NumWildMagicChecks = 0;
 				player.RebuildAllEvents();
 				game.AddPlayer(player);
 			}
 		}
 
-		private void AddCreaturesToGame()
-		{
+		private void AddCreaturesToGame() {
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				game.AddCreature(inGameCreature.Creature);
 		}
 
-		private void SendPlayerData()
-		{
+		private void SendPlayerData() {
 			game.PreparePlayersForSerialization();
 			string playerData = JsonConvert.SerializeObject(game.Players);
 			HubtasticBaseStation.SetPlayerData(playerData);
 		}
 
-		void SetGridPosition(UIElement control, int column, int row)
-		{
+		void SetGridPosition(UIElement control, int column, int row) {
 			Grid.SetColumn(control, column);
 			Grid.SetRow(control, row);
 		}
 
-		void BuildPlayerUI()
-		{
+		void BuildPlayerUI() {
 			grdPlayerRollOptions.Children.Clear();
 			grdPlayerRollOptions.RowDefinitions.Clear();
 			int row = 0;
 
-			foreach (Character player in game.Players)
-			{
+			foreach (Character player in game.Players) {
 				int playerId = player.playerID;
 				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -6652,7 +5840,7 @@ namespace DHDM
 				spOptions.Children.Add(textBlock);
 
 				InspirationTextBox inspirationTextBox = new InspirationTextBox();
-				inspirationTextBox.Text = "";
+				inspirationTextBox.Text = string.Empty;
 				inspirationTextBox.MinWidth = 70;
 				inspirationTextBox.TextChanged += InspirationTextBox_TextChanged;
 				spOptions.Children.Add(inspirationTextBox);
@@ -6676,8 +5864,7 @@ namespace DHDM
 			}
 		}
 
-		private void RbNormalRoll_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbNormalRoll_Checked(object sender, RoutedEventArgs e) {
 			if (!(sender is RadioButton radioButton))
 				return;
 			int playerID = (int)radioButton.Tag;
@@ -6690,8 +5877,7 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void RbDisadvantageRoll_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbDisadvantageRoll_Checked(object sender, RoutedEventArgs e) {
 			if (!(sender is RadioButton radioButton))
 				return;
 			int playerID = (int)radioButton.Tag;
@@ -6704,8 +5890,7 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void RbAdvantageRoll_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbAdvantageRoll_Checked(object sender, RoutedEventArgs e) {
 			if (!(sender is RadioButton radioButton))
 				return;
 			int playerID = (int)radioButton.Tag;
@@ -6718,20 +5903,16 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void InspirationTextBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void InspirationTextBox_TextChanged(object sender, TextChangedEventArgs e) {
 			InspirationTextBox inspirationTextBox = sender as InspirationTextBox;
-			if (inspirationTextBox != null)
-			{
+			if (inspirationTextBox != null) {
 				inspirationTextBox.PlayerButton.IsEnabled = !string.IsNullOrWhiteSpace(inspirationTextBox.Text);
 			}
 		}
 
-		private void ButtonRollInspirationOnly_Click(object sender, RoutedEventArgs e)
-		{
+		private void ButtonRollInspirationOnly_Click(object sender, RoutedEventArgs e) {
 			PlayerButton playerButton = sender as PlayerButton;
-			if (playerButton != null)
-			{
+			if (playerButton != null) {
 				CheckPlayerUI(playerButton.PlayerId);
 				RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
 			}
@@ -6740,8 +5921,7 @@ namespace DHDM
 		}
 
 		int lastPlayerIdUnchecked;
-		private void PlayerRollCheckBox_Unchecked(object sender, RoutedEventArgs e)
-		{
+		private void PlayerRollCheckBox_Unchecked(object sender, RoutedEventArgs e) {
 			PlayerRollCheckBox playerRollCheckBox = sender as PlayerRollCheckBox;
 			if (playerRollCheckBox == null)
 				return;
@@ -6754,8 +5934,7 @@ namespace DHDM
 			SelectRadioButtonBasedOnCheckedPlayers();
 		}
 
-		private void PlayerRollCheckBox_Checked(object sender, RoutedEventArgs e)
-		{
+		private void PlayerRollCheckBox_Checked(object sender, RoutedEventArgs e) {
 			PlayerRollCheckBox playerRollCheckBox = sender as PlayerRollCheckBox;
 			if (playerRollCheckBox == null)
 				return;
@@ -6768,31 +5947,25 @@ namespace DHDM
 		}
 
 		bool radioingInternally;
-		void SelectRadioButtonBasedOnCheckedPlayers()
-		{
+		void SelectRadioButtonBasedOnCheckedPlayers() {
 			radioingInternally = true;
-			try
-			{
+			try {
 				bool allCheckboxesChecked = true;
 				int numRadioBoxesChecked = 0;
 				int lastPlayerId = -1;
-				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-				{
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
 					if (uIElement is PlayerRollCheckBox checkbox)
-						if (checkbox.IsChecked == true)
-						{
+						if (checkbox.IsChecked == true) {
 							numRadioBoxesChecked++;
 							lastPlayerId = checkbox.PlayerId;
 						}
-						else
-						{
+						else {
 							allCheckboxesChecked = false;
 						}
 				}
 				if (allCheckboxesChecked)
 					rbEveryone.IsChecked = true;
-				else if (numRadioBoxesChecked == 0)
-				{
+				else if (numRadioBoxesChecked == 0) {
 					CheckActivePlayer();
 					rbActivePlayer.IsChecked = true;
 				}
@@ -6801,18 +5974,15 @@ namespace DHDM
 				else
 					rbIndividuals.IsChecked = true;
 			}
-			finally
-			{
+			finally {
 				radioingInternally = false;
 			}
 		}
-		void CheckActivePlayer()
-		{
+		void CheckActivePlayer() {
 			CheckPlayerUI(ActivePlayerId);
 		}
 
-		private void CheckPlayerUI(int playerID)
-		{
+		private void CheckPlayerUI(int playerID) {
 			if (lastPlayerIdUnchecked == playerID)
 				return;
 			if (grdPlayerRollOptions == null)
@@ -6822,109 +5992,90 @@ namespace DHDM
 					checkbox.IsChecked = checkbox.PlayerId == playerID;
 		}
 
-		private void ChangePlayerUIRollingDice(int playerID, bool newState)
-		{
+		private void ChangePlayerUIRollingDice(int playerID, bool newState) {
 			if (lastPlayerIdUnchecked == playerID)
 				return;
 			if (grdPlayerRollOptions == null)
 				return;
 			checkingInternally = true;
-			try
-			{
-				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-				{
+			try {
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
 					if (uIElement is PlayerRollCheckBox checkbox)
 						if (checkbox.PlayerId == playerID)
 							checkbox.IsChecked = newState;
 				}
 			}
-			finally
-			{
+			finally {
 				checkingInternally = false;
 			}
 		}
 
 		bool buildingTabs;
 
-		private void ClearHistoryLog_Click(object sender, RoutedEventArgs e)
-		{
+		private void ClearHistoryLog_Click(object sender, RoutedEventArgs e) {
 			History.Clear();
 		}
 
-		private void CbAbility_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void CbAbility_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 
 		}
 
-		private void CbSkillFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (rbActivePlayer.IsChecked == true)
-			{
+		private void CbSkillFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+			if (rbActivePlayer.IsChecked == true) {
 				//PlayerID;
 				//tbxModifier.Text = ;
 			}
 		}
 
-		private void BtnApplyHealth_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnApplyHealth_Click(object sender, RoutedEventArgs e) {
 			ChangePlayerHealth(tbxHealth, +1);
 		}
 
-		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e) {
 			ChangePlayerHealth(tbxDamage, -1);
 		}
 
-		public int GetPlayerIdFromName(string characterName)
-		{
+		public int GetPlayerIdFromName(string characterName) {
 			if (characterName == "*")
 				return CardHandManager.IntAllPlayersId;
 			return AllPlayers.GetPlayerIdFromName(game.Players, characterName);
 		}
 
-		public int GetActivePlayerId()
-		{
+		public int GetActivePlayerId() {
 			InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
 			if (activeTurnCreature != null)
 				return -activeTurnCreature.Index;
 			return ActivePlayerId;
 		}
 
-		private void ChangePlayerHealth(TextBox textBox, int multiplier)
-		{
+		private void ChangePlayerHealth(TextBox textBox, int multiplier) {
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, textBox);
 
-			if (damageHealthChange != null)
-			{
+			if (damageHealthChange != null) {
 				ApplyDamageHealthChange(damageHealthChange);
 				//string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
 				//HubtasticBaseStation.ChangePlayerHealth(serializedObject);
 			}
 		}
 
-		void UpdatePlayerScrollInGame(Character player)
-		{
+		void UpdatePlayerScrollInGame(Character player) {
 			if (player == null)
 				return;
 			//if (ActivePlayerId == player.playerID)
 			HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
 		}
 
-		List<int> GetAllPlayerIds()
-		{
+		List<int> GetAllPlayerIds() {
 			List<int> results = new List<int>();
-			foreach (Character player in game.Players)
-			{
+			foreach (Character player in game.Players) {
 				results.Add(player.playerID);
 			}
 			return results;
 		}
 
-		List<int> GetTargetedPlayerIds()
-		{
+		List<int> GetTargetedPlayerIds() {
 			List<int> results = new List<int>();
-			foreach (Character player in game.Players)
-			{
+			foreach (Character player in game.Players) {
 				CreatureStats playerStats = PlayerStatManager.GetPlayerStats(player.playerID);
 				if (playerStats != null && playerStats.IsTargeted)
 					results.Add(player.playerID);
@@ -6934,17 +6085,14 @@ namespace DHDM
 			return results;
 		}
 
-		void UpdatePlayerScrollUI(Character player)
-		{
-			Dispatcher.Invoke(() =>
-			{
+		void UpdatePlayerScrollUI(Character player) {
+			Dispatcher.Invoke(() => {
 				CharacterSheets sheet = GetSheetForCharacter(player.playerID);
 				sheet.SetFromCharacter(player);
 			});
 		}
 
-		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
-		{
+		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange) {
 			if (damageHealthChange == null)
 				return;
 			string playerNames = string.Empty;
@@ -6953,8 +6101,7 @@ namespace DHDM
 				damageHealthChange.PlayerIds = GetTargetedPlayerIds();
 
 			int numPlayers = damageHealthChange.PlayerIds.Count;
-			for (int i = 0; i < numPlayers; i++)
-			{
+			for (int i = 0; i < numPlayers; i++) {
 				int playerId = damageHealthChange.PlayerIds[i];
 				Character player = GetPlayer(playerId);
 				if (player == null)
@@ -6996,15 +6143,13 @@ namespace DHDM
 			TellViewers(message);
 		}
 
-		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
-		{
+		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox) {
 			if (textBox == null)
 				return null;
 			DamageHealthChange damageHealthChange;
 			int damage;
 
-			if (int.TryParse(textBox.Text, out damage))
-			{
+			if (int.TryParse(textBox.Text, out damage)) {
 				damageHealthChange = new DamageHealthChange();
 				damageHealthChange.DamageHealth = damage * multiplier;
 				AddPlayerIds(damageHealthChange.PlayerIds);
@@ -7014,28 +6159,24 @@ namespace DHDM
 			return damageHealthChange;
 		}
 
-		private void AddPlayerIds(List<int> playerIds)
-		{
+		private void AddPlayerIds(List<int> playerIds) {
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 				if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
 					playerIds.Add(checkbox.PlayerId);
 
-			if (playerIds.Count == 0)
-			{
+			if (playerIds.Count == 0) {
 				playerIds.Add(ActivePlayerId);
 			}
 		}
 
-		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e) {
 			if (radioingInternally)
 				return;
 			ShowHidePlayerUI(true);
 			CheckActivePlayer();
 		}
 
-		private void RbEveryone_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbEveryone_Checked(object sender, RoutedEventArgs e) {
 			if (radioingInternally)
 				return;
 			ShowHidePlayerUI(true);
@@ -7048,25 +6189,20 @@ namespace DHDM
 		DiceRoll secondToLastRoll;
 		bool uiThreadSleepingWhileWaitingForAnswerToQuestion;
 
-		void CheckAllPlayers()
-		{
+		void CheckAllPlayers() {
 			checkingInternally = true;
-			try
-			{
-				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-				{
+			try {
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children) {
 					if (uIElement is PlayerRollCheckBox checkbox)
 						checkbox.IsChecked = true;
 				}
 			}
-			finally
-			{
+			finally {
 				checkingInternally = false;
 			}
 		}
 
-		private void RbIndividuals_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbIndividuals_Checked(object sender, RoutedEventArgs e) {
 			if (radioingInternally)
 				return;
 			//if (spRollButtons == null)
@@ -7075,8 +6211,7 @@ namespace DHDM
 			ShowHidePlayerUI(true);
 		}
 
-		void ShowHidePlayerUI(bool showUI)
-		{
+		void ShowHidePlayerUI(bool showUI) {
 			if (grdPlayerRollOptions == null)
 				return;
 			if (showUI)
@@ -7085,16 +6220,13 @@ namespace DHDM
 				grdPlayerRollOptions.Visibility = Visibility.Hidden;
 		}
 
-		private void CbDamage_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void CbDamage_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 
 		}
 
-		private void BtnLongtoothShiftingStrike_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnLongtoothShiftingStrike_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
+			diceRoll.TrailingEffects.Add(new TrailingEffect() {
 				EffectType = "Fangs",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
@@ -7104,18 +6236,15 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-		public void RollWildMagicCheck()
-		{
+		public void RollWildMagicCheck() {
 			SelectCharacter(PlayerID.Merkin);
 			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
 			TellDungeonMaster("Rolling wild magic check.");
 		}
 
-		string GetNopeMessage()
-		{
+		string GetNopeMessage() {
 			int rand = new Random((int)game.Clock.Time.Ticks).Next(10);
-			switch (rand)
-			{
+			switch (rand) {
 				case 0:
 					return "Nope";
 				case 1:
@@ -7140,8 +6269,7 @@ namespace DHDM
 			return "Error";
 		}
 
-		void ReportOnConcentration()
-		{
+		void ReportOnConcentration() {
 			string concentrationReport = game.GetConcentrationReport();
 
 			if (string.IsNullOrWhiteSpace(concentrationReport))
@@ -7150,19 +6278,15 @@ namespace DHDM
 				TellDungeonMaster(concentrationReport);
 		}
 
-		public void GetData(string dataId)
-		{
-			SafeInvoke(() =>
-			{
+		public void GetData(string dataId) {
+			SafeInvoke(() => {
 				if (dataId == "Concentration")
 					ReportOnConcentration();
 			});
 		}
 
-		public void SetVantage(VantageKind vantageKind, int playerId)
-		{
-			SafeInvoke(() =>
-			{
+		public void SetVantage(VantageKind vantageKind, int playerId) {
+			SafeInvoke(() => {
 				SetPlayerVantageUI(playerId, vantageKind);
 				PlayerStatManager.ReadyRollVantage(playerId, vantageKind);
 				CreatureManager.UpdatePlayerStatsInGame();
@@ -7171,13 +6295,11 @@ namespace DHDM
 
 		bool forceRepeatNextSpellShortcut;
 		// TODO: Rename substring.
-		void RepeatSpell(int playerId, string substring)
-		{
+		void RepeatSpell(int playerId, string substring) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
-			if (player.concentratedSpell != null && player.concentratedSpell.Spell.Name == substring.Trim())
-			{ // TODO: Invoke TS Targeting UI if necessary.
+			if (player.concentratedSpell != null && player.concentratedSpell.Spell.Name == substring.Trim()) { // TODO: Invoke TS Targeting UI if necessary.
 				PlayerActionShortcut playerActionShortcut = PlayerActionShortcut.FromSpell(substring, player, player.concentratedSpell.SpellSlotLevel);
 				PrepareTaleSpireTargeting(playerActionShortcut);
 				spellToCastOnRoll = playerActionShortcut;
@@ -7186,11 +6308,9 @@ namespace DHDM
 			}
 		}
 
-		public void SelectPlayerShortcut(string shortcutName, int playerId)
-		{
+		public void SelectPlayerShortcut(string shortcutName, int playerId) {
 			shortcutName = shortcutName.Trim();
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				ActivePlayerId = playerId;
 				CheckOnlyOnePlayer(playerId);
 				if (shortcutName.EndsWith(STR_RepeatSpell))
@@ -7201,31 +6321,24 @@ namespace DHDM
 
 		}
 
-		private void ActivatePlayerShortcut(string shortcutName, int playerId)
-		{
+		private void ActivatePlayerShortcut(string shortcutName, int playerId) {
 			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
 
-			if (shortcut != null)
-			{
+			if (shortcut != null) {
 				ActivateShortcut(shortcut);
 				TellDungeonMaster($"Activated {GetPlayerName(playerId)}'s {shortcutName}.");
 			}
 		}
 
-		public void SelectCharacter(int playerId)
-		{
-			SafeInvoke(() =>
-			{
+		public void SelectCharacter(int playerId) {
+			SafeInvoke(() => {
 				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem)
-					foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
-					{
-						if (playerTabItem.PlayerId == playerId)
-						{
+					foreach (PlayerTabItem playerTabItem in tabPlayers.Items) {
+						if (playerTabItem.PlayerId == playerId) {
 							if (tabPlayers.SelectedItem != playerTabItem)
 								tabPlayers.SelectedItem = playerTabItem;
-							else
-							{
-								HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, "");
+							else {
+								HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 							}
 							//TellDmActivePlayer(playerId);
 							break;
@@ -7234,8 +6347,7 @@ namespace DHDM
 			});
 		}
 
-		private void TellDmActivePlayer(int playerId)
-		{
+		private void TellDmActivePlayer(int playerId) {
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
@@ -7243,15 +6355,13 @@ namespace DHDM
 			TellDungeonMaster($"{player.emoticon} {twitchIndent} ----- {GetPlayerName(playerId)} -----");
 		}
 
-		public void RollWildMagic()
-		{
+		public void RollWildMagic() {
 			DiceRoll diceRoll = new DiceRoll(DiceRollType.WildMagic);
 			diceRoll.Modifier = 0;
 			diceRoll.HiddenThreshold = 0;
 			diceRoll.IsMagic = true;
 			diceRoll.OnThrowSound = "WildMagicRoll";
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
+			diceRoll.TrailingEffects.Add(new TrailingEffect() {
 				EffectType = "SparkTrail",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 84
@@ -7261,48 +6371,38 @@ namespace DHDM
 			TellDungeonMaster("Rolling wild magic...");
 		}
 
-		private void BtnSendWindup_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnSendWindup_Click(object sender, RoutedEventArgs e) {
 
 		}
 
-		private void BtnClearWindups_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnClearWindups_Click(object sender, RoutedEventArgs e) {
 
 		}
 
-		public void SetClock(int hours, int minutes, int seconds)
-		{
-			SafeInvoke(() =>
-			{
+		public void SetClock(int hours, int minutes, int seconds) {
+			SafeInvoke(() => {
 
 			});
 			// TODO: Tell DM
 		}
 
-		string GetPlural(string name, int seconds)
-		{
+		string GetPlural(string name, int seconds) {
 			if (seconds == 1)
 				return name;
 			return name + "s";
 		}
 
-		public void AdvanceClock(int hours, int minutes, int seconds, bool resting)
-		{
+		public void AdvanceClock(int hours, int minutes, int seconds, bool resting) {
 			if (hours == 0 && minutes == 0 && seconds == 0)
 				return;
 			// TODO: Calculate clockMessage based on the delta here.
-			SafeInvoke(() =>
-			{
-				if (resting)
-				{
-					if (hours >= 8)
-					{
+			SafeInvoke(() => {
+				if (resting) {
+					if (hours >= 8) {
 						TellAll("All players have recharged after a long rest.");
 						game?.RechargePlayersAfterLongRest();
 					}
-					else if (hours >= 2)
-					{
+					else if (hours >= 2) {
 						TellAll("All players have had a short rest.");
 						game?.RechargePlayersAfterShortRest();
 					}
@@ -7332,14 +6432,11 @@ namespace DHDM
 
 		}
 
-		public void AdvanceDate(int days, int months, int years, bool resting)
-		{
+		public void AdvanceDate(int days, int months, int years, bool resting) {
 			if (days == 0 && months == 0 && years == 0)
 				return;
-			SafeInvoke(() =>
-			{
-				if (resting)
-				{
+			SafeInvoke(() => {
+				if (resting) {
 					TellAll("All players have recharged after a long rest.");
 					game?.RechargePlayersAfterLongRest();
 				}
@@ -7364,40 +6461,32 @@ namespace DHDM
 			});
 		}
 
-		public void RollDice()
-		{
+		public void RollDice() {
 			TargetManager.AboutToRoll();
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				if (NextRollScope == RollScope.ActiveInGameCreature)
 					NextRollScope = RollScope.Individuals;
 				UnleashTheNextRoll();
 			});
 		}
 
-		public void HideScroll()
-		{
+		public void HideScroll() {
 			HubtasticBaseStation.SendScrollLayerCommand("Close");
 			TellDungeonMaster("Closing the scroll...", true);
 		}
 
-		public void DropWindup()
-		{
+		public void DropWindup() {
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			TellDungeonMaster("Dropping windups...");
 		}
 
-		public void MoveFred(string movement)
-		{
+		public void MoveFred(string movement) {
 			Character fred = AllPlayers.GetFromName("Fred");
 			int hueShift = 0;
-			if (fred != null)
-			{
+			if (fred != null) {
 				object rageState = fred.GetState("_rage");
-				if (rageState is Boolean inRage)
-				{
-					if (inRage)
-					{
+				if (rageState is Boolean inRage) {
+					if (inRage) {
 						hueShift = -220;
 						movement += $":{hueShift}";
 					}
@@ -7410,22 +6499,18 @@ namespace DHDM
 			HubtasticBaseStation.MoveFred(movement);
 		}
 
-		public void PlaySound(string soundFileName)
-		{
+		public void PlaySound(string soundFileName) {
 			HubtasticBaseStation.PlaySound(soundFileName);
 		}
 
-		public void Speak(int playerId, string message)
-		{
-			SafeInvoke(() =>
-			{
+		public void Speak(int playerId, string message) {
+			SafeInvoke(() => {
 				// TODO: Implement this.
 			});
 			// TODO: Tell DM
 		}
 
-		public void TellDungeonMaster(string message, bool isDetail = false)
-		{
+		public void TellDungeonMaster(string message, bool isDetail = false) {
 			if (dungeonMasterClient == null || string.IsNullOrWhiteSpace(message))
 				return;
 
@@ -7433,16 +6518,13 @@ namespace DHDM
 			SendMessage(message, DungeonMasterChannel);
 		}
 
-		private void SendMessage(string message, string channel)
-		{
+		private void SendMessage(string message, string channel) {
 			if (sendMessageSendsToHistory)
 				History.Log($"Sending \"{message}\" to {channel} at {DateTime.Now.ToLongTimeString()}");
 			if (JoinedChannel(channel))
 				dungeonMasterClient.SendMessage(channel, message);
-			else
-			{
-				try
-				{
+			else {
+				try {
 					if (dungeonMasterClient == null)
 						CreateDungeonMasterClient();
 					dungeonMasterClient.JoinChannel(channel);
@@ -7459,11 +6541,9 @@ namespace DHDM
 
 					dungeonMasterClient.SendMessage(channel, message);
 				}
-				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
-				{
+				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException) {
 					CreateDungeonMasterClient();
-					try
-					{
+					try {
 						if (dungeonMasterClient == null)
 							return;
 						dungeonMasterClient.JoinChannel(channel);
@@ -7535,40 +6615,33 @@ namespace DHDM
 			 
 			 */
 
-		public void TellViewers(string message)
-		{
+		public void TellViewers(string message) {
 			SendMessage(message, DragonHumpersChannel);
 
-			if (System.Diagnostics.Debugger.IsAttached && !suppressMessagesToCodeRushedChannel)
-			{
+			if (System.Diagnostics.Debugger.IsAttached && !suppressMessagesToCodeRushedChannel) {
 				TellCodeRushed(message);
 			}
 		}
 
-		public void TellCodeRushed(string message)
-		{
+		public void TellCodeRushed(string message) {
 			SendMessage(message, CodeRushedChannel);
 		}
 
-		public void TellAll(string message)
-		{
+		public void TellAll(string message) {
 			TellDungeonMaster(message);
 			TellViewers(message);
 		}
 
-		void ActivatePendingShortcuts(object sender, EventArgs e)
-		{
+		void ActivatePendingShortcuts(object sender, EventArgs e) {
 			pendingShortcutsTimer.Stop();
 			ActivatePendingPlayerShortcuts();
 		}
 
-		private void BtnClearSpell_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnClearSpell_Click(object sender, RoutedEventArgs e) {
 			ClearPlayerSpell();
 		}
 
-		private void ClearPlayerSpell()
-		{
+		private void ClearPlayerSpell() {
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 			if (player == null)
 				return;
@@ -7578,8 +6651,7 @@ namespace DHDM
 
 		int lastSpellSlotTested;
 		FileSystemWatcher spellsChangedFileWatcher;
-		private void ShowPlayerCasting()
-		{
+		private void ShowPlayerCasting() {
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 			if (player == null)
 				return;
@@ -7592,13 +6664,11 @@ namespace DHDM
 			player.PrepareSpell(castedSpell);
 		}
 
-		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 			ShowActiveSpell();
 		}
 
-		private void ShowActiveSpell()
-		{
+		private void ShowActiveSpell() {
 			SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
 			if (selectedItem == null)
 				return;
@@ -7616,19 +6686,16 @@ namespace DHDM
 			ShowPlayerCasting();
 		}
 
-		private void BtnReloadSpells_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnReloadSpells_Click(object sender, RoutedEventArgs e) {
 			ReloadSpells();
 		}
 
-		private void ReloadSpells()
-		{
+		private void ReloadSpells() {
 			AllSpells.Invalidate();
 			lstAllSpells.ItemsSource = AllSpells.Spells;
 		}
 
-		private void BtnSlotTest_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnSlotTest_Click(object sender, RoutedEventArgs e) {
 			if (!(sender is Button button))
 				return;
 			if (!int.TryParse((string)button.Tag, out lastSpellSlotTested))
@@ -7636,32 +6703,26 @@ namespace DHDM
 			ShowPlayerCasting();
 		}
 
-		private void CkBreakTest_Checked(object sender, RoutedEventArgs e)
-		{
+		private void CkBreakTest_Checked(object sender, RoutedEventArgs e) {
 			Expressions.Debugging = true;
 		}
 
-		private void CkBreakTest_Unchecked(object sender, RoutedEventArgs e)
-		{
+		private void CkBreakTest_Unchecked(object sender, RoutedEventArgs e) {
 			Expressions.Debugging = false;
 		}
 
-		private void BtnDebugStep_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnDebugStep_Click(object sender, RoutedEventArgs e) {
 
 		}
 
-		private void BtnDebugRun_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnDebugRun_Click(object sender, RoutedEventArgs e) {
 
 		}
 
-		private void BtnDebugTest_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnDebugTest_Click(object sender, RoutedEventArgs e) {
 			if (activeEventData == null)
 				return;
-			try
-			{
+			try {
 				TestCastSpell(activeEventData.ParentGroup.Name);
 				UnleashTheNextRoll();
 			}
@@ -7671,12 +6732,10 @@ namespace DHDM
 			}
 		}
 
-		private void LstKnownSpellsAndFeatures_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void LstKnownSpellsAndFeatures_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 			EventData selectedItem = lstEvents.SelectedItem as EventData;
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
-				if (e.AddedItems[0] is EventGroup eventGroup)
-				{
+				if (e.AddedItems[0] is EventGroup eventGroup) {
 					activeEventGroup = eventGroup;
 					lstEvents.ItemsSource = eventGroup.Events;
 					if (selectedItem != null)
@@ -7684,22 +6743,19 @@ namespace DHDM
 				}
 		}
 
-		List<DebugLine> GetDebugLines(string code)
-		{
+		List<DebugLine> GetDebugLines(string code) {
 			List<DebugLine> debugLines = new List<DebugLine>();
 			if (code == null)
 				return debugLines;
 			string[] splitLines = code.Split('\n');
-			foreach (string line in splitLines)
-			{
+			foreach (string line in splitLines) {
 				debugLines.Add(new DebugLine(line));
 			}
 
 			return debugLines;
 		}
 
-		private static string GetPlayerEventCode(EventGroup parentGroup, string name)
-		{
+		private static string GetPlayerEventCode(EventGroup parentGroup, string name) {
 			string groupName = parentGroup.Name;
 			object instance = null;
 
@@ -7718,16 +6774,13 @@ namespace DHDM
 		}
 
 		EventData activeEventData;
-		void UpdateTheUpdateButton(EventData eventData)
-		{
+		void UpdateTheUpdateButton(EventData eventData) {
 			btnUpdateEventHandler.Content = $"Update \"{eventData.ParentGroup.Name}\" {eventData.Name} handler";
 		}
 
-		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
-				if (e.AddedItems[0] is EventData eventData)
-				{
+				if (e.AddedItems[0] is EventData eventData) {
 					activeEventData = eventData;
 					UpdateTheUpdateButton(activeEventData);
 					string code = GetPlayerEventCode(eventData.ParentGroup, eventData.Name);
@@ -7739,57 +6792,47 @@ namespace DHDM
 				}
 		}
 
-		private void SetEventCode(string code)
-		{
+		private void SetEventCode(string code) {
 			ChangingInternally = true;
-			try
-			{
+			try {
 				codeEditor.HideAllCodeChangedStatusUI();
 				codeEditor.SetText(code);
 			}
-			finally
-			{
+			finally {
 				ChangingInternally = false;
 			}
 		}
 
-		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
-		{
-            UnleashTheNextRoll();
+		private void BtnRollDice_Click(object sender, RoutedEventArgs e) {
+			UnleashTheNextRoll();
 		}
 
-		void AddSavingThrowsForTargetedCreatures(DiceRoll diceRoll, int hiddenThreshold, Ability savingThrowAbility)
-		{
+		void AddSavingThrowsForTargetedCreatures(DiceRoll diceRoll, int hiddenThreshold, Ability savingThrowAbility) {
 			diceRoll.HiddenThreshold = hiddenThreshold;
 			diceRoll.SavingThrow = savingThrowAbility;
 			DiceRollType diceRollType = DiceRollType.SavingThrow;
-			if (diceRoll.Type == DiceRollType.DamageOnly)
-			{
+			if (diceRoll.Type == DiceRollType.DamageOnly) {
 				diceRollType = DiceRollType.DamagePlusSavingThrow;
 				diceRoll.Type = DiceRollType.DamagePlusSavingThrow;
 			}
 
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreature.IsTargeted)
-				{
+				if (inGameCreature.IsTargeted) {
 					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType, diceRoll.SavingThrow));
 					inGameCreature.CreatureRollingSavingThrow();
 				}
 
-			foreach (CreatureStats playerStats in PlayerStatManager.Players)
-			{
-				if (playerStats.IsTargeted)
-				{
+			foreach (CreatureStats playerStats in PlayerStatManager.Players) {
+				if (playerStats.IsTargeted) {
 					Character player = AllPlayers.GetFromId(playerStats.CreatureId);
-					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, "", player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
+					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, string.Empty, player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
 					diceRoll.DiceDtos.Add(diceDto);
 					player.RollingSavingThrowNow();
 				}
 			}
 		}
 
-		void PrepareContestRoll(ContestDto contestDto, DiceRoll diceRoll)
-		{
+		void PrepareContestRoll(ContestDto contestDto, DiceRoll diceRoll) {
 			foreach (Contestant contestant in contestDto.BottomContestants.Contestants)
 				diceRoll.DiceDtos.Add(DiceDto.FromCreatureId(contestant.CreatureId, contestant.Mod));
 			foreach (Contestant contestant in contestDto.TopContestants.Contestants)
@@ -7800,8 +6843,7 @@ namespace DHDM
 			// Hide text?
 			//contestDto.BottomContestants
 		}
-		private async void UnleashTheNextRoll()
-		{
+		private async void UnleashTheNextRoll() {
 			bool needToAddSavingThrows = false;
 			int spellSaveDc = 12;
 			PlayerActionShortcut localSpellToCastOnRoll = spellToCastOnRoll;
@@ -7809,64 +6851,55 @@ namespace DHDM
 			//Title = "Rolling Dice...";
 
 			Spell spellWeAreCasting = null;
-			if (localSpellToCastOnRoll != null)
-			{
+			if (localSpellToCastOnRoll != null) {
 				spellWeAreCasting = localSpellToCastOnRoll.Spell;
 
-				try
-				{
+				try {
 					bool forceRepeat = forceRepeatNextSpellShortcut;
 					forceRepeatNextSpellShortcut = false;
 					if (!await ActivateSpellShortcut(localSpellToCastOnRoll, forceRepeat))
 						return;
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					System.Diagnostics.Debugger.Break();
 					Console.WriteLine(ex.Message);
 				}
 
 				bool isSimpleSpell = localSpellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
-				if (isSimpleSpell)
-				{
+				if (isSimpleSpell) {
 					btnRollPlayerDice.IsEnabled = false;
 					return;  // No need to roll the dice
 				}
 			}
 
-			if (spellWeAreCasting == null && !string.IsNullOrEmpty(SpellManager.activeSpellName))
-			{
+			if (spellWeAreCasting == null && !string.IsNullOrEmpty(SpellManager.activeSpellName)) {
 				spellWeAreCasting = AllSpells.Get(SpellManager.activeSpellName);
 			}
 
 			CheckSpellForSavingThrows(spellWeAreCasting, ref needToAddSavingThrows, ref spellSaveDc);
 
-			if (NextDieRollType != DiceRollType.None)
-			{
+			if (NextDieRollType != DiceRollType.None) {
 				int delayMs = 0;
-				if (PlayerStatManager.AnyoneIsReadyToRoll)
-				{
+				if (PlayerStatManager.AnyoneIsReadyToRoll) {
 					delayMs = INT_TimeToDropDragonDice;
 					SelectedPlayersAboutToRoll();
 				}
 
 				DiceRoll diceRoll = PrepareRoll(NextDieRollType);
 				diceRoll.SpellID = SpellManager.nextSpellIdWeAreCasting;
-				if (needToAddSavingThrows)
-				{
+				if (needToAddSavingThrows) {
 					AddSavingThrowsForTargetedCreatures(diceRoll, spellSaveDc, nextSavingThrowAbility);
 				}
 				RollTheDice(diceRoll, delayMs);
 				NextDieRollType = DiceRollType.None;
 				NextRollScope = RollScope.ActivePlayer;
-				NextDieStr = "";
+				NextDieStr = string.Empty;
 			}
 			SpellManager.activeSpellName = null;
 		}
 
-		private void CheckSpellForSavingThrows(Spell spell, ref bool needToAddSavingThrows, ref int spellSaveDc)
-		{
+		private void CheckSpellForSavingThrows(Spell spell, ref bool needToAddSavingThrows, ref int spellSaveDc) {
 			if (spell == null)
 				return;
 
@@ -7883,129 +6916,108 @@ namespace DHDM
 			SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
 		}
 
-		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.SkillCheck;
 			btnRollPlayerDice.Content = "Roll Skill Check";
 		}
 
-		private void RbSavingThrow_Click(object sender, RoutedEventArgs e)
-		{
+		private void RbSavingThrow_Click(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.SavingThrow;
 			btnRollPlayerDice.Content = "Roll Saving Throw";
 		}
 
-		private void RbWildMagicD20Check_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbWildMagicD20Check_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.WildMagicD20Check;
 			btnRollPlayerDice.Content = "Check Wild Magic";
 		}
 
-		private void RbFlatD20_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbFlatD20_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.FlatD20;
 			btnRollPlayerDice.Content = "Roll d20";
 		}
 
-		private void RbAttack_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbAttack_Checked(object sender, RoutedEventArgs e) {
 			if (!settingAttackRadioButtonInternally)
 				NextDieRollType = DiceRollType.Attack;
 			btnRollPlayerDice.Content = "Roll Attack";
 		}
 
-		private void RbDeathSavingThrow_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbDeathSavingThrow_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.DeathSavingThrow;
 			btnRollPlayerDice.Content = "Roll Death Save";
 		}
 
-		private void RbInspirationOnly_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbInspirationOnly_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.InspirationOnly;
 			btnRollPlayerDice.Content = "Roll Inspiration";
 		}
 
-		private void RbHitPointCapacity_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbHitPointCapacity_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.HPCapacity;
 			btnRollPlayerDice.Content = "Roll HP Capacity";
 		}
 
-		private void RbHealth_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbHealth_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.HealthOnly;
 			btnRollPlayerDice.Content = "Roll Health";
 		}
 
-		private void RbDamageOnly_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbDamageOnly_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.DamageOnly;
 			btnRollPlayerDice.Content = "Roll Damage";
 		}
 
-		private void RbPercentageRoll_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbPercentageRoll_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.PercentageRoll;
 			btnRollPlayerDice.Content = "Roll Percentage";
 		}
 
-		private void RbWildMagic_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbWildMagic_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.WildMagic;
 			btnRollPlayerDice.Content = "Roll Wild Magic";
 		}
 
-		private void RbInitiative_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbInitiative_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.Initiative;
 			btnRollPlayerDice.Content = "Roll Initiative";
 		}
 
-		private void RbNonCombatInitiative_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbNonCombatInitiative_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.NonCombatInitiative;
 			btnRollPlayerDice.Content = "Roll Non-combat Initiative";
 		}
 
-		private void RbBendLuckAdd_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbBendLuckAdd_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.BendLuckAdd;
 			btnRollPlayerDice.Content = "Bend Luck Up (+)";
 		}
 
-		private void RbBendLuckSubtract_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbBendLuckSubtract_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.BendLuckSubtract;
 			btnRollPlayerDice.Content = "Bend Luck Down (-)";
 		}
 
-		private void RbLuckRollHigh_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbLuckRollHigh_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.LuckRollHigh;
 			btnRollPlayerDice.Content = "Lucky Roll High";
 		}
 
-		private void RbLuckRollLow_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbLuckRollLow_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.LuckRollLow;
 			btnRollPlayerDice.Content = "Lucky Roll Low";
 		}
 
-		private void RbExtra_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbExtra_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.ExtraOnly;
 			btnRollPlayerDice.Content = "Roll Extra";
 		}
 
-		private void RbChaosBolt_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbChaosBolt_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.ChaosBolt;
 			btnRollPlayerDice.Content = "Roll Chaos Bolt";
 		}
 
-		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e)
-		{
+		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e) {
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
 			diceRoll.DamageHealthExtraDice = "1d12(fire),1d12(psychic),1d12(acid),1d12(cold),1d12(force),1d12(necrotic),1d12(piercing),1d12(bludgeoning),1d12(slashing),1d12(lightning),1d12(radiant),1d12(thunder)";
 			RollTheDice(diceRoll);
@@ -8023,28 +7035,23 @@ namespace DHDM
 		//	}
 		//}
 
-		private void LstKnownSpellsAndFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-		{
-			if (lstKnownSpellsAndFeatures.SelectedItem is EventGroup eventGroup)
-			{
+		private void LstKnownSpellsAndFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
+			if (lstKnownSpellsAndFeatures.SelectedItem is EventGroup eventGroup) {
 				activeEventGroup = eventGroup;
 				lstEvents.ItemsSource = eventGroup.Events;
 				//btnRepeatLastCast.Content = $"Cast {eventGroup.Name}";
 			}
 		}
 
-		private void SetEventCode(EventGroup parentGroup, string name, string code)
-		{
+		private void SetEventCode(EventGroup parentGroup, string name, string code) {
 			string groupName = parentGroup.Name;
 			object instance = null;
 
-			if (parentGroup.Type == EventType.FeatureEvents)
-			{
+			if (parentGroup.Type == EventType.FeatureEvents) {
 				instance = AllFeatures.Get(groupName);
 				SetValue(instance, name, code);
 			}
-			else if (parentGroup.Type == EventType.SpellEvents)
-			{
+			else if (parentGroup.Type == EventType.SpellEvents) {
 				instance = AllSpells.GetDto(groupName);
 				string lowerEventName = Char.ToLower(name[0]) + name.Substring(1); // SpellDto events start with a lower case letter.
 				SetValue(instance, lowerEventName, code);
@@ -8062,24 +7069,21 @@ namespace DHDM
 			//	
 		}
 
-		private static void SetValue(object instance, string name, object value)
-		{
+		private static void SetValue(object instance, string name, object value) {
 			if (instance == null)
 				return;
 
 			instance.GetType().GetProperty(name).SetValue(instance, value);
 		}
 
-		void UpdateSelectedEvent(string text)
-		{
+		void UpdateSelectedEvent(string text) {
 			if (activeEventData == null)
 				return;
 			SetEventCode(activeEventData.ParentGroup, activeEventData.Name, text);
 		}
 
 		PlayerActionShortcut spellToCastOnRoll;
-		private void BtnRepeatLastCast_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnRepeatLastCast_Click(object sender, RoutedEventArgs e) {
 			const string CastPrefix = "Cast ";
 			string buttonLabel = btnRepeatLastCast.Content as string;
 			if (!buttonLabel.StartsWith(CastPrefix))
@@ -8090,13 +7094,11 @@ namespace DHDM
 			TestCastSpell(spellName);
 		}
 
-		void TestCastSpell(string spellName)
-		{
+		void TestCastSpell(string spellName) {
 			ActivateShortcut(spellName);
 		}
 
-		void UpdateSpellEvents(Spell spell)
-		{
+		void UpdateSpellEvents(Spell spell) {
 			Spell latestSpell = AllSpells.Get(spell.Name);
 			if (latestSpell == null)
 				return;
@@ -8115,100 +7117,81 @@ namespace DHDM
 			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
 		}
 
-		private void RbCastOtherSpell_Checked(object sender, RoutedEventArgs e)
-		{
+		private void RbCastOtherSpell_Checked(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.CastSimpleSpell;
 			btnRollPlayerDice.Content = "Cast Spell";
 		}
 
-		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Appear Behind");
 		}
 
-		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
 		}
 
-		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Walk Left");
 		}
 
-		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Walk Right");
 		}
 
-		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("SprinklesBlast");
 		}
 
-		private void BtnStandIdle_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnStandIdle_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Idle");
 		}
 
-		private void BtnThreatened_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnThreatened_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Threatened");
 		}
 
-		private void BtnCry_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnCry_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("SprinklesTears");
 		}
 
-		private void BtnBabyEyes_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnBabyEyes_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("BabyEyes");
 		}
 
-		private void BtnFart_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnFart_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Fart");
 		}
 
-		private void BtnScoopAttack_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnScoopAttack_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("ScoopAttack");
 		}
 
-		private void BtnStabAttack_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnStabAttack_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("StabAttack");
 		}
 
-		private void BtnPushUpAttack_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnPushUpAttack_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("PushUpAttack");
 		}
 
-		private void BtnDies_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnDies_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Dies");
 		}
 
-		private void BtnFlip_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnFlip_Click(object sender, RoutedEventArgs e) {
 			HubtasticBaseStation.AnimateSprinkles("Flip");
 		}
 
-		private void BtnApplyTempHp_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnApplyTempHp_Click(object sender, RoutedEventArgs e) {
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(+1, tbxTempHp);
 
-			if (damageHealthChange != null)
-			{
+			if (damageHealthChange != null) {
 				damageHealthChange.IsTempHitPoints = true;
 				ApplyDamageHealthChange(damageHealthChange);
 			}
 		}
 
-		private void BtnChangeWealth_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnChangeWealth_Click(object sender, RoutedEventArgs e) {
 			//game.Clock.SetTime(game.Clock.Time - TimeSpan.FromDays(365 * 900));
 			WealthChange wealthChange = new WealthChange();
 			wealthChange.Coins.SetFromText(tbxWealthDelta.Text);
@@ -8217,8 +7200,7 @@ namespace DHDM
 			game.ChangeWealth(wealthChange);
 		}
 
-		int GetFrameRate(object sender)
-		{
+		int GetFrameRate(object sender) {
 			if (sender is RadioButton radioButton)
 				if (radioButton.Content != null && radioButton.Content is string rbText)
 					if (int.TryParse(rbText, out int result))
@@ -8226,8 +7208,7 @@ namespace DHDM
 			return 30;
 		}
 
-		private void RbnFrontFpsChange_Click(object sender, RoutedEventArgs e)
-		{
+		private void RbnFrontFpsChange_Click(object sender, RoutedEventArgs e) {
 			if (changingFrameRateInternally)
 				return;
 			ChangeFps(sender, Overlays.Front);
@@ -8235,40 +7216,33 @@ namespace DHDM
 
 		bool changingFrameRateInternally;
 
-		private void RbnBackFpsChange_Click(object sender, RoutedEventArgs e)
-		{
+		private void RbnBackFpsChange_Click(object sender, RoutedEventArgs e) {
 			if (changingFrameRateInternally)
 				return;
 			ChangeFps(sender, Overlays.Back);
 		}
 
-		private void RbnDiceFpsChange_Click(object sender, RoutedEventArgs e)
-		{
+		private void RbnDiceFpsChange_Click(object sender, RoutedEventArgs e) {
 			if (changingFrameRateInternally)
 				return;
 			ChangeFps(sender, Overlays.Dice);
 		}
 
-		private void ChangeFps(object sender, string overlayName)
-		{
+		private void ChangeFps(object sender, string overlayName) {
 			ChangeFrameRate(overlayName, GetFrameRate(sender));
 		}
 
-		private void ChangeFrameRate(string overlayName, int frameRate)
-		{
+		private void ChangeFrameRate(string overlayName, int frameRate) {
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.FrameRate = frameRate;
 			frameRateChangeData.OverlayName = overlayName;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
 
-		RadioButton GetFrameRateRadioButton(string overlayName, int frameRate)
-		{
-			switch (overlayName)
-			{
+		RadioButton GetFrameRateRadioButton(string overlayName, int frameRate) {
+			switch (overlayName) {
 				case Overlays.Back:
-					switch (frameRate)
-					{
+					switch (frameRate) {
 						case 1:
 							return rbnBack1;
 						case 2:
@@ -8300,8 +7274,7 @@ namespace DHDM
 					}
 					break;
 				case Overlays.Dice:
-					switch (frameRate)
-					{
+					switch (frameRate) {
 						case 1:
 							return rbnDice1;
 						case 2:
@@ -8333,8 +7306,7 @@ namespace DHDM
 					}
 					break;
 				case Overlays.Front:
-					switch (frameRate)
-					{
+					switch (frameRate) {
 						case 1:
 							return rbnFront1;
 						case 2:
@@ -8368,21 +7340,16 @@ namespace DHDM
 			}
 			return null;
 		}
-		private void ChangeFrameRateAndUI(string overlayName, int frameRate)
-		{
+		private void ChangeFrameRateAndUI(string overlayName, int frameRate) {
 			RadioButton radioButton = GetFrameRateRadioButton(overlayName, frameRate);
-			if (radioButton != null)
-			{
-				try
-				{
+			if (radioButton != null) {
+				try {
 					changingFrameRateInternally = true;
-					SafeInvoke(() =>
-					{
+					SafeInvoke(() => {
 						radioButton.IsChecked = true;
 					});
 				}
-				finally
-				{
+				finally {
 					changingFrameRateInternally = false;
 				}
 			}
@@ -8391,64 +7358,54 @@ namespace DHDM
 
 		bool dynamicThrottling = false;
 
-		private void CkDynamicThrottling_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void CkDynamicThrottling_CheckedChanged(object sender, RoutedEventArgs e) {
 			dynamicThrottling = ckDynamicThrottling.IsChecked == true;
 		}
 
-		public void GetSavingThrowStats()
-		{
+		public void GetSavingThrowStats() {
 
 		}
 
-		public void SetModifier(int modifier)
-		{
+		public void SetModifier(int modifier) {
 
 		}
 
-		public void RollSave(int diceId)
-		{
+		public void RollSave(int diceId) {
 
 		}
 
 		// TODO: Set this when a spell is cast.
 		int lastSpellSave;
-		public int GetLastSpellSave()
-		{
+		public int GetLastSpellSave() {
 			return lastSpellSave;
 		}
 
-		public void StopPlayer(string mainFolder)
-		{
+		public void StopPlayer(string mainFolder) {
 			SoundCommand soundCommand = new SoundCommand(mainFolder);
 			soundCommand.type = SoundCommandType.StopPlaying;
 			Execute(soundCommand);
 		}
 
-		public void SetPlayerVolume(string mainFolder, int newVolume)
-		{
+		public void SetPlayerVolume(string mainFolder, int newVolume) {
 			SoundCommand soundCommand = new SoundCommand(mainFolder);
 			soundCommand.type = SoundCommandType.SetVolume;
 			soundCommand.numericData = newVolume;
 			Execute(soundCommand);
 		}
 
-		public void SetPlayerFolder(string mainFolder, string newTheme)
-		{
+		public void SetPlayerFolder(string mainFolder, string newTheme) {
 			SoundCommand soundCommand = new SoundCommand(mainFolder);
 			soundCommand.type = SoundCommandType.ChangeFolder;
 			soundCommand.strData = newTheme;
 			Execute(soundCommand);
 		}
 
-		private static void Execute(SoundCommand soundCommand)
-		{
+		private static void Execute(SoundCommand soundCommand) {
 			string serializedObject = JsonConvert.SerializeObject(soundCommand);
 			HubtasticBaseStation.ExecuteSoundCommand(serializedObject);
 		}
 
-		private void LstAllSpells_Drop(object sender, DragEventArgs e)
-		{
+		private void LstAllSpells_Drop(object sender, DragEventArgs e) {
 			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
 				return;
 
@@ -8458,16 +7415,14 @@ namespace DHDM
 				AssignImageToSpell(files[0]);
 		}
 
-		void AssignImageToSpell(string fileName)
-		{
+		void AssignImageToSpell(string fileName) {
 			SpellDto spellDto = lstAllSpells.SelectedItem as SpellDto;
 			if (spellDto == null)
 				return;
 			AssignImageToSpell(fileName, spellDto.name);
 		}
 
-		string GetValidFileName(string fileName)
-		{
+		string GetValidFileName(string fileName) {
 			string result = fileName;
 
 			foreach (char c in System.IO.Path.GetInvalidFileNameChars())
@@ -8476,8 +7431,7 @@ namespace DHDM
 			return result;
 		}
 
-		private void AssignImageToSpell(string fileName, string spellName)
-		{
+		private void AssignImageToSpell(string fileName, string spellName) {
 			const string targetPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
 			File.Copy(fileName, System.IO.Path.Combine(targetPath, GetValidFileName(spellName) + ".png"), true);
 
@@ -8485,8 +7439,7 @@ namespace DHDM
 			ShowActiveSpell();
 		}
 
-		private void TbDice_Drop(object sender, DragEventArgs e)
-		{
+		private void TbDice_Drop(object sender, DragEventArgs e) {
 			if (preparedSpell == null)
 				return;
 
@@ -8501,12 +7454,10 @@ namespace DHDM
 				AssignImageToSpell(files[0], preparedSpell.Spell.Name);
 		}
 
-		public void ChangeWealth(List<int> playerIds, decimal deltaAmount)
-		{
+		public void ChangeWealth(List<int> playerIds, decimal deltaAmount) {
 			WealthChange wealthChange = new WealthChange();
 			wealthChange.Coins.SetFromGold(deltaAmount);
-			if (playerIds.First() == int.MaxValue)
-			{
+			if (playerIds.First() == int.MaxValue) {
 				wealthChange.PlayerIds = GetTargetedPlayerIds();
 				//wealthChange.PlayerIds = new List<int>();
 				//foreach (Character player in game.Players)
@@ -8521,44 +7472,36 @@ namespace DHDM
 			game.ChangeWealth(wealthChange);
 		}
 
-		private void BtnUpdateEventHandler_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnUpdateEventHandler_Click(object sender, RoutedEventArgs e) {
 			SaveCodeChanges(sender, e);
 		}
 
-		private void BtnTestPlayerSave_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnTestPlayerSave_Click(object sender, RoutedEventArgs e) {
 			AllPlayers.SaveChanges();
 		}
 
-		DamageHealthChange NewDamageHealthChange(List<int> playerIds, int value)
-		{
+		DamageHealthChange NewDamageHealthChange(List<int> playerIds, int value) {
 			DamageHealthChange damageHealthChange = new DamageHealthChange();
 			damageHealthChange.PlayerIds = playerIds;
 			damageHealthChange.DamageHealth = value;
 			return damageHealthChange;
 		}
 
-		void IncreasePlayerHealth(List<int> playerIds, int value)
-		{
+		void IncreasePlayerHealth(List<int> playerIds, int value) {
 			ApplyDamageHealthChange(NewDamageHealthChange(playerIds, value));
 		}
 
-		void ApplyPlayerDamage(List<int> playerIds, int value)
-		{
+		void ApplyPlayerDamage(List<int> playerIds, int value) {
 			ApplyDamageHealthChange(NewDamageHealthChange(playerIds, -value));
 		}
 
-		void TriggerDmEvent(DmEvent dmEvent)
-		{
+		void TriggerDmEvent(DmEvent dmEvent) {
 			string serializedObject = JsonConvert.SerializeObject(new DmDataDto(dmEvent));
 			HubtasticBaseStation.DmDataChanged(serializedObject);
 		}
 
-		void SetAttackThreshold(int value)
-		{
-			SafeInvoke(() =>
-			{
+		void SetAttackThreshold(int value) {
+			SafeInvoke(() => {
 				tbxAttackThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden ATTACK threshold");
@@ -8566,31 +7509,25 @@ namespace DHDM
 			TriggerDmEvent(DmEvent.AttackThresholdChanged);
 		}
 
-		void SetSavingThrowThreshold(int value)
-		{
-			SafeInvoke(() =>
-			{
+		void SetSavingThrowThreshold(int value) {
+			SafeInvoke(() => {
 				tbxSaveThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SAVE threshold");
 			TriggerDmEvent(DmEvent.SavingThresholdChanged);
 		}
 
-		void SetSkillCheckThreshold(int value)
-		{
-			SafeInvoke(() =>
-			{
+		void SetSkillCheckThreshold(int value) {
+			SafeInvoke(() => {
 				tbxSkillCheckThreshold.Text = value.ToString();
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SKILL CHECK threshold");
 			TriggerDmEvent(DmEvent.SkillCheckThresholdChanged);
 		}
 
-		public void Apply(string command, decimal value, List<int> playerIds)
-		{
+		public void Apply(string command, decimal value, List<int> playerIds) {
 			int intValue = (int)Math.Round(value);
-			switch (command)
-			{
+			switch (command) {
 				case "Health":
 					IncreasePlayerHealth(playerIds, intValue);
 					break;
@@ -8652,55 +7589,47 @@ namespace DHDM
 			}
 		}
 
-		private void AddTempHitPoints(List<int> playerIds, int intValue)
-		{
+		private void AddTempHitPoints(List<int> playerIds, int intValue) {
 			DamageHealthChange damageHealthChange = NewDamageHealthChange(playerIds, intValue);
 			damageHealthChange.IsTempHitPoints = true;
 			ApplyDamageHealthChange(damageHealthChange);
 		}
 
-		private void BtnPickMonster_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnPickMonster_Click(object sender, RoutedEventArgs e) {
 			FrmMonsterPicker frmMonsterPicker = new FrmMonsterPicker();
 			frmMonsterPicker.Owner = this;
 			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters;
 			frmMonsterPicker.ShowDialog();
 		}
 
-		private void CkShowFPSWindow_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void CkShowFPSWindow_CheckedChanged(object sender, RoutedEventArgs e) {
 			FrameRateChangeData.GlobalShowFpsWindow = ckShowFPSWindow.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.OverlayName = Overlays.Front;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
 
-		private void CkEnableHueShift_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void CkEnableHueShift_CheckedChanged(object sender, RoutedEventArgs e) {
 			FrameRateChangeData.GlobalAllowColorShifting = ckEnableHueShift.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.OverlayName = Overlays.Front;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
 
-		private void BtnReconnectTwitchClient_Click(object sender, RoutedEventArgs e)
-		{
+		private void BtnReconnectTwitchClient_Click(object sender, RoutedEventArgs e) {
 			CreateDungeonMasterClient();
 		}
 
-		private void CkEnableCanvasFilterCaching_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void CkEnableCanvasFilterCaching_CheckedChanged(object sender, RoutedEventArgs e) {
 			//FrameRateChangeData.GlobalAllowCanvasFilterCaching = ckEnableCanvasFilterCaching.IsChecked == true;
 			UpdateOverlayPerformanceOptions();
 		}
 
-		private static void UpdateOverlayPerformanceOptions()
-		{
+		private static void UpdateOverlayPerformanceOptions() {
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(new FrameRateChangeData()));
 		}
 
-		private void TbxMaxFiltersOnWindup_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxMaxFiltersOnWindup_TextChanged(object sender, TextChangedEventArgs e) {
 			if (!int.TryParse(tbxMaxFiltersOnWindup.Text, out int num))
 				return;
 
@@ -8708,8 +7637,7 @@ namespace DHDM
 			UpdateOverlayPerformanceOptions();
 		}
 
-		private void TbxMaxFiltersOnDieCleanup_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxMaxFiltersOnDieCleanup_TextChanged(object sender, TextChangedEventArgs e) {
 			if (!int.TryParse(tbxMaxFiltersOnDieCleanup.Text, out int num))
 				return;
 
@@ -8717,8 +7645,7 @@ namespace DHDM
 			UpdateOverlayPerformanceOptions();
 		}
 
-		private void TbxMaxFiltersOnRoll_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxMaxFiltersOnRoll_TextChanged(object sender, TextChangedEventArgs e) {
 			if (!int.TryParse(tbxMaxFiltersOnRoll.Text, out int num))
 				return;
 
@@ -8726,11 +7653,9 @@ namespace DHDM
 			UpdateOverlayPerformanceOptions();
 		}
 
-		public bool ChangingInternally
-		{
+		public bool ChangingInternally {
 			get => _changingInternally;
-			set
-			{
+			set {
 				_changingInternally = value;
 				if (codeEditor != null)
 					if (_changingInternally)
@@ -8742,30 +7667,24 @@ namespace DHDM
 
 		public DndGame Game { get => game; set => game = value; }
 
-		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
-		{
+		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e) {
 			CodeChanged();
 		}
 
-		private void CodeChanged()
-		{
+		private void CodeChanged() {
 			if (ChangingInternally)
 				return;
 			ChangingInternally = true;
-			try
-			{
+			try {
 				UpdateSelectedEvent(codeEditor.TextEditor.Text);
 			}
-			finally
-			{
+			finally {
 				ChangingInternally = false;
 			}
 		}
 
-		void FocusSelectedItem(ListBox listBox)
-		{
-			if (listBox.SelectedItem != null)
-			{
+		void FocusSelectedItem(ListBox listBox) {
+			if (listBox.SelectedItem != null) {
 				ListBoxItem listBoxItem = (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromItem(listBox.SelectedItem);
 				listBoxItem?.Focus();
 			}
@@ -8773,26 +7692,22 @@ namespace DHDM
 				lstEvents.Focus();
 		}
 
-		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e) {
 			codeEditor.ReloadTemplates();
 			codeEditor.ReloadShortcuts();
 		}
 
-		void SaveCodeChanges(object sender, EventArgs e)
-		{
+		void SaveCodeChanges(object sender, EventArgs e) {
 			if (activeEventData == null)
 				return;
 			// Spells only...
 			string spellOrFeatureName = activeEventData.ParentGroup.Name;
 			List<Spell> allSpells = AllSpells.GetAll(spellOrFeatureName);
-			if (allSpells.Count == 1)
-			{
+			if (allSpells.Count == 1) {
 				Spell spell = allSpells[0];
 				GoogleSheets.SaveChanges(spell, activeEventData.Name);
 			}
-			else
-			{
+			else {
 				Feature feature = AllFeatures.Get(spellOrFeatureName);
 				if (feature != null)
 					GoogleSheets.SaveChanges(feature, activeEventData.Name);
@@ -8800,50 +7715,41 @@ namespace DHDM
 			codeEditor.ShowStatusCodeIsSaved();
 		}
 
-		private void lstKnownSpellsAndFeatures_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter && Modifiers.NoModifiersDown)
-			{
+		private void lstKnownSpellsAndFeatures_PreviewKeyDown(object sender, KeyEventArgs e) {
+			if (e.Key == Key.Enter && Modifiers.NoModifiersDown) {
 				FocusSelectedItem(lstEvents);
 				e.Handled = true;
 			}
 		}
 
-		private void lstEvents_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter && Modifiers.NoModifiersDown)
-			{
+		private void lstEvents_PreviewKeyDown(object sender, KeyEventArgs e) {
+			if (e.Key == Key.Enter && Modifiers.NoModifiersDown) {
 				codeEditor.TextEditor.Focus();
 				e.Handled = true;
 			}
-			else if (e.Key == Key.Escape && Modifiers.NoModifiersDown)
-			{
+			else if (e.Key == Key.Escape && Modifiers.NoModifiersDown) {
 				FocusSelectedItem(lstKnownSpellsAndFeatures);
 				e.Handled = true;
 			}
 		}
 
-		private void btnReloadTrailingEffects_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadTrailingEffects_Click(object sender, RoutedEventArgs e) {
 			AllTrailingEffects.Invalidate();
 			codeEditor.RefreshCompletionProviders();
 		}
 
-		private void btnReloadMonsters_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadMonsters_Click(object sender, RoutedEventArgs e) {
 			AllMonsters.Invalidate();
 			FilterMonsters();
 		}
 
-		CreatureKinds GetMonsterTabCreatureKindFilter()
-		{
+		CreatureKinds GetMonsterTabCreatureKindFilter() {
 			CreatureKinds result = CreatureKinds.None;
 
 			Array values = Enum.GetValues(typeof(CreatureKinds));
 			Array names = Enum.GetNames(typeof(CreatureKinds));
 			Dictionary<string, CreatureKinds> nameValueMap = new Dictionary<string, CreatureKinds>();
-			for (int i = 0; i < names.Length; i++)
-			{
+			for (int i = 0; i < names.Length; i++) {
 				nameValueMap.Add(((string[])names)[i], ((CreatureKinds[])values)[i]);
 			}
 
@@ -8857,16 +7763,14 @@ namespace DHDM
 
 			return result;
 		}
-		private void FilterMonsters()
-		{
+		private void FilterMonsters() {
 			double maxChallengeRating = double.MaxValue;
 			CreatureKinds creatureKindFilter = GetMonsterTabCreatureKindFilter();
 			spAllMonsters.DataContext = AllMonsters.Monsters.Where(x => x.challengeRating <= maxChallengeRating &&
 			(x.kind & creatureKindFilter) == x.kind).ToList();
 		}
 
-		private void btnMonsterFilter_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void btnMonsterFilter_CheckedChanged(object sender, RoutedEventArgs e) {
 			if (!ChangingInternally)
 				FilterMonsters();
 		}
@@ -8875,24 +7779,21 @@ namespace DHDM
 		bool isDraggingCropRect;
 		double imageCropMouseDeltaX;
 		double imageCropMouseDeltaY;
-		private void rectDragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-		{
+		private void rectDragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
 			GetMouseDragDeltas(e, rectDragHandle);
 			ShowCropPreviewWindow();
 			isResizingCropRect = true;
 			UpdateMonsterCropPreview();
 		}
 
-		private void rectCrop_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-		{
+		private void rectCrop_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
 			GetMouseDragDeltas(e, rectCrop);
 			ShowCropPreviewWindow();
 			isDraggingCropRect = true;
 			UpdateMonsterCropPreview();
 		}
 
-		private void rectDragHandle_PreviewMouseMove(object sender, MouseEventArgs e)
-		{
+		private void rectDragHandle_PreviewMouseMove(object sender, MouseEventArgs e) {
 			if (!isResizingCropRect)
 				return;
 
@@ -8901,15 +7802,13 @@ namespace DHDM
 			SetCropSizeFromHandle();
 		}
 
-		void FixCropRectOutline()
-		{
+		void FixCropRectOutline() {
 			Canvas.SetLeft(rectOutline, Canvas.GetLeft(rectCrop) - 1);
 			Canvas.SetTop(rectOutline, Canvas.GetTop(rectCrop) - 1);
 			rectOutline.Width = rectCrop.Width + 2;
 			rectOutline.Height = rectCrop.Height + 2;
 		}
-		private void rectCrop_PreviewMouseMove(object sender, MouseEventArgs e)
-		{
+		private void rectCrop_PreviewMouseMove(object sender, MouseEventArgs e) {
 			if (!isDraggingCropRect)
 				return;
 			MoveRectWithMouse(e, rectCrop);
@@ -8920,15 +7819,13 @@ namespace DHDM
 		/// <summary>
 		/// Moves the drag handle to the bottom-right of the crop box.
 		/// </summary>
-		void MoveDragHandle()
-		{
+		void MoveDragHandle() {
 			Canvas.SetLeft(rectDragHandle, Canvas.GetLeft(rectCrop) + rectCrop.Width - rectDragHandle.Width / 2);
 			Canvas.SetTop(rectDragHandle, Canvas.GetTop(rectCrop) + rectCrop.Height - rectDragHandle.Height / 2);
 		}
 
 
-		private void MoveRectWithMouse(MouseEventArgs e, Rectangle rect)
-		{
+		private void MoveRectWithMouse(MouseEventArgs e, Rectangle rect) {
 			double offset = 0;
 			if (rect == rectDragHandle)
 				offset = rectDragHandle.Width / 2;
@@ -8938,8 +7835,7 @@ namespace DHDM
 			Canvas.SetTop(rect, Math.Min(imgMonster.ActualHeight - rect.Height + offset, Math.Max(0, mousePosition.Y - imageCropMouseDeltaY)));
 		}
 
-		void SetCropSizeFromHandle()
-		{
+		void SetCropSizeFromHandle() {
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
 			double centerHandleX = Canvas.GetLeft(rectDragHandle) + rectDragHandle.Width / 2;
 			double centerHandleY = Canvas.GetTop(rectDragHandle) + rectDragHandle.Height / 2;
@@ -8953,10 +7849,8 @@ namespace DHDM
 			MonsterImageCropRectChanged();
 		}
 
-		private void rectDragHandle_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-		{
-			if (isResizingCropRect)
-			{
+		private void rectDragHandle_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
+			if (isResizingCropRect) {
 				rectDragHandle.ReleaseMouseCapture();
 				SetCropSizeFromHandle();
 				UpdateSelectedMonsterImageCropData();
@@ -8965,19 +7859,16 @@ namespace DHDM
 			isResizingCropRect = false;
 		}
 
-		private void GetMouseDragDeltas(MouseButtonEventArgs e, Rectangle rectCrop)
-		{
+		private void GetMouseDragDeltas(MouseButtonEventArgs e, Rectangle rectCrop) {
 			Point mousePosition = e.GetPosition(cvsImageOverlay);
 			double leftCropRect = Canvas.GetLeft(rectCrop);
-			if (double.IsNaN(leftCropRect))
-			{
+			if (double.IsNaN(leftCropRect)) {
 				Canvas.SetLeft(rectCrop, 0);
 				leftCropRect = 0;
 			}
 
 			double topCropRect = Canvas.GetTop(rectCrop);
-			if (double.IsNaN(topCropRect))
-			{
+			if (double.IsNaN(topCropRect)) {
 				Canvas.SetTop(rectCrop, 0);
 				topCropRect = 0;
 			}
@@ -8987,26 +7878,22 @@ namespace DHDM
 			rectCrop.CaptureMouse();
 		}
 
-		private void rectCrop_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-		{
-			if (isDraggingCropRect)
-			{
+		private void rectCrop_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
+			if (isDraggingCropRect) {
 				rectCrop.ReleaseMouseCapture();
 				UpdateSelectedMonsterImageCropData();
 				HideCropPreviewWindow();
 			}
 			isDraggingCropRect = false;
 		}
-		void HideCropPreviewWindow()
-		{
+		void HideCropPreviewWindow() {
 			if (frmCropPreview == null)
 				return;
 			frmCropPreview.Hide();
 		}
 
 		FrmCropPreview frmCropPreview;
-		void ShowCropPreviewWindow()
-		{
+		void ShowCropPreviewWindow() {
 			if (frmCropPreview == null)
 				frmCropPreview = new FrmCropPreview();
 			UpdateCropRectangleForSelectedMonster();
@@ -9014,8 +7901,7 @@ namespace DHDM
 			frmCropPreview.Show();
 		}
 
-		void PositionCropPreviewNearCropRect()
-		{
+		void PositionCropPreviewNearCropRect() {
 			if (frmCropPreview == null)
 				return;
 			if (!frmCropPreview.IsVisible)
@@ -9028,8 +7914,7 @@ namespace DHDM
 			frmCropPreview.Top = bottom - frmCropPreview.Height;
 		}
 
-		void UpdateSelectedMonsterImageCropData()
-		{
+		void UpdateSelectedMonsterImageCropData() {
 			if (!(lstAllMonsters.SelectedItem is Monster monster))
 				return;
 			UpdateCropInfoFromUI(monster);
@@ -9037,8 +7922,7 @@ namespace DHDM
 			GoogleSheets.SaveChanges(monster, string.Join(",", nameof(monster.imageCropStr), nameof(monster.ImageUrl)));
 		}
 
-		private void UpdateCropInfoFromUI(Monster monster)
-		{
+		private void UpdateCropInfoFromUI(Monster monster) {
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
 			double width = rectCrop.Width / scale;
 			double x = Canvas.GetLeft(rectCrop) / scale;
@@ -9047,10 +7931,8 @@ namespace DHDM
 			monster.ImageCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width, DpiFactor = monster.ImageCropInfo.DpiFactor };
 		}
 
-		void MoveMonsterCroppedTo(Monster monster)
-		{
-			if (imgMonster.Source == null || imgMonster.Source.Width == 1)
-			{
+		void MoveMonsterCroppedTo(Monster monster) {
+			if (imgMonster.Source == null || imgMonster.Source.Width == 1) {
 				cropRectUpdateTimer.Start();
 				return;
 			}
@@ -9058,16 +7940,14 @@ namespace DHDM
 			PictureCropInfo pictureCropInfo = monster.ImageCropInfo;
 
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
-			if (pictureCropInfo == null)
-			{
+			if (pictureCropInfo == null) {
 				Canvas.SetLeft(rectCrop, 0);
 				Canvas.SetTop(rectCrop, 0);
 
 				rectCrop.Width = PictureCropInfo.MinWidth * scale;
 				rectCrop.Height = PictureCropInfo.GetHeightFromWidth(rectCrop.Width);
 			}
-			else
-			{
+			else {
 				Canvas.SetLeft(rectCrop, pictureCropInfo.X * scale);
 				Canvas.SetTop(rectCrop, pictureCropInfo.Y * scale);
 				rectCrop.Width = pictureCropInfo.Width * scale;
@@ -9081,27 +7961,23 @@ namespace DHDM
 		double lastMonsterPreviewImageDpiX;
 		Ability nextSavingThrowAbility;
 
-		private void MonsterImageCropRectChanged()
-		{
+		private void MonsterImageCropRectChanged() {
 			FixCropRectOutline();
 			PositionCropPreviewNearCropRect();
 			MoveDragHandle();
 			UpdateMonsterCropPreview();
 		}
 
-		private void UpdateMonsterCropPreview()
-		{
+		private void UpdateMonsterCropPreview() {
 			if (frmCropPreview != null && monsterCropPreviewBitmap != null)
-				if (lstAllMonsters.SelectedItem is Monster monster)
-				{
+				if (lstAllMonsters.SelectedItem is Monster monster) {
 					if (monsterCropPreviewBitmap.PixelWidth == 1)
 						return;
 					double dpiFactorX = monsterCropPreviewBitmap.DpiX / 96;
 					double dpiFactorY = monsterCropPreviewBitmap.DpiY / 96;
 					UpdateCropInfoFromUI(monster);
 					PictureCropInfo cropInfo = monster.ImageCropInfo;
-					if (double.IsNaN(cropInfo.X))
-					{
+					if (double.IsNaN(cropInfo.X)) {
 						cropInfo = new PictureCropInfo() { Width = 104 };
 					}
 					double x = cropInfo.X * dpiFactorX;
@@ -9118,8 +7994,7 @@ namespace DHDM
 
 					double width = cropInfo.Width * dpiFactorX;
 					double height = PictureCropInfo.GetHeightFromWidth(cropInfo.Width) * dpiFactorY;
-					if (x + width > monsterCropPreviewBitmap.PixelWidth || y + height > monsterCropPreviewBitmap.PixelHeight)
-					{
+					if (x + width > monsterCropPreviewBitmap.PixelWidth || y + height > monsterCropPreviewBitmap.PixelHeight) {
 						double scaleWidth = monsterCropPreviewBitmap.PixelWidth / (x + width);
 						double scaleHeight = monsterCropPreviewBitmap.PixelHeight / (y + height);
 						double newScale = Math.Min(scaleWidth, scaleHeight);
@@ -9131,8 +8006,7 @@ namespace DHDM
 				}
 		}
 
-		void ScaleEverything(double newScale, ref double x, ref double y, ref double width, ref double height)
-		{
+		void ScaleEverything(double newScale, ref double x, ref double y, ref double width, ref double height) {
 			x *= newScale;
 			y *= newScale;
 			width *= newScale;
@@ -9140,13 +8014,10 @@ namespace DHDM
 		}
 
 
-		private void lstAllMonsters_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
+		private void lstAllMonsters_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 			UpdateCropRectangleForSelectedMonster();
-			if (lstAllMonsters.SelectedItem is Monster monster)
-			{
-				if (!string.IsNullOrWhiteSpace(monster.ImageUrl))
-				{
+			if (lstAllMonsters.SelectedItem is Monster monster) {
+				if (!string.IsNullOrWhiteSpace(monster.ImageUrl)) {
 					monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
 					monsterCropPreviewBitmap.DownloadCompleted += MonsterCropPreviewBitmap_DownloadCompleted;
 					monsterPreviewImageLoadUpdateTimer.Start();
@@ -9157,30 +8028,24 @@ namespace DHDM
 				monsterCropPreviewBitmap = null;
 		}
 
-		void CheckMonsterPreviewImageLoadFromTimer(object sender, EventArgs e)
-		{
+		void CheckMonsterPreviewImageLoadFromTimer(object sender, EventArgs e) {
 			monsterPreviewImageLoadUpdateTimer.Stop();
 			CheckMonsterImageLoaded();
 		}
 
-		private void MonsterCropPreviewBitmap_DownloadCompleted(object sender, EventArgs e)
-		{
+		private void MonsterCropPreviewBitmap_DownloadCompleted(object sender, EventArgs e) {
 			CheckMonsterImageLoaded();
 		}
 
-		private void CheckMonsterImageLoaded()
-		{
-			if (lstAllMonsters.SelectedItem is Monster monster)
-			{
-				if (monsterCropPreviewBitmap != null)
-				{
+		private void CheckMonsterImageLoaded() {
+			if (lstAllMonsters.SelectedItem is Monster monster) {
+				if (monsterCropPreviewBitmap != null) {
 					//Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
 
 					double dpiFactorX = monsterCropPreviewBitmap.DpiX / 96;
 					double dpiFactorY = monsterCropPreviewBitmap.DpiY / 96;
 					if (dpiFactorX == dpiFactorY)
-						if (monster.ImageCropInfo.DpiFactor != dpiFactorX)
-						{
+						if (monster.ImageCropInfo.DpiFactor != dpiFactorX) {
 							monster.ImageCropInfo.DpiFactor = dpiFactorX;
 							GoogleSheets.SaveChanges(monster, "imageCropStr");
 						}
@@ -9189,8 +8054,7 @@ namespace DHDM
 			}
 		}
 
-		private void ShowSampleMonster(Monster monster)
-		{
+		private void ShowSampleMonster(Monster monster) {
 			if (ckShowSampleMonster.IsChecked != true)
 				return;
 
@@ -9201,14 +8065,12 @@ namespace DHDM
 			HubtasticBaseStation.UpdateInGameCreatures("Set", creatures);
 		}
 
-		private void UpdateCropRectangleForSelectedMonster()
-		{
+		private void UpdateCropRectangleForSelectedMonster() {
 			if (lstAllMonsters.SelectedItem is Monster monster)
 				MoveMonsterCroppedTo(monster);
 		}
 
-		private void lstAllMonsters_Drop(object sender, DragEventArgs e)
-		{
+		private void lstAllMonsters_Drop(object sender, DragEventArgs e) {
 
 			// TODO: base this code on LstAllSpells_Drop
 			if (!e.Data.GetDataPresent(DataFormats.Html))
@@ -9221,38 +8083,32 @@ namespace DHDM
 				return;
 
 			string imgSrc = data.EverythingAfter(srcTag).EverythingBefore("\"");
-			if (imgSrc.StartsWith("data:"))
-			{
+			if (imgSrc.StartsWith("data:")) {
 				System.Diagnostics.Debugger.Break();
 				return;
 			}
-			if (lstAllMonsters.SelectedItem is Monster monster)
-			{
+			if (lstAllMonsters.SelectedItem is Monster monster) {
 				monster.ImageUrl = imgSrc;
 				lstAllMonsters.SelectedItem = null;
 				lstAllMonsters.SelectedItem = monster;
 			}
 		}
 
-		void UpdateCropRectFromTimer(object sender, EventArgs e)
-		{
+		void UpdateCropRectFromTimer(object sender, EventArgs e) {
 			cropRectUpdateTimer.Stop();
 			UpdateCropRectangleForSelectedMonster();
 		}
 
-		private void rectCrop_MouseEnter(object sender, MouseEventArgs e)
-		{
+		private void rectCrop_MouseEnter(object sender, MouseEventArgs e) {
 			ShowCropPreviewWindow();
 			PositionCropPreviewNearCropRect();
 		}
 
-		private void rectCrop_MouseLeave(object sender, MouseEventArgs e)
-		{
+		private void rectCrop_MouseLeave(object sender, MouseEventArgs e) {
 			HideCropPreviewWindow();
 		}
 
-		private void btnTestInGameCreatures_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnTestInGameCreatures_Click(object sender, RoutedEventArgs e) {
 			AllInGameCreatures.Invalidate();
 			FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
 			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, null);
@@ -9261,18 +8117,15 @@ namespace DHDM
 			SetInGameCreatures();
 		}
 
-		private static void RestackInGameCreatureConditions()
-		{
+		private static void RestackInGameCreatureConditions() {
 			HubtasticBaseStation.UpdateInGameCreatures("RestackNpcConditions", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
 		}
 
-		private static void SetInGameCreatures()
-		{
+		private static void SetInGameCreatures() {
 			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
 		}
 
-		public void ToggleTarget(int targetNum)
-		{
+		public void ToggleTarget(int targetNum) {
 			CreatureDigitsUsed();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
@@ -9284,18 +8137,15 @@ namespace DHDM
 			TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, inGameCreature.IsTargeted);
 		}
 
-		private static void CreatureDigitsUsed()
-		{
+		private static void CreatureDigitsUsed() {
 			DigitManager.ClearOnNextDigit("creature");
 		}
 
-		private static void HealthDigitsUsed()
-		{
+		private static void HealthDigitsUsed() {
 			DigitManager.ClearOnNextDigit("health");
 		}
 
-		public void TogglePlayerTarget(string playerName)
-		{
+		public void TogglePlayerTarget(string playerName) {
 			// 
 			int playerId = AllPlayers.GetPlayerIdFromName(playerName);
 			if (playerId < 0)
@@ -9306,8 +8156,7 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 
 			CreatureStats playerStats = PlayerStatManager.GetPlayerStats(playerId);
-			if (playerStats != null)
-			{
+			if (playerStats != null) {
 				Character player = GetPlayerFromId(playerStats.CreatureId);
 				if (player != null)
 					TaleSpireClient.SetTargeted(player.taleSpireId, playerStats.IsTargeted);
@@ -9315,8 +8164,7 @@ namespace DHDM
 
 		}
 
-		void ToggleReadyRollD20(string data)
-		{
+		void ToggleReadyRollD20(string data) {
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
@@ -9324,8 +8172,7 @@ namespace DHDM
 			PlayerStatManager.ToggleReadyRollD20(playerId);
 		}
 
-		public void ToggleCondition(string data, string condition)
-		{
+		public void ToggleCondition(string data, string condition) {
 			Conditions conditions = DndUtils.ToCondition(condition);
 
 			if (data == "targets")
@@ -9338,8 +8185,7 @@ namespace DHDM
 				TogglePlayerCondition(data, conditions);
 		}
 
-		private void TogglePlayerCondition(string data, Conditions conditions)
-		{
+		private void TogglePlayerCondition(string data, Conditions conditions) {
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
@@ -9348,8 +8194,7 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		private void ClearPlayerCondition(string data)
-		{
+		private void ClearPlayerCondition(string data) {
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
@@ -9358,22 +8203,17 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		void ToggleTargetedPlayerConditions(Conditions conditions)
-		{
+		void ToggleTargetedPlayerConditions(Conditions conditions) {
 			bool toggledAtLeastOne = false;
-			foreach (CreatureStats playerStats in PlayerStatManager.Players)
-			{
-				if (playerStats.IsTargeted)
-				{
+			foreach (CreatureStats playerStats in PlayerStatManager.Players) {
+				if (playerStats.IsTargeted) {
 					toggledAtLeastOne = true;
 					PlayerStatManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
-			if (!toggledAtLeastOne)
-			{
+			if (!toggledAtLeastOne) {
 				// Toggle all players...
-				foreach (CreatureStats playerStats in PlayerStatManager.Players)
-				{
+				foreach (CreatureStats playerStats in PlayerStatManager.Players) {
 					PlayerStatManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
@@ -9381,23 +8221,18 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		void ClearTargetedPlayerConditions()
-		{
+		void ClearTargetedPlayerConditions() {
 			bool clearedAtLeastOne = false;
-			foreach (CreatureStats playerStats in PlayerStatManager.Players)
-			{
-				if (playerStats.IsTargeted)
-				{
+			foreach (CreatureStats playerStats in PlayerStatManager.Players) {
+				if (playerStats.IsTargeted) {
 					clearedAtLeastOne = true;
 					PlayerStatManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
 
-			if (!clearedAtLeastOne)
-			{
+			if (!clearedAtLeastOne) {
 				// Clear for all players...
-				foreach (CreatureStats playerStats in PlayerStatManager.Players)
-				{
+				foreach (CreatureStats playerStats in PlayerStatManager.Players) {
 					PlayerStatManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
@@ -9405,50 +8240,43 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		private void ToggleTargetedCreatureConditions(Conditions conditions)
-		{
+		private void ToggleTargetedCreatureConditions(Conditions conditions) {
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
 				creature.ToggleCondition(conditions);
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private void ToggleSelectedCreatureConditions(Conditions conditions)
-		{
+		private void ToggleSelectedCreatureConditions(Conditions conditions) {
 			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
 			foreach (InGameCreature creature in selectedCreatures)
 				creature.ToggleCondition(conditions);
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private void ClearTargetedCreatureConditions()
-		{
+		private void ClearTargetedCreatureConditions() {
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
 				creature.ClearAllConditions();
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private void ClearSelectedCreatureConditions()
-		{
+		private void ClearSelectedCreatureConditions() {
 			List<InGameCreature> selectedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
 			foreach (InGameCreature creature in selectedCreatures)
 				creature.ClearAllConditions();
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
-		{
+		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal) {
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
 			PlayerStatManager.ReadyRollVantage(playerId, vantage);
 		}
 
-		public void ChangePlayerStateCommand(string command, string data)
-		{
-			switch (command)
-			{
+		public void ChangePlayerStateCommand(string command, string data) {
+			switch (command) {
 				case "ToggleReadyRollDice":
 					ToggleReadyRollD20(data);
 					break;
@@ -9470,65 +8298,53 @@ namespace DHDM
 			UpdateUIForAllPlayerStats();
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
-		void UpdateUIForPlayerStats(CreatureStats playerStats)
-		{
+		void UpdateUIForPlayerStats(CreatureStats playerStats) {
 			ChangePlayerUIRollingDice(playerStats.CreatureId, playerStats.ReadyToRollDice);
 			SetPlayerVantageUI(playerStats.CreatureId, playerStats.Vantage);
 		}
 
-		void UpdateUIForAllPlayerStats()
-		{
-			SafeInvoke(() =>
-			{
-				foreach (CreatureStats playerStats in PlayerStatManager.Players)
-				{
+		void UpdateUIForAllPlayerStats() {
+			SafeInvoke(() => {
+				foreach (CreatureStats playerStats in PlayerStatManager.Players) {
 					UpdateUIForPlayerStats(playerStats);
 				}
 			});
 		}
 
-		void UpdateConcentratedSpellHourglassesInGame()
-		{
+		void UpdateConcentratedSpellHourglassesInGame() {
 			PlayerStatManager.LatestCommand = "HourglassUpdate";
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatManager.GetDto()));
 		}
 
-		void AddInGameCreature(InGameCreature inGameCreature)
-		{
+		void AddInGameCreature(InGameCreature inGameCreature) {
 			HubtasticBaseStation.UpdateInGameCreatures("Add", new List<InGameCreature>() { inGameCreature });
 		}
 
-		void RemoveInGameCreature(InGameCreature inGameCreature)
-		{
+		void RemoveInGameCreature(InGameCreature inGameCreature) {
 			HubtasticBaseStation.UpdateInGameCreatures("Remove", new List<InGameCreature>() { inGameCreature });
 		}
 
-		void UpdateInGameCreatureSelection(InGameCreature inGameCreature, List<InGameCreature> creaturesChanged)
-		{
+		void UpdateInGameCreatureSelection(InGameCreature inGameCreature, List<InGameCreature> creaturesChanged) {
 			HubtasticBaseStation.UpdateInGameCreatures("UpdateSelection", creaturesChanged);
 		}
 
-		public void ToggleInGameCreature(int targetNum)
-		{
+		public void ToggleInGameCreature(int targetNum) {
 			CreatureDigitsUsed();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
 				return;
 
-			if (inGameCreature.OnScreen)
-			{
+			if (inGameCreature.OnScreen) {
 				HideInGameCreature(inGameCreature);
 			}
-			else
-			{
+			else {
 				inGameCreature.OnScreen = true;
 				AddInGameCreature(inGameCreature);
 				UpdateInGameCreatureSelection(inGameCreature, AllInGameCreatures.Select(inGameCreature));
 			}
 		}
 
-		public void SelectInGameCreature(int targetNum)
-		{
+		public void SelectInGameCreature(int targetNum) {
 			ClearAllInGameCreatureSelection();
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
@@ -9541,13 +8357,11 @@ namespace DHDM
 			UpdateInGameCreatureSelection(inGameCreature, creaturesChanged);
 		}
 
-		private void ClearAllInGameCreatureSelection()
-		{
+		private void ClearAllInGameCreatureSelection() {
 			UpdateInGameCreatureSelection(null, AllInGameCreatures.ClearSelection());
 		}
 
-		private void HideInGameCreature(InGameCreature inGameCreature)
-		{
+		private void HideInGameCreature(InGameCreature inGameCreature) {
 			if (inGameCreature == null)
 				return;
 			inGameCreature.OnScreen = false;
@@ -9556,32 +8370,26 @@ namespace DHDM
 			RemoveInGameCreature(inGameCreature);
 		}
 
-		public class TargetSaveData
-		{
+		public class TargetSaveData {
 			public bool IsTargeted { get; set; }
 			public bool IsSelected { get; set; }
-			public TargetSaveData()
-			{
+			public TargetSaveData() {
 
 			}
 		}
 
-		void TargetNoPlayers()
-		{
+		void TargetNoPlayers() {
 			PlayerStatManager.ClearAllTargets();
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		void TargetAllPlayers()
-		{
+		void TargetAllPlayers() {
 			PlayerStatManager.TargetAll();
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		public void TargetCommand(string command)
-		{
-			switch (command)
-			{
+		public void TargetCommand(string command) {
+			switch (command) {
 				case "TargetShown":
 					TargetManager.TargetOnScreenNpcsInTaleSpire();
 					CreatureManager.UpdateInGameCreatures();
@@ -9603,8 +8411,7 @@ namespace DHDM
 					return;
 				case "UntargetDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						if (inGameCreature.Health == 0 && inGameCreature.IsTargeted)
-						{
+						if (inGameCreature.Health == 0 && inGameCreature.IsTargeted) {
 							TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, false);
 							inGameCreature.IsTargeted = false;
 						}
@@ -9618,13 +8425,11 @@ namespace DHDM
 				case "ShowAllTargets":
 					bool allTargetsAreShown = true;
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						if (inGameCreature.IsTargeted && !inGameCreature.OnScreen)
-						{
+						if (inGameCreature.IsTargeted && !inGameCreature.OnScreen) {
 							allTargetsAreShown = false;
 							break;
 						}
-					if (allTargetsAreShown)
-					{
+					if (allTargetsAreShown) {
 						// We only need to hide those that are not targeted.
 						foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 							if (!inGameCreature.IsTargeted)
@@ -9645,10 +8450,8 @@ namespace DHDM
 					TargetNoInGameCreatures();
 					return;
 				case "TargetAll":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
-						if (!inGameCreature.IsTargeted)
-						{
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
+						if (!inGameCreature.IsTargeted) {
 							inGameCreature.IsTargeted = true;
 							TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, true);
 						}
@@ -9657,8 +8460,7 @@ namespace DHDM
 					CreatureManager.UpdateInGameCreatures();
 					return;
 				case "TargetOnScreenFriends":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 						bool shouldTarget = inGameCreature.OnScreen && inGameCreature.IsAlly;
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
@@ -9667,8 +8469,7 @@ namespace DHDM
 					return;
 
 				case "TargetOnScreenNeutrals":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 						bool shouldTarget = inGameCreature.OnScreen && !inGameCreature.IsAlly && !inGameCreature.IsEnemy;
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
@@ -9677,8 +8478,7 @@ namespace DHDM
 					return;
 
 				case "TargetOnScreenEnemies":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 						bool shouldTarget = inGameCreature.OnScreen && inGameCreature.IsEnemy;
 						TargetInGameCreature(inGameCreature, shouldTarget);
 					}
@@ -9715,23 +8515,19 @@ namespace DHDM
 			InitializePlayerStats();
 		}
 
-		private static void TargetInGameCreature(InGameCreature inGameCreature, bool shouldTarget)
-		{
-			if (inGameCreature.IsTargeted != shouldTarget)
-			{
+		private static void TargetInGameCreature(InGameCreature inGameCreature, bool shouldTarget) {
+			if (inGameCreature.IsTargeted != shouldTarget) {
 				inGameCreature.IsTargeted = shouldTarget;
 				TaleSpireClient.SetTargeted(inGameCreature.TaleSpireId, shouldTarget);
 			}
 		}
 
-		private static void TargetNoInGameCreatures()
-		{
+		private static void TargetNoInGameCreatures() {
 			AllInGameCreatures.ClearAllTargets();
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private void UpdateOnScreenCreatures()
-		{
+		private void UpdateOnScreenCreatures() {
 			Dictionary<int, TargetSaveData> targetSaveData = GetTargetSaveData();
 			// TODO: Consider unhooking all the creature event handlers before discarding them.
 			AllInGameCreatures.Invalidate();
@@ -9742,24 +8538,19 @@ namespace DHDM
 			TellTaleSpireWhoIsOnWhatSide();
 		}
 
-		private static void RestoreTargetData(Dictionary<int, TargetSaveData> targetSaveData)
-		{
-			foreach (int key in targetSaveData.Keys)
-			{
+		private static void RestoreTargetData(Dictionary<int, TargetSaveData> targetSaveData) {
+			foreach (int key in targetSaveData.Keys) {
 				InGameCreature creature = AllInGameCreatures.GetByIndex(key);
-				if (creature != null)
-				{
+				if (creature != null) {
 					creature.OnScreen = targetSaveData[key].IsSelected;
 					creature.IsTargeted = targetSaveData[key].IsTargeted;
 				}
 			}
 		}
 
-		private static Dictionary<int, TargetSaveData> GetTargetSaveData()
-		{
+		private static Dictionary<int, TargetSaveData> GetTargetSaveData() {
 			Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 				TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.OnScreen, IsTargeted = inGameCreature.IsTargeted };
 				int index = inGameCreature.Index;
 				if (targetSaveData.ContainsKey(index))
@@ -9772,13 +8563,10 @@ namespace DHDM
 		}
 
 		// TODO: send in a dictionary of damage types and amounts.
-		void ApplyDamageToTargets(int damage)
-		{
+		void ApplyDamageToTargets(int damage) {
 			bool changed = false;
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
-				if (inGameCreature.IsTargeted)
-				{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
+				if (inGameCreature.IsTargeted) {
 					// TODO: Get damage type and attack kind parameters right from the last roll!
 					inGameCreature.TakeDamage(DamageType.None, AttackKind.Any, damage);
 					TaleSpireClient.ShowDamage(inGameCreature.Creature.taleSpireId, damage, inGameCreature.Creature.bloodColor);
@@ -9794,8 +8582,7 @@ namespace DHDM
 				CreatureManager.UpdateInGameCreatures();
 		}
 
-		void ChangeHealth(InGameCreature inGameCreature, int amount)
-		{
+		void ChangeHealth(InGameCreature inGameCreature, int amount) {
 			inGameCreature.ChangeHealth(amount);
 			if (amount < 0)
 				TaleSpireClient.ShowDamage(inGameCreature.Creature.taleSpireId, -amount, inGameCreature.Creature.bloodColor);
@@ -9803,37 +8590,31 @@ namespace DHDM
 				TaleSpireClient.AddHitPoints(inGameCreature.Creature.taleSpireId, amount);
 		}
 
-		void ChangeTargetedCreatureHealth(int amount, InGameCreatureFilter inGameCreatureFilter)
-		{
+		void ChangeTargetedCreatureHealth(int amount, InGameCreatureFilter inGameCreatureFilter) {
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter))
-				{
+				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter)) {
 					ChangeHealth(inGameCreature, amount);
 					TellDmCreatureHp(inGameCreature);
 				}
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		private static bool CreatureMatchesFilter(InGameCreature inGameCreature, InGameCreatureFilter inGameCreatureFilter)
-		{
+		private static bool CreatureMatchesFilter(InGameCreature inGameCreature, InGameCreatureFilter inGameCreatureFilter) {
 			return inGameCreatureFilter == InGameCreatureFilter.All ||
 								(inGameCreatureFilter == InGameCreatureFilter.TargetedOnly && inGameCreature.IsTargeted) ||
 								(inGameCreatureFilter == InGameCreatureFilter.SelectedOnly && inGameCreature.IsSelected);
 		}
 
-		private void TellDmCreatureHp(InGameCreature inGameCreature)
-		{
+		private void TellDmCreatureHp(InGameCreature inGameCreature) {
 			string tempHpDetails = string.Empty;
 			if (inGameCreature.Creature.tempHitPoints > 0)
 				tempHpDetails = $" (tempHp: {inGameCreature.Creature.tempHitPoints})";
 			TellDungeonMaster($"{inGameCreature.Name}'s HP: {inGameCreature.Creature.HitPoints}/{inGameCreature.Creature.maxHitPoints}{tempHpDetails}");
 		}
 
-		void ChangeInGameCreatureTempHp(int amount, InGameCreatureFilter inGameCreatureFilter)
-		{
+		void ChangeInGameCreatureTempHp(int amount, InGameCreatureFilter inGameCreatureFilter) {
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter))
-				{
+				if (CreatureMatchesFilter(inGameCreature, inGameCreatureFilter)) {
 					inGameCreature.Creature.ChangeTempHP(amount);
 					TellDmCreatureHp(inGameCreature);
 					TaleSpireClient.AddTempHitPoints(inGameCreature.Creature.taleSpireId, amount);
@@ -9841,63 +8622,53 @@ namespace DHDM
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		public enum InGameCreatureFilter
-		{
+		public enum InGameCreatureFilter {
 			All,
 			TargetedOnly,
 			SelectedOnly
 		}
 
-		private void LogOptionsChanged(object sender, RoutedEventArgs e)
-		{
+		private void LogOptionsChanged(object sender, RoutedEventArgs e) {
 			sendTwitchLogMessagesToHistory = ckLogTwitchLogMessagesToHistory.IsChecked == true;
 			sendMessageSendsToHistory = ckLogTwitchSendMessagesToHistory.IsChecked == true;
 			sendTwitchChannelMessagesToHistory = ckSendChannelMessagesToHistory.IsChecked == true;
 		}
 
-		private void btnInitializeOnly_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnInitializeOnly_Click(object sender, RoutedEventArgs e) {
 			QuickRefresh();
 		}
 
-		private void QuickRefresh()
-		{
+		private void QuickRefresh() {
 			SendPlayerData();
 			SetInGameCreatures();
 			TellTaleSpireWhoIsOnWhatSide();
 		}
 
-		private void InitializePlayerStats()
-		{
+		private void InitializePlayerStats() {
 			PlayerStatManager.ClearAll();
-			foreach (Character character in game.Players)
-			{
+			foreach (Character character in game.Players) {
 				if (!character.Hidden)
 					PlayerStatManager.GetPlayerStats(character.playerID);  // Will ensure player is known.
 			}
 		}
 
-		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) {
 			if (e.Key == Key.F5 && Modifiers.NoModifiersDown)
 				btnInitializeOnly_Click(null, null);
 		}
 
-		private void Game_ActivePlayerChanged(object sender, EventArgs e)
-		{
+		private void Game_ActivePlayerChanged(object sender, EventArgs e) {
 			AllInGameCreatures.ClearAllActiveTurns();
 			PlayerStatManager.ClearAllActiveTurns();
 
 			object activeTurnCreature = game.GetActiveTurnCreature();
-			if (activeTurnCreature is InGameCreature inGameCreature)
-			{
+			if (activeTurnCreature is InGameCreature inGameCreature) {
 				AllInGameCreatures.SetActiveTurn(inGameCreature);
 				PlayerStatManager.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
 				SelectTheActiveNpc();
 			}
 
-			if (activeTurnCreature is Character character)
-			{
+			if (activeTurnCreature is Character character) {
 				PlayerStatManager.ActiveTurnCreatureID = character.playerID;
 				ActivePlayerId = character.playerID;
 			}
@@ -9907,21 +8678,18 @@ namespace DHDM
 			ShowCardsForActivePlayer();
 		}
 
-		void SelectTheActiveNpc()
-		{
+		void SelectTheActiveNpc() {
 			SelectInGameCreature(-PlayerStatManager.ActiveTurnCreatureID);
 		}
 
-		private void ShowCardsForActivePlayer()
-		{
+		private void ShowCardsForActivePlayer() {
 			CardCommand(CardCommandType.ShowHandIfHidden, PlayerStatManager.ActiveTurnCreatureID);
 		}
 
 		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
 		List<AnswerEntry> lastRemoteAnswers;
 
-		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry)
-		{
+		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry) {
 			if (ActivePlayerId != shortcutQueueEntry.PlayerId)
 				ActivePlayerId = shortcutQueueEntry.PlayerId;
 			ActivateShortcut(shortcutQueueEntry.ShortcutName);
@@ -9929,23 +8697,19 @@ namespace DHDM
 				UnleashTheNextRoll();
 		}
 
-		void ExecuteAction(ActionQueueEntry action)
-		{
+		void ExecuteAction(ActionQueueEntry action) {
 			if (action is DieRollQueueEntry dieRollQueueEntry)
 				ExecuteQueuedDieRoll(dieRollQueueEntry);
 			else if (action is ShortcutQueueEntry shortcutQueueEntry)
 				ExecuteQueuedShortcut(shortcutQueueEntry);
 		}
-		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
-		{
-			if (DiceDto.IsSavingThrow(dieRollQueueEntry.RollType))
-			{
+		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry) {
+			if (DiceDto.IsSavingThrow(dieRollQueueEntry.RollType)) {
 				DiceRoll diceRoll = PrepareRoll(dieRollQueueEntry.RollType);
 				dieRollQueueEntry.PrepareRoll(diceRoll);
 				RollTheDice(diceRoll);
 			}
-			else if (dieRollQueueEntry.RollType == DiceRollType.WildMagic)
-			{
+			else if (dieRollQueueEntry.RollType == DiceRollType.WildMagic) {
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.WildMagic);
 				dieRollQueueEntry.PrepareRoll(diceRoll);
 				RollTheDice(diceRoll);
@@ -9954,30 +8718,25 @@ namespace DHDM
 			// TODO: apply the damage after the dice have rolled.
 		}
 
-		void DeueueNextAction()
-		{
-			lock (actionQueue)
-			{
+		void DeueueNextAction() {
+			lock (actionQueue) {
 				if (!actionQueue.Any())
 					return;
 				// TODO: why are you doing all that work on the UI thread?
-				SafeInvoke(() =>
-				{
+				SafeInvoke(() => {
 					if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
 						ExecuteAction(actionQueue.Dequeue());
 				});
 			}
 		}
 
-		string GetTargetedCreatureList(List<DiceDto> diceDtos)
-		{
+		string GetTargetedCreatureList(List<DiceDto> diceDtos) {
 			if (diceDtos == null || diceDtos.Count == 0)
 				return "(no creature)";
 			if (diceDtos.Count == 1)
 				return diceDtos[0].Label;
-			string result = "";
-			for (int i = 0; i < diceDtos.Count - 1; i++)
-			{
+			string result = string.Empty;
+			for (int i = 0; i < diceDtos.Count - 1; i++) {
 				result += diceDtos[i].Label + ", ";
 			}
 			if (result.EndsWith(", "))
@@ -9986,18 +8745,14 @@ namespace DHDM
 			return result;
 		}
 
-		void EnqueueSpellSavingThrow(string name, Ability savingThrowAbility, int playerID)
-		{
+		void EnqueueSpellSavingThrow(string name, Ability savingThrowAbility, int playerID) {
 			SpellSavingThrowQueueEntry dieRoll = new SpellSavingThrowQueueEntry(name, savingThrowAbility);
 			bool foundAny = false;
 			bool atLeastOneImmune = false;
 
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
-				if (inGameCreature.IsTargeted)
-				{
-					if (inGameCreature.IsTotallyImmuneToDamage(latestDamage, AttackKind.Magical))
-					{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
+				if (inGameCreature.IsTargeted) {
+					if (inGameCreature.IsTotallyImmuneToDamage(latestDamage, AttackKind.Magical)) {
 						TellDungeonMaster($"{inGameCreature.Name} is totally immune to all {name} damage.");
 						atLeastOneImmune = true;
 						continue;
@@ -10006,19 +8761,16 @@ namespace DHDM
 					foundAny = true;
 				}
 			}
-			if (foundAny)
-			{
+			if (foundAny) {
 				Character spellCaster = AllPlayers.GetFromId(playerID);
-				if (spellCaster != null)
-				{
+				if (spellCaster != null) {
 					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
 					dieRoll.PlayerId = playerID;
 					EnqueueAction(dieRoll);
 					string targetedCreatureList = GetTargetedCreatureList(dieRoll.DiceDtos);
 					TellDungeonMaster($"Coming up: {savingThrowAbility} saving throw for {targetedCreatureList} (as soon as the dice are cleared).");
 				}
-				else
-				{
+				else {
 
 				}
 			}
@@ -10026,12 +8778,9 @@ namespace DHDM
 				TellDungeonMaster($"No need to roll saving throw - all targeted creatures are totally immune to all {name} damage.");
 		}
 
-		private void EnqueueAction(ActionQueueEntry dieRoll)
-		{
-			lock (actionQueue)
-			{
-				if (actionQueue.Count > 0)
-				{
+		private void EnqueueAction(ActionQueueEntry dieRoll) {
+			lock (actionQueue) {
+				if (actionQueue.Count > 0) {
 					ActionQueueEntry lastEntry = actionQueue.Last();
 					if (lastEntry.CombineWith(dieRoll))
 						return;
@@ -10040,8 +8789,7 @@ namespace DHDM
 			}
 		}
 
-		void EnqueueBreakSpellConcentrationSavingThrow(int playerID, double damageTaken)
-		{
+		void EnqueueBreakSpellConcentrationSavingThrow(int playerID, double damageTaken) {
 			BreakSpellConcentrationSavingThrowQueueEntry futureDieRoll = new BreakSpellConcentrationSavingThrowQueueEntry();
 			futureDieRoll.PlayerId = playerID;
 			futureDieRoll.HiddenThreshold = Math.Max(10, DndUtils.HalveValue(damageTaken));
@@ -10052,8 +8800,7 @@ namespace DHDM
 				TellDungeonMaster($"{player.firstName} took {damageTaken} pts of damage while concentrating on a spell ({player.concentratedSpell.Spell.Name})! Constitution saving throw (against a {futureDieRoll.HiddenThreshold}) coming up...");
 		}
 
-		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
-		{
+		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea) {
 			ShortcutQueueEntry shortcutQueueEntry = new ShortcutQueueEntry();
 			shortcutQueueEntry.PlayerId = ea.Player.playerID;
 			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
@@ -10062,16 +8809,14 @@ namespace DHDM
 			EnqueueAction(shortcutQueueEntry);
 		}
 
-		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
-		{
+		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea) {
 			if (ea.Creature == null)
 				return;
 			CreatureStats playerStats = PlayerStatManager.GetPlayerStats(ea.Creature.IntId);
 			if (playerStats == null)
 				return;
 
-			switch (ea.SpellState)
-			{
+			switch (ea.SpellState) {
 				case SpellState.JustCast:
 					playerStats.ConcentratedSpell = ea.SpellName;
 					playerStats.ConcentratedSpellDurationSeconds = (int)Math.Round(AllSpells.GetDuration(ea.SpellName).TotalSeconds);
@@ -10085,7 +8830,7 @@ namespace DHDM
 					playerStats.JustBrokeConcentration = false;
 					break;
 				case SpellState.BrokeConcentration:
-					playerStats.ConcentratedSpell = "";
+					playerStats.ConcentratedSpell = string.Empty;
 					playerStats.ConcentratedSpellDurationSeconds = 0;
 					playerStats.PercentConcentrationComplete = 100;
 					playerStats.JustBrokeConcentration = true;
@@ -10095,39 +8840,32 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea)
-		{
+		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea) {
 			HubtasticBaseStation.ShowValidationIssue(ActivePlayerId, ea.ValidationAction, ea.FloatText);
 			TellDungeonMaster(ea.DungeonMasterMessage);
 		}
 
-		public void ReStackConditions()
-		{
+		public void ReStackConditions() {
 			PlayerStatManager.LatestCommand = "ReStackConditions";
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatManager.GetDto()));
 			RestackInGameCreatureConditions();
 		}
 
-		public void PrepareSkillCheck(string skillCheck)
-		{
+		public void PrepareSkillCheck(string skillCheck) {
 			spellToCastOnRoll = null;
 			obsManager.PlayScene($"DH.Skill.{skillCheck}");
 			PlaySceneAfter(DndObsManager.STR_PlayerScene, 14000);
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				ckbUseMagic.IsChecked = false;
 				SelectSkill(DndUtils.ToSkill(skillCheck));
 				NextDieRollType = DiceRollType.SkillCheck;
-				if (ActivePlayer != null)
-				{
+				if (ActivePlayer != null) {
 					CharacterSheets characterSheet = GetSheetForCharacter(ActivePlayer.playerID);
-					if (characterSheet != null)
-					{
+					if (characterSheet != null) {
 						characterSheet.ChangePage(ScrollPage.skills);
 						string itemID = DndUtils.ToSkillItemName(skillCheck);
 						int playerId = ActivePlayerId;
-						if (PlayerStatManager.HasOnlyOnePlayerReadyToRollDice())
-						{
+						if (PlayerStatManager.HasOnlyOnePlayerReadyToRollDice()) {
 							playerId = PlayerStatManager.GetFirstPlayerIdWhoIsReadyToRoll();
 						}
 						//HubtasticBaseStation.ChangePlayerStats();
@@ -10141,11 +8879,9 @@ namespace DHDM
 			});
 
 		}
-		public void PrepareTargetSkillCheck(string skillCheck)
-		{
+		public void PrepareTargetSkillCheck(string skillCheck) {
 			spellToCastOnRoll = null;
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				ckbUseMagic.IsChecked = false;
 				SelectSkill(DndUtils.ToSkill(skillCheck));
 				NextDieRollType = DiceRollType.SkillCheck;
@@ -10154,23 +8890,19 @@ namespace DHDM
 			});
 		}
 
-		public void PrepareSavingThrow(string savingThrow)
-		{
+		public void PrepareSavingThrow(string savingThrow) {
 			spellToCastOnRoll = null;
 			obsManager.PlayScene($"DH.Save.{savingThrow}");
 			PlaySceneAfter(DndObsManager.STR_PlayerScene, 12000);
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				ckbUseMagic.IsChecked = false;
 				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
 				NextDieRollType = DiceRollType.SavingThrow;
 			});
 		}
-		public void PrepareTargetSavingThrow(string savingThrow)
-		{
+		public void PrepareTargetSavingThrow(string savingThrow) {
 			spellToCastOnRoll = null;
-			SafeInvoke(() =>
-			{
+			SafeInvoke(() => {
 				ckbUseMagic.IsChecked = false;
 				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
 				NextDieRollType = DiceRollType.SavingThrow;
@@ -10179,8 +8911,7 @@ namespace DHDM
 			});
 		}
 
-		public void ClearAllConditions(string targetName)
-		{
+		public void ClearAllConditions(string targetName) {
 			if (targetName == "targets")
 				ClearTargetedCreatureConditions();
 			else if (targetName == "selected")
@@ -10191,43 +8922,35 @@ namespace DHDM
 				ClearPlayerCondition(targetName);
 		}
 
-		public void ApplyToTargetedCreatures(string command)
-		{
+		public void ApplyToTargetedCreatures(string command) {
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
-			if (targetedCreatures.Count == 0)
-			{
+			if (targetedCreatures.Count == 0) {
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures targeted.");
 				return;
 			}
 			ApplyDamageToCreatures(command, targetedCreatures);
 		}
 
-		public void ApplyToOnScreenCreatures(string command, int value)
-		{
+		public void ApplyToOnScreenCreatures(string command, int value) {
 			List<InGameCreature> onScreenCreatures = AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList();
-			if (onScreenCreatures.Count == 0)
-			{
+			if (onScreenCreatures.Count == 0) {
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures on screen.");
 				return;
 			}
 			ApplyDamageToCreatures(command, onScreenCreatures, value);
 		}
 
-		public void ApplyToSelectedCreature(string command, int value)
-		{
+		public void ApplyToSelectedCreature(string command, int value) {
 			List<InGameCreature> selectedCreature = AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList();
-			if (selectedCreature.Count == 0)
-			{
+			if (selectedCreature.Count == 0) {
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures selected.");
 				return;
 			}
 			ApplyDamageToCreatures(command, selectedCreature, value);
 		}
 
-		private void ApplyDamageToCreatures(string command, List<InGameCreature> onScreenCreatures, int value = 0)
-		{
-			switch (command)
-			{
+		private void ApplyDamageToCreatures(string command, List<InGameCreature> onScreenCreatures, int value = 0) {
+			switch (command) {
 				case "LastDamage":
 					foreach (InGameCreature inGameCreature in onScreenCreatures)
 						inGameCreature.TakeDamage(ActivePlayer?.Game, latestDamage, AttackKind.Any);
@@ -10259,24 +8982,19 @@ namespace DHDM
 			HealthDigitsUsed();
 		}
 
-		public void ClearPlayerDice()
-		{
-			SafeInvoke(() =>
-			{
+		public void ClearPlayerDice() {
+			SafeInvoke(() => {
 				ClearTheDice(DiceGroup.Players);
 			});
 		}
 
-		public void ClearViewerDice()
-		{
-			SafeInvoke(() =>
-			{
+		public void ClearViewerDice() {
+			SafeInvoke(() => {
 				ClearTheDice(DiceGroup.Viewers);
 			});
 		}
 
-		public void MoveTarget(string targetingCommand)
-		{
+		public void MoveTarget(string targetingCommand) {
 			if (targetingCommand == null)
 				return;
 			if (targetingCommand.Contains("Creature"))
@@ -10285,8 +9003,7 @@ namespace DHDM
 				MovePlayerTarget(targetingCommand);
 		}
 
-		public void MovePlayerTarget(string targetingCommand)
-		{
+		public void MovePlayerTarget(string targetingCommand) {
 			List<CreatureStats> targetedPlayers = PlayerStatManager.GetTargeted();
 			CreatureStats firstTargeted = targetedPlayers.FirstOrDefault();
 			CreatureStats creatureToTarget;
@@ -10304,8 +9021,7 @@ namespace DHDM
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		public void MoveCreatureTarget(string targetingCommand)
-		{
+		public void MoveCreatureTarget(string targetingCommand) {
 			List<InGameCreature> onScreenCreatures = AllInGameCreatures.GetOnScreen();
 			if (!onScreenCreatures.Any())
 				return;
@@ -10325,14 +9041,12 @@ namespace DHDM
 			CreatureManager.UpdateInGameCreatures();
 		}
 
-		public void SpellScrollsToggle()
-		{
+		public void SpellScrollsToggle() {
 			PlayerStatManager.HideSpellScrolls = !PlayerStatManager.HideSpellScrolls;
 			CreatureManager.UpdatePlayerStatsInGame();
 		}
 
-		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
-		{
+		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea) {
 			// TODO: Handle multi-selected answers. answerResponse is just an int.
 			int firstIndex = ea.QuestionAnswerMap.GetFirstSelectedIndex();
 			if (firstIndex >= 0)
@@ -10341,25 +9055,20 @@ namespace DHDM
 			askingQuestion = false;
 		}
 
-		public void InGameUICommand(string command)
-		{
-			if (command == "Ask1")
-			{
+		public void InGameUICommand(string command) {
+			if (command == "Ask1") {
 				// Simple yes/no.
 				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select chaos bolt damage:", new List<String> { "Acid", "Force" }, 1, 1));
 			}
-			else if (command == "Ask2")
-			{
+			else if (command == "Ask2") {
 				// Simple yes/no with word-wrap.
 				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Break concentration with **Enlarge/Reduce** (9.2 minutes remaining) to cast **Spider Climb**:", new List<String> { "Yes", "No" }, 1, 1));
 			}
-			else if (command == "Ask3")
-			{
+			else if (command == "Ask3") {
 				// Simple multiple choice with word-wrap.
 				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select Ability to Enhance:", new List<String> { "Bear's Endurance", "Bull's Strength", "Cat's Grace", "Eagle's Splendor", "Fox's Cunning", "Owl's Wisdom" }, 1, 1));
 			}
-			else if (command == "Ask4")
-			{
+			else if (command == "Ask4") {
 				// Simple multiple choice.
 				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select target for Shield spell:", new List<String> { "Fred", "Miles", "Lady", "Merkin", "L'il Cutie" }, 1, 3));
 
@@ -10368,8 +9077,7 @@ namespace DHDM
 				HubtasticBaseStation.InGameUICommand(command);
 		}
 
-		private void btnCalibrate_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnCalibrate_Click(object sender, RoutedEventArgs e) {
 			leapCalibrator = new LeapCalibrator();
 			leapCalibrator.StartCalibration();
 			SetLeapCalibrationUiVisibility(Visibility.Visible);
@@ -10379,20 +9087,17 @@ namespace DHDM
 			CaptureMouse();
 		}
 
-		private void SetLeapCalibrationUiVisibility(Visibility visibility)
-		{
+		private void SetLeapCalibrationUiVisibility(Visibility visibility) {
 			tbInstructions.Visibility = visibility;
 			tbCalibrationStatus.Visibility = visibility;
 			lbCalibrationStatus.Visibility = visibility;
 		}
 
-		private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
-		{
+		private void Window_PreviewMouseMove(object sender, MouseEventArgs e) {
 			leapCalibrator?.MouseMoved(e, this);
 		}
 
-		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-		{
+		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
 			if (leapCalibrator == null)
 				return;
 			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
@@ -10401,8 +9106,7 @@ namespace DHDM
 			Point position = leapCalibrator.MouseDown(e, this);
 			ShowCalibrationStepComplete(position);
 			leapDevice.CalibrationPointUpdated(calibrationStep, position, leapCalibrator.FingertipPosition, leapCalibrator.ActiveScale);
-			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
-			{
+			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight) {
 				ReleaseMouseCapture();
 				SetLeapCalibrationUiVisibility(Visibility.Hidden);
 				return;
@@ -10410,10 +9114,8 @@ namespace DHDM
 			ShowCalibrationInstructions();
 		}
 
-		private void ShowCalibrationStepComplete(Point position)
-		{
-			switch (leapCalibrator?.leapMotionCalibrationStep)
-			{
+		private void ShowCalibrationStepComplete(Point position) {
+			switch (leapCalibrator?.leapMotionCalibrationStep) {
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					lbCalibrationStatus.Items.Add($"Back upper left position set to ({position.X}, {position.Y}).");
 					break;
@@ -10428,10 +9130,8 @@ namespace DHDM
 					break;
 			}
 		}
-		private void ShowCalibrationInstructions()
-		{
-			switch (leapCalibrator?.leapMotionCalibrationStep)
-			{
+		private void ShowCalibrationInstructions() {
+			switch (leapCalibrator?.leapMotionCalibrationStep) {
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					tbInstructions.Text = "Move the mouse over the back upper left point and click it!";
 					break;
@@ -10447,30 +9147,24 @@ namespace DHDM
 			}
 		}
 
-		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-		{
+		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 			leapCalibrator?.CalibrationScaleChanged(e.Delta);
 		}
 
 		LeapDevice leapDevice = new LeapDevice();
-		private void ckShowLiveHandPosition_Click(object sender, RoutedEventArgs e)
-		{
+		private void ckShowLiveHandPosition_Click(object sender, RoutedEventArgs e) {
 			leapDevice.ShowingLiveHandPosition = ckShowLiveHandPosition.IsChecked == true;
 		}
 
-		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e)
-		{
+		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e) {
 			leapDevice.SetDiagnosticsOptions(chkShowBackPlane.IsChecked == true, chkShowFrontPlane.IsChecked == true, chkShowActivePlane.IsChecked == true);
 		}
 
-		public void TriggerHandFx(HandFxDto handFxDto)
-		{
-			Dispatcher.Invoke(() =>
-			{
+		public void TriggerHandFx(HandFxDto handFxDto) {
+			Dispatcher.Invoke(() => {
 				Activate();
 
-				if (ckActive.IsChecked != true)
-				{
+				if (ckActive.IsChecked != true) {
 					ckActive.IsChecked = true;
 					ckActive_Click(null, null);
 				}
@@ -10478,58 +9172,47 @@ namespace DHDM
 			leapDevice.TriggerHandFx(handFxDto);
 		}
 
-		private void ckActive_Click(object sender, RoutedEventArgs e)
-		{
+		private void ckActive_Click(object sender, RoutedEventArgs e) {
 			leapDevice.Active = ckActive.IsChecked == true;
 			ckShowLiveHandPosition.IsEnabled = leapDevice.Active;
 			btnCalibrate.IsEnabled = leapDevice.Active;
 		}
 
-		public void ShowBackground(string sourceName)
-		{
+		public void ShowBackground(string sourceName) {
 			obsManager.ShowPlateBackground(sourceName);
 		}
-		
-		public void ShowForeground(string sourceName)
-		{
+
+		public void ShowForeground(string sourceName) {
 			obsManager.ShowPlateForeground(sourceName);
 		}
-		public void ShowWeather(string weatherKeyword)
-		{
+		public void ShowWeather(string weatherKeyword) {
 			obsManager.ShowWeather(weatherKeyword);
 		}
-		public void LaunchHandTrackingEffect(string launchCommand, string dataValue)
-		{
+		public void LaunchHandTrackingEffect(string launchCommand, string dataValue) {
 			leapDevice.LaunchHandTrackingEffect(launchCommand, dataValue);
 		}
 
-		private void ckShowClock_CheckedChanged(object sender, RoutedEventArgs e)
-		{
+		private void ckShowClock_CheckedChanged(object sender, RoutedEventArgs e) {
 			UpdateClock(true);
 		}
 
-		private void StreamlootsService_CardsPurchased(object sender, CardEventArgs ea)
-		{
+		private void StreamlootsService_CardsPurchased(object sender, CardEventArgs ea) {
 			string userName = ea.CardDto.GetUserName();
-			if (!string.IsNullOrWhiteSpace(userName))
-			{
+			if (!string.IsNullOrWhiteSpace(userName)) {
 				DndViewer viewer = AllViewers.Get(userName);
 				viewer.LastCardPurchase = DateTime.Now;
 			}
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 		}
 
-		public void NpcScrollsToggle()
-		{
+		public void NpcScrollsToggle() {
 			System.Diagnostics.Debugger.Break();
 		}
 
-		public void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "")
-		{
+		public void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "") {
 			if (-creatureId == DigitManager.GetValue("creature"))
 				CreatureDigitsUsed();
-			switch (cardCommandType)
-			{
+			switch (cardCommandType) {
 				case CardCommandType.ToggleHandVisibility:
 					cardHandManager.ToggleHandVisibility(creatureId);
 					return;
@@ -10556,28 +9239,24 @@ namespace DHDM
 			System.Diagnostics.Debugger.Break();
 		}
 
-		private void rbViewer_Checked(object sender, RoutedEventArgs e)
-		{
+		private void rbViewer_Checked(object sender, RoutedEventArgs e) {
 			if (radioingInternally)
 				return;
 			ShowHidePlayerUI(false);
 		}
 
-		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-            UnhookKeyboardEvents();
-            Dmx.ShutDown();
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+			UnhookKeyboardEvents();
+			Dmx.ShutDown();
 			leapDevice.ShuttingDown();
 			AllViewers.Save();
 		}
 		//
-		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
-		{
+		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea) {
 			string msg = ea.CardDto.Card.message;
 			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
 
-			if (AllViewers.RandomlyReplaceDragonHumpersViewerWithOthers)
-			{
+			if (AllViewers.RandomlyReplaceDragonHumpersViewerWithOthers) {
 				// For testing. Replaces dragonhumpers with random found viewer.
 				ea.CardDto.Card.UserName = viewer.UserName;
 				msg = msg.Replace("dragonhumpers", viewer.UserName);
@@ -10585,8 +9264,7 @@ namespace DHDM
 
 			ea.CardDto.Card.FillColor = viewer.DieBackColor;
 			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
-			if (!ea.CardDto.Card.message.Contains("!RollDie"))
-			{
+			if (!ea.CardDto.Card.message.Contains("!RollDie")) {
 				string cardStr = JsonConvert.SerializeObject(ea.CardDto);
 				HubtasticBaseStation.CardCommand(cardStr);
 			}
@@ -10595,20 +9273,17 @@ namespace DHDM
 			viewer.CardsPlayed++;
 
 			int characterId = ea.CardDto.OwningCharacterId;
-			if (characterId != int.MinValue)
-			{
+			if (characterId != int.MinValue) {
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
 				TriggerCardReceivedEvent(ea);
 			}
 
 			bool waitingOnDieRoll = false;
 			const string CommentDelimiter = "//";
-			if (msg.IndexOf(CommentDelimiter) >= 0)
-			{
+			if (msg.IndexOf(CommentDelimiter) >= 0) {
 				string onlyToViewers = msg.EverythingBefore(CommentDelimiter).Trim();
 				string comment = msg.EverythingAfter(CommentDelimiter).Trim();
-				if (comment.StartsWith("!"))
-				{
+				if (comment.StartsWith("!")) {
 					waitingOnDieRoll = comment.Contains(CardDto.CMD_RollDie);
 					CardCommands.Execute(comment.Substring(1), ea.CardDto, viewer);
 					TellDungeonMaster(onlyToViewers);
@@ -10618,22 +9293,18 @@ namespace DHDM
 
 				TellViewers(onlyToViewers);
 			}
-			else
-			{
+			else {
 				TellAll(msg);
 			}
 
-			if (!waitingOnDieRoll)
-			{
+			if (!waitingOnDieRoll) {
 				SystemVariables.CardUserName = ea.CardDto.GetUserName();
 				TriggerCardPlayedEventIfNecessary(ea);
 			}
 		}
 
-		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea)
-		{
-			if (ea.CardDto.TargetCharacterIds.Count == 0)
-			{
+		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea) {
+			if (ea.CardDto.TargetCharacterIds.Count == 0) {
 				TriggerCardPlayedEvent(ea);
 			}
 			else
@@ -10641,23 +9312,20 @@ namespace DHDM
 					TriggerCardPlayedEventIfNecessaryForTarget(ea, targetCharacterId);
 		}
 
-		private void TriggerCardPlayedEventIfNecessaryForTarget(CardEventArgs ea, int targetCharacterId)
-		{
+		private void TriggerCardPlayedEventIfNecessaryForTarget(CardEventArgs ea, int targetCharacterId) {
 			if (targetCharacterId == int.MinValue || ea.CardDto.Command != CardDto.CMD_PlayCardNow)
 				return;
 
 			TriggerCardPlayedEvent(ea, targetCharacterId);
 		}
 
-		private void TriggerCardPlayedEvent(CardEventArgs ea, int targetCharacterId = int.MinValue)
-		{
+		private void TriggerCardPlayedEvent(CardEventArgs ea, int targetCharacterId = int.MinValue) {
 			RedemptionEventsDto cardEventData = AllKnownCards.Get(ea.CardDto);
 			if (cardEventData != null)
 				TriggerCardPlayedEvent(ea.CardDto.Card.CardName, targetCharacterId, cardEventData);
 		}
 
-		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, RedemptionEventsDto cardEventData)
-		{
+		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, RedemptionEventsDto cardEventData) {
 			// TODO: Figure out how to store the AttackTargetType in the card itself.
 			CastedSpell castedSpell = GetCastedSpell(cardName);
 			Creature targetCreature = DndUtils.GetCreatureById(targetCharacterId);
@@ -10666,8 +9334,7 @@ namespace DHDM
 			Expressions.Do(cardEventData.CardPlayed, viewerSpellcaster, target, castedSpell, null, customData);
 		}
 
-		private CastedSpell GetCastedSpell(string cardName)
-		{
+		private CastedSpell GetCastedSpell(string cardName) {
 			const string castPrefix = "Cast ";
 			CastedSpell castedSpell = null;
 			if (!cardName.StartsWith(castPrefix))
@@ -10675,8 +9342,7 @@ namespace DHDM
 
 			string spellName = cardName.Substring(castPrefix.Length);
 			Spell spell = AllSpells.Get(spellName);
-			if (spell != null)
-			{
+			if (spell != null) {
 				castedSpell = new CastedSpell(spell, viewerSpellcaster);
 				SpellManager.nextSpellIdWeAreCasting = castedSpell.ID;
 			}
@@ -10684,16 +9350,14 @@ namespace DHDM
 			return castedSpell;
 		}
 
-		private static Target GetTarget(Creature targetCreature)
-		{
+		private static Target GetTarget(Creature targetCreature) {
 			Target target = null;
 			if (targetCreature != null)
 				target = new Target(AttackTargetType.Spell, targetCreature);
 			return target;
 		}
 
-		private void TriggerCardReceivedEvent(CardEventArgs ea)
-		{
+		private void TriggerCardReceivedEvent(CardEventArgs ea) {
 			Creature recipientCreature = CreatureHelper.GetCreatureFromId(ea.CardDto.OwningCharacterId);
 			Target recipientTarget = GetTarget(recipientCreature);
 			SystemVariables.CardRecipient = recipientTarget;
@@ -10703,22 +9367,19 @@ namespace DHDM
 		}
 
 		[Flags]
-		public enum WhatTargetChanged
-		{
+		public enum WhatTargetChanged {
 			None = 0,
 			Player = 1,
 			NpcMonster = 2
 		}
 
-		string Plural(int count, string singular, string plural)
-		{
+		string Plural(int count, string singular, string plural) {
 			if (count == 1)
 				return singular;
 			return plural;
 		}
 
-		string BothAll(int count)
-		{
+		string BothAll(int count) {
 			if (count == 2)
 				return "both ";
 			if (count > 2)
@@ -10726,8 +9387,7 @@ namespace DHDM
 			return string.Empty;
 		}
 
-		string GetCombinedPlayerListPhrase(List<string> names)
-		{
+		string GetCombinedPlayerListPhrase(List<string> names) {
 			if (names.Count == 0)
 				return "!Error - no name!";
 
@@ -10742,8 +9402,7 @@ namespace DHDM
 			return list;
 		}
 
-		string GetDamageDescription(DamageType damageType, int value, double multiplier = 1)
-		{
+		string GetDamageDescription(DamageType damageType, int value, double multiplier = 1) {
 			int damage = (int)Math.Floor(value * multiplier);
 			string damageStr = DndUtils.ToDamageStr(damageType);
 			if (string.IsNullOrWhiteSpace(damageStr))
@@ -10751,15 +9410,13 @@ namespace DHDM
 			return $"{damage} {damageStr}";
 		}
 
-		void ReportDamage(Dictionary<DamageType, int> damage)
-		{
+		void ReportDamage(Dictionary<DamageType, int> damage) {
 			string damageStr = GetDamageStr(damage);
 
 			TellAll($"Damage: {damageStr}");
 		}
 
-		bool IsActualDamage(DamageType damageType)
-		{
+		bool IsActualDamage(DamageType damageType) {
 			if (damageType == DamageType.None)
 				return false;
 			if (damageType == DamageType.Condition)
@@ -10775,8 +9432,7 @@ namespace DHDM
 			return true;
 		}
 
-		private string GetDamageStr(Dictionary<DamageType, int> damage, double multiplier = 1)
-		{
+		private string GetDamageStr(Dictionary<DamageType, int> damage, double multiplier = 1) {
 			List<string> names = new List<string>();
 			foreach (DamageType damageType in damage.Keys)
 				if (IsActualDamage(damageType))
@@ -10792,8 +9448,7 @@ namespace DHDM
 			return damageStr;
 		}
 
-		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea)
-		{
+		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea) {
 			int rollTotal = ea.StopRollingData.roll;
 			ea.Card.Command = "DiceRollForCardFinished";
 
@@ -10810,8 +9465,7 @@ namespace DHDM
 					TriggerCardPlayedEvent(ea.Card.Card.CardName, targetCharacterId, cardEventData);
 		}
 
-		private void ApplyDamageFromRoll(RollResults stopRollingData, List<int> targetCharacterIds)
-		{
+		private void ApplyDamageFromRoll(RollResults stopRollingData, List<int> targetCharacterIds) {
 			bool isStampede = stopRollingData.rollId == lastStampedeGuid;
 			if (isStampede)
 				lastStampedeGuid = null;
@@ -10820,10 +9474,8 @@ namespace DHDM
 			if (damage.Keys.Count <= 0)
 				return;
 
-			if (stopRollingData.conditions != Conditions.None)
-			{
-				foreach (int targetId in targetCharacterIds)
-				{
+			if (stopRollingData.conditions != Conditions.None) {
+				foreach (int targetId in targetCharacterIds) {
 					Creature targetCreature = DndUtils.GetCreatureById(targetId);
 					ConditionManager.ApplyToCreature(targetCreature, stopRollingData.spellId, stopRollingData.conditions);
 				}
@@ -10831,8 +9483,7 @@ namespace DHDM
 			}
 
 			int totalDamage = 0;
-			foreach (var key in damage.Keys)
-			{
+			foreach (var key in damage.Keys) {
 				totalDamage += damage[key];
 			}
 			if (totalDamage == 0)
@@ -10842,8 +9493,7 @@ namespace DHDM
 
 			WhatTargetChanged whatTargetChanged = WhatTargetChanged.None;
 			Dictionary<SavingThrowResult, List<string>> results = new Dictionary<SavingThrowResult, List<string>>();
-			foreach (int targetId in targetCharacterIds)
-			{
+			foreach (int targetId in targetCharacterIds) {
 				Creature targetCreature = DndUtils.GetCreatureById(targetId);
 				ApplyRollDamageToCreature(stopRollingData, targetId, targetCreature, results, damage, isStampede, ref whatTargetChanged);
 			}
@@ -10855,11 +9505,9 @@ namespace DHDM
 				CreatureManager.UpdateInGameCreatures();
 		}
 
-		int GetDamageTotal(Dictionary<DamageType, int> damage, double multiplier)
-		{
+		int GetDamageTotal(Dictionary<DamageType, int> damage, double multiplier) {
 			double total = 0;
-			foreach (DamageType damageType in damage.Keys)
-			{
+			foreach (DamageType damageType in damage.Keys) {
 				total += Math.Floor(damage[damageType] * multiplier);
 			}
 			return (int)total;
@@ -10870,14 +9518,11 @@ namespace DHDM
 		/// </summary>
 		/// <param name="results">A dictionary indexed by SavingThrowResults of player first names.</param>
 		/// <param name="damage"></param>
-		private void ReportSavingThrowResults(Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage)
-		{
-			foreach (SavingThrowResult savingThrowResult in results.Keys)
-			{
+		private void ReportSavingThrowResults(Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage) {
+			foreach (SavingThrowResult savingThrowResult in results.Keys) {
 				string combinedPlayerListPhrase = GetCombinedPlayerListPhrase(results[savingThrowResult]);
 				int count = results[savingThrowResult].Count;
-				switch (savingThrowResult)
-				{
+				switch (savingThrowResult) {
 					case SavingThrowResult.CompleteFailure:
 						TellAll($"{combinedPlayerListPhrase} critically {Plural(count, "fails", "fail")} and {BothAll(count)}{Plural(count, "takes", "take")} double damage ({GetDamageStr(damage, 2)})!");
 						break;
@@ -10903,8 +9548,7 @@ namespace DHDM
 			}
 		}
 
-		public enum SavingThrowResult
-		{
+		public enum SavingThrowResult {
 			CompleteFailure,
 			Failure,
 			Save,
@@ -10912,23 +9556,19 @@ namespace DHDM
 			CompleteSuccess
 		}
 
-		SavingThrowResult GetSavingThrowResult(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, bool saveTakesZeroDamage)
-		{
+		SavingThrowResult GetSavingThrowResult(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, bool saveTakesZeroDamage) {
 			int totalScore = 0;
 			int modifier = 0;
 
 			int baneModifier = 0;
 			int blessModifier = 0;
 
-			foreach (IndividualRoll individualRoll in individualRolls)
-			{
-				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bane)
-				{
+			foreach (IndividualRoll individualRoll in individualRolls) {
+				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bane) {
 					baneModifier += individualRoll.value;
 					continue;
 				}
-				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bless)
-				{
+				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bless) {
 					blessModifier += individualRoll.value;
 					continue;
 				}
@@ -10939,8 +9579,7 @@ namespace DHDM
 				totalScore += individualRoll.value;
 				// TODO: Support advantage/disadvantage.
 				// TODO: Support Bane die.
-				if (individualRoll.numSides == 20)
-				{
+				if (individualRoll.numSides == 20) {
 					if (individualRoll.value == 20)
 						if (saveTakesZeroDamage)
 							return SavingThrowResult.SaveWithZeroDamage;
@@ -10960,10 +9599,8 @@ namespace DHDM
 			return SavingThrowResult.Failure;
 		}
 
-		double GetSavingThrowDamageMultiplier(SavingThrowResult savingThrowResult)
-		{
-			switch (savingThrowResult)
-			{
+		double GetSavingThrowDamageMultiplier(SavingThrowResult savingThrowResult) {
+			switch (savingThrowResult) {
 				case SavingThrowResult.CompleteFailure:
 					return 2;  // Homegrown rule - double damage for nat 1s.
 				case SavingThrowResult.Failure:
@@ -10977,23 +9614,20 @@ namespace DHDM
 			return 1;
 		}
 
-		double GetSavingThrowDamage(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, int damageDieTotal, bool saveTakesZeroDamage, out SavingThrowResult savingThrowResult)
-		{
+		double GetSavingThrowDamage(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, int damageDieTotal, bool saveTakesZeroDamage, out SavingThrowResult savingThrowResult) {
 			savingThrowResult = GetSavingThrowResult(individualRolls, hiddenThreshold, creatureId, saveTakesZeroDamage);
 			double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
 			return damageDieTotal * multiplier;
 		}
 
-		private void ApplyRollDamageToCreature(RollResults stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool saveTakesZeroDamage, ref WhatTargetChanged whatTargetChanged)
-		{
+		private void ApplyRollDamageToCreature(RollResults stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, bool saveTakesZeroDamage, ref WhatTargetChanged whatTargetChanged) {
 			if (targetCreature == null)
 				return;
 			bool showedSavingThrowResultsForPlayer = false;
 			double totalDamage = 0;
 			InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(targetCreature);
 
-			if (inGameCreature != null)
-			{
+			if (inGameCreature != null) {
 				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, saveTakesZeroDamage);
 				double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
 
@@ -11006,15 +9640,13 @@ namespace DHDM
 				whatTargetChanged |= WhatTargetChanged.NpcMonster;
 			}
 			else
-				foreach (DamageType key in damage.Keys)
-				{
+				foreach (DamageType key in damage.Keys) {
 					double damageForPlayer = GetSavingThrowDamage(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, damage[key], saveTakesZeroDamage, out SavingThrowResult savingThrowResult);
 
 					if (saveTakesZeroDamage && savingThrowResult == SavingThrowResult.Save)
 						damageForPlayer = 0;
 
-					if (!showedSavingThrowResultsForPlayer)
-					{
+					if (!showedSavingThrowResultsForPlayer) {
 						showedSavingThrowResultsForPlayer = true;
 						AddSavingThrowResult(results, targetCreature, savingThrowResult);
 					}
@@ -11023,10 +9655,8 @@ namespace DHDM
 					targetCreature.TakeDamage(key, AttackKind.Magical, damageForPlayer);
 				}
 
-			if (totalDamage > 0)
-			{
-				if (targetCreature is Character player)
-				{
+			if (totalDamage > 0) {
+				if (targetCreature is Character player) {
 					DamageHealthChange damageHealthChange = new DamageHealthChange();
 					damageHealthChange.DamageHealth = (int)-totalDamage;
 					damageHealthChange.PlayerIds.Add(targetId);
@@ -11035,15 +9665,13 @@ namespace DHDM
 					UpdatePlayerScrollUI(player);
 					whatTargetChanged |= WhatTargetChanged.Player;
 				}
-				else
-				{
+				else {
 					whatTargetChanged |= WhatTargetChanged.NpcMonster;
 				}
 			}
 		}
 
-		private static void AddSavingThrowResult(Dictionary<SavingThrowResult, List<string>> results, Creature targetCreature, SavingThrowResult savingThrowResult)
-		{
+		private static void AddSavingThrowResult(Dictionary<SavingThrowResult, List<string>> results, Creature targetCreature, SavingThrowResult savingThrowResult) {
 			if (!results.ContainsKey(savingThrowResult))
 				results.Add(savingThrowResult, new List<string>());
 			results[savingThrowResult].Add(DndUtils.GetFirstName(targetCreature.Name));
@@ -11052,22 +9680,19 @@ namespace DHDM
 		// TODO: Automate clean up of any viewer cards blocking the UI with this?
 		DateTime lastViewerRollStartTime;
 
-		private void CardCommands_ViewerDieRollStarts(object sender, ViewerDieRollStartedEventArgs ea)
-		{
+		private void CardCommands_ViewerDieRollStarts(object sender, ViewerDieRollStartedEventArgs ea) {
 			lastViewerRollStartTime = DateTime.Now;
 			ea.Card.Command = "RollingDiceForCard";
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
 		}
 
-		private void rbDamagePlusSavingThrow_Click(object sender, RoutedEventArgs e)
-		{
+		private void rbDamagePlusSavingThrow_Click(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.DamagePlusSavingThrow;
 			btnRollPlayerDice.Content = "Roll Damage with Saving Throw";
 		}
 
-		private void rbOnlyTargetsSavingThrow_Click(object sender, RoutedEventArgs e)
-		{
+		private void rbOnlyTargetsSavingThrow_Click(object sender, RoutedEventArgs e) {
 			NextDieRollType = DiceRollType.OnlyTargetsSavingThrow;
 			btnRollPlayerDice.Content = "Only Targets Saving Throw";
 		}
@@ -11079,16 +9704,13 @@ namespace DHDM
 			Melf's Minute Meteors.7				Staff.Magic		Casting								x									 350	150				
 		 */
 
-		private void GetFriendlyTargets_RequestTarget(TargetEventArgs ea)
-		{
+		private void GetFriendlyTargets_RequestTarget(TargetEventArgs ea) {
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
 			int numTargetsSelected = 0;
-			if (ea.WhatSide == DndCore.WhatSide.Friendly)
-			{
+			if (ea.WhatSide == DndCore.WhatSide.Friendly) {
 				List<CreatureStats> targetedPlayers = PlayerStatManager.GetTargeted();
-				foreach (CreatureStats creatureStats in targetedPlayers)
-				{
+				foreach (CreatureStats creatureStats in targetedPlayers) {
 					if (numTargetsSelected >= ea.MaxTargets)
 						return;
 					Character character = game.GetPlayerFromId(creatureStats.CreatureId);
@@ -11097,8 +9719,7 @@ namespace DHDM
 				}
 
 				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					if (inGameCreature.IsTargeted && inGameCreature.IsAlly)
-					{
+					if (inGameCreature.IsTargeted && inGameCreature.IsAlly) {
 						if (numTargetsSelected >= ea.MaxTargets)
 							return;
 						ea.Target.AddCreature(inGameCreature.Creature);
@@ -11107,8 +9728,7 @@ namespace DHDM
 			}
 		}
 
-		private void QueueEffect_RequestCardEventQueuing(object sender, QueueEffectEventArgs ea)
-		{
+		private void QueueEffect_RequestCardEventQueuing(object sender, QueueEffectEventArgs ea) {
 			CardEventManager.QueueCardEvent(ea, obsManager, this);
 		}
 
@@ -11120,36 +9740,31 @@ namespace DHDM
 		ViewerManager viewerManager;
 		double lastHourUpdated;
 
-		public void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid)
-		{
+		public void SetNextStampedeRoll(string cardName, string userName, string damageStr, string guid) {
 			nextStampedeDamage = damageStr;
 			nextStampedeGuid = guid;
 			nextStampedeCardName = cardName;
 			nextStampedeUserName = userName;
 		}
 
-		public void StampedeNow()
-		{
+		public void StampedeNow() {
 			if (nextStampedeGuid == null)
 				return;
 			TellAll($"Rolling damage and saving throws for {nextStampedeUserName}'s \"{nextStampedeCardName}\" stampede...");
-			Dispatcher.Invoke(() =>
-			{
+			Dispatcher.Invoke(() => {
 				RollStampede();
 			});
 			lastStampedeGuid = nextStampedeGuid;
 			nextStampedeGuid = null;
 		}
 
-		void AddStampedeSavingThrowsForAllTargetedCreatures(DiceRoll diceRoll)
-		{
+		void AddStampedeSavingThrowsForAllTargetedCreatures(DiceRoll diceRoll) {
 			diceRoll.HiddenThreshold = 12;
 			diceRoll.SavingThrow = Ability.dexterity;
 			diceRoll.Type = DiceRollType.DamagePlusSavingThrow;
 
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-				if (inGameCreature.IsTargeted)
-				{
+				if (inGameCreature.IsTargeted) {
 					DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, diceRoll.Type, Ability.dexterity);
 					if (inGameCreature.IsAlly)
 						diceDto.Vantage = VantageKind.Advantage;
@@ -11160,12 +9775,10 @@ namespace DHDM
 					inGameCreature.CreatureRollingSavingThrow();
 				}
 
-			foreach (CreatureStats playerStats in PlayerStatManager.Players)
-			{
-				if (playerStats.IsTargeted)
-				{
+			foreach (CreatureStats playerStats in PlayerStatManager.Players) {
+				if (playerStats.IsTargeted) {
 					Character player = AllPlayers.GetFromId(playerStats.CreatureId);
-					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, "", player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
+					DiceDto diceDto = DiceDto.AddD20ForCharacter(player, string.Empty, player.GetAbilityModifier(Ability.dexterity), DieCountsAs.savingThrow);
 					diceDto.Vantage = VantageKind.Advantage;
 					diceDto.Scale = 0.9;
 					diceRoll.DiceDtos.Add(diceDto);
@@ -11174,13 +9787,11 @@ namespace DHDM
 			}
 		}
 
-		private void RollStampede()
-		{
+		private void RollStampede() {
 			DiceRoll roll = new DiceRoll(DiceRollType.DamagePlusSavingThrow, VantageKind.Normal);
-			DiceDto.AddDtosFromDieStr(roll.DiceDtos, nextStampedeDamage, "#aa0000", "#ffffff", Creature.invalidCreatureId, "");
+			DiceDto.AddDtosFromDieStr(roll.DiceDtos, nextStampedeDamage, "#aa0000", "#ffffff", Creature.invalidCreatureId, string.Empty);
 
-			foreach (DiceDto diceDto in roll.DiceDtos)
-			{
+			foreach (DiceDto diceDto in roll.DiceDtos) {
 				diceDto.DieCountsAs = DieCountsAs.damage;
 				diceDto.Scale = 1.15;
 			}
@@ -11191,8 +9802,7 @@ namespace DHDM
 			RollTheDice(roll);
 		}
 
-		private void DigitManager_DigitChanged(object sender, DigitChangedEventArgs ea)
-		{
+		private void DigitManager_DigitChanged(object sender, DigitChangedEventArgs ea) {
 			if (ea.Keyword != "creature")
 				return;
 
@@ -11203,13 +9813,11 @@ namespace DHDM
 		}
 
 
-		public void SelectPreviousInGameCreature()
-		{
+		public void SelectPreviousInGameCreature() {
 			SelectInGameCreature("Previous");
 		}
 
-		public void SelectInGameCreature(string targetingCommand)
-		{
+		public void SelectInGameCreature(string targetingCommand) {
 			CreatureDigitsUsed();
 			List<InGameCreature> onScreenCreatures = AllInGameCreatures.GetOnScreen();
 			if (!onScreenCreatures.Any())
@@ -11234,28 +9842,23 @@ namespace DHDM
 			TaleSpireClient.SelectOne(creatureToSelect.TaleSpireId);
 		}
 
-		public void SelectNextInGameCreature()
-		{
+		public void SelectNextInGameCreature() {
 			SelectInGameCreature("Next");
 		}
 
-		public void ChangeScrollPage(string scrollPage)
-		{
+		public void ChangeScrollPage(string scrollPage) {
 			ChangeScrollPage(ActivePlayerId, DndUtils.ToScrollPage(scrollPage));
 		}
 
-		private void btnCopyGameTime_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnCopyGameTime_Click(object sender, RoutedEventArgs e) {
 			Clipboard.SetText(viewerManager.StreamTimeCode());
 		}
 
-		public void ShowFilter(string sourceName, string filterName, bool visible)
-		{
+		public void ShowFilter(string sourceName, string filterName, bool visible) {
 			ObsManager.SetFilterVisibility(sourceName, filterName, visible);
 		}
 
-		private void AnimateLiveFeed_RequestLiveFeedResize(object sender, LiveFeedEventArgs ea)
-		{
+		private void AnimateLiveFeed_RequestLiveFeedResize(object sender, LiveFeedEventArgs ea) {
 			if (ea.Player is Character player)
 				obsManager.AnimateLiveFeed(player.sourceName, player.sceneName,
 																	 player.videoAnchorHorizontal, player.videoAnchorVertical,
@@ -11263,52 +9866,40 @@ namespace DHDM
 																	 ea.targetScale, ea.TimeMs, player.Index);
 		}
 
-		public Character GetPlayerFromId(int playerId)
-		{
+		public Character GetPlayerFromId(int playerId) {
 			return Game.GetPlayerFromId(playerId);
 		}
 
-		public void SetDmMood(string moodName)
-		{
+		public void SetDmMood(string moodName) {
 			dmMoodManager.SetMood(moodName);
 		}
 
-		public void Contest(string contest)
-		{
-			if (contest == "Add")
-			{
+		public void Contest(string contest) {
+			if (contest == "Add") {
 				contestManager.AddNpc();
 			}
-			else if (contest == "Back")
-			{
+			else if (contest == "Back") {
 				contestManager.Backup();
 			}
-			else if (contest == "Top")
-			{
+			else if (contest == "Top") {
 				contestManager.SwitchToTop();
 			}
-			else if (contest == "Bottom")
-			{
+			else if (contest == "Bottom") {
 				contestManager.SwitchToBottom();
 			}
-			else if (contest == "Clean")
-			{
+			else if (contest == "Clean") {
 				contestManager.Clean();
 			}
-			else
-			{
+			else {
 				Skills skill = DndUtils.ToSkill(contest);
-				if (skill != Skills.none)
-				{
+				if (skill != Skills.none) {
 					contestManager.AddSkill(skill);
 				}
-				else
-				{
+				else {
 					Character player = AllPlayers.GetFromName(contest);
 					if (player != null)
 						contestManager.AddPlayer(player);
-					else
-					{
+					else {
 						System.Diagnostics.Debugger.Break();
 						return;
 					}
@@ -11317,35 +9908,29 @@ namespace DHDM
 			NextDieRollType = DiceRollType.Contest;
 		}
 
-		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnGetCharacterPositions_Click(object sender, RoutedEventArgs e) {
 			ApiResponse response = TaleSpireClient.Invoke("GetCreatures");
 			if (response == null || response.Result == ResponseType.Failure)
 				return;
 
 			CharacterPositions characterPositions = response.GetData<CharacterPositions>();
 
-			foreach (CharacterPosition characterPosition in characterPositions.Characters)
-			{
+			foreach (CharacterPosition characterPosition in characterPositions.Characters) {
 				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(characterPosition.ID);
 				if (creature != null)
 					creature.SetMapPosition(characterPosition.Position.x, characterPosition.Position.y, characterPosition.Position.z);
 			}
 
-			if (ActivePlayer != null)
-			{
+			if (ActivePlayer != null) {
 				List<Creature> allCreatures = CreatureManager.GetAllPlayingCreatures();
 
 
-				foreach (Creature creature in allCreatures)
-				{
-					if (creature != ActivePlayer)
-					{
+				foreach (Creature creature in allCreatures) {
+					if (creature != ActivePlayer) {
 						creature.ShowState($"{(creature.MapPosition.DistanceTo(ActivePlayer.MapPosition) * 5):f2}ft",
 							creature.dieBackColor, creature.dieFontColor);
 					}
-					else
-					{
+					else {
 
 					}
 
@@ -11353,21 +9938,17 @@ namespace DHDM
 			}
 		}
 
-		void PrepareTaleSpireTargeting(PlayerActionShortcut actionShortcut)
-		{
+		void PrepareTaleSpireTargeting(PlayerActionShortcut actionShortcut) {
 			if (actionShortcut.Spell == null)
 				return;
 
 			TargetDetails targetDetails = actionShortcut.Spell.TargetDetails;
 			Targeting.Start(targetDetails, actionShortcut.Spell.WhatSide);
-			if (targetDetails.Shape != SpellTargetShape.None || targetDetails.Kind == TargetKind.Location)
-			{
+			if (targetDetails.Shape != SpellTargetShape.None || targetDetails.Kind == TargetKind.Location) {
 				Character player = GetPlayer(actionShortcut.PlayerId);
-				if (player != null)
-				{
+				if (player != null) {
 					float rangeInFeet = actionShortcut.Spell.GetRangeInFeet();
-					if (rangeInFeet == 0)
-					{
+					if (rangeInFeet == 0) {
 						// TODO: Target everyone in the volume around the caster?
 						return;
 					}
@@ -11376,10 +9957,8 @@ namespace DHDM
 			}
 		}
 
-		public void TaleSpireTarget(string targetingCommand)
-		{
-			if (targetingCommand.Contains("Favorite"))
-			{
+		public void TaleSpireTarget(string targetingCommand) {
+			if (targetingCommand.Contains("Favorite")) {
 				TargetManager.HandleFavoritesCommand(targetingCommand);
 				return;
 			}
@@ -11391,16 +9970,14 @@ namespace DHDM
 				targetingCommand == "AllEnemiesFriendliesInVolume" ||
 				targetingCommand == "AllEnemiesNeutralsInVolume")
 				modifiedTargetingCommand = "AllInVolume";
-			if (targetingCommand == "CleanUp")
-			{
+			if (targetingCommand == "CleanUp") {
 				TargetNone();
 			}
 			ApiResponse response;
-			if (targetingCommand == "On")
-			{
+			if (targetingCommand == "On") {
 				string taleSpireId = Game?.ActiveTurnTaleSpireId;
 				if (taleSpireId == null)
-					taleSpireId = "";
+					taleSpireId = string.Empty;
 				response = TaleSpireClient.Invoke("Target", new string[] { "On", taleSpireId });
 			}
 			else
@@ -11413,8 +9990,7 @@ namespace DHDM
 					TargetCreature(response, true);
 				else if (targetingCommand == "Clear")
 					TargetCreature(response, false);
-				else if (targetingCommand == "Point")
-				{
+				else if (targetingCommand == "Point") {
 					TargetManager.TargetPoint(response);
 					Targeting.Ready();
 				}
@@ -11438,8 +10014,7 @@ namespace DHDM
 
 		string lastIdOverwriteId;
 
-		void BindCreature(ApiResponse response)
-		{
+		void BindCreature(ApiResponse response) {
 			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
 			if (characterPosition == null)
 				return;
@@ -11452,21 +10027,18 @@ namespace DHDM
 			bool sameIdAlreadySet = characterPosition.ID == selected.TaleSpireId && characterPosition.ID == selected.Creature.taleSpireId;
 			bool overwriteExistingId = (!string.IsNullOrEmpty(selected.TaleSpireId) || !string.IsNullOrEmpty(selected.Creature.taleSpireId)) &&
 							(lastIdOverwriteId != selected.TaleSpireId && lastIdOverwriteId != selected.Creature.taleSpireId);
-			if (sameIdAlreadySet)
-			{
+			if (sameIdAlreadySet) {
 				TaleSpireClient.Wiggle(characterPosition.ID);
 				lastIdOverwriteId = null;
 				// Already set.
 			}
-			else if (overwriteExistingId)
-			{
+			else if (overwriteExistingId) {
 				// About to overwrite an existing id!
 				TaleSpireClient.Wiggle(selected.TaleSpireId);
 				lastIdOverwriteId = selected.TaleSpireId;
 				HubtasticBaseStation.ShowValidationIssue(selected.Creature.IntId, ValidationAction.Warn, "Overwrite existing binding?");
 			}
-			else
-			{
+			else {
 				TaleSpireClient.Wiggle(characterPosition.ID);
 				lastIdOverwriteId = null;
 				selected.TaleSpireId = characterPosition.ID;
@@ -11476,19 +10048,16 @@ namespace DHDM
 			}
 		}
 
-		void TargetAllInVolume(ApiResponse response, DndCore.WhatSide whatSide)
-		{
+		void TargetAllInVolume(ApiResponse response, DndCore.WhatSide whatSide) {
 			TargetNone();
 			List<CharacterPosition> characterPosition = response.GetList<CharacterPosition>();
 			if (characterPosition == null)
 				return;
 
 			List<string> charactersToTarget = new List<string>();
-			foreach (CharacterPosition character in characterPosition)
-			{
+			foreach (CharacterPosition character in characterPosition) {
 				Creature creature = CreatureManager.GetCreatureFromTaleSpireId(character.ID, whatSide);
-				if (creature != null)
-				{
+				if (creature != null) {
 					CreatureManager.SetCreatureTarget(creature, true);
 					charactersToTarget.Add(character.ID);
 				}
@@ -11498,14 +10067,12 @@ namespace DHDM
 				TaleSpireClient.TargetCreatures(charactersToTarget);
 		}
 
-		private void TargetNone()
-		{
+		private void TargetNone() {
 			TargetNoPlayers();
 			TargetNoInGameCreatures();
 		}
 
-		private void TargetCreature(ApiResponse response, bool isTargeted)
-		{
+		private void TargetCreature(ApiResponse response, bool isTargeted) {
 			CharacterPosition characterPosition = response.GetData<CharacterPosition>();
 			if (characterPosition == null)
 				return;
@@ -11517,18 +10084,15 @@ namespace DHDM
 				CreatureManager.SetCreatureTarget(creature, isTargeted);
 		}
 
-		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect)
-		{
+		void SelectCreatureInTaleSpire(InGameCreature creatureToSelect) {
 			if (creatureToSelect == null)
 				return;
 			TaleSpireClient.Wiggle(creatureToSelect.TaleSpireId);
 			TaleSpireClient.LookAt(creatureToSelect.TaleSpireId);
 		}
 
-		public void NextTurn()
-		{
-			lock (game)
-			{
+		public void NextTurn() {
+			lock (game) {
 				int activeTurnCreatureId = game.ActiveTurnCreatureId;
 				if (activeTurnCreatureId != int.MinValue)
 					TargetManager.Save(activeTurnCreatureId);
@@ -11540,8 +10104,7 @@ namespace DHDM
 			}
 
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
-			if (activeTurnTaleSpireId != null)
-			{
+			if (activeTurnTaleSpireId != null) {
 				string activeTurnCreatureColor = game.ActiveTurnCreatureColor;
 				if (activeTurnCreatureColor == "#000000" || activeTurnCreatureColor == null)
 					activeTurnCreatureColor = "#757575";
@@ -11552,12 +10115,10 @@ namespace DHDM
 				TaleSpireClient.ClearActiveTurnIndicator();
 		}
 
-		void TellTaleSpireWhoIsOnWhatSide()
-		{
+		void TellTaleSpireWhoIsOnWhatSide() {
 			List<string> allies = new List<string>();
 			List<string> neutrals = new List<string>();
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures) {
 				// Hot key - Secret Mod + ! (whatever key has the Exclamation mark on it)
 				// 
 				if (!string.IsNullOrWhiteSpace(inGameCreature.TaleSpireId))
@@ -11568,8 +10129,7 @@ namespace DHDM
 			}
 
 			List<Character> activePlayers = AllPlayers.GetActive();
-			foreach (Character character in activePlayers)
-			{
+			foreach (Character character in activePlayers) {
 				if (!string.IsNullOrWhiteSpace(character.taleSpireId))
 					allies.Add(character.taleSpireId);
 			}
@@ -11578,30 +10138,24 @@ namespace DHDM
 			TaleSpireClient.RegisterNeutrals(neutrals);
 		}
 
-		private static void SaySomething(string message, string textColor, int creatureId, string speechCommand)
-		{
+		private static void SaySomething(string message, string textColor, int creatureId, string speechCommand) {
 			HubtasticBaseStation.SpeechBubble($"{creatureId}{textColor} {speechCommand}: {message}");
 			Creature creature = CreatureHelper.GetCreatureFromId(creatureId);
-			if (creature != null)
-			{
+			if (creature != null) {
 				TaleSpireClient.Speak(creature.taleSpireId, message);
 			}
 		}
 
-		void LookAtSelectedCreature()
-		{
+		void LookAtSelectedCreature() {
 			InGameCreature inGameCreature = AllInGameCreatures.GetSelected();
-			if (inGameCreature != null)
-			{
+			if (inGameCreature != null) {
 				TaleSpireClient.LookAt(inGameCreature.TaleSpireId);
 				TaleSpireClient.Wiggle(inGameCreature.TaleSpireId);
 			}
 		}
 
-		public void TaleSpireCamera(string cameraCommand)
-		{
-			switch (cameraCommand)
-			{
+		public void TaleSpireCamera(string cameraCommand) {
+			switch (cameraCommand) {
 				case "LookAtSelected":
 					LookAtSelectedCreature();
 					break;
@@ -11632,59 +10186,51 @@ namespace DHDM
 			}
 		}
 
-		private void SpinAroundSelected()
-		{
+		private void SpinAroundSelected() {
 			InGameCreature inGameCreature = AllInGameCreatures.GetSelected();
 			if (inGameCreature != null)
 				TaleSpireClient.SpinAround(inGameCreature.TaleSpireId);
 		}
 
-		private void LookAtActiveCreature()
-		{
+		private void LookAtActiveCreature() {
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 				TaleSpireClient.LookAt(activeTurnTaleSpireId);
 		}
 
-		private void LookAtSelectedMini()
-		{
+		private void LookAtSelectedMini() {
 			CharacterPosition selectedMini = TaleSpireClient.GetSelectedMini();
 			if (selectedMini == null)
 				return;
 			TaleSpireClient.LookAt(selectedMini.ID);
 		}
 
-		private void SpinAroundSelectedMini()
-		{
+		private void SpinAroundSelectedMini() {
 			CharacterPosition selectedMini = TaleSpireClient.GetSelectedMini();
 			if (selectedMini == null)
 				return;
 			TaleSpireClient.SpinAround(selectedMini.ID);
 		}
 
-		private void SpinAroundActiveCreature()
-		{
+		private void SpinAroundActiveCreature() {
 			string activeTurnTaleSpireId = game.ActiveTurnTaleSpireId;
 			if (activeTurnTaleSpireId != null)
 				TaleSpireClient.SpinAround(activeTurnTaleSpireId);
 		}
-		void LookAtFlashlight()
-		{
+		void LookAtFlashlight() {
 			VectorDto flashlightPosition = TaleSpireClient.GetFlashlightPosition();
 			if (flashlightPosition == null)
 				return;
 			TaleSpireClient.LookAtPoint(flashlightPosition);
 		}
-		void SpinAroundFlashlight()
-		{
+		void SpinAroundFlashlight() {
 			VectorDto flashlightPosition = TaleSpireClient.GetFlashlightPosition();
 			if (flashlightPosition == null)
 				return;
 			TaleSpireClient.SpinAroundPoint(flashlightPosition);
 		}
 
-		public void TaleSpireFlashlight(string flashlightCommand)
-		{
+		public void TaleSpireFlashlight(string flashlightCommand) {
 			if (flashlightCommand == null)
 				return;
 			flashlightCommand = flashlightCommand.ToLower();
@@ -11694,171 +10240,145 @@ namespace DHDM
 				TaleSpireClient.FlashlightOff();
 		}
 
-		public void SetDamageSide(string direction)
-		{
+		public void SetDamageSide(string direction) {
 			// TODO: Flip the damage in the game engine for the active wall.
 			Targeting.SetDamageSide(DndUtils.ToDamageSide(direction));
 			if (game.LastCastedSpell != null)
 				TaleSpireClient.SetDamageSide(game.LastCastedSpell.ID, direction);
 		}
 
-		private void btnReloadPlayers_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadPlayers_Click(object sender, RoutedEventArgs e) {
 			AllPlayers.Invalidate();
 		}
 
-		private void btnReloadVideoBindings_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadVideoBindings_Click(object sender, RoutedEventArgs e) {
 			AllVideoBindings.Invalidate();
 		}
 
-		private void btnReloadVideoFeeds_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadVideoFeeds_Click(object sender, RoutedEventArgs e) {
 			AllVideoFeeds.Invalidate();
 		}
 
-		private void btnReloadSpells2_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadSpells2_Click(object sender, RoutedEventArgs e) {
 			AllSpells.Invalidate();
 		}
 
-		private void btnReloadNPCs_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadNPCs_Click(object sender, RoutedEventArgs e) {
 			AllInGameCreatures.Invalidate();
 		}
 
-		private void btnReloadSceneLightData_Click(object sender, RoutedEventArgs e)
-		{
+		private void btnReloadSceneLightData_Click(object sender, RoutedEventArgs e) {
 			AllSceneLightData.Invalidate();
 		}
 
-		public void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility)
-		{
+		public void SetObsSourceVisibility(string sceneName, string sourceName, bool sourceVisibility) {
 			obsManager.SetObsSourceVisibility(sceneName, sourceName, sourceVisibility);
 		}
 
-		private void chkListening_Checked(object sender, RoutedEventArgs e)
-		{
+		private void chkListening_Checked(object sender, RoutedEventArgs e) {
 			JoystickListener.StartListening();
 			BotCore.Twitch.DroneCommandsChat("Listening to the Joystick...");
 		}
 
-		private void chkListening_Unchecked(object sender, RoutedEventArgs e)
-		{
+		private void chkListening_Unchecked(object sender, RoutedEventArgs e) {
 			JoystickListener.StopListening();
 			BotCore.Twitch.DroneCommandsChat("Stopped listening to the Joystick...");
 		}
 
-        void StartSpeechUI()
-        {
-            //speechUI = new SpeechUI();
-            //speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper(), null);
-            //speechUI.StoppedListening += SpeechUI_StoppedListening;
-            //speechUI.AbortedListening += SpeechUI_AbortedListening;
-            //speechUI.WordsRecognized += SpeechUI_WordsRecognized;
-            //speechUI.ExceptionThrown += SpeechUI_ExceptionThrown;
-        }
+		void StartSpeechUI() {
+			//speechUI = new SpeechUI();
+			//speechUI.SetSpeechRecognizer(new SpeechRecognizerWrapper(), null);
+			//speechUI.StoppedListening += SpeechUI_StoppedListening;
+			//speechUI.AbortedListening += SpeechUI_AbortedListening;
+			//speechUI.WordsRecognized += SpeechUI_WordsRecognized;
+			//speechUI.ExceptionThrown += SpeechUI_ExceptionThrown;
+		}
 
-        private void SpeechUI_ExceptionThrown(object sender, Exception e)
-        {
-            Debug.WriteLine("SpeechUI_ExceptionThrown");
-            showThinkingTimer.Stop();
-        }
-
-        
-        private async void SpeechUI_WordsRecognized(object sender /*, WordsRecognizedEventArgs e */)
-        {
-            Twitch.MarksVoiceChat("e.Words <- fix");
-            int fredId = AllPlayers.GetPlayerIdFromName("Fred");
-            SaySomething("...", string.Empty, fredId, "thinking");
-
-            string response = await FredGpt.GetResponse("Mark", "Mark", "e.Words <- fix");
-            SaySomething(response, " #28486b", fredId, "says");
-            Twitch.FredChat(response);
-        }
-
-        private void SpeechUI_AbortedListening(object sender, EventArgs e)
-        {
-            Debug.WriteLine("SpeechUI_AbortedListening");
-            showThinkingTimer.Stop();
-            ShowStoppedListening();
-            int fredId = AllPlayers.GetPlayerIdFromName("Fred");
-            SaySomething("", string.Empty, fredId, "HideThoughts");
-        }
-
-        void ShowStoppedListening()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                Title = "Dungeon Master - Ready";
-            });
-        }
-
-        private void SpeechUI_StoppedListening(object sender, EventArgs e)
-        {
-            Debug.WriteLine("SpeechUI_StoppedListening");
-            showThinkingTimer.Stop();
-            ShowStoppedListening();
-        }
-
-        void ShowStartedListening()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                Title = "Dungeon Master - Listening";
-            });
-        }
-
-        private void SpeechUI_StartedListening(object sender /*, WhichCtrlKey e */)
-        {
-            Debug.WriteLine("SpeechUI_StartedListening");
-            showThinkingTimer.Stop();
-            showThinkingTimer.Start();
-        }
-
-        void ShowThinkingTimerHandler(object sender, EventArgs ea)
-        {
-            Debug.WriteLine("Show thinking...");
-            showThinkingTimer.Stop();
-            SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "listening");
-            ShowStartedListening();
-        }
-
-        bool IsMark(string userId)
-        {
-            return userId == "237584851";
-        }
-
-        void Ignore(ChatMessage chatMessage)
-        {
-            if (!IsMark(chatMessage.UserId))
-                return;
-            //speechUI.IsListening = false;
-            Twitch.FredChat("Me no listen!");
-        }
-
-        void Listen(ChatMessage chatMessage)
-        {
-            if (!IsMark(chatMessage.UserId))
-                return;
-            //speechUI.IsListening = true;
-            Twitch.FredChat("Me hear you, Mark, loud and clear!");
-        }
+		private void SpeechUI_ExceptionThrown(object sender, Exception e) {
+			Debug.WriteLine("SpeechUI_ExceptionThrown");
+			showThinkingTimer.Stop();
+		}
 
 
-        private void CodeRushedClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
-        {
-            if (e.Command.CommandText.ToLower() == "ignore")
-                Ignore(e.Command.ChatMessage);
-            else if (e.Command.CommandText.ToLower() == "listen")
-                Listen(e.Command.ChatMessage);
-        }
+		private async void SpeechUI_WordsRecognized(object sender /*, WordsRecognizedEventArgs e */) {
+			Twitch.MarksVoiceChat("e.Words <- fix");
+			int fredId = AllPlayers.GetPlayerIdFromName("Fred");
+			SaySomething("...", string.Empty, fredId, "thinking");
 
-        private void CodeRushedClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
-        {
-            System.Diagnostics.Debugger.Break();
-        }
-    }
+			string response = await FredGpt.GetResponse("Mark", "Mark", "e.Words <- fix");
+			SaySomething(response, " #28486b", fredId, "says");
+			Twitch.FredChat(response);
+		}
+
+		private void SpeechUI_AbortedListening(object sender, EventArgs e) {
+			Debug.WriteLine("SpeechUI_AbortedListening");
+			showThinkingTimer.Stop();
+			ShowStoppedListening();
+			int fredId = AllPlayers.GetPlayerIdFromName("Fred");
+			SaySomething(string.Empty, string.Empty, fredId, "HideThoughts");
+		}
+
+		void ShowStoppedListening() {
+			Dispatcher.Invoke(() => {
+				Title = "Dungeon Master - Ready";
+			});
+		}
+
+		private void SpeechUI_StoppedListening(object sender, EventArgs e) {
+			Debug.WriteLine("SpeechUI_StoppedListening");
+			showThinkingTimer.Stop();
+			ShowStoppedListening();
+		}
+
+		void ShowStartedListening() {
+			Dispatcher.Invoke(() => {
+				Title = "Dungeon Master - Listening";
+			});
+		}
+
+		private void SpeechUI_StartedListening(object sender /*, WhichCtrlKey e */) {
+			Debug.WriteLine("SpeechUI_StartedListening");
+			showThinkingTimer.Stop();
+			showThinkingTimer.Start();
+		}
+
+		void ShowThinkingTimerHandler(object sender, EventArgs ea) {
+			Debug.WriteLine("Show thinking...");
+			showThinkingTimer.Stop();
+			SaySomething("...", string.Empty, AllPlayers.GetPlayerIdFromName("Fred"), "listening");
+			ShowStartedListening();
+		}
+
+		bool IsMark(string userId) {
+			return userId == "237584851";
+		}
+
+		void Ignore(ChatMessage chatMessage) {
+			if (!IsMark(chatMessage.UserId))
+				return;
+			//speechUI.IsListening = false;
+			Twitch.FredChat("Me no listen!");
+		}
+
+		void Listen(ChatMessage chatMessage) {
+			if (!IsMark(chatMessage.UserId))
+				return;
+			//speechUI.IsListening = true;
+			Twitch.FredChat("Me hear you, Mark, loud and clear!");
+		}
+
+
+		private void CodeRushedClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e) {
+			if (e.Command.CommandText.ToLower() == "ignore")
+				Ignore(e.Command.ChatMessage);
+			else if (e.Command.CommandText.ToLower() == "listen")
+				Listen(e.Command.ChatMessage);
+		}
+
+		private void CodeRushedClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e) {
+			System.Diagnostics.Debugger.Break();
+		}
+	}
 }
 
 

@@ -102,7 +102,7 @@ namespace DHDM {
 					lock (hubConnectionLock) {
 						if (hubConnection == null)  // thread safety is important, kids.
 						{
-							hubConnection = new HubConnectionBuilder().WithUrl("https://localhost:44343/MrAnnouncerBotHub").Build();
+							hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:64303/MrAnnouncerBotHub").Build();
 							if (hubConnection != null) {
 								hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.

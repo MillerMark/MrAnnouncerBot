@@ -66,6 +66,9 @@
     <None Update="LiveVideoAnimation\Data\PartyEleven.movement">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LiveVideoAnimation\Data\PresidentNotSure1.movement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="LiveVideoAnimation\Data\Race.lights">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -134,7 +137,6 @@
     <PackageReference Include="InTheHand.BluetoothLE">
       <Version>4.0.33</Version>
     </PackageReference>
-    <PackageReference Include="Kadmium-Enttec" Version="0.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client">
       <Version>7.0.3</Version>
     </PackageReference>

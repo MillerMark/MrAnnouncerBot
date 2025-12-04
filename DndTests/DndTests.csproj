@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -19,7 +23,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CodingSeb.ExpressionEvaluator" Version="1.4.40" />
+    <PackageReference Include="CodingSeb.ExpressionEvaluator" Version="1.4.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
