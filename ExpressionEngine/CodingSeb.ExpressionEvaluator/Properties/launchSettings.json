@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CodingSeb.ExpressionEvaluator": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
