@@ -994,3 +994,9 @@ RadialMenus - work
 RadialMenus
 O v e r l a y M a n a g e r / _ c r e d e n t i a l s . j s o n  
  
+CopyCredentials.bat
+BotCoreNet/credentials.json
+CardMaker/credentials.json
+DHDM/credentials.json
+MrAnnouncerBot/credentials.json
+core_credentials.json
