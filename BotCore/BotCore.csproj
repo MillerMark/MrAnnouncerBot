@@ -9,38 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\BotCoreNet\AllViewers.cs" Link="AllViewers.cs" />
-    <Compile Include="..\BotCoreNet\AppData.cs" Link="AppData.cs" />
-    <Compile Include="..\BotCoreNet\BotCommand.cs" Link="BotCommand.cs" />
-    <Compile Include="..\BotCoreNet\BotCommands.cs" Link="BotCommands.cs" />
-    <Compile Include="..\BotCoreNet\CsvData.cs" Link="CsvData.cs" />
-    <Compile Include="..\BotCoreNet\MySecureString.cs" Link="MySecureString.cs" />
-    <Compile Include="..\BotCoreNet\Twitch.cs" Link="Twitch.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\Chatters.cs" Link="Twitch\Chatters.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\LiveShowData.cs" Link="Twitch\LiveShowData.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\LiveStreamData`1.cs" Link="Twitch\LiveStreamData`1.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\LiveViewers.cs" Link="Twitch\LiveViewers.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\TwitchPagination.cs" Link="Twitch\TwitchPagination.cs" />
-    <Compile Include="..\BotCoreNet\Twitch\_Links.cs" Link="Twitch\_Links.cs" />
-    <Compile Include="..\BotCoreNet\UserInfo.cs" Link="UserInfo.cs" />
-    <Compile Include="..\BotCoreNet\Viewer.cs" Link="Viewer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="OpenAI" Version="1.11.0" />
     <PackageReference Include="SheetsPersist" Version="1.3.4" />
-    <PackageReference Include="TwitchLib" Version="3.5.3" />
-    <PackageReference Include="TwitchLib.PubSub" Version="3.2.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions">
-      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.configuration.abstractions\2.1.1\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
   </ItemGroup>
 
   <ItemGroup>

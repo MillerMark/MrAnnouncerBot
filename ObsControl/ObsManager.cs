@@ -40,13 +40,18 @@ namespace ObsControl {
         }
 
         static void OnSceneItemChanged(object sender, string sceneName, int sceneItemId, bool sceneItemEnabled) {
-            List<SceneItemDetails> sceneItemList = obsWebsocket.GetSceneItemList(sceneName);
-            SceneItemDetails sceneItem = sceneItemList.FirstOrDefault(x => x.ItemId == sceneItemId);
-            if (sceneItem != null) {
-                if (sceneItemEnabled)
-                    SceneItemEnabled?.Invoke(sender, sceneItem);
-                else
-                    SceneItemDisabled?.Invoke(sender, sceneItem);
+            try {
+                List<SceneItemDetails> sceneItemList = obsWebsocket.GetSceneItemList(sceneName);
+                SceneItemDetails sceneItem = sceneItemList.FirstOrDefault(x => x.ItemId == sceneItemId);
+                if (sceneItem != null) {
+                    if (sceneItemEnabled)
+                        SceneItemEnabled?.Invoke(sender, sceneItem);
+                    else
+                        SceneItemDisabled?.Invoke(sender, sceneItem);
+                }
+            }
+            catch (Exception ex) {
+                //var groupList = obsWebsocket.GetGroupSceneItemList(sceneName);
             }
         }
 

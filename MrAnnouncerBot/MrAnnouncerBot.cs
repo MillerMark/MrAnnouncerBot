@@ -470,6 +470,7 @@ namespace MrAnnouncerBot
 		const string STR_CampbellSaysOrThinks = "!campbell";
 		const string STR_RorySaysOrThinks = "!rory";
 		const string STR_RichardSaysOrThinks = "!richard";
+		private const int minUserLevelForSpeechBubbles = 4;
 
 		bool TriggersSpecialFanfare(string displayName, string message)
 		{
@@ -1300,7 +1301,6 @@ namespace MrAnnouncerBot
 			return RestrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}
 
-		private const int minUserLevelForSpeechBubbles = 4;
 		ProfanityFilter.ProfanityFilter profanityFilter;
 
 		public static List<SceneDto> Scenes
@@ -1345,7 +1345,8 @@ namespace MrAnnouncerBot
 
 		private async Task SafeHubInvokeAsync(string methodName, string parameters)
 		{
-			if (hubConnection.State != HubConnectionState.Connected)
+			Console.WriteLine($"[DIAG] SafeHubInvokeAsync method={methodName} state={hubConnection.State}");
+			if (hubConnection.State == HubConnectionState.Disconnected)
 				await hubConnection.StartAsync();
 
 			await hubConnection.InvokeAsync(methodName, parameters);
@@ -1406,13 +1407,9 @@ namespace MrAnnouncerBot
 
 		void SayOrThinkIt(ChatMessage chatMessage)
 		{
-			//if (DateTime.Now.Hour > 16)
-			//{
-			//	Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
-			//	return;
-			//}
-
-			if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
+			int userLevel = allViewers.GetUserLevel(chatMessage);
+			Console.WriteLine($"[DIAG] SayOrThinkIt user={chatMessage.Username} level={userLevel} min={minUserLevelForSpeechBubbles}");
+			if (userLevel < minUserLevelForSpeechBubbles)
 			{
 				Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
 				return;
@@ -1420,6 +1417,7 @@ namespace MrAnnouncerBot
 
 			string msg = chatMessage.Message.Trim();
 			GetNameAndPhrase(msg, out string name, out string phrase);
+			Console.WriteLine($"[DIAG] GetNameAndPhrase name=\"{name}\" phrase=\"{phrase}\"");
 
 			SayOrThinkIt(name, phrase);
 		}
@@ -1446,7 +1444,10 @@ namespace MrAnnouncerBot
 				colorStr = "(#880000)";
 			}
 			else
+			{
+				Console.WriteLine($"[DIAG] SayOrThinkIt(name,phrase) name=\"{name}\" not recognized, returning");
 				return;
+			}
 
 			if (!string.IsNullOrWhiteSpace(colorOverride))
 			{
@@ -1468,21 +1469,36 @@ namespace MrAnnouncerBot
 		{
 			name = null;
 			phrase = null;
-			int breakPos;
 
+			// Use the FIRST separator (space or colon), matching what Vocalizes() accepts.
+			// This ensures "!mark says: hello" (space after name) parses correctly instead
+			// of finding the colon inside "says:" and extracting "mark says" as the name.
 			int colonPos = msg.IndexOf(':');
-			if (colonPos < 0 || colonPos >= msg.Length - 1)
-			{
-				int spacePos = msg.IndexOf(' ');
-				if (spacePos < 0 || spacePos >= msg.Length - 1)
-					return;
-				else
-					breakPos = spacePos;
-			}
-			else
+			int spacePos = msg.IndexOf(' ');
+
+			bool colonValid = colonPos >= 0 && colonPos < msg.Length - 1;
+			bool spaceValid = spacePos >= 0 && spacePos < msg.Length - 1;
+
+			if (!colonValid && !spaceValid)
+				return;
+
+			int breakPos;
+			if (!colonValid)
+				breakPos = spacePos;
+			else if (!spaceValid)
 				breakPos = colonPos;
+			else
+				breakPos = Math.Min(colonPos, spacePos);
+
 			name = msg.Substring(1, breakPos - 1).Trim().ToLower();
 			phrase = msg.Substring(breakPos + 1).Trim();
+
+			// Strip optional "says: " / "thinks: " verb keywords so that
+			// "!mark says: hello" and "!mark thinks: hello" work naturally.
+			if (phrase.StartsWith("says: ", StringComparison.OrdinalIgnoreCase))
+				phrase = phrase.Substring("says: ".Length).Trim();
+			else if (phrase.StartsWith("thinks: ", StringComparison.OrdinalIgnoreCase))
+				phrase = "(" + phrase.Substring("thinks: ".Length).Trim() + ")";
 		}
 
 		bool Vocalizes(string lowerMessage, string prefix)
@@ -1497,9 +1513,12 @@ namespace MrAnnouncerBot
 			var command = e.Command.CommandText;
 			var lowerMessage = e.Command.ChatMessage.Message.ToLower();
 
-			if (Vocalizes(lowerMessage, STR_MarkSaysOrThinks) || Vocalizes(lowerMessage, STR_FredSaysOrThinks) ||
+			bool vocalizes = Vocalizes(lowerMessage, STR_MarkSaysOrThinks) || Vocalizes(lowerMessage, STR_FredSaysOrThinks) ||
 				Vocalizes(lowerMessage, STR_CampbellSaysOrThinks) || Vocalizes(lowerMessage, STR_RorySaysOrThinks) ||
-				Vocalizes(lowerMessage, STR_RichardSaysOrThinks))
+				Vocalizes(lowerMessage, STR_RichardSaysOrThinks);
+			Console.WriteLine($"[DIAG] OnChatCommandReceived channel={e.Command.ChatMessage.Channel} user={e.Command.ChatMessage.Username} msg=\"{e.Command.ChatMessage.Message}\" vocalizes={vocalizes}");
+
+			if (vocalizes)
 			{
 				SayOrThinkIt(e.Command.ChatMessage);
 				return;

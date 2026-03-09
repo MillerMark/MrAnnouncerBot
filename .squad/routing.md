@@ -6,12 +6,13 @@ How to decide who handles what.
 
 | Work Type | Route To | Examples |
 |-----------|----------|----------|
-| {domain 1} | {Name} | {example tasks} |
-| {domain 2} | {Name} | {example tasks} |
-| {domain 3} | {Name} | {example tasks} |
-| Code review | {Name} | Review PRs, check quality, suggest improvements |
-| Testing | {Name} | Write tests, find edge cases, verify fixes |
-| Scope & priorities | {Name} | What to build next, trade-offs, decisions |
+| Architecture, decisions, integration | Neo | System design, cross-cutting concerns, tech choices |
+| Chat, commands, event flow | Trinity | Bot commands, chat handlers, event routing |
+| Twitch API, PubSub, redemptions | Morpheus | API calls, webhooks, channel point redemptions |
+| Google Sheets, persistence, config | Tank | Data storage, settings, credentials, config files |
+| Code review | Neo | Review PRs, check quality, suggest improvements |
+| Testing | Neo | Write tests, find edge cases, verify fixes |
+| Scope & priorities | Neo | What to build next, trade-offs, decisions |
 | Async issue work (bugs, tests, small features) | @copilot 🤖 | Well-defined tasks matching capability profile |
 | Session logging | Scribe | Automatic — never needs routing |
 

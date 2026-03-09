@@ -99,6 +99,10 @@ namespace BotCore
 			return viewers.FirstOrDefault(x => x.UserId == userId);
 		}
 
+		static bool IsSpecialUser(string userName) =>
+			userName == "coderushed" || userName == "cheese_minor" ||
+			userName == "richard_campbell" || userName == "rorybeckercoderush";
+
 		public int GetUserLevel(ChatMessage chatMessage)
 		{
 			// TODO: add a bonus for following...
@@ -106,13 +110,17 @@ namespace BotCore
 			if (chatMessage.IsSubscriber)
 				bonus += chatMessage.SubscribedMonthCount;
 
-			if (chatMessage.IsModerator)
-				bonus += 5;
+			// Grant ModeratorLevel for broadcasters, channel moderators, and special
+			// users so they are never blocked by the level gate on any channel.
+			// Broadcasters have the broadcaster badge rather than IsModerator, so
+			// they must be checked explicitly (IsModerator is false for broadcasters).
+			if (chatMessage.IsBroadcaster || chatMessage.IsModerator || IsSpecialUser(chatMessage.Username))
+				return ModeratorLevel;
 
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
 				return bonus;
-			if (existingViewer.UserName == "coderushed" || existingViewer.UserName == "cheese_minor" || existingViewer.UserName == "richard_campbell" || existingViewer.UserName == "rorybeckercoderush")
+			if (IsSpecialUser(existingViewer.UserName))
 				return ModeratorLevel;
 
 			return existingViewer.GetLevel() + bonus;
