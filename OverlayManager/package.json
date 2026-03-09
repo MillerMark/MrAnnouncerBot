@@ -12,5 +12,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "overrides": {
+    "@github/copilot-sdk": "0.1.30"
+  }
 }

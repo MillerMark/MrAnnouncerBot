@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@bradygaster/squad-cli": "^0.8.25"
+  },
+  "overrides": {
+    "@github/copilot-sdk": "0.1.30"
+  }
+}
