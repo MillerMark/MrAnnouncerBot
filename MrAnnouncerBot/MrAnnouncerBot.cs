@@ -29,6 +29,9 @@ using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 using static MrAnnouncerBot.MrAnnouncerBot;
+using TwitchLib.EventSub.Websockets;
+using TwitchLib.EventSub.Websockets.Core.EventArgs;
+using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace MrAnnouncerBot
 {
@@ -230,41 +233,44 @@ namespace MrAnnouncerBot
 			HookupCoreEvents(Twitch.RoryGptClient);
 			HookupCoreEvents(Twitch.MarksVoiceClient);
 			HookupTwitchEvents(Twitch.CodeRushedClient);
-			HookupPubSubEvents(Twitch.CodeRushedPubSub);
+			HookupPubSubEvents(Twitch.CodeRushedEventSub);
 			HookupTwitchEvents(Twitch.DroneCommandsClient);
 		}
 
-		void HookupPubSubEvents(TwitchPubSub codeRushedPubSub)
+		void HookupPubSubEvents(EventSubWebsocketClient eventSubClient)
 		{
-			codeRushedPubSub.OnPubSubServiceError += CodeRushedPubSub_OnPubSubServiceError;
-			codeRushedPubSub.OnPubSubServiceClosed += CodeRushedPubSub_OnPubSubServiceClosed;
-			codeRushedPubSub.OnPubSubServiceConnected += CodeRushedPubSub_OnPubSubServiceConnected;
-			codeRushedPubSub.OnChannelPointsRewardRedeemed += CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+			eventSubClient.ErrorOccurred += CodeRushedEventSub_OnErrorOccurred;
+			eventSubClient.WebsocketDisconnected += CodeRushedEventSub_OnWebsocketDisconnected;
+			eventSubClient.WebsocketConnected += CodeRushedEventSub_OnWebsocketConnected;
+			eventSubClient.ChannelPointsCustomRewardRedemptionAdd += CodeRushedEventSub_OnChannelPointsRewardRedeemed;
 		}
 
-		void UnhookPubSubEvents(TwitchPubSub codeRushedPubSub)
+		void UnhookPubSubEvents(EventSubWebsocketClient eventSubClient)
 		{
-			codeRushedPubSub.OnPubSubServiceError -= CodeRushedPubSub_OnPubSubServiceError;
-			codeRushedPubSub.OnPubSubServiceClosed -= CodeRushedPubSub_OnPubSubServiceClosed;
-			codeRushedPubSub.OnPubSubServiceConnected -= CodeRushedPubSub_OnPubSubServiceConnected;
-			codeRushedPubSub.OnChannelPointsRewardRedeemed -= CodeRushedPubSub_OnChannelPointsRewardRedeemed;
+			eventSubClient.ErrorOccurred -= CodeRushedEventSub_OnErrorOccurred;
+			eventSubClient.WebsocketDisconnected -= CodeRushedEventSub_OnWebsocketDisconnected;
+			eventSubClient.WebsocketConnected -= CodeRushedEventSub_OnWebsocketConnected;
+			eventSubClient.ChannelPointsCustomRewardRedemptionAdd -= CodeRushedEventSub_OnChannelPointsRewardRedeemed;
 		}
 
-		private void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
-		{
-
-		}
-
-		private void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
+		private void CodeRushedEventSub_OnWebsocketConnected(object sender, WebsocketConnectedArgs e)
 		{
 
 		}
 
-		private void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
+		private async void CodeRushedEventSub_OnWebsocketDisconnected(object sender, EventArgs e)
+		{
+			Console.WriteLine("EventSub WebSocket disconnected. Attempting to reconnect...");
+			while (!await Twitch.CodeRushedEventSub.ReconnectAsync())
+			{
+				Console.WriteLine("EventSub WebSocket reconnect failed, retrying in 1 second...");
+				await Task.Delay(1000);
+			}
+		}
+
+		private void CodeRushedEventSub_OnErrorOccurred(object sender, ErrorOccuredArgs e)
 		{
 			log.Add(new ErrorEntry() { Exception = e.Exception });
-			// TODO: Reconnect on error?
-			//System.Diagnostics.Debugger.Break();
 		}
 
 		void QueueSceneToPlay(string scenesToPlay)
@@ -293,15 +299,11 @@ namespace MrAnnouncerBot
 				SetState(channelPointAction.StateToSet);
 		}
 
-		private void CodeRushedPubSub_OnChannelPointsRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnChannelPointsRewardRedeemedArgs e)
+		private async void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
 		{
-			// e.RewardRedeemed.Redemption.Status??? "UNFULFILLED", "FULFILLED", "CANCELED"
-			// We may be able to update the status with a call.
-			//user.Id;
-			//user.DisplayName
-			string id = e.RewardRedeemed.Redemption.Reward.Id;
-			string title = e.RewardRedeemed.Redemption.Reward.Title;
-			ExecuteChannelPointAction(GetChannelPointAction(id, title), e.RewardRedeemed.Redemption.User);
+			string id = e.Notification.Payload.Event.Reward.Id;
+			string title = e.Notification.Payload.Event.Reward.Title;
+			ExecuteChannelPointAction(GetChannelPointAction(id, title), null);
 		}
 
 		ChannelPointAction GetChannelPointAction(string id, string title)
@@ -1017,7 +1019,7 @@ namespace MrAnnouncerBot
 			{
 				Debugger.Break();
 
-				UnhookPubSubEvents(Twitch.CodeRushedPubSub);
+				UnhookPubSubEvents(Twitch.CodeRushedEventSub);
 				UnHookTwitchEvents(Twitch.CodeRushedClient);
 				UnHookTwitchEvents(Twitch.DroneCommandsClient);
 				UnhookCoreEvents(Twitch.FredGptClient);
@@ -1026,7 +1028,7 @@ namespace MrAnnouncerBot
 				Twitch.InitializeConnections();
 				HookupTwitchEvents(Twitch.DroneCommandsClient);
 				HookupTwitchEvents(Twitch.CodeRushedClient);
-				HookupPubSubEvents(Twitch.CodeRushedPubSub);
+				HookupPubSubEvents(Twitch.CodeRushedEventSub);
 				HookupCoreEvents(Twitch.FredGptClient);
 				HookupCoreEvents(Twitch.RoryGptClient);
 				HookupCoreEvents(Twitch.MarksVoiceClient);

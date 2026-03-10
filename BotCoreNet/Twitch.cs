@@ -4,18 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using TwitchLib.PubSub;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Interfaces;
-using TwitchLib.PubSub.Events;
-using TwitchLib.PubSub.Models.Responses;
+using TwitchLib.EventSub.Websockets;
+using TwitchLib.EventSub.Websockets.Core.EventArgs;
+using TwitchLib.EventSub.Websockets.Extensions;
 
 namespace BotCore
 {
@@ -132,27 +133,51 @@ namespace BotCore
 		{
 			//Logging = true;
 			CodeRushedClient = new TwitchClient();
-			CodeRushedPubSub = new TwitchPubSub();
-
-			CodeRushedPubSub.OnListenResponse += onListenResponse;
-			CodeRushedPubSub.OnPubSubServiceConnected += CodeRushedPubSub_OnPubSubServiceConnected;
-			CodeRushedPubSub.OnPubSubServiceClosed += CodeRushedPubSub_OnPubSubServiceClosed;
-			CodeRushedPubSub.OnPubSubServiceError += CodeRushedPubSub_OnPubSubServiceError;
-			CodeRushedPubSub.ListenToChannelPoints(STR_CodeRushedChannelId);
-			CodeRushedPubSub.Connect();
 			DroneCommandsClient = new TwitchClient();
             
             FredGptClient = new TwitchClient();
             RoryGptClient = new TwitchClient();
             MarksVoiceClient = new TwitchClient();
 
-            //DroneCommandsClient.SendMessage(, message)
             var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
 				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 			configuration = builder.Build();
 			InitializeApiClient();
+			InitializeEventSub();
+		}
+
+		static void InitializeEventSub()
+		{
+			var services = new ServiceCollection()
+				.AddLogging()
+				.AddTwitchLibEventSubWebsockets()
+				.BuildServiceProvider();
+			CodeRushedEventSub = services.GetRequiredService<EventSubWebsocketClient>();
+			CodeRushedEventSub.WebsocketConnected += CodeRushedEventSub_OnWebsocketConnected;
+			_ = CodeRushedEventSub.ConnectAsync();
+		}
+
+		private static async void CodeRushedEventSub_OnWebsocketConnected(object sender, WebsocketConnectedArgs e)
+		{
+			if (!e.IsRequestedReconnect)
+			{
+				try
+				{
+					await Api.Helix.EventSub.CreateEventSubSubscriptionAsync(
+						"channel.channel_points_custom_reward_redemption.add",
+						"1",
+						new Dictionary<string, string> { { "broadcaster_user_id", STR_CodeRushedChannelId } },
+						TwitchLib.Api.Core.Enums.EventSubTransportMethod.Websocket,
+						websocketSessionId: CodeRushedEventSub.SessionId
+					);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"EventSub subscription error: {ex.Message}");
+				}
+			}
 		}
 
         public static void ClientChat(TwitchClient client, string msg)
@@ -228,22 +253,16 @@ namespace BotCore
 
 
 
-        private static void onListenResponse(object sender, OnListenResponseArgs e)
+        private static void onListenResponse(object sender, EventArgs e)
 		{
-			if (!e.Successful)
-			{
-				string error = e.Response.Error;
-			}
 		}
 
-		private static void CodeRushedPubSub_OnPubSubServiceError(object sender, TwitchLib.PubSub.Events.OnPubSubServiceErrorArgs e)
+		private static void CodeRushedPubSub_OnPubSubServiceError(object sender, EventArgs e)
 		{
-			
 		}
 
 		private static void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
 		{
-			
 		}
 
 		public static IConfigurationRoot Configuration { get => configuration; }
@@ -252,7 +271,7 @@ namespace BotCore
         public static TwitchClient FredGptClient { get; private set; }
         public static TwitchClient RoryGptClient { get; private set; }
         public static TwitchClient MarksVoiceClient { get; private set; }
-        public static TwitchPubSub CodeRushedPubSub { get; private set; }
+        public static EventSubWebsocketClient CodeRushedEventSub { get; private set; }
 		public static TwitchClient DroneCommandsClient { get; private set; }
 		public static bool Logging { get; set; } = true;
 		public static string CodeRushedBotApiClientId { get; set; }
@@ -300,7 +319,7 @@ namespace BotCore
 		{
 			try
 			{
-				CodeRushedPubSub.Disconnect();
+				CodeRushedEventSub?.DisconnectAsync().GetAwaiter().GetResult();
 				CodeRushedClient.Disconnect();
                 FredGptClient.Disconnect();
                 RoryGptClient.Disconnect();
@@ -324,7 +343,6 @@ namespace BotCore
 
         static void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
 		{
-			Authenticate(CodeRushedPubSub);
 		}
 
 		static void Log(Exception ex)
@@ -519,9 +537,5 @@ namespace BotCore
 			return null;
 		}
 
-		public static void Authenticate(TwitchPubSub codeRushedPubSub)
-		{
-			codeRushedPubSub.SendTopics(Configuration["Secrets:TwitchBotAccessToken"]);
-		}
 	}
 }

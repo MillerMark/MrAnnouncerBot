@@ -65,6 +65,7 @@
     <PackageReference Include="TwitchLib.Client.Enums" Version="3.3.1" />
     <PackageReference Include="TwitchLib.Client.Models" Version="3.3.1" />
     <PackageReference Include="TwitchLib.Communication" Version="1.0.6" />
+    <PackageReference Include="TwitchLib.EventSub.Websockets" Version="0.0.3" />
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.6" />
   </ItemGroup>
 
@@ -98,6 +99,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BotCore\BotCore.csproj" />
+    <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
     <ProjectReference Include="..\ObsControl\ObsControl.csproj" />
   </ItemGroup>
 

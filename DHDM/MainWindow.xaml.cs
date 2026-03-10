@@ -212,7 +212,7 @@ namespace DHDM {
 			CreateDungeonMasterClient();
 			CreateDragonHumpersClient();
 			InitializeVoiceConnectionToFred();
-			CreateDhPubSub();
+			//CreateDhPubSub(); // PubSub channel-points topic was shut down by Twitch
 
 			dmChatBot.Initialize(this);
 
