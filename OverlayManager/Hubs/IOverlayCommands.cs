@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
-using BotCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

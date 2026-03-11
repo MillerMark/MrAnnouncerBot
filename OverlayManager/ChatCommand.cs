@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using NAudio.Midi;
+using BotCore;
 using Microsoft.AspNetCore.SignalR;
 using TwitchLib.Client.Models;
-using BotCore;
 using CommonCore;
-using NAudio.Midi;
 using SheetsPersist;
 using OverlayManager.Hubs;
 
@@ -22,7 +22,7 @@ namespace OverlayManager
         [DllImport("User32.dll")]
         static extern int SetForegroundWindow(IntPtr point);
 
-        [DllImport("user32.dll")] 
+        [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
         public string CommandStr { get; set; }
@@ -383,10 +383,10 @@ namespace OverlayManager
 
         private async void ExecuteChatCommand(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string args, int showsWatched, string targetCommand)
         {
-			UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, showsWatched);
+            UserInfo userInfo = await UserInfo.FromChatMessage(chatMessage, showsWatched);
 
             if (string.IsNullOrWhiteSpace(MarkFliesCommand))
-				await hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
+                await hub.Clients.All.ExecuteCommand(targetCommand, args, userInfo.userId, userInfo.userName, userInfo.displayName, userInfo.color, userInfo.profileImageUrl, userInfo.showsWatched);
             else
             {
                 if (!string.IsNullOrWhiteSpace(args))

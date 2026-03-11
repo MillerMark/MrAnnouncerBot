@@ -1,5 +1,4 @@
-﻿using BotCore;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OBSWebsocketDotNet;
 using System;
 using System.Linq;

@@ -2,7 +2,6 @@
 using OpenAI_API;
 using System.Text;
 using System.Text.RegularExpressions;
-using BotCore;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using static System.Net.Mime.MediaTypeNames;

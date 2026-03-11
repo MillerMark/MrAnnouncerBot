@@ -1,30 +1,31 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TwitchLib.Api;
-using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
-using TwitchLib.Communication.Interfaces;
 using TwitchLib.EventSub.Websockets;
-using TwitchLib.EventSub.Websockets.Core.EventArgs;
+using TwitchLib.Communication.Interfaces;
 using TwitchLib.EventSub.Websockets.Extensions;
+using TwitchLib.Api.Helix.Models.Users.GetUsers;
+using TwitchLib.EventSub.Websockets.Core.EventArgs;
+using Newtonsoft.Json;
 
 namespace BotCore
 {
-	public static class Twitch
-	{
-		private const string STR_CodeRushedChannelName = "CodeRushed";
-		private const string STR_CodeRushedChannelId = "237584851";
-		private const string STR_DroneCommandsChannelName = "DroneCommands";
+    public static class Twitch
+    {
+        private const string STR_CodeRushedChannelName = "CodeRushed";
+        private const string STR_CodeRushedChannelId = "237584851";
+        private const string STR_DroneCommandsChannelName = "DroneCommands";
         private const string STR_DroneCommandsChannelUserName = "DroneCommands";
         private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
         private const string STR_FredGptChannelName = "FredGpt";
@@ -33,22 +34,22 @@ namespace BotCore
         private const string STR_MarksVoiceChannelUserName = "MarksVoice";
         static readonly IConfigurationRoot configuration;
 
-		public static void InitializeConnections()
-		{
+        public static void InitializeConnections()
+        {
             InitializeCodeRushedConnection();
-			var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
-			var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
-			DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
-			try
-			{
-				DroneCommandsClient.Connect();
-				HookBasicEvents(DroneCommandsClient);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
-				Console.WriteLine();
+            var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
+            var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
+            DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
+            try
+            {
+                DroneCommandsClient.Connect();
+                HookBasicEvents(DroneCommandsClient);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine();
             }
 
             InitializeFredGptClient();
@@ -105,80 +106,86 @@ namespace BotCore
         }
 
         public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
-		{
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//`! !!!                                                                                      !!!
-			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-			//`! !!!                                                                                      !!!
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-			TwitchClient client = new TwitchClient();
-			var oAuthToken = Configuration[$"Secrets:{oauthPasswordName}"];
-			if (oAuthToken == null)
-				return null;
-			var connectionCredentials = new ConnectionCredentials(userName, oAuthToken);
-			client.Initialize(connectionCredentials, channelName);
-			try
-			{
-				client.Connect();
-				return client;
-			}
-			catch //(Exception ex)
-			{
-				return null;
-			}
-		}
+            TwitchClient client = new TwitchClient();
+            var oAuthToken = Configuration[$"Secrets:{oauthPasswordName}"];
+            if (oAuthToken == null)
+                return null;
+            var connectionCredentials = new ConnectionCredentials(userName, oAuthToken);
+            client.Initialize(connectionCredentials, channelName);
+            try
+            {
+                client.Connect();
+                return client;
+            }
+            catch //(Exception ex)
+            {
+                return null;
+            }
+        }
 
-		static Twitch()
-		{
-			//Logging = true;
-			CodeRushedClient = new TwitchClient();
-			DroneCommandsClient = new TwitchClient();
-            
+        static Twitch()
+        {
+            //Logging = true;
+            CodeRushedClient = new TwitchClient();
+            DroneCommandsClient = new TwitchClient();
+
             FredGptClient = new TwitchClient();
             RoryGptClient = new TwitchClient();
             MarksVoiceClient = new TwitchClient();
 
             var builder = new ConfigurationBuilder()
-				 .SetBasePath(Directory.GetCurrentDirectory())
-				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                 .SetBasePath(Directory.GetCurrentDirectory())
+                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-			configuration = builder.Build();
-			InitializeApiClient();
-			InitializeEventSub();
-		}
+            configuration = builder.Build();
+            InitializeApiClient();
+            RefreshBotAccessToken();
+            InitializeEventSub();
+        }
 
-		static void InitializeEventSub()
-		{
-			var services = new ServiceCollection()
-				.AddLogging()
-				.AddTwitchLibEventSubWebsockets()
-				.BuildServiceProvider();
-			CodeRushedEventSub = services.GetRequiredService<EventSubWebsocketClient>();
-			CodeRushedEventSub.WebsocketConnected += CodeRushedEventSub_OnWebsocketConnected;
-			_ = CodeRushedEventSub.ConnectAsync();
-		}
+        static void InitializeEventSub()
+        {
+            var services = new ServiceCollection();
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.SetMinimumLevel(LogLevel.Information);
+            });
+            services.AddTwitchLibEventSubWebsockets();
+            var serviceProvider = services.BuildServiceProvider();
+            CodeRushedEventSub = serviceProvider.GetRequiredService<EventSubWebsocketClient>();
+            CodeRushedEventSub.WebsocketConnected += CodeRushedEventSub_OnWebsocketConnected;
+            // 0.0.3 hardcodes the decommissioned beta endpoint; pass the live production URL explicitly.
+            var result = CodeRushedEventSub.ConnectAsync(new Uri("wss://eventsub.wss.twitch.tv/ws")).GetAwaiter().GetResult();
+        }
 
-		private static async void CodeRushedEventSub_OnWebsocketConnected(object sender, WebsocketConnectedArgs e)
-		{
-			if (!e.IsRequestedReconnect)
-			{
-				try
-				{
-					await Api.Helix.EventSub.CreateEventSubSubscriptionAsync(
-						"channel.channel_points_custom_reward_redemption.add",
-						"1",
-						new Dictionary<string, string> { { "broadcaster_user_id", STR_CodeRushedChannelId } },
-						TwitchLib.Api.Core.Enums.EventSubTransportMethod.Websocket,
-						websocketSessionId: CodeRushedEventSub.SessionId
-					);
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine($"EventSub subscription error: {ex.Message}");
-				}
-			}
-		}
+        private static async void CodeRushedEventSub_OnWebsocketConnected(object? sender, WebsocketConnectedArgs e)
+        {
+            if (!e.IsRequestedReconnect)
+            {
+                try
+                {
+                    await Api.Helix.EventSub.CreateEventSubSubscriptionAsync(
+                        "channel.channel_points_custom_reward_redemption.add",
+                        "1",
+                        new Dictionary<string, string> { { "broadcaster_user_id", STR_CodeRushedChannelId } },
+                        TwitchLib.Api.Core.Enums.EventSubTransportMethod.Websocket,
+                        websocketSessionId: CodeRushedEventSub.SessionId
+                    ).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"EventSub subscription error: {ex.Message}");
+                }
+            }
+        }
 
         public static void ClientChat(TwitchClient client, string msg)
         {
@@ -254,83 +261,158 @@ namespace BotCore
 
 
         private static void onListenResponse(object sender, EventArgs e)
-		{
-		}
+        {
+        }
 
-		private static void CodeRushedPubSub_OnPubSubServiceError(object sender, EventArgs e)
-		{
-		}
+        private static void CodeRushedPubSub_OnPubSubServiceError(object sender, EventArgs e)
+        {
+        }
 
-		private static void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
-		{
-		}
+        private static void CodeRushedPubSub_OnPubSubServiceClosed(object sender, EventArgs e)
+        {
+        }
 
-		public static IConfigurationRoot Configuration { get => configuration; }
-		public static TwitchAPI Api { get; private set; }
-		public static TwitchClient CodeRushedClient { get; private set; }
+        public static IConfigurationRoot Configuration { get => configuration; }
+        public static TwitchAPI Api { get; private set; }
+        public static TwitchClient CodeRushedClient { get; private set; }
         public static TwitchClient FredGptClient { get; private set; }
         public static TwitchClient RoryGptClient { get; private set; }
         public static TwitchClient MarksVoiceClient { get; private set; }
         public static EventSubWebsocketClient CodeRushedEventSub { get; private set; }
-		public static TwitchClient DroneCommandsClient { get; private set; }
-		public static bool Logging { get; set; } = true;
-		public static string CodeRushedBotApiClientId { get; set; }
+        public static TwitchClient DroneCommandsClient { get; private set; }
+        public static bool Logging { get; set; } = true;
+        public static string CodeRushedBotApiClientId { get; set; }
 
-		async public static Task<User> GetUser(string userName)
-		{
-			try
-			{
-				GetUsersResponse results = await Api.Helix.Users.GetUsersAsync();
-				return results?.Users?.FirstOrDefault(x => x.Login == userName);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Exception: \"{ex.Message}\" - await Api.Helix.Users.GetUsersAsync();");
-				return null;
-			}
-			
-		}
+        async public static Task<User> GetUser(string userName)
+        {
+            try
+            {
+                GetUsersResponse results = await Api.Helix.Users.GetUsersAsync();
+                return results?.Users?.FirstOrDefault(x => x.Login == userName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: \"{ex.Message}\" - await Api.Helix.Users.GetUsersAsync();");
+                return null;
+            }
 
-		async public static Task<string> GetUserId(string userName)
-		{
-			User user = await GetUser(userName);
-			if (user != null)
-				return user.Id;
-			
-			return null;
-		}
+        }
 
-		static void InitializeApiClient()
-		{
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//`! !!!                                                                                      !!!
-			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
-			//`! !!!                                                                                      !!!
-			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        async public static Task<string> GetUserId(string userName)
+        {
+            User user = await GetUser(userName);
+            if (user != null)
+                return user.Id;
 
-			Api = new TwitchAPI();
-			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];
-			//Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];
-			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotAccessToken"];
-			CodeRushedBotApiClientId = Configuration["Secrets:CodeRushedBotTwitchApiClientId"];
-		}
+            return null;
+        }
 
-		public static void Disconnect()
-		{
-			try
-			{
-				CodeRushedEventSub?.DisconnectAsync().GetAwaiter().GetResult();
-				CodeRushedClient.Disconnect();
+        static void InitializeApiClient()
+        {
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //`! !!!                                                                                      !!!
+            //`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+            //`! !!!                                                                                      !!!
+            //`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            Api = new TwitchAPI();
+            Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];
+            //Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];
+            Api.Settings.AccessToken = Configuration["Secrets:TwitchBotAccessToken"];
+            CodeRushedBotApiClientId = Configuration["Secrets:CodeRushedBotTwitchApiClientId"];
+        }
+
+        static void RefreshBotAccessToken()
+        {
+            var refreshToken = Configuration["Secrets:TwitchBotRefreshToken"];
+            var clientSecret = Configuration["Secrets:TwitchClientSecret"];
+            var clientId = Configuration["Secrets:TwitchApiClientId"];
+
+            if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(clientSecret))
+            {
+                Console.WriteLine("Token auto-refresh skipped: TwitchBotRefreshToken or TwitchClientSecret not set in config.");
+                return;
+            }
+
+            try
+            {
+                Console.WriteLine("Refreshing Twitch bot access token...");
+                var response = Api.Auth.RefreshAuthTokenAsync(refreshToken, clientSecret, clientId).GetAwaiter().GetResult();
+                Api.Settings.AccessToken = response.AccessToken;
+                Console.WriteLine("Twitch bot access token refreshed successfully.");
+                PersistNewBotTokens(response.AccessToken, response.RefreshToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Twitch token refresh failed: {ex.Message}. Using existing token from config.");
+            }
+        }
+
+        static string FindCoreAppSettingsPath()
+        {
+            var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "core_appsettings.json");
+                if (File.Exists(candidate))
+                    return candidate;
+                dir = dir.Parent;
+            }
+            return null;
+        }
+
+        static void PersistNewBotTokens(string newAccessToken, string newRefreshToken)
+        {
+            try
+            {
+                var coreSettingsPath = FindCoreAppSettingsPath();
+                string appSettingsPath;
+                if (coreSettingsPath != null)
+                {
+                    appSettingsPath = coreSettingsPath;
+                }
+                else
+                {
+                    Console.WriteLine("Warning: core_appsettings.json not found in any parent directory. Falling back to local appsettings.json.");
+                    appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                }
+
+                var content = File.ReadAllText(appSettingsPath);
+
+                var oldAccessToken = Configuration["Secrets:TwitchBotAccessToken"];
+                var oldRefreshToken = Configuration["Secrets:TwitchBotRefreshToken"];
+
+                if (!string.IsNullOrEmpty(oldAccessToken) && !string.IsNullOrEmpty(newAccessToken))
+                    content = content.Replace($"\"{oldAccessToken}\"", $"\"{newAccessToken}\"");
+
+                if (!string.IsNullOrEmpty(oldRefreshToken) && !string.IsNullOrEmpty(newRefreshToken))
+                    content = content.Replace($"\"{oldRefreshToken}\"", $"\"{newRefreshToken}\"");
+
+                File.WriteAllText(appSettingsPath, content);
+                Console.WriteLine($"Refreshed tokens persisted to {Path.GetFileName(appSettingsPath)}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to persist refreshed tokens: {ex.Message}");
+            }
+        }
+
+        public static void Disconnect()
+        {
+            try
+            {
+                CodeRushedEventSub?.DisconnectAsync().GetAwaiter().GetResult();
+                CodeRushedClient.Disconnect();
                 FredGptClient.Disconnect();
                 RoryGptClient.Disconnect();
                 MarksVoiceClient.Disconnect();
                 DroneCommandsClient.Disconnect();
-			}
-			catch (Exception ex)
-			{
-				Log(ex);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
+        }
 
         public static string TruncateIfNeeded(string msg)
         {
@@ -342,200 +424,200 @@ namespace BotCore
         }
 
         static void CodeRushedPubSub_OnPubSubServiceConnected(object sender, EventArgs e)
-		{
-		}
+        {
+        }
 
-		static void Log(Exception ex)
-		{
-			if (Logging)
-				Console.WriteLine($"Exception: {ex.Message}");
-		}
+        static void Log(Exception ex)
+        {
+            if (Logging)
+                Console.WriteLine($"Exception: {ex.Message}");
+        }
 
-		public static void Chat(TwitchClient twitchClient, string msg)
-		{
-			try
-			{
-				twitchClient.SendMessage(STR_CodeRushedChannelName, msg);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
-		}
+        public static void Chat(TwitchClient twitchClient, string msg)
+        {
+            try
+            {
+                twitchClient.SendMessage(STR_CodeRushedChannelName, msg);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
 
-		public static void DroneCommandsChat(string msg)
-		{
-			try
-			{
-				if (!DroneCommandsClient.IsInitialized || !DroneCommandsClient.IsConnected)
-				{
-					var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
-					var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
-					DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
-					DroneCommandsClient.Connect();
-				}
-				DroneCommandsClient.SendMessage(STR_DroneCommandsChannelName, msg);
-			}
-			catch (Exception ex)
-			{
-				if (!DroneCommandsClient.IsConnected)
-				{
-					DroneCommandsClient.Disconnect();
-					DroneCommandsClient.Connect();
-				}
+        public static void DroneCommandsChat(string msg)
+        {
+            try
+            {
+                if (!DroneCommandsClient.IsInitialized || !DroneCommandsClient.IsConnected)
+                {
+                    var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
+                    var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
+                    DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
+                    DroneCommandsClient.Connect();
+                }
+                DroneCommandsClient.SendMessage(STR_DroneCommandsChannelName, msg);
+            }
+            catch (Exception ex)
+            {
+                if (!DroneCommandsClient.IsConnected)
+                {
+                    DroneCommandsClient.Disconnect();
+                    DroneCommandsClient.Connect();
+                }
 
-				Console.WriteLine(ex.Message);
-			}
-		}
+                Console.WriteLine(ex.Message);
+            }
+        }
 
-		public static void Whisper(string userName, string msg)
-		{
-			CodeRushedClient.SendWhisper(userName, msg);
-		}
+        public static void Whisper(string userName, string msg)
+        {
+            CodeRushedClient.SendWhisper(userName, msg);
+        }
 
-		static void HookBasicEvents(TwitchClient client)
-		{
-			client.OnLog += TwitchClientLog;
-			client.OnConnectionError += TwitchClient_OnConnectionError;
-		}
+        static void HookBasicEvents(TwitchClient client)
+        {
+            client.OnLog += TwitchClientLog;
+            client.OnConnectionError += TwitchClient_OnConnectionError;
+        }
 
-		static void UnhookEvents(TwitchClient client)
-		{
-			client.OnLog -= TwitchClientLog;
-			client.OnConnectionError -= TwitchClient_OnConnectionError;
-		}
+        static void UnhookEvents(TwitchClient client)
+        {
+            client.OnLog -= TwitchClientLog;
+            client.OnConnectionError -= TwitchClient_OnConnectionError;
+        }
 
-		static void TwitchClientLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
-		{
-			if (Logging)
-				Console.WriteLine(e.Data);
-		}
+        static void TwitchClientLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
+        {
+            if (Logging)
+                Console.WriteLine(e.Data);
+        }
 
-		static void TwitchClient_OnConnectionError(object sender, OnConnectionErrorArgs e)
-		{
-			Console.WriteLine(e.Error.Message);
-		}
+        static void TwitchClient_OnConnectionError(object sender, OnConnectionErrorArgs e)
+        {
+            Console.WriteLine(e.Error.Message);
+        }
 
-		private static async Task<LiveStreamData<LiveShowData>> GetLiveStreamData(MySecureString clientId, MySecureString accessToken, string userId)
-		{
-			string responseBody = await GetLiveShowDataStr(clientId, accessToken, userId);
-			LiveStreamData<LiveShowData> liveShowData = JsonConvert.DeserializeObject<LiveStreamData<LiveShowData>>(responseBody);
-			return liveShowData;
-		}
+        private static async Task<LiveStreamData<LiveShowData>> GetLiveStreamData(MySecureString clientId, MySecureString accessToken, string userId)
+        {
+            string responseBody = await GetLiveShowDataStr(clientId, accessToken, userId);
+            LiveStreamData<LiveShowData> liveShowData = JsonConvert.DeserializeObject<LiveStreamData<LiveShowData>>(responseBody);
+            return liveShowData;
+        }
 
-		private static async Task<string> GetLiveShowDataStr(MySecureString clientId, MySecureString accessToken, string userId)
-		{
-			var client = new HttpClient();
-			client.DefaultRequestHeaders.Add("Client-ID", clientId.GetStr());
-			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken.GetStr()}");
-			string requestUri = $"https://api.twitch.tv/helix/videos?user_id={userId}";
-			HttpResponseMessage response = await client.GetAsync(requestUri);
-			string responseBody = await response.Content.ReadAsStringAsync();
-			return responseBody;
-		}
+        private static async Task<string> GetLiveShowDataStr(MySecureString clientId, MySecureString accessToken, string userId)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Client-ID", clientId.GetStr());
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken.GetStr()}");
+            string requestUri = $"https://api.twitch.tv/helix/videos?user_id={userId}";
+            HttpResponseMessage response = await client.GetAsync(requestUri);
+            string responseBody = await response.Content.ReadAsStringAsync();
+            return responseBody;
+        }
 
-		private static TimeSpan GetTimeMarker(LiveShowData showData, TimeSpan rewindTimeSpan)
-		{
-			TimeSpan timeMarker = TimeSpan.MinValue;
+        private static TimeSpan GetTimeMarker(LiveShowData showData, TimeSpan rewindTimeSpan)
+        {
+            TimeSpan timeMarker = TimeSpan.MinValue;
 
-			try
-			{
-				timeMarker = GetTimeSpanFromString(showData.duration).Subtract(rewindTimeSpan);
-			}
-			catch (Exception ex)
-			{
-				if (ex != null)
-				{
+            try
+            {
+                timeMarker = GetTimeSpanFromString(showData.duration).Subtract(rewindTimeSpan);
+            }
+            catch (Exception ex)
+            {
+                if (ex != null)
+                {
 
-				}
-				Debugger.Break();
-			}
+                }
+                Debugger.Break();
+            }
 
-			return timeMarker;
-		}
+            return timeMarker;
+        }
 
-		private static TimeSpan GetRewindTimeSpan(string backTrackStr)
-		{
-			TimeSpan rewindTimeSpan = new TimeSpan();
+        private static TimeSpan GetRewindTimeSpan(string backTrackStr)
+        {
+            TimeSpan rewindTimeSpan = new TimeSpan();
 
-			if (string.IsNullOrWhiteSpace(backTrackStr))
-			{
-				rewindTimeSpan = new TimeSpan(hours: 0, minutes: 0, seconds: 10);
-			}
-			else
-			{
-				int dollarIndex = backTrackStr.IndexOf("$");
-				if (dollarIndex >= 0)
-				{
-					string backTrackValue = backTrackStr.Substring(dollarIndex + 1);
+            if (string.IsNullOrWhiteSpace(backTrackStr))
+            {
+                rewindTimeSpan = new TimeSpan(hours: 0, minutes: 0, seconds: 10);
+            }
+            else
+            {
+                int dollarIndex = backTrackStr.IndexOf("$");
+                if (dollarIndex >= 0)
+                {
+                    string backTrackValue = backTrackStr.Substring(dollarIndex + 1);
 
-					rewindTimeSpan = GetTimeSpanFromString(backTrackValue);
-				}
-			}
+                    rewindTimeSpan = GetTimeSpanFromString(backTrackValue);
+                }
+            }
 
-			return rewindTimeSpan;
-		}
+            return rewindTimeSpan;
+        }
 
-		private static string GetTimeParseFormatExpressionFromWilBennett(string timeString)
-		{
-			void subst(char ch)
-			{
-				var search = $@"(\d+)(?={ch})"; // 1 or more digits followed by ch. e.g. "1h", "22m"
-				var suffix = $@"\"; // \ch. e.g. "\h", "\m"
-														// Replace the match with ch instead of the digits and \ at the end
-														// e.g. "1h" => "h\h", "22m" => "mm\m"
-				timeString = System.Text.RegularExpressions.Regex.Replace(timeString, search, m => new String(ch, m.Captures[0].Length) + suffix);
-			}
+        private static string GetTimeParseFormatExpressionFromWilBennett(string timeString)
+        {
+            void subst(char ch)
+            {
+                var search = $@"(\d+)(?={ch})"; // 1 or more digits followed by ch. e.g. "1h", "22m"
+                var suffix = $@"\"; // \ch. e.g. "\h", "\m"
+                                    // Replace the match with ch instead of the digits and \ at the end
+                                    // e.g. "1h" => "h\h", "22m" => "mm\m"
+                timeString = System.Text.RegularExpressions.Regex.Replace(timeString, search, m => new String(ch, m.Captures[0].Length) + suffix);
+            }
 
-			subst('h');
-			subst('m');
-			subst('s');
+            subst('h');
+            subst('m');
+            subst('s');
 
-			return timeString;
-		}
+            return timeString;
+        }
 
-		private static TimeSpan GetTimeSpanFromString(string timeString)
-		{
-			TimeSpan timeSpan;
-			try
-			{
-				// TODO: Maybe give up on ParseExact...
-				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
-			}
-			catch //(Exception ex)
-			{
-				Debugger.Break();
-				timeSpan = TimeSpan.FromSeconds(1);
-			}
-			return timeSpan;
-		}
+        private static TimeSpan GetTimeSpanFromString(string timeString)
+        {
+            TimeSpan timeSpan;
+            try
+            {
+                // TODO: Maybe give up on ParseExact...
+                timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
+            }
+            catch //(Exception ex)
+            {
+                Debugger.Break();
+                timeSpan = TimeSpan.FromSeconds(1);
+            }
+            return timeSpan;
+        }
 
-		public static async Task<string> GetActiveShowPointURL(MySecureString clientId, MySecureString accessToken, string userId, string backTrackStr = "")
-		{
-			try
-			{
-				LiveStreamData<LiveShowData> liveShowData = await GetLiveStreamData(clientId, accessToken, userId);
-				if (liveShowData?.data?.Count > 0)  // Thanks to Wil Bennett!
-				{
-					LiveShowData showData = liveShowData.data[0];
+        public static async Task<string> GetActiveShowPointURL(MySecureString clientId, MySecureString accessToken, string userId, string backTrackStr = "")
+        {
+            try
+            {
+                LiveStreamData<LiveShowData> liveShowData = await GetLiveStreamData(clientId, accessToken, userId);
+                if (liveShowData?.data?.Count > 0)  // Thanks to Wil Bennett!
+                {
+                    LiveShowData showData = liveShowData.data[0];
 
-					TimeSpan rewindTimeSpan = GetRewindTimeSpan(backTrackStr);
-					TimeSpan timeMarker = GetTimeMarker(showData, rewindTimeSpan);
+                    TimeSpan rewindTimeSpan = GetRewindTimeSpan(backTrackStr);
+                    TimeSpan timeMarker = GetTimeMarker(showData, rewindTimeSpan);
 
-					return showData.url + "?t=" + $"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s";
-				}
-			}
-			catch (Exception ex)
-			{
-				if (ex != null)
-				{
+                    return showData.url + "?t=" + $"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s";
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex != null)
+                {
 
-				}
-				Debugger.Break();
-			}
+                }
+                Debugger.Break();
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-	}
+    }
 }
