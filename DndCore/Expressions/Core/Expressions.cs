@@ -395,6 +395,7 @@ namespace DndCore
 		static Expressions()
 		{
 			expressionEvaluator = new ExpressionEvaluator();
+			expressionEvaluator.PreEvaluateVariable += (sender, e) => ExpressionEvaluator_EvaluateVariable(sender, e);
 			expressionEvaluator.EvaluateVariable += ExpressionEvaluator_EvaluateVariable;
 			expressionEvaluator.EvaluateFunction += ExpressionEvaluator_EvaluateFunction;
 			LoadEvaluatorExtensions();
