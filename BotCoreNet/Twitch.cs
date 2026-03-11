@@ -162,8 +162,11 @@ namespace BotCore
             var serviceProvider = services.BuildServiceProvider();
             CodeRushedEventSub = serviceProvider.GetRequiredService<EventSubWebsocketClient>();
             CodeRushedEventSub.WebsocketConnected += CodeRushedEventSub_OnWebsocketConnected;
-            // 0.0.3 hardcodes the decommissioned beta endpoint; pass the live production URL explicitly.
-            var result = CodeRushedEventSub.ConnectAsync(new Uri("wss://eventsub.wss.twitch.tv/ws")).GetAwaiter().GetResult();
+            // Fire-and-forget: cannot block in a static constructor — the CLR type-initialization
+            // lock is held for the entire duration, so any GetResult() here deadlocks.
+            // Subscriptions are registered in OnWebsocketConnected once the connection is established.
+            var eventSubClient = CodeRushedEventSub;
+            _ = Task.Run(() => eventSubClient.ConnectAsync(new Uri("wss://eventsub.wss.twitch.tv/ws")));
         }
 
         private static async void CodeRushedEventSub_OnWebsocketConnected(object? sender, WebsocketConnectedArgs e)
@@ -327,24 +330,49 @@ namespace BotCore
             var refreshToken = Configuration["Secrets:TwitchBotRefreshToken"];
             var clientSecret = Configuration["Secrets:TwitchClientSecret"];
             var clientId = Configuration["Secrets:TwitchApiClientId"];
+            // Capture Api in a local so Task.Run lambdas don't access static Twitch members
+            // (which would deadlock against the CLR type-initialization lock held by the static ctor).
+            var api = Api;
 
             if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(clientSecret))
             {
                 Console.WriteLine("Token auto-refresh skipped: TwitchBotRefreshToken or TwitchClientSecret not set in config.");
-                return;
+            }
+            else
+            {
+                try
+                {
+                    Console.WriteLine("Refreshing Twitch bot access token...");
+                    var response = Task.Run(() => api.Auth.RefreshAuthTokenAsync(refreshToken, clientSecret, clientId)).GetAwaiter().GetResult();
+                    api.Settings.AccessToken = response.AccessToken;
+                    Console.WriteLine("Twitch bot access token refreshed successfully.");
+                    PersistNewBotTokens(response.AccessToken, response.RefreshToken);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Twitch token refresh failed: {ex.Message}. Using existing token from config.");
+                }
             }
 
+            // Validate the current token and sync Api.Settings.ClientId to the app that
+            // issued the token. This fixes "ClientID invalid" errors when the configured
+            // TwitchApiClientId doesn't match the app that generated TwitchBotAccessToken.
             try
             {
-                Console.WriteLine("Refreshing Twitch bot access token...");
-                var response = Api.Auth.RefreshAuthTokenAsync(refreshToken, clientSecret, clientId).GetAwaiter().GetResult();
-                Api.Settings.AccessToken = response.AccessToken;
-                Console.WriteLine("Twitch bot access token refreshed successfully.");
-                PersistNewBotTokens(response.AccessToken, response.RefreshToken);
+                var validation = Task.Run(() => api.Auth.ValidateAccessTokenAsync()).GetAwaiter().GetResult();
+                if (validation != null && !string.IsNullOrEmpty(validation.ClientId))
+                {
+                    api.Settings.ClientId = validation.ClientId;
+                    Console.WriteLine($"Token validated. ClientId synced: {validation.ClientId}");
+                }
+                else
+                {
+                    Console.WriteLine("Token validation returned null — token may be expired or invalid. Regenerate TwitchBotAccessToken with channel:read:redemptions scope.");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Twitch token refresh failed: {ex.Message}. Using existing token from config.");
+                Console.WriteLine($"Token validation failed: {ex.Message}. EventSub subscription may fail if ClientId is mismatched.");
             }
         }
 
@@ -363,37 +391,54 @@ namespace BotCore
 
         static void PersistNewBotTokens(string newAccessToken, string newRefreshToken)
         {
-            try
+            // Write to both the runtime file (what ConfigurationBuilder reads) and
+            // core_appsettings.json (the master file), so that token rotation is
+            // reflected in whichever file each subsequent run picks up.
+            var pathsToUpdate = new List<string>();
+
+            var localSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+            if (File.Exists(localSettingsPath))
+                pathsToUpdate.Add(localSettingsPath);
+
+            var coreSettingsPath = FindCoreAppSettingsPath();
+            if (coreSettingsPath != null && !pathsToUpdate.Contains(coreSettingsPath))
+                pathsToUpdate.Add(coreSettingsPath);
+
+            if (pathsToUpdate.Count == 0)
             {
-                var coreSettingsPath = FindCoreAppSettingsPath();
-                string appSettingsPath;
-                if (coreSettingsPath != null)
-                {
-                    appSettingsPath = coreSettingsPath;
-                }
-                else
-                {
-                    Console.WriteLine("Warning: core_appsettings.json not found in any parent directory. Falling back to local appsettings.json.");
-                    appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
-                }
-
-                var content = File.ReadAllText(appSettingsPath);
-
-                var oldAccessToken = Configuration["Secrets:TwitchBotAccessToken"];
-                var oldRefreshToken = Configuration["Secrets:TwitchBotRefreshToken"];
-
-                if (!string.IsNullOrEmpty(oldAccessToken) && !string.IsNullOrEmpty(newAccessToken))
-                    content = content.Replace($"\"{oldAccessToken}\"", $"\"{newAccessToken}\"");
-
-                if (!string.IsNullOrEmpty(oldRefreshToken) && !string.IsNullOrEmpty(newRefreshToken))
-                    content = content.Replace($"\"{oldRefreshToken}\"", $"\"{newRefreshToken}\"");
-
-                File.WriteAllText(appSettingsPath, content);
-                Console.WriteLine($"Refreshed tokens persisted to {Path.GetFileName(appSettingsPath)}.");
+                Console.WriteLine("Warning: No appsettings.json or core_appsettings.json found to persist tokens.");
+                return;
             }
-            catch (Exception ex)
+
+            foreach (var appSettingsPath in pathsToUpdate)
             {
-                Console.WriteLine($"Failed to persist refreshed tokens: {ex.Message}");
+                try
+                {
+                    var content = File.ReadAllText(appSettingsPath);
+
+                    // Read old token values from the file itself (not from Configuration),
+                    // so the replacement always matches the content being updated.
+                    var oldAccessMatch = System.Text.RegularExpressions.Regex.Match(
+                        content, @"""TwitchBotAccessToken""\s*:\s*""([^""]+)""");
+                    var oldRefreshMatch = System.Text.RegularExpressions.Regex.Match(
+                        content, @"""TwitchBotRefreshToken""\s*:\s*""([^""]+)""");
+
+                    var oldAccessToken = oldAccessMatch.Success ? oldAccessMatch.Groups[1].Value : null;
+                    var oldRefreshToken = oldRefreshMatch.Success ? oldRefreshMatch.Groups[1].Value : null;
+
+                    if (!string.IsNullOrEmpty(oldAccessToken) && !string.IsNullOrEmpty(newAccessToken))
+                        content = content.Replace($"\"{oldAccessToken}\"", $"\"{newAccessToken}\"");
+
+                    if (!string.IsNullOrEmpty(oldRefreshToken) && !string.IsNullOrEmpty(newRefreshToken))
+                        content = content.Replace($"\"{oldRefreshToken}\"", $"\"{newRefreshToken}\"");
+
+                    File.WriteAllText(appSettingsPath, content);
+                    Console.WriteLine($"Refreshed tokens persisted to {Path.GetFileName(appSettingsPath)}.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to persist refreshed tokens to {Path.GetFileName(appSettingsPath)}: {ex.Message}");
+                }
             }
         }
 
@@ -401,7 +446,7 @@ namespace BotCore
         {
             try
             {
-                CodeRushedEventSub?.DisconnectAsync().GetAwaiter().GetResult();
+                Task.Run(() => CodeRushedEventSub?.DisconnectAsync()).GetAwaiter().GetResult();
                 CodeRushedClient.Disconnect();
                 FredGptClient.Disconnect();
                 RoryGptClient.Disconnect();
