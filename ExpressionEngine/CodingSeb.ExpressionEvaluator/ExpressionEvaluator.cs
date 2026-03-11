@@ -406,8 +406,17 @@ namespace CodingSeb.ExpressionEvaluator
 						},
 						new Dictionary<ExpressionOperator, Func<dynamic, dynamic, object>>()
 						{
-								{ExpressionOperator.Equal, (dynamic left, dynamic right) => left == right },
-								{ExpressionOperator.NotEqual, (dynamic left, dynamic right) => left != right },
+								{ExpressionOperator.Equal, (dynamic left, dynamic right) => {
+								// If one operand is a ClassOrEnumType wrapper and the other is an actual value,
+								// they can never be equal. This prevents a RuntimeBinderException when e.g.
+								// an enum value is compared to a ClassOrEnumType that resolved from a type name.
+								if (left is ClassOrEnumType leftCoe) return right is ClassOrEnumType rightCoe && leftCoe.Type == rightCoe.Type;
+								if (right is ClassOrEnumType) return false;
+								return left == right; } },
+								{ExpressionOperator.NotEqual, (dynamic left, dynamic right) => {
+								if (left is ClassOrEnumType leftCoeNe) return !(right is ClassOrEnumType rightCoeNe && leftCoeNe.Type == rightCoeNe.Type);
+								if (right is ClassOrEnumType) return true;
+								return left != right; } },
 						},
 						new Dictionary<ExpressionOperator, Func<dynamic, dynamic, object>>()
 						{

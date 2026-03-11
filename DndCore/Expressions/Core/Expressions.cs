@@ -483,6 +483,18 @@ namespace DndCore
 
 		private static void ExpressionEvaluator_EvaluateVariable(object sender, VariableEvaluationEventArg e)
 		{
+			// When accessing an enum member via dot notation (e.g. AttackType.Melee), the evaluator
+			// resolves the type as a ClassOrEnumType first. Explicitly resolve the enum member here
+			// to return the actual enum value and prevent a ClassOrEnumType from reaching == comparisons.
+			if (e.This is ClassOrEnumType classOrEnumType && classOrEnumType.Type.IsEnum)
+			{
+				if (Enum.TryParse(classOrEnumType.Type, e.Name, out object enumValue))
+				{
+					e.Value = enumValue;
+					return;
+				}
+			}
+
 			Creature player = GetPlayer(e.Evaluator.Variables);
 			CastedSpell castedSpell = GetCastedSpell(e.Evaluator.Variables);
 			DndVariable variable = variables.FirstOrDefault(x => x.Handles(e.Name, player, castedSpell));
