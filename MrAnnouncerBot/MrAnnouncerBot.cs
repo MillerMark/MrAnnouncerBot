@@ -299,7 +299,7 @@ namespace MrAnnouncerBot
                 SetState(channelPointAction.StateToSet);
         }
 
-        private async void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
+        private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
         {
             string id = e.Notification.Payload.Event.Reward.Id;
             string title = e.Notification.Payload.Event.Reward.Title;
