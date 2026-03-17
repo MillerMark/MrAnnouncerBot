@@ -85,6 +85,7 @@ namespace MrAnnouncerBot
         private static List<SceneDto> scenes;
         private static List<RestrictedSceneDto> restrictedScenes;
         private static List<ChannelPointAction> channelPointActions;
+        private static List<EventActionMap> eventActionMaps;
         private static List<SpecialFanfare> specialFanfares;
         private string activeSceneName;
         private Timer checkChatRoomTimer;
@@ -235,6 +236,13 @@ namespace MrAnnouncerBot
             HookupTwitchEvents(Twitch.CodeRushedClient);
             HookupPubSubEvents(Twitch.CodeRushedEventSub);
             HookupTwitchEvents(Twitch.DroneCommandsClient);
+            HookupObsEvents();
+        }
+
+        void HookupObsEvents()
+        {
+            ObsControl.ObsManager.StreamStarted += ObsManager_StreamStarted;
+            ObsControl.ObsManager.RecordingStarted += ObsManager_RecordingStarted;
         }
 
         void HookupPubSubEvents(EventSubWebsocketClient eventSubClient)
@@ -286,8 +294,31 @@ namespace MrAnnouncerBot
 
         void SetState(string stateToSet)
         {
-
+            if (string.IsNullOrWhiteSpace(stateToSet)) return;
+            int colon = stateToSet.IndexOf(':');
+            if (colon < 0) return;
+            string key = stateToSet.Substring(0, colon).Trim();
+            string value = stateToSet.Substring(colon + 1).Trim();
+            switch (key.ToLower())
+            {
+                case "scene":
+                    QueueSceneToPlay(value);
+                    break;
+                // Additional action types can be added here
+            }
         }
+
+        void ExecuteObsEvent(string eventName)
+        {
+            string action = EventActionMaps
+                .FirstOrDefault(x => string.Equals(x.EventName, eventName, StringComparison.OrdinalIgnoreCase))
+                ?.Action;
+            if (action != null)
+                SetState(action);
+        }
+
+        void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
+        void ObsManager_RecordingStarted(object sender, EventArgs e) => ExecuteObsEvent("RecordingStarted");
 
         void ExecuteChannelPointAction(ChannelPointAction channelPointAction, User user)
         {
@@ -1336,6 +1367,9 @@ namespace MrAnnouncerBot
                 return channelPointActions;
             }
         }
+
+        static List<EventActionMap> EventActionMaps =>
+            eventActionMaps ?? (eventActionMaps = GoogleSheets.Get<EventActionMap>());
 
         async void SayIt(int playerId, string phrase)
         {

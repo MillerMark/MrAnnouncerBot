@@ -16,6 +16,10 @@ namespace ObsControl {
         public static event EventHandler<SceneItemDetails> SceneItemEnabled;
         public static event EventHandler<SceneItemDetails> SceneItemDisabled;
         public static event EventHandler<OutputState> StateChanged;
+        public static event EventHandler StreamStarted;
+        public static event EventHandler StreamEnded;
+        public static event EventHandler RecordingStarted;
+        public static event EventHandler RecordingEnded;
         private static readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 
         static ObsManager() {
@@ -33,6 +37,17 @@ namespace ObsControl {
 
         private static void ObsWebsocket_StreamStateChanged(object sender, OBSWebsocketDotNet.Types.Events.StreamStateChangedEventArgs e) {
             StateChanged?.Invoke(sender, e.OutputState.State);
+            if (e.OutputState.State == OutputState.OBS_WEBSOCKET_OUTPUT_STARTED)
+                StreamStarted?.Invoke(sender, EventArgs.Empty);
+            else if (e.OutputState.State == OutputState.OBS_WEBSOCKET_OUTPUT_STOPPED)
+                StreamEnded?.Invoke(sender, EventArgs.Empty);
+        }
+
+        private static void ObsWebsocket_RecordStateChanged(object sender, OBSWebsocketDotNet.Types.Events.RecordStateChangedEventArgs e) {
+            if (e.OutputState.State == OutputState.OBS_WEBSOCKET_OUTPUT_STARTED)
+                RecordingStarted?.Invoke(sender, EventArgs.Empty);
+            else if (e.OutputState.State == OutputState.OBS_WEBSOCKET_OUTPUT_STOPPED)
+                RecordingEnded?.Invoke(sender, EventArgs.Empty);
         }
 
         public static void OnSceneChanged(object sender, string sceneName) {
@@ -62,6 +77,7 @@ namespace ObsControl {
                 obsWebsocket.ConnectAsync(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
                 obsWebsocket.CurrentProgramSceneChanged += ObsWebsocket_CurrentProgramSceneChanged;
                 obsWebsocket.StreamStateChanged += ObsWebsocket_StreamStateChanged;
+                obsWebsocket.RecordStateChanged += ObsWebsocket_RecordStateChanged;
                 obsWebsocket.Disconnected += ObsWebsocket_Disconnected;
                 obsWebsocket.SceneItemEnableStateChanged += ObsWebsocket_SceneItemEnableStateChanged;
             }
