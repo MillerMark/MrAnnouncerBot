@@ -7,6 +7,9 @@
 
 > Source: `.squad/decisions/inbox/trinity-speech-bubble-fix.md` (resolved)
 
+### No Commits Without Explicit Approval (2026-03-17)
+The team must **never commit or push changes** unless the user explicitly asks. All code changes stay as working-directory edits until the user says to commit.
+
 ## Governance
 
 - All meaningful changes require team consensus
