@@ -248,6 +248,8 @@ class BaseDrone extends ColorShiftingSpriteProxy {
   downThrustOnTime: number;
   lastTimeWeAdvancedTheSparksFrame: number;
   sparkFrameInterval = 20;
+  lastActivityTime: number;
+  batteryDrainAccumulator: number = 0;
 
   private _color: string;
   private lastUpdateTime: number;
@@ -282,6 +284,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
     this.lastVelocityX = 0;
     this.lastVelocityY = 0;
     this.lastNow = now;
+    this.lastActivityTime = now;
     this.lastTimeWeAdvancedTheSparksFrame = now;
   }
 
@@ -404,6 +407,8 @@ class BaseDrone extends ColorShiftingSpriteProxy {
   }
 
   selfDestruct() {
+    if (this.isRemoving)
+      return;
     this.isRemoving = true;
     if (!(activeDroneGame instanceof DroneGame))
       return;
@@ -477,6 +482,26 @@ class BaseDrone extends ColorShiftingSpriteProxy {
 
     this.lastVelocityX = finalVelocityX;
     this.lastVelocityY = finalVelocityY;
+
+    // Battery drain: inactive for > 15s drains 1 health every 4s
+    const batteryInactivityGracePeriodMs = 15000;
+    const batteryDrainIntervalMs = 4000;
+    if (now - this.lastActivityTime < batteryInactivityGracePeriodMs) {
+      this.batteryDrainAccumulator = 0;
+    } else {
+      this.batteryDrainAccumulator += now - this.lastNow;
+      while (this.batteryDrainAccumulator >= batteryDrainIntervalMs) {
+        this.batteryDrainAccumulator -= batteryDrainIntervalMs;
+        this.health--;
+        if (this.health <= 0) {
+          // TODO: Play "Editor/Drone Failure/" two-layer animation (Back000–Back970, Front000–Front970,
+          // 971 frames each) as the battery-death sequence before calling selfDestruct().
+          this.selfDestruct();
+          return;
+        }
+      }
+    }
+
     this.lastNow = now;
     if (this.meteor) {
       // TODO: Adjust height based on pitch.
@@ -826,6 +851,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
     else {
       // Down thrusters already engaged. Keep existing this.downThrustOnTime.
     }
+    this.lastActivityTime = now;
     this.changingDirection(now);
     const durationMs: number = this.getMs(durationSeconds);
     this.downThrustOffTime = now + durationMs;
@@ -841,6 +867,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
     else {
       // Up thrusters already engaged. Keep existing this.upThrustOnTime.
     }
+    this.lastActivityTime = now;
     this.changingDirection(now);
     const durationMs: number = this.getMs(durationSeconds);
     this.upThrustOffTime = now + durationMs;
@@ -854,6 +881,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
 
   flyTo(x: number, y: number): void {
     const now: number = performance.now();
+    this.lastActivityTime = now;
     this.changingDirection(now);
     this.targetPosition = new Vector(x, y);
     console.log(`flyTo (${x}, ${y})`);
@@ -868,6 +896,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
     else {
       // Left thrusters already engaged. Keep existing this.leftThrustOnTime.
     }
+    this.lastActivityTime = now;
     this.changingDirection(now);
     const durationMs: number = this.getMs(durationSeconds);
     this.leftThrustOffTime = now + durationMs;
@@ -883,6 +912,7 @@ class BaseDrone extends ColorShiftingSpriteProxy {
     else {
       // Right thrusters already engaged. Keep existing this.rightThrustOnTime.
     }
+    this.lastActivityTime = now;
     this.changingDirection(now);
     const durationMs: number = this.getMs(durationSeconds);
     this.rightThrustOffTime = now + durationMs;
@@ -1208,6 +1238,10 @@ class BaseDrone extends ColorShiftingSpriteProxy {
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png;;;0.05664,0.05664)
 class Drone extends BaseDrone {
+  static create(x: number, y: number, frameCount: number): BaseDrone {
+    return new Drone(Random.intMax(frameCount), x, y);
+  }
+
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
     createDrone: (x: number, y: number, frameCount: number) => BaseDrone,
@@ -1218,8 +1252,9 @@ class Drone extends BaseDrone {
     const myDrone: BaseDrone = BaseDrone.baseCreateAt(activeDroneGame.dronesRed,
       x, y, now,
       createSprite,
-      createDrone,
+      Drone.create,
       userId, displayName, color, profileImageUrl, 192, 90);
+    return myDrone;
   }
 
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
@@ -1249,6 +1284,10 @@ class Drone extends BaseDrone {
 //` ![](Body21.png;;;0.01613,0.01613)
 
 class Roundie extends BaseDrone {
+  static create(x: number, y: number, frameCount: number): BaseDrone {
+    return new Roundie(Random.intMax(frameCount), x, y);
+  }
+
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy,
     createDrone: (x: number, y: number, frameCount: number) => BaseDrone,
@@ -1260,8 +1299,9 @@ class Roundie extends BaseDrone {
     const myDrone: BaseDrone = BaseDrone.baseCreateAt(activeDroneGame.roundies,
       x, y, now,
       createSprite,
-      createDrone,
+      Roundie.create,
       userId, displayName, color, profileImageUrl, 562, 424);
+    return myDrone;
   }
 }
 

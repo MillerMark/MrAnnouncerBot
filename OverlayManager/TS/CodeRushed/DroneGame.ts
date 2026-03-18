@@ -275,6 +275,10 @@ class DroneGame extends GamePlusQuiz {
 		this.loadWalls();
 		this.loadDroneExplosions();
 		this.droneHealthLights = new Sprites('Drones/192x90/Indicator', 60, 0, AnimationStyle.Static);
+		// TODO: Load "Drone Failure" animation for battery-death sequence.
+		// Asset path: Editor/Drone Failure/  — two layers: Back000–Back970 (971 frames) and Front000–Front970 (971 frames).
+		// Requires two Sprites instances rendered back-layer-under / front-layer-over the drone.
+		// Wire into a new batteryDead() method on BaseDrone that plays the sequence before calling selfDestruct().
 
 		const smokeFrameInterval: number = 40;
 		this.sparkSmoke = new Sprites(`FireWall/Smoke/Smoke`, 45, smokeFrameInterval, AnimationStyle.Sequential, true);
@@ -1409,7 +1413,9 @@ class DroneGame extends GamePlusQuiz {
   collectCoinsInRect(x: number, y: number, width: number, height: number): number {
 		var coinsCollected: number = this.coins.collect(x, y, width, height);
 		if (coinsCollected > 0) {
-			new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
+			new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play().catch(err => {
+    console.log('Audio playback prevented:', err);
+});
 			if (gravityGames.activeGame.score)
 				gravityGames.activeGame.score.value += coinsCollected;
 		}

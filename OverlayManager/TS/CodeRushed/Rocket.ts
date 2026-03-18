@@ -732,9 +732,9 @@
     activeDroneGame.allDrones.destroy(userId, addDroneExplosion);
     // TODO: Integrate with Roundie.
     if (displayName === 'CodeRushed')
-      Roundie.createAt(this.x, this.y, now, this.createSprite.bind(this), BaseDrone.create, userId, displayName, color, profileImageUrl);
+      Roundie.createAt(this.x, this.y, now, this.createSprite.bind(this), Roundie.create, userId, displayName, color, profileImageUrl);
     else 
-      Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), BaseDrone.create, userId, displayName, color, profileImageUrl);
+      Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color, profileImageUrl);
   }
 
   logState(message) {

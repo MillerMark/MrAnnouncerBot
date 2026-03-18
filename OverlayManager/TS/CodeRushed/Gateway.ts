@@ -30,7 +30,7 @@ class WarpInSprite extends SpriteProxy {
     if (!this.createdDrone) {
       // TODO: Integrate with Roundie.
       Drone.createAt(this.x - BaseDrone.frameWidth * this.scale / 2, this.y - BaseDrone.frameHeight * this.scale / 2, now,
-        this.createSprite.bind(this), BaseDrone.create, this.userId, this.displayName, this.color, this.profileImageUrl);
+        this.createSprite.bind(this), Drone.create, this.userId, this.displayName, this.color, this.profileImageUrl);
 			this.createdDrone = true;
 		}
 
