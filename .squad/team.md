@@ -16,6 +16,7 @@
 | Trinity | Bot Systems Dev | `.squad/agents/trinity/charter.md` | ✅ Active |
 | Morpheus | API Integration Dev | `.squad/agents/morpheus/charter.md` | ✅ Active |
 | Tank | Config & Data | `.squad/agents/tank/charter.md` | ✅ Active |
+| Mouse | Browser Game Dev | `.squad/agents/mouse/charter.md` | ✅ Active |
 | Scribe | Session Logger | `.squad/agents/scribe/charter.md` | 📋 Silent |
 | Ralph | Work Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
 

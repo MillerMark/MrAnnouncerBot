@@ -35,6 +35,12 @@
       "persistent_name": "Ralph",
       "universe": "The Matrix",
       "status": "active"
+    },
+    "mouse": {
+      "created_at": "2026-03-18T16:16:00.000Z",
+      "persistent_name": "Mouse",
+      "universe": "The Matrix",
+      "status": "active"
     }
   }
 }

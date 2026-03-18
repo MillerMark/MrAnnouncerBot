@@ -10,6 +10,7 @@ How to decide who handles what.
 | Chat, commands, event flow | Trinity | Bot commands, chat handlers, event routing |
 | Twitch API, PubSub, redemptions | Morpheus | API calls, webhooks, channel point redemptions |
 | Google Sheets, persistence, config | Tank | Data storage, settings, credentials, config files |
+| TypeScript, OBS overlays, browser games | Mouse | Drone Game, canvas rendering, sprites, physics, game loops |
 | Code review | Neo | Review PRs, check quality, suggest improvements |
 | Testing | Neo | Write tests, find edge cases, verify fixes |
 | Scope & priorities | Neo | What to build next, trade-offs, decisions |
@@ -62,4 +63,5 @@ When triaging, the Lead should ask:
 | Chat, commands, event flow | Trinity | — |
 | Twitch API, PubSub, redemptions | Morpheus | — |
 | Google Sheets, persistence, config | Tank | — |
+| TypeScript, OBS overlays, browser games | Mouse | — |
 
