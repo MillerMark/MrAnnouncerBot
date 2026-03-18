@@ -243,6 +243,8 @@ namespace MrAnnouncerBot
         {
             ObsControl.ObsManager.StreamStarted += ObsManager_StreamStarted;
             ObsControl.ObsManager.RecordingStarted += ObsManager_RecordingStarted;
+            ObsControl.ObsManager.StreamEnded += ObsManager_StreamEnded;
+            ObsControl.ObsManager.RecordingEnded += ObsManager_RecordingEnded;
             ObsControl.ObsManager.SceneChanged += ObsManager_SceneChanged;
             ObsControl.ObsManager.SceneItemEnabled += ObsManager_SceneItemEnabled;
             ObsControl.ObsManager.SceneItemDisabled += ObsManager_SceneItemDisabled;
@@ -317,7 +319,7 @@ namespace MrAnnouncerBot
                 case "scene":
                     QueueSceneToPlay(value);
                     break;
-                // Additional action types can be added here
+                    // Additional action types can be added here
             }
         }
 
@@ -334,6 +336,8 @@ namespace MrAnnouncerBot
 
         void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
         void ObsManager_RecordingStarted(object sender, EventArgs e) => ExecuteObsEvent("RecordingStarted");
+        void ObsManager_StreamEnded(object sender, EventArgs e) => ExecuteObsEvent("StreamEnded");
+        void ObsManager_RecordingEnded(object sender, EventArgs e) => ExecuteObsEvent("RecordingEnded");
         void ObsManager_SceneChanged(object sender, string sceneName) => ExecuteObsEvent("SceneActivated", sceneName);
         void ObsManager_SceneItemEnabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceVisible", $"{e.SceneName},{e.Item.SourceName}");
         void ObsManager_SceneItemDisabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceHidden", $"{e.SceneName},{e.Item.SourceName}");
