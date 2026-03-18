@@ -272,15 +272,25 @@ namespace MrAnnouncerBot
         private async void CodeRushedEventSub_OnWebsocketDisconnected(object sender, EventArgs e)
         {
             Console.WriteLine("EventSub WebSocket disconnected. Attempting to reconnect...");
-            while (!await Twitch.CodeRushedEventSub.ReconnectAsync())
+            // NOTE: v0.0.3 ReconnectAsync() hardcodes the decommissioned beta URL
+            // ("wss://eventsub-beta.wss.twitch.tv/ws"), so it always fails.
+            // ReconnectEventSubAsync() re-creates the client using the production URL instead.
+            UnhookPubSubEvents(Twitch.CodeRushedEventSub);
+            while (!await Twitch.ReconnectEventSubAsync())
             {
-                Console.WriteLine("EventSub WebSocket reconnect failed, retrying in 1 second...");
+                Console.WriteLine("EventSub WebSocket reconnect timed out, retrying in 1 second...");
                 await Task.Delay(1000);
             }
+            HookupPubSubEvents(Twitch.CodeRushedEventSub);
+            Console.WriteLine("EventSub WebSocket reconnected successfully.");
         }
 
         private void CodeRushedEventSub_OnErrorOccurred(object sender, ErrorOccuredArgs e)
         {
+            var msg = e.Exception?.Message ?? e.Message ?? "(unknown error)";
+            Console.WriteLine($"EventSub error: {msg}");
+            if (e.Exception != null)
+                Console.WriteLine($"  → {e.Exception}");
             log.Add(new ErrorEntry() { Exception = e.Exception });
         }
 

@@ -169,6 +169,27 @@ namespace BotCore
             _ = Task.Run(() => eventSubClient.ConnectAsync(new Uri("wss://eventsub.wss.twitch.tv/ws")));
         }
 
+        /// <summary>
+        /// Re-creates the EventSub client and reconnects to the Twitch production WebSocket URL.
+        /// This is required because v0.0.3 of TwitchLib.EventSub.Websockets hardcodes the old
+        /// beta URL ("eventsub-beta") in ReconnectAsync(), which is decommissioned and always fails.
+        /// </summary>
+        /// <returns>true if the new session was established within 10 seconds; false otherwise.</returns>
+        public static async Task<bool> ReconnectEventSubAsync()
+        {
+            // Unregister the subscription handler from the old client before replacing it.
+            CodeRushedEventSub.WebsocketConnected -= CodeRushedEventSub_OnWebsocketConnected;
+
+            InitializeEventSub(); // assigns CodeRushedEventSub to a fresh client + starts ConnectAsync
+
+            // Poll for the session_welcome message (which sets SessionId) for up to 10 seconds.
+            var deadline = DateTimeOffset.Now.AddSeconds(10);
+            while (string.IsNullOrEmpty(CodeRushedEventSub.SessionId) && DateTimeOffset.Now < deadline)
+                await Task.Delay(100).ConfigureAwait(false);
+
+            return !string.IsNullOrEmpty(CodeRushedEventSub.SessionId);
+        }
+
         private static async void CodeRushedEventSub_OnWebsocketConnected(object? sender, WebsocketConnectedArgs e)
         {
             if (!e.IsRequestedReconnect)
