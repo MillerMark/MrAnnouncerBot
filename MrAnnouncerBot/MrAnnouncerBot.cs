@@ -31,6 +31,7 @@ using SheetsPersist;
 using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
+using StudioPanelSdk;
 using static MrAnnouncerBot.MrAnnouncerBot;
 
 namespace MrAnnouncerBot
@@ -91,6 +92,7 @@ namespace MrAnnouncerBot
         private Timer checkChatRoomTimer;
         private Timer autoSaveTimer;
         private OBSWebsocket obsWebsocket = new OBSWebsocket();
+        private StudioPanel _studioPanel;
         private ZorkGame zork;
         private Random random = new Random((int)DateTime.Now.Ticks);
 
@@ -230,6 +232,7 @@ namespace MrAnnouncerBot
         {
             if (useObs)
                 InitializeObsWebSocket();
+            _ = InitializeStudioPanelAsync();
             HookupCoreEvents(Twitch.FredGptClient);
             HookupCoreEvents(Twitch.RoryGptClient);
             HookupCoreEvents(Twitch.MarksVoiceClient);
@@ -319,7 +322,53 @@ namespace MrAnnouncerBot
                 case "scene":
                     QueueSceneToPlay(value);
                     break;
+                case "labjack":
+                    _ = ExecuteLabJackCommandAsync(value);
+                    break;
                     // Additional action types can be added here
+            }
+        }
+
+        private async Task InitializeStudioPanelAsync()
+        {
+            try
+            {
+                _studioPanel = StudioPanel.CreateDefault();
+                await _studioPanel.ConnectAsync().ConfigureAwait(false);
+                await _studioPanel.InitializeAsync().ConfigureAwait(false);
+                Console.WriteLine("[StudioPanel] Connected and initialized.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StudioPanel] Failed to connect: {ex.Message}");
+            }
+        }
+
+        private async Task ExecuteLabJackCommandAsync(string command)
+        {
+            if (_studioPanel == null) return;
+            var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2) return;
+            string channel = parts[0];
+            string verb = parts[1];
+            try
+            {
+                if (Enum.TryParse<PowerChannel>(channel, true, out var pwr))
+                {
+                    if (verb.Equals("On", StringComparison.OrdinalIgnoreCase))
+                        await _studioPanel.SetPowerAsync(pwr, true).ConfigureAwait(false);
+                    else if (verb.Equals("Off", StringComparison.OrdinalIgnoreCase))
+                        await _studioPanel.SetPowerAsync(pwr, false).ConfigureAwait(false);
+                }
+                else if (Enum.TryParse<SwitchChannel>(channel, true, out var sw))
+                {
+                    if (verb.Equals("Pulse", StringComparison.OrdinalIgnoreCase))
+                        await _studioPanel.PressSwitchAsync(sw).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StudioPanel] Command failed ({command}): {ex.Message}");
             }
         }
 

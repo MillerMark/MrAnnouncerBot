@@ -102,6 +102,7 @@
     <ProjectReference Include="..\BotCore\BotCore.csproj" />
     <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
     <ProjectReference Include="..\ObsControl\ObsControl.csproj" />
+    <ProjectReference Include="C:\Users\Mark\source\repos\LabJackSandbox2\StudioPanel\StudioPanelSdk.csproj" />
   </ItemGroup>
 
 </Project>
