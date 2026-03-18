@@ -13,8 +13,8 @@ using OBSWebsocketDotNet.Types;
 namespace ObsControl {
     public static class ObsManager {
         public static event EventHandler<string> SceneChanged;
-        public static event EventHandler<SceneItemDetails> SceneItemEnabled;
-        public static event EventHandler<SceneItemDetails> SceneItemDisabled;
+        public static event EventHandler<SceneItemEventArgs> SceneItemEnabled;
+        public static event EventHandler<SceneItemEventArgs> SceneItemDisabled;
         public static event EventHandler<OutputState> StateChanged;
         public static event EventHandler StreamStarted;
         public static event EventHandler StreamEnded;
@@ -59,10 +59,11 @@ namespace ObsControl {
                 List<SceneItemDetails> sceneItemList = obsWebsocket.GetSceneItemList(sceneName);
                 SceneItemDetails sceneItem = sceneItemList.FirstOrDefault(x => x.ItemId == sceneItemId);
                 if (sceneItem != null) {
+                    var args = new SceneItemEventArgs { SceneName = sceneName, Item = sceneItem };
                     if (sceneItemEnabled)
-                        SceneItemEnabled?.Invoke(sender, sceneItem);
+                        SceneItemEnabled?.Invoke(sender, args);
                     else
-                        SceneItemDisabled?.Invoke(sender, sceneItem);
+                        SceneItemDisabled?.Invoke(sender, args);
                 }
             }
             catch (Exception ex) {

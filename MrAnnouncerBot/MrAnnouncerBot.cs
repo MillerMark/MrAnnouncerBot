@@ -243,6 +243,9 @@ namespace MrAnnouncerBot
         {
             ObsControl.ObsManager.StreamStarted += ObsManager_StreamStarted;
             ObsControl.ObsManager.RecordingStarted += ObsManager_RecordingStarted;
+            ObsControl.ObsManager.SceneChanged += ObsManager_SceneChanged;
+            ObsControl.ObsManager.SceneItemEnabled += ObsManager_SceneItemEnabled;
+            ObsControl.ObsManager.SceneItemDisabled += ObsManager_SceneItemDisabled;
         }
 
         void HookupPubSubEvents(EventSubWebsocketClient eventSubClient)
@@ -308,10 +311,12 @@ namespace MrAnnouncerBot
             }
         }
 
-        void ExecuteObsEvent(string eventName)
+        void ExecuteObsEvent(string eventName, string parameters = null)
         {
             string action = EventActionMaps
-                .FirstOrDefault(x => string.Equals(x.EventName, eventName, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(x =>
+                    string.Equals(x.EventName, eventName, StringComparison.OrdinalIgnoreCase) &&
+                    (string.IsNullOrEmpty(x.Parameters) || string.Equals(x.Parameters, parameters, StringComparison.OrdinalIgnoreCase)))
                 ?.Action;
             if (action != null)
                 SetState(action);
@@ -319,6 +324,9 @@ namespace MrAnnouncerBot
 
         void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
         void ObsManager_RecordingStarted(object sender, EventArgs e) => ExecuteObsEvent("RecordingStarted");
+        void ObsManager_SceneChanged(object sender, string sceneName) => ExecuteObsEvent("SceneActivated", sceneName);
+        void ObsManager_SceneItemEnabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceVisible", $"{e.SceneName},{e.Item.SourceName}");
+        void ObsManager_SceneItemDisabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceHidden", $"{e.SceneName},{e.Item.SourceName}");
 
         void ExecuteChannelPointAction(ChannelPointAction channelPointAction, User user)
         {

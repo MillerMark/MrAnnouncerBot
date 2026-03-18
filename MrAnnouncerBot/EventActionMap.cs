@@ -5,6 +5,7 @@ namespace MrAnnouncerBot {
 	[Sheet("EventActions")]
 	public class EventActionMap {
 		[Column] public string EventName { get; set; }
+		[Column] public string Parameters { get; set; }
 		[Column] public string Action { get; set; }
 	}
 }
