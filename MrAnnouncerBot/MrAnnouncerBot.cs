@@ -29,9 +29,9 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using SheetsPersist;
 using MrAnnouncerBot.Games.Zork;
+using StudioPanelSdk;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
-using StudioPanelSdk;
 using static MrAnnouncerBot.MrAnnouncerBot;
 
 namespace MrAnnouncerBot
@@ -353,22 +353,40 @@ namespace MrAnnouncerBot
             string verb = parts[1];
             try
             {
-                if (Enum.TryParse<PowerChannel>(channel, true, out var pwr))
+                await RunLabJackCommandCoreAsync(channel, verb).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("not connected"))
+            {
+                Console.WriteLine("[StudioPanel] Not connected — attempting reconnect...");
+                try
                 {
-                    if (verb.Equals("On", StringComparison.OrdinalIgnoreCase))
-                        await _studioPanel.SetPowerAsync(pwr, true).ConfigureAwait(false);
-                    else if (verb.Equals("Off", StringComparison.OrdinalIgnoreCase))
-                        await _studioPanel.SetPowerAsync(pwr, false).ConfigureAwait(false);
+                    await _studioPanel.ConnectAsync().ConfigureAwait(false);
+                    await RunLabJackCommandCoreAsync(channel, verb).ConfigureAwait(false);
                 }
-                else if (Enum.TryParse<SwitchChannel>(channel, true, out var sw))
+                catch (Exception retryEx)
                 {
-                    if (verb.Equals("Pulse", StringComparison.OrdinalIgnoreCase))
-                        await _studioPanel.PressSwitchAsync(sw).ConfigureAwait(false);
+                    Console.WriteLine($"[StudioPanel] Command failed after reconnect ({command}): {retryEx.Message}");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[StudioPanel] Command failed ({command}): {ex.Message}");
+            }
+        }
+
+        private async Task RunLabJackCommandCoreAsync(string channel, string verb)
+        {
+            if (Enum.TryParse<PowerChannel>(channel, true, out var pwr))
+            {
+                if (verb.Equals("On", StringComparison.OrdinalIgnoreCase))
+                    await _studioPanel!.SetPowerAsync(pwr, true).ConfigureAwait(false);
+                else if (verb.Equals("Off", StringComparison.OrdinalIgnoreCase))
+                    await _studioPanel!.SetPowerAsync(pwr, false).ConfigureAwait(false);
+            }
+            else if (Enum.TryParse<SwitchChannel>(channel, true, out var sw))
+            {
+                if (verb.Equals("Pulse", StringComparison.OrdinalIgnoreCase))
+                    await _studioPanel!.PressSwitchAsync(sw).ConfigureAwait(false);
             }
         }
 
@@ -388,8 +406,8 @@ namespace MrAnnouncerBot
         void ObsManager_StreamEnded(object sender, EventArgs e) => ExecuteObsEvent("StreamEnded");
         void ObsManager_RecordingEnded(object sender, EventArgs e) => ExecuteObsEvent("RecordingEnded");
         void ObsManager_SceneChanged(object sender, string sceneName) => ExecuteObsEvent("SceneActivated", sceneName);
-        void ObsManager_SceneItemEnabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceVisible", $"{e.SceneName},{e.Item.SourceName}");
-        void ObsManager_SceneItemDisabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceHidden", $"{e.SceneName},{e.Item.SourceName}");
+        void ObsManager_SceneItemEnabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceVisible", $"{e.SceneName}, {e.Item.SourceName}");
+        void ObsManager_SceneItemDisabled(object sender, ObsControl.SceneItemEventArgs e) => ExecuteObsEvent("SourceHidden", $"{e.SceneName}, {e.Item.SourceName}");
 
         void ExecuteChannelPointAction(ChannelPointAction channelPointAction, User user)
         {

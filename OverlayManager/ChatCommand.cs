@@ -178,9 +178,13 @@ namespace OverlayManager
 
         static void CreateMidiOut()
         {
-            int deviceNumber = GetOutputDeviceNumber("RoryMidi");
+            const string roryMidiChannel = "RoryMidi";
+            int deviceNumber = GetOutputDeviceNumber(roryMidiChannel);
             if (deviceNumber < 0)  // Did not find the device.
+            {
+                Console.Error.WriteLine($"Error: MIDI device \"{roryMidiChannel}\" not found.");
                 return;
+            }
 
             midiOut = new MidiOut(deviceNumber);
         }
@@ -216,16 +220,29 @@ namespace OverlayManager
                 CreateMidiOut();
 
             if (midiOut == null)
+            {
+                Console.Error.WriteLine($"Error: Could not create MIDI output.");
                 return;
+            }
 
             int noteNumber = GetNote(midiNote);
             if (noteNumber < 0)
+            {
+                Console.Error.WriteLine($"Error: Invalid MIDI note \"{midiNote}\".");
                 return;
+            }
 
-            int channel = 1;
-            var noteOnEvent = new NoteOnEvent(0, channel, noteNumber, 100, 50);
-            midiOut.Send(noteOnEvent.GetAsShortMessage());
-            midiOut.Send(noteOnEvent.OffEvent.GetAsShortMessage());
+            try
+            {
+                int channel = 1;
+                var noteOnEvent = new NoteOnEvent(0, channel, noteNumber, 100, 50);
+                midiOut.Send(noteOnEvent.GetAsShortMessage());
+                midiOut.Send(noteOnEvent.OffEvent.GetAsShortMessage());
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error sending MIDI note: {ex.Message}");
+            }
         }
 
         DataRow GetViewerSettingAndReportAnyErrors(ChatMessage chatMessage, string args)
