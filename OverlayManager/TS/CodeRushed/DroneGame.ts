@@ -24,6 +24,15 @@ class DroneGame extends GamePlusQuiz {
 	animations: Animations = new Animations();
   lastCommand: string;
 
+	dvdModeActive: boolean = false;
+	dvdVx: number = 3;
+	dvdVy: number = 3;
+	dvdX: number = 200;
+	dvdY: number = 300;
+	dvdOriginalX: number = 200;
+	dvdOriginalY: number = 300;
+	dvdCheerAudio: HTMLAudioElement;
+
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
   }
@@ -188,6 +197,46 @@ class DroneGame extends GamePlusQuiz {
 		this.animations.removeExpiredAnimations(nowMs);
     this.animations.render(myContext, nowMs);
 
+    if (this.dvdModeActive && this.backgroundBanner) {
+      const img = this.backgroundBanner.images[0];
+      const imgW = (img && img.naturalWidth) ? img.naturalWidth : 200;
+      const imgH = (img && img.naturalHeight) ? img.naturalHeight : 100;
+
+      this.dvdX += this.dvdVx;
+      this.dvdY += this.dvdVy;
+
+      let bouncedX = false;
+      let bouncedY = false;
+
+      if (this.dvdX <= 0) {
+        this.dvdX = 0;
+        this.dvdVx = Math.abs(this.dvdVx);
+        bouncedX = true;
+      } else if (this.dvdX + imgW >= screenWidth) {
+        this.dvdX = screenWidth - imgW;
+        this.dvdVx = -Math.abs(this.dvdVx);
+        bouncedX = true;
+      }
+
+      if (this.dvdY <= 0) {
+        this.dvdY = 0;
+        this.dvdVy = Math.abs(this.dvdVy);
+        bouncedY = true;
+      } else if (this.dvdY + imgH >= screenHeight) {
+        this.dvdY = screenHeight - imgH;
+        this.dvdVy = -Math.abs(this.dvdVy);
+        bouncedY = true;
+      }
+
+      if (bouncedX && bouncedY) {
+        this.dvdCheerAudio.currentTime = 0;
+        this.dvdCheerAudio.play().catch(() => {});
+      }
+
+      // offsetX=200, offsetY=300 are baked into the Part; subtract them so the image renders at (dvdX, dvdY)
+      this.backgroundBanner.draw(context, this.dvdX - 200, this.dvdY - 300);
+    }
+
     if (this.lastCommand)
     {
       myContext.textAlign = 'left';
@@ -327,6 +376,7 @@ class DroneGame extends GamePlusQuiz {
 		Part.loadSprites = true;
 
 		this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+		this.dvdCheerAudio = new Audio('GameDev/Assets/DroneGame/cornerCheer.mp3');
 	}
 
   executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -480,6 +530,21 @@ class DroneGame extends GamePlusQuiz {
 			}
 			this.startMusic();
 			return true;
+		}
+		else if (command === 'dvd') {
+			if (this.dvdModeActive) {
+				this.dvdModeActive = false;
+				this.dvdX = this.dvdOriginalX;
+				this.dvdY = this.dvdOriginalY;
+			} else {
+				this.dvdOriginalX = this.dvdX;
+				this.dvdOriginalY = this.dvdY;
+				this.dvdX = 200;
+				this.dvdY = 300;
+				this.dvdVx = 3;
+				this.dvdVy = 3;
+				this.dvdModeActive = true;
+			}
 		}
 	}
     
