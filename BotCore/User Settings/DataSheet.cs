@@ -42,7 +42,8 @@ namespace BotCore
 
             var settings = GoogleSheets.Get<DataRow>(DocumentNames.ViewerSettings, Meta.SheetName);
             foreach (var setting in settings)
-                allDataRows.Add(setting.ViewerID, setting);
+                if (!allDataRows.ContainsKey(setting.ViewerID))
+                    allDataRows.Add(setting.ViewerID, setting);
         }
 
         public void AddDataRow(DataRow dataRow)
