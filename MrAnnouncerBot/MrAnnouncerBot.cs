@@ -310,13 +310,13 @@ namespace MrAnnouncerBot
             obsWebsocket.SetCurrentProgramScene(sceneToPlay);
         }
 
-        void SetState(string stateToSet)
+        void ExecuteEventAction(string eventAction)
         {
-            if (string.IsNullOrWhiteSpace(stateToSet)) return;
-            int colon = stateToSet.IndexOf(':');
+            if (string.IsNullOrWhiteSpace(eventAction)) return;
+            int colon = eventAction.IndexOf(':');
             if (colon < 0) return;
-            string key = stateToSet.Substring(0, colon).Trim();
-            string value = stateToSet.Substring(colon + 1).Trim();
+            string key = eventAction.Substring(0, colon).Trim();
+            string value = eventAction.Substring(colon + 1).Trim();
             switch (key.ToLower())
             {
                 case "scene":
@@ -398,7 +398,7 @@ namespace MrAnnouncerBot
                     (string.IsNullOrEmpty(x.Parameters) || string.Equals(x.Parameters, parameters, StringComparison.OrdinalIgnoreCase)))
                 ?.Action;
             if (action != null)
-                SetState(action);
+                ExecuteEventAction(action);
         }
 
         void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
@@ -416,7 +416,7 @@ namespace MrAnnouncerBot
             if (!string.IsNullOrWhiteSpace(channelPointAction.SceneToPlay))
                 QueueSceneToPlay(channelPointAction.SceneToPlay);
             else if (!string.IsNullOrWhiteSpace(channelPointAction.StateToSet))
-                SetState(channelPointAction.StateToSet);
+                ExecuteEventAction(channelPointAction.StateToSet);
         }
 
         private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
@@ -827,12 +827,12 @@ namespace MrAnnouncerBot
 
             if (greeter == Greeter.Fred)
             {
-                SayOrThinkIt("fred", greeting);
+                SayItOrThinkItAsync("fred", greeting);
                 return PlayGreetingResult.FredPlayed;
             }
             else
             {
-                SayOrThinkIt("rory", greeting);
+                SayItOrThinkItAsync("rory", greeting);
                 return PlayGreetingResult.RoryPlayed;
             }
         }
@@ -920,7 +920,7 @@ namespace MrAnnouncerBot
                 else
                 {
                     string textColor = ColorTranslator.ToHtml(GetHighContrastTextColorAgainstWhiteBackground(e.ChatMessage.Color)) ?? "#000";
-                    SayOrThinkIt("fred", response, textColor);
+                    SayItOrThinkItAsync("fred", response, textColor);
                     string trimmedResponse = response.TrimStart('"').TrimEnd('"');
                     Twitch.FredChat(trimmedResponse);
                 }
@@ -1465,25 +1465,35 @@ namespace MrAnnouncerBot
             string colorStr = ExtractColorStr(ref phrase);
             string offsetStr = ExtractOffsetStr(ref phrase);
             string quotedPhrase = phrase.Trim('"').Trim() + colorStr + offsetStr;
-            await SafeHubInvokeAsync("SpeechBubble", $"{playerId} says: {quotedPhrase}");
+            await SafeHubInvokeAsync("SpeechBubble", $"{playerId} says: {quotedPhrase}").ConfigureAwait(false);
         }
 
         private async Task SafeHubInvokeAsync(string methodName, string parameters)
         {
             Console.WriteLine($"[DIAG] SafeHubInvokeAsync method={methodName} state={hubConnection.State}");
             if (hubConnection.State == HubConnectionState.Disconnected)
-                await hubConnection.StartAsync();
+                await hubConnection.StartAsync().ConfigureAwait(false);
 
-            await hubConnection.InvokeAsync(methodName, parameters);
+            try
+            {
+                await hubConnection.InvokeAsync(methodName, parameters).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message ?? "(no message)";
+                Console.Error.WriteLine($"[ERR] SafeHubInvokeAsync failed method={methodName} state={hubConnection.State} params=\"{parameters}\" err=\"{msg}\"");
+                Console.Error.WriteLine(ex.ToString());
+                log.Add(new ErrorEntry() { Exception = ex, Time = DateTime.Now });
+            }
         }
 
-        async void ThinkIt(int playerId, string phrase)
+        async Task ThinkItAsync(int playerId, string phrase)
         {
             string colorStr = ExtractColorStr(ref phrase);
             string offsetStr = ExtractOffsetStr(ref phrase);
 
             string quotedPhrase = phrase.Trim().TrimStart('(').TrimEnd(')') + colorStr + offsetStr;
-            await SafeHubInvokeAsync("SpeechBubble", $"{playerId} thinks: {quotedPhrase}");
+            await SafeHubInvokeAsync("SpeechBubble", $"{playerId} thinks: {quotedPhrase}").ConfigureAwait(false);
         }
 
         private static string ExtractColorStr(ref string phrase)
@@ -1530,7 +1540,7 @@ namespace MrAnnouncerBot
             return offsetStr;
         }
 
-        void SayOrThinkIt(ChatMessage chatMessage)
+        async Task SayItOrThinkItAsync(ChatMessage chatMessage)
         {
             int userLevel = allViewers.GetUserLevel(chatMessage);
             Console.WriteLine($"[DIAG] SayOrThinkIt user={chatMessage.Username} level={userLevel} min={minUserLevelForSpeechBubbles}");
@@ -1544,10 +1554,10 @@ namespace MrAnnouncerBot
             GetNameAndPhrase(msg, out string name, out string phrase);
             Console.WriteLine($"[DIAG] GetNameAndPhrase name=\"{name}\" phrase=\"{phrase}\"");
 
-            SayOrThinkIt(name, phrase);
+            await SayItOrThinkItAsync(name, phrase).ConfigureAwait(false);
         }
 
-        private void SayOrThinkIt(string name, string phrase, string colorOverride = null)
+        private async Task SayItOrThinkItAsync(string name, string phrase, string colorOverride = null)
         {
             string colorStr = string.Empty;
             int playerId;
@@ -1585,7 +1595,7 @@ namespace MrAnnouncerBot
                 colorStr = string.Empty;
 
             if (phrase.StartsWith("("))
-                ThinkIt(playerId, censoredPhrase + colorStr);
+                await ThinkItAsync(playerId, censoredPhrase + colorStr).ConfigureAwait(false);
             else
                 SayIt(playerId, censoredPhrase + colorStr);
         }
@@ -1633,7 +1643,7 @@ namespace MrAnnouncerBot
                 (lowerMessage[prefix.Length] == ':' || lowerMessage[prefix.Length] == ' ');
         }
 
-        private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
+        private async void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
             var command = e.Command.CommandText;
             var lowerMessage = e.Command.ChatMessage.Message.ToLower();
@@ -1645,7 +1655,7 @@ namespace MrAnnouncerBot
 
             if (vocalizes)
             {
-                SayOrThinkIt(e.Command.ChatMessage);
+                await SayItOrThinkItAsync(e.Command.ChatMessage).ConfigureAwait(false);
                 return;
             }
 
