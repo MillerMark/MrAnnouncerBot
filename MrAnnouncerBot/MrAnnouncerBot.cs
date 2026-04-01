@@ -331,16 +331,36 @@ namespace MrAnnouncerBot
 
         private async Task InitializeStudioPanelAsync()
         {
+            Console.WriteLine("[LabJackBridge] Attempting to connect to LabJackBridge named pipe...");
             try
             {
                 _studioPanel = StudioPanel.CreateDefault();
+                Console.WriteLine($"[LabJackBridge] Loaded panel mapping (pipe: \"{_studioPanel.Map.PipeName}\"). Connecting...");
                 await _studioPanel.ConnectAsync().ConfigureAwait(false);
+                Console.WriteLine("[LabJackBridge] Connected. Initializing...");
                 await _studioPanel.InitializeAsync().ConfigureAwait(false);
-                Console.WriteLine("[StudioPanel] Connected and initialized.");
+                Console.WriteLine("[LabJackBridge] Connected and initialized successfully.");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"[LabJackBridge] FAILED — panel mapping file not found: {ex.FileName}");
+                _studioPanel = null;
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine($"[LabJackBridge] FAILED — timed out waiting for LabJackBridge pipe (is the bridge running?): {ex.Message}");
+                _studioPanel = null;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"[LabJackBridge] FAILED — access denied connecting to pipe \"{_studioPanel?.Map.PipeName}\": {ex.Message}");
+                Console.WriteLine("[LabJackBridge] Try running MrAnnouncerBot as Administrator, or ensure the LabJackBridge pipe grants access to the current user.");
+                _studioPanel = null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[StudioPanel] Failed to connect: {ex.Message}");
+                Console.WriteLine($"[LabJackBridge] FAILED — {ex.GetType().Name}: {ex.Message}");
+                _studioPanel = null;
             }
         }
 
