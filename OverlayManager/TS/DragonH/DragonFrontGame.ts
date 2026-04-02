@@ -406,6 +406,7 @@ class ContestManager {
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
 	animatedTextManager: AnimatedTextManager = new AnimatedTextManager();
+	treadmillStatus: TreadmillStatus = new TreadmillStatus(this.animatedTextManager);
 
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	contestManager: ContestManager = new ContestManager(this.animatedTextManager);
@@ -597,6 +598,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
 		super.drawClockLayerEffects(context, now);
 		//this.drawGameTime(context);
+	}
+
+	onTreadmillStatus(speedKph: number, distanceKm: number): void {
+		this.treadmillStatus.update(speedKph, distanceKm);
 	}
 
 	protected updateClockFromDto(dto: any) {

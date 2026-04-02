@@ -39,6 +39,12 @@ function moveFred(movement: string): void {
 	}
 }
 
+function treadmillStatus(speedKph: number, distanceKm: number): void {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.onTreadmillStatus(speedKph, distanceKm);
+	}
+}
+
 function animateSprinkles(commandData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.animateSprinkles(commandData);
@@ -439,6 +445,7 @@ function connectToSignalR(signalR) {
 		connection.on("ShowImageBack", showImageBack);
 		connection.on("PreloadImageFront", preloadImageFront);
 		connection.on("PreloadImageBack", preloadImageBack);
+		connection.on("TreadmillStatus", treadmillStatus);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
 		PartBackgroundLoader.initialize();

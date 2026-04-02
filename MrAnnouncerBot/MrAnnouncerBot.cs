@@ -310,22 +310,74 @@ namespace MrAnnouncerBot
             obsWebsocket.SetCurrentProgramScene(sceneToPlay);
         }
 
-        void ExecuteEventAction(string eventAction)
+        private Task _treadmillPollTask = null;
+        private CancellationTokenSource _treadmillPollCts = null;
+
+        private void EnsureTreadmillPolling()
         {
-            if (string.IsNullOrWhiteSpace(eventAction)) return;
-            int colon = eventAction.IndexOf(':');
-            if (colon < 0) return;
-            string key = eventAction.Substring(0, colon).Trim();
-            string value = eventAction.Substring(colon + 1).Trim();
-            switch (key.ToLower())
+            if (_treadmillPollTask == null || _treadmillPollTask.IsCompleted)
             {
-                case "scene":
-                    QueueSceneToPlay(value);
+                _treadmillPollCts = new CancellationTokenSource();
+                _treadmillPollTask = PollTreadmillAsync(_treadmillPollCts.Token);
+            }
+        }
+
+        private void StopTreadmillPolling()
+        {
+            _treadmillPollCts?.Cancel();
+            _treadmillPollCts = null;
+        }
+
+        async Task ExecuteEventActionsAsync(string eventActions)
+        {
+            if (string.IsNullOrWhiteSpace(eventActions)) return;
+            var lines = eventActions.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                int colon = line.IndexOf(':');
+                if (colon < 0) continue;
+                string key = line.Substring(0, colon).Trim();
+                string value = line.Substring(colon + 1).Trim();
+                switch (key.ToLower())
+                {
+                    case "scene":
+                        QueueSceneToPlay(value);
+                        break;
+                    case "labjack":
+                        await ExecuteLabJackCommandAsync(value).ConfigureAwait(false);
+                        break;
+                    case "delay":
+                        if (int.TryParse(value, out int ms) && ms > 0)
+                            await Task.Delay(ms).ConfigureAwait(false);
+                        break;
+                    case "treadmill":
+                        await ExecuteTreadmillActionAsync(value).ConfigureAwait(false);
+                        break;
+                }
+            }
+        }
+
+        private async Task ExecuteTreadmillActionAsync(string action)
+        {
+            if (_studioPanel == null) return;
+            switch (action.ToLower())
+            {
+                case "start":
+                    await _studioPanel.PressSwitchAsync(SwitchChannel.SW1).ConfigureAwait(false);
+                    await Task.Delay(500).ConfigureAwait(false);
+                    await _studioPanel.PressSwitchAsync(SwitchChannel.SW1).ConfigureAwait(false);
+                    EnsureTreadmillPolling();
                     break;
-                case "labjack":
-                    _ = ExecuteLabJackCommandAsync(value);
+                case "stop":
+                    await _studioPanel.PressSwitchAsync(SwitchChannel.SW1).ConfigureAwait(false);
+                    StopTreadmillPolling();
                     break;
-                    // Additional action types can be added here
+                case "+":
+                    await _studioPanel.PressSwitchAsync(SwitchChannel.SW2).ConfigureAwait(false);
+                    break;
+                case "-":
+                    await _studioPanel.PressSwitchAsync(SwitchChannel.SW3).ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -361,6 +413,26 @@ namespace MrAnnouncerBot
             {
                 Console.WriteLine($"[LabJackBridge] FAILED — {ex.GetType().Name}: {ex.Message}");
                 _studioPanel = null;
+            }
+        }
+
+        private async Task PollTreadmillAsync(CancellationToken cancellationToken = default)
+        {
+            const int intervalMs = 500;
+            while (_studioPanel != null && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var metrics = _studioPanel.GetTreadmillMetrics();
+                    double speedKph = metrics.SpeedMetersPerSecond * 3.6;
+                    double distanceKm = metrics.TotalMeters / 1000.0;
+                    await hubConnection.InvokeAsync("TreadmillStatus", speedKph, distanceKm).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Treadmill] Poll error: {ex.Message}");
+                }
+                await System.Threading.Tasks.Task.Delay(intervalMs, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -418,7 +490,7 @@ namespace MrAnnouncerBot
                     (string.IsNullOrEmpty(x.Parameters) || string.Equals(x.Parameters, parameters, StringComparison.OrdinalIgnoreCase)))
                 ?.Action;
             if (action != null)
-                ExecuteEventAction(action);
+                _ = ExecuteEventActionsAsync(action);
         }
 
         void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
@@ -436,7 +508,7 @@ namespace MrAnnouncerBot
             if (!string.IsNullOrWhiteSpace(channelPointAction.SceneToPlay))
                 QueueSceneToPlay(channelPointAction.SceneToPlay);
             else if (!string.IsNullOrWhiteSpace(channelPointAction.StateToSet))
-                ExecuteEventAction(channelPointAction.StateToSet);
+                _ = ExecuteEventActionsAsync(channelPointAction.StateToSet);
         }
 
         private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
@@ -1724,6 +1796,7 @@ namespace MrAnnouncerBot
             scenes = null;
             restrictedScenes = null;
             channelPointActions = null;
+            eventActionMaps = null;
             AllViewerListSettings.Instance.Invalidate();
             playedGreetingFromFred.Clear();
             playedGreetingFromRory.Clear();

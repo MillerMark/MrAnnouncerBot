@@ -211,6 +211,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ShowValidationIssue(commandData);
 		}
 
+		public void TreadmillStatus(double speedKph, double distanceKm)
+		{
+			coderushedHub.Clients.All.TreadmillStatus(speedKph, distanceKm);
+		}
+
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{
