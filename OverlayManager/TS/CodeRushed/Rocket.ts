@@ -307,6 +307,13 @@
     this.motorExtendAudio.play();
   }
 
+  setEngineVolume(volume: number) {
+    if (this.hoverThrustersAudio) this.hoverThrustersAudio.volume = volume;
+    if (this.hoverDropThrustersAudio) this.hoverDropThrustersAudio.volume = volume;
+    if (this.mainThrustersAudio) this.mainThrustersAudio.volume = volume;
+    if (this.sideThrustersAudio) this.sideThrustersAudio.volume = volume;
+  }
+
   retractEngines(now) {
     if (this.docking)
       return;

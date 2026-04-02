@@ -120,6 +120,55 @@ class DroneGame extends GamePlusQuiz {
 		myRocket.updatePosition(nowMs);
 		myRocket.bounce(0, 0, screenWidth, screenHeight, nowMs);
 
+		if (this.dvdModeActive) {
+			this.dvdX += this.dvdVx;
+			this.dvdY += this.dvdVy;
+
+			let bouncedX = false;
+			let bouncedY = false;
+
+			if (this.dvdX <= 0) {
+				this.dvdX = 0;
+				this.dvdVx = Math.abs(this.dvdVx);
+				bouncedX = true;
+			} else if (this.dvdX + myRocket.width >= screenWidth) {
+				this.dvdX = screenWidth - myRocket.width;
+				this.dvdVx = -Math.abs(this.dvdVx);
+				bouncedX = true;
+			}
+
+			if (this.dvdY <= 0) {
+				this.dvdY = 0;
+				this.dvdVy = Math.abs(this.dvdVy);
+				bouncedY = true;
+			} else if (this.dvdY + myRocket.height >= screenHeight) {
+				this.dvdY = screenHeight - myRocket.height;
+				this.dvdVy = -Math.abs(this.dvdVy);
+				bouncedY = true;
+			}
+
+			if (bouncedX && bouncedY) {
+				this.dvdCheerAudio.currentTime = 0;
+				this.dvdCheerAudio.play().catch(() => {});
+			}
+
+			myRocket.x = this.dvdX;
+			myRocket.y = this.dvdY;
+			myRocket.changeVelocity(0, 0, nowMs);
+
+			if (this.dvdVx > 0) {
+				myRocket.leftThrusterOfftime = nowMs + 200;
+				myRocket.wasFiringLeftThruster = true;
+			} else if (this.dvdVx < 0) {
+				myRocket.rightThrusterOfftime = nowMs + 200;
+				myRocket.wasFiringRightThruster = true;
+			}
+			if (this.dvdVy < 0) {
+				myRocket.mainThrusterOfftime = nowMs + 200;
+				myRocket.wasFiringMainThrusters = true;
+			}
+		}
+
 		this.collectCoins(nowMs);
 
 		this.allSeeds.bounce(0, 0, screenWidth, screenHeight, nowMs);
@@ -196,46 +245,6 @@ class DroneGame extends GamePlusQuiz {
 		//drawCrossHairs(myContext, 830 + 340, 540);
 		this.animations.removeExpiredAnimations(nowMs);
     this.animations.render(myContext, nowMs);
-
-    if (this.dvdModeActive && this.backgroundBanner) {
-      const img = this.backgroundBanner.images[0];
-      const imgW = (img && img.naturalWidth) ? img.naturalWidth : 200;
-      const imgH = (img && img.naturalHeight) ? img.naturalHeight : 100;
-
-      this.dvdX += this.dvdVx;
-      this.dvdY += this.dvdVy;
-
-      let bouncedX = false;
-      let bouncedY = false;
-
-      if (this.dvdX <= 0) {
-        this.dvdX = 0;
-        this.dvdVx = Math.abs(this.dvdVx);
-        bouncedX = true;
-      } else if (this.dvdX + imgW >= screenWidth) {
-        this.dvdX = screenWidth - imgW;
-        this.dvdVx = -Math.abs(this.dvdVx);
-        bouncedX = true;
-      }
-
-      if (this.dvdY <= 0) {
-        this.dvdY = 0;
-        this.dvdVy = Math.abs(this.dvdVy);
-        bouncedY = true;
-      } else if (this.dvdY + imgH >= screenHeight) {
-        this.dvdY = screenHeight - imgH;
-        this.dvdVy = -Math.abs(this.dvdVy);
-        bouncedY = true;
-      }
-
-      if (bouncedX && bouncedY) {
-        this.dvdCheerAudio.currentTime = 0;
-        this.dvdCheerAudio.play().catch(() => {});
-      }
-
-      // offsetX=200, offsetY=300 are baked into the Part; subtract them so the image renders at (dvdX, dvdY)
-      this.backgroundBanner.draw(context, this.dvdX - 200, this.dvdY - 300);
-    }
 
     if (this.lastCommand)
     {
@@ -534,16 +543,18 @@ class DroneGame extends GamePlusQuiz {
 		else if (command === 'dvd') {
 			if (this.dvdModeActive) {
 				this.dvdModeActive = false;
-				this.dvdX = this.dvdOriginalX;
-				this.dvdY = this.dvdOriginalY;
+				myRocket.setEngineVolume(1.0);
 			} else {
-				this.dvdOriginalX = this.dvdX;
-				this.dvdOriginalY = this.dvdY;
-				this.dvdX = 200;
-				this.dvdY = 300;
+				if (!myRocket.started || myRocket.isDocked) {
+					myRocket.started = true;
+					myRocket.launch(now);
+				}
+				this.dvdX = myRocket.x;
+				this.dvdY = myRocket.y;
 				this.dvdVx = 3;
 				this.dvdVy = 3;
 				this.dvdModeActive = true;
+				myRocket.setEngineVolume(0.25);
 			}
 		}
 	}
