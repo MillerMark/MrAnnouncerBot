@@ -353,6 +353,9 @@ namespace MrAnnouncerBot
                     case "treadmill":
                         await ExecuteTreadmillActionAsync(value).ConfigureAwait(false);
                         break;
+                    case "obs":
+                        ExecuteObsSourceVisibilityCommand(value);
+                        break;
                 }
             }
         }
@@ -464,6 +467,18 @@ namespace MrAnnouncerBot
             {
                 Console.WriteLine($"[StudioPanel] Command failed ({command}): {ex.Message}");
             }
+        }
+
+        private void ExecuteObsSourceVisibilityCommand(string value)
+        {
+            // Expected format: "SceneName, SourceName, show|hide"
+            var parts = value.Split(',');
+            if (parts.Length < 3) return;
+            string sceneName = parts[0].Trim();
+            string sourceName = parts[1].Trim();
+            string verb = parts[2].Trim();
+            bool visible = verb.Equals("show", StringComparison.OrdinalIgnoreCase);
+            ObsControl.ObsManager.SetSceneItemEnabled(sceneName, sourceName, visible);
         }
 
         private async Task RunLabJackCommandCoreAsync(string channel, string verb)
