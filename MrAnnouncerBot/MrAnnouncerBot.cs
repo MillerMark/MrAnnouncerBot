@@ -330,15 +330,9 @@ namespace MrAnnouncerBot
 
         async Task ExecuteEventActionsAsync(string eventActions)
         {
-            if (string.IsNullOrWhiteSpace(eventActions)) return;
-            var lines = eventActions.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in lines)
+            foreach (var (key, value) in ActionParser.ParseLines(eventActions))
             {
-                int colon = line.IndexOf(':');
-                if (colon < 0) continue;
-                string key = line.Substring(0, colon).Trim();
-                string value = line.Substring(colon + 1).Trim();
-                switch (key.ToLower())
+                switch (key)
                 {
                     case "scene":
                         QueueSceneToPlay(value);
@@ -535,13 +529,7 @@ namespace MrAnnouncerBot
 
         ChannelPointAction GetChannelPointAction(string id, string title)
         {
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                ChannelPointAction channelPointAction = ChannelPointActions.FirstOrDefault(x => x.ID == id);
-                if (channelPointAction != null)
-                    return channelPointAction;
-            }
-            return ChannelPointActions.FirstOrDefault(x => string.Compare(x.Title, title, true) == 0);
+            return ChannelPointActionLookup.Find(ChannelPointActions, id, title);
         }
 
         void HookupCoreEvents(TwitchClient client)
