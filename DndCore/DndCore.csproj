@@ -36,7 +36,9 @@
     <PackageReference Include="SheetsPersist" Version="1.3.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj" />
+    <Reference Include="TimeLineControl">
+      <HintPath>..\..\TimeLine\TimeLineControl\TimeLineControl\bin\Release\TimeLineControl.dll</HintPath>
+    </Reference>
     <ProjectReference Include="..\ExpressionEngine\CodingSeb.ExpressionEvaluator\CodingSeb.ExpressionEvaluator.csproj" />
   </ItemGroup>
 </Project>

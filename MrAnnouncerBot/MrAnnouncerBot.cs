@@ -724,7 +724,7 @@ namespace MrAnnouncerBot
                 return true;
 
             bool stillPlaying = DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(lastFanfareDuration);
-            bool suppressFanfareToday = message.StartsWith('[');
+            bool suppressFanfareToday = MessageSuppressesFanfare(message);
 
             if (suppressFanfareToday)
             {
@@ -774,46 +774,50 @@ namespace MrAnnouncerBot
 
         FanfareDto DetermineFanfareToPlay(string displayName)
         {
-
             List<FanfareDto> userFanfares = fanfares.Where(x => string.Compare(x.DisplayName, displayName, StringComparison.InvariantCultureIgnoreCase) == 0).ToList();
-
-            // Make sure none of the fanfares have been played today
-            // Handles scenario where MrAnnouncerBot has been restarted mid stream
-            if (userFanfares.Where(fanfare => (DateTime.Now - fanfare.LastPlayed).TotalHours > 5).Any())
-            {
-
-                // Get the list of Full Length fanfares 
-                // that have not been played in the last week
-                IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(fanfare => fanfare.Duration == FanfareDuration.fullLength)
-                .Where(fanfare => (DateTime.Now - fanfare.LastPlayed).TotalHours > 5);
-
-                // No full length fanfares to play.  Get the clipped fanfare
-                if (!fanFaresToPlay.Any())
-                {
-                    fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.clipped);
-                }
-
-
-                // Select a random fanfare from the available list
-
-                if (!fanFaresToPlay.Any())
-                {
-                    return null;
-                }
-                else if (fanFaresToPlay.Count() == 1)
-                {
-                    return fanFaresToPlay.First();
-                }
-                else
-                {
-                    return fanFaresToPlay.ElementAt(new Random().Next(fanFaresToPlay.Count()));
-                }
-            }
-            else
-            {
-                return null;
-            }
+            return SelectFanfareFromList(userFanfares);
         }
+
+        /// <summary>
+        /// Core fanfare-selection logic extracted for unit testability.
+        /// Prefers full-length fanfares not played in the last 5 hours;
+        /// falls back to any clipped fanfare when none are available.
+        /// Returns <c>null</c> when every candidate was played within the last 5 hours.
+        /// </summary>
+        internal static FanfareDto SelectFanfareFromList(IEnumerable<FanfareDto> userFanfares)
+        {
+            var list = userFanfares.ToList();
+
+            // Make sure at least one fanfare hasn't been played in the last 5 hours
+            // (handles restart-mid-stream scenario)
+            if (!list.Any(f => (DateTime.Now - f.LastPlayed).TotalHours > 5))
+                return null;
+
+            // Prefer full-length fanfares not played in the last 5 hours
+            IEnumerable<FanfareDto> candidates = list
+                .Where(f => f.Duration == FanfareDuration.fullLength)
+                .Where(f => (DateTime.Now - f.LastPlayed).TotalHours > 5);
+
+            // Fall back to clipped fanfares (no recency filter — they are the last resort)
+            if (!candidates.Any())
+                candidates = list.Where(f => f.Duration == FanfareDuration.clipped);
+
+            if (!candidates.Any())
+                return null;
+
+            if (candidates.Count() == 1)
+                return candidates.First();
+
+            return candidates.ElementAt(new Random().Next(candidates.Count()));
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> when the chat message signals that the fanfare
+        /// should be silently marked as played without actually triggering it.
+        /// A message beginning with '[' (e.g. "[lurking]") suppresses the fanfare.
+        /// </summary>
+        internal static bool MessageSuppressesFanfare(string message)
+            => message.StartsWith('[');
 
         static void WriteFanfareData(string dataFileName, List<FanfareDto> records)
         {
@@ -1695,7 +1699,7 @@ namespace MrAnnouncerBot
                 SayIt(playerId, censoredPhrase + colorStr);
         }
 
-        private static void GetNameAndPhrase(string msg, out string name, out string phrase)
+        internal static void GetNameAndPhrase(string msg, out string name, out string phrase)
         {
             name = null;
             phrase = null;
