@@ -1731,7 +1731,7 @@ namespace MrAnnouncerBot
                 phrase = "(" + phrase.Substring("thinks: ".Length).Trim() + ")";
         }
 
-        bool Vocalizes(string lowerMessage, string prefix)
+        internal static bool Vocalizes(string lowerMessage, string prefix)
         {
             return lowerMessage.StartsWith(prefix) &&
                 lowerMessage.Length > prefix.Length &&
