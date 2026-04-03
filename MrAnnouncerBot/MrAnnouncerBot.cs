@@ -522,8 +522,8 @@ namespace MrAnnouncerBot
                 return;
             if (!string.IsNullOrWhiteSpace(channelPointAction.SceneToPlay))
                 QueueSceneToPlay(channelPointAction.SceneToPlay);
-            else if (!string.IsNullOrWhiteSpace(channelPointAction.StateToSet))
-                _ = ExecuteEventActionsAsync(channelPointAction.StateToSet);
+            if (!string.IsNullOrWhiteSpace(channelPointAction.Action))
+                _ = ExecuteEventActionsAsync(channelPointAction.Action);
         }
 
         private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)

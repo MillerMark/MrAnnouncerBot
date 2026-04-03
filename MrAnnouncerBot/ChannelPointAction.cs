@@ -19,6 +19,10 @@ namespace MrAnnouncerBot
 		
 		[Column]
 		public string StateToSet { get; set; }
+
+		[Column]
+		public string Action { get; set; }
+
 		public ChannelPointAction()
 		{
 
