@@ -1,5 +1,6 @@
 ﻿//#define profiling
 using System;
+using System.IO;
 using System.Linq;
 using System.Drawing;
 using System.Collections.Generic;
@@ -11,6 +12,29 @@ using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 
 namespace ObsControl {
+    // Wraps Console.Out and silently drops lines that start with suppressed prefixes.
+    class FilteringConsoleWriter : TextWriter {
+        private readonly TextWriter inner;
+        private readonly string[] suppressedPrefixes;
+
+        public FilteringConsoleWriter(TextWriter inner, params string[] suppressedPrefixes) {
+            this.inner = inner;
+            this.suppressedPrefixes = suppressedPrefixes;
+        }
+
+        public override System.Text.Encoding Encoding => inner.Encoding;
+
+        public override void WriteLine(string value) {
+            if (value != null)
+                foreach (var prefix in suppressedPrefixes)
+                    if (value.StartsWith(prefix))
+                        return;
+            inner.WriteLine(value);
+        }
+
+        public override void Write(char value) => inner.Write(value);
+    }
+
     public static class ObsManager {
         public static event EventHandler<string> SceneChanged;
         public static event EventHandler<SceneItemEventArgs> SceneItemEnabled;
@@ -23,6 +47,7 @@ namespace ObsControl {
         private static readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 
         static ObsManager() {
+            Console.SetOut(new FilteringConsoleWriter(Console.Out, "Unsupported Event: InputSettingsChanged"));
             Console.WriteLine($"Connecting from ObsManager...");
             Connect();
         }
