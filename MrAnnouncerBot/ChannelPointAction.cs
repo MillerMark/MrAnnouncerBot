@@ -1,31 +1,28 @@
-﻿using SheetsPersist;
-using System;
+﻿using System;
 using System.Linq;
+using SheetsPersist;
 
 namespace MrAnnouncerBot
 {
-	[Document("Mr. Announcer Guy")]
-	[Sheet("ChannelPointActions")]
-	public class ChannelPointAction
-	{
-		[Column]
-		public string ID { get; set; }
-		
-		[Column]
-		public string Title { get; set; }
-		
-		[Column]
-		public string SceneToPlay { get; set; }
-		
-		[Column]
-		public string StateToSet { get; set; }
+    [Document("Mr. Announcer Guy")]
+    [Sheet("ChannelPointActions")]
+    public class ChannelPointAction
+    {
+        [Column]
+        public string ID { get; set; }
 
-		[Column]
-		public string Action { get; set; }
+        [Column]
+        public string Title { get; set; }
 
-		public ChannelPointAction()
-		{
+        [Column]
+        public string SceneToPlay { get; set; }
 
-		}
-	}
+        [Column]
+        public string Action { get; set; }
+
+        public ChannelPointAction()
+        {
+
+        }
+    }
 }
