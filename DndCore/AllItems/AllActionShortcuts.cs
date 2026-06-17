@@ -163,13 +163,13 @@ namespace DndCore
 
 		public static List<PlayerActionShortcut> Get(int playerId, TurnPart part)
 		{
-			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.Part == part).ToList();
+			return AllShortcuts.Where(x => x.PlayerId == playerId && x.Part == part).ToList();
 		}
 
 		public static List<PlayerActionShortcut> Get(int playerId, string nameStart)
 		{
 			string lowerName = nameStart.ToLower();
-			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.DisplayText.ToLower().StartsWith(lowerName)).ToList();
+			return AllShortcuts.Where(x => x.PlayerId == playerId && x.DisplayText.ToLower().StartsWith(lowerName)).ToList();
 		}
 
 		public static List<PlayerActionShortcut> AllShortcuts
