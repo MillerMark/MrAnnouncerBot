@@ -71,7 +71,7 @@ namespace DndCore
 			if (sides == 0)
 				return null;
 			string descriptor = dieStr.EverythingAfter("(");
-			if (descriptor != null)
+			if (!string.IsNullOrEmpty(descriptor))
 			{
 				descriptor = descriptor.EverythingBefore(")").Trim();
 				descriptor = "(" + descriptor + ")";
