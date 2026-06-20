@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using TwitchLib.Client.Models;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 
@@ -21,7 +22,7 @@ namespace BotCore
 
 		}
 
-		static Dictionary<string, string> profileImageCache = new Dictionary<string, string>();
+		static ConcurrentDictionary<string, string> profileImageCache = new ConcurrentDictionary<string, string>();
 
 		public static async Task<UserInfo> FromChatMessage(TwitchLibMessage chatMessage, int showsWatched)
 		{
@@ -39,8 +40,8 @@ namespace BotCore
 
 		private static async Task<string> GetProfileImageUrl(TwitchLibMessage chatMessage)
 		{
-			if (profileImageCache.ContainsKey(chatMessage.UserId))
-				return profileImageCache[chatMessage.UserId];
+			if (profileImageCache.TryGetValue(chatMessage.UserId, out var cachedUrl))
+				return cachedUrl;
 
 			List<string> userIds = new List<string>() { chatMessage.UserId };
 			
@@ -51,7 +52,7 @@ namespace BotCore
 			
 			string profileImageUrl = firstOrDefault.ProfileImageUrl;
 
-			profileImageCache[chatMessage.UserId] = profileImageUrl;
+			profileImageCache.TryAdd(chatMessage.UserId, profileImageUrl);
 
 			return profileImageUrl;
 		}

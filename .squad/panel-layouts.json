@@ -1,0 +1,63 @@
+{
+  "activeLayout": "Default",
+  "layouts": [
+    {
+      "name": "Default",
+      "slots": [
+        {
+          "panelId": "loop",
+          "zone": "Top",
+          "order": 0
+        },
+        {
+          "panelId": "tasks",
+          "zone": "Top",
+          "order": 1
+        },
+        {
+          "panelId": "approvals",
+          "zone": "Top",
+          "order": 2
+        },
+        {
+          "panelId": "inbox",
+          "zone": "Top",
+          "order": 3
+        },
+        {
+          "panelId": "notes",
+          "zone": "Top",
+          "order": 5
+        },
+        {
+          "panelId": "health",
+          "zone": "Top",
+          "order": 6
+        },
+        {
+          "panelId": "trace",
+          "zone": "Top",
+          "order": 7
+        },
+        {
+          "panelId": "maintenance",
+          "zone": "Right",
+          "order": 0
+        }
+      ],
+      "leftZoneWidth": null,
+      "rightZoneWidth": 280,
+      "left2ZoneWidth": null,
+      "right2ZoneWidth": null,
+      "left3ZoneWidth": null,
+      "right3ZoneWidth": null,
+      "left4ZoneWidth": null,
+      "right4ZoneWidth": null,
+      "left5ZoneWidth": null,
+      "right5ZoneWidth": null,
+      "left6ZoneWidth": null,
+      "right6ZoneWidth": null,
+      "topZonePanelWidths": null
+    }
+  ]
+}
