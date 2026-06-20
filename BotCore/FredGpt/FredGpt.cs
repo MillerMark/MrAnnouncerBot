@@ -106,11 +106,13 @@ namespace BotCore
 
         static MySecureString apiKey;
 
+        private static readonly Regex fredRegex = new Regex(@"\bfred\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         public static bool IsTalkingToFred(string message)
         {
             if (message.StartsWith("!"))  // Commands don't count.
                 return false;
-            return new Regex(@"\bfred\b", RegexOptions.IgnoreCase).Match(message).Success;
+            return fredRegex.IsMatch(message);
         }
 
         static string GetConversationSoFar(string userId, string username, string message)

@@ -14,11 +14,16 @@ namespace DndCore
 			List<ItemEffectDto> spellEffectDtos = CsvToSheetsHelper.Get<ItemEffectDto>(Folders.InCoreData("DnD - SpellEffects.csv"));
 			foreach (ItemEffectDto itemEffect in spellEffectDtos)
 			{
-				SpellEffects.Add(ItemEffect.From(itemEffect));
+				spellEffects.Add(ItemEffect.From(itemEffect));
 			}
+			spellEffectsByName = spellEffects
+				.GroupBy(e => e.name)
+				.ToDictionary(g => g.Key, g => g.OrderBy(e => e.index).ToList());
 		}
 
 		static List<ItemEffect> spellEffects;
+		static Dictionary<string, List<ItemEffect>> spellEffectsByName;
+
 		public static List<ItemEffect> SpellEffects
 		{
 			get
@@ -35,12 +40,17 @@ namespace DndCore
 
 		public static List<ItemEffect> GetAll(string spellName)
 		{
-			return SpellEffects.Where(x => x.name == spellName).OrderBy(o => o.index).ToList();
+			if (spellEffects == null)
+				LoadData();
+			if (spellEffectsByName != null && spellEffectsByName.TryGetValue(spellName, out List<ItemEffect> cached))
+				return cached;
+			return new List<ItemEffect>();
 		}
 
 		public static void Invalidate()
 		{
 			spellEffects = null;
+			spellEffectsByName = null;
 		}
 	}
 }

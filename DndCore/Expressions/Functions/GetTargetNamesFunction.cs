@@ -14,30 +14,20 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 			Target targetToCheck = Expressions.Get<Target>(args[0], player, target, spell);
-			string result = string.Empty;
-			if (targetToCheck != null)
+			if (targetToCheck == null || player?.Game == null)
+				return string.Empty;
+
+			var names = new List<string>();
+			foreach (int playerId in targetToCheck.PlayerIds)
 			{
-				if (player?.Game != null)
-				{
-					foreach (int playerId in targetToCheck.PlayerIds)
-					{
-						Character targetedPlayer = player.Game.GetPlayerFromId(playerId);
-						if (targetedPlayer != null)
-						{
-							result += targetedPlayer.Name + ", ";
-						}
-					}
-
-					foreach (Creature creature in targetToCheck.Creatures)
-					{
-						result += creature.Name + ", ";
-					}
-
-					result = result.EverythingBeforeLast(", ");
-				}
+				Character targetedPlayer = player.Game.GetPlayerFromId(playerId);
+				if (targetedPlayer != null)
+					names.Add(targetedPlayer.Name);
 			}
+			foreach (Creature creature in targetToCheck.Creatures)
+				names.Add(creature.Name);
 
-			return result;
+			return string.Join(", ", names);
 		}
 	}
 }

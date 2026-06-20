@@ -80,11 +80,13 @@ namespace TaleSpireCore
                         System.Threading.Thread.Sleep(30);
                         sleeps++;
                     }
+                    var dataBuilder = new StringBuilder();
                     while (sender.Available > 0)
                     {
                         bytesRec = sender.Receive(bytes);
-                        data += Encoding.UTF8.GetString(bytes, 0, bytesRec);
+                        dataBuilder.Append(Encoding.UTF8.GetString(bytes, 0, bytesRec));
                     }
+                    data = dataBuilder.ToString();
                     //int bytesRec = sender.Receive(bytes, 0, sender.Available, SocketFlags.None);
                     //int bytesRec = sender.Receive(bytes);
                     //var data = Encoding.ASCII.GetString(bytes, 0, bytesRec);

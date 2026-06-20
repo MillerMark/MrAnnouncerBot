@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Collections.ObjectModel;
 
 namespace DndCore
@@ -7,7 +8,7 @@ namespace DndCore
 	public static class History
 	{
 		static ObservableCollection<LogEntry> queuedEntries = new ObservableCollection<LogEntry>();
-		static string logText = string.Empty;
+		static StringBuilder logBuilder = new StringBuilder();
 
 		static History()
 		{
@@ -16,11 +17,11 @@ namespace DndCore
 
 		public static ObservableCollection<LogEntry> Entries { get; private set; } = new ObservableCollection<LogEntry>();
 		public static DndTimeClock TimeClock { get; set; }
-		public static string LogText { get => logText; }
+		public static string LogText { get => logBuilder.ToString(); }
 
 		public static void Log(string message)
 		{
-			logText += message + "\n";
+			logBuilder.Append(message).Append('\n');
 			lock (queuedEntries)
 				queuedEntries.Add(new LogEntry(message, DateTime.Now, TimeClock.Time));
 			OnLogUpdated(null, EventArgs.Empty);
@@ -57,7 +58,7 @@ namespace DndCore
 		}
 		public static void Clear()
 		{
-			logText = "";
+			logBuilder.Clear();
 			Entries.Clear();
 			lock (queuedEntries)
 				queuedEntries.Clear();

@@ -10,6 +10,7 @@ namespace DndCore
 		public static void Invalidate()
 		{
 			weaponEffects = null;
+			weaponEffectsByName = null;
 		}
 
 		static void LoadData()
@@ -18,11 +19,16 @@ namespace DndCore
 			List<ItemEffectDto> weaponEffectDtos = CsvToSheetsHelper.Get<ItemEffectDto>(Folders.InCoreData("DnD - WeaponEffects.csv"));
 			foreach (ItemEffectDto itemEffect in weaponEffectDtos)
 			{
-				WeaponEffects.Add(ItemEffect.From(itemEffect));
+				weaponEffects.Add(ItemEffect.From(itemEffect));
 			}
+			weaponEffectsByName = weaponEffects
+				.GroupBy(e => e.name)
+				.ToDictionary(g => g.Key, g => g.OrderBy(e => e.index).ToList());
 		}
 
 		static List<ItemEffect> weaponEffects = new List<ItemEffect>();
+		static Dictionary<string, List<ItemEffect>> weaponEffectsByName;
+
 		public static List<ItemEffect> WeaponEffects
 		{
 			get
@@ -36,9 +42,14 @@ namespace DndCore
 				weaponEffects = value;
 			}
 		}
+
 		public static List<ItemEffect> GetAll(string weaponName)
 		{
-			return WeaponEffects.Where(x => x.name == weaponName).OrderBy(o => o.index).ToList();
+			if (weaponEffects == null)
+				LoadData();
+			if (weaponEffectsByName != null && weaponEffectsByName.TryGetValue(weaponName, out List<ItemEffect> cached))
+				return cached;
+			return new List<ItemEffect>();
 		}
 	}
 }

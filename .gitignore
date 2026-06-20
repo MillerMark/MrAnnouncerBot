@@ -1007,3 +1007,18 @@ core_credentials.json
 .squad/sessions/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+
+# Squad: user inbox messages (ephemeral, user-local)
+.squad/inbox/
+
+# SquadDash: maintenance state (auto-managed)
+maintenance-state.json
+
+# SquadDash: maintenance reports (runtime, not for version control)
+.squad/maintenance-reports/
+
+# SquadDash: maintenance state (auto-managed)
+code-health-state.json
+
+# SquadDash: maintenance reports (runtime, not for version control)
+.squad/code-health-reports/

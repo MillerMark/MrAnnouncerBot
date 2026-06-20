@@ -312,32 +312,12 @@ namespace DndCore
 		[JsonIgnore]
 		public string ClassLevelStr
 		{
-			get
-			{
-				string result = string.Empty;
-				foreach (CharacterClass characterClass in Classes)
-				{
-					if (result.Length > 0)
-						result += " / ";
-					result += characterClass.ToString();
-				}
-				return result;
-			}
+			get => string.Join(" / ", Classes.Select(c => c.ToString()));
 		}
 
 		public string ClassStr
 		{
-			get
-			{
-				string result = string.Empty;
-				foreach (CharacterClass characterClass in Classes)
-				{
-					if (result.Length > 0)
-						result += " / ";
-					result += characterClass.Name;
-				}
-				return result;
-			}
+			get => string.Join(" / ", Classes.Select(c => c.Name));
 		}
 
 		public double wisdomMod
