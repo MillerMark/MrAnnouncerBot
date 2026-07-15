@@ -1897,11 +1897,13 @@ namespace MrAnnouncerBot
                 return;
             }
 
-            var fakeAction = new ChannelPointAction { Title = args.Trim() };
+            var fakeAction = new ChannelPointAction { Title = args.Trim(), SceneToPlay = args.Trim() };
             pendingRedemptionQueue.Enqueue((fakeAction, null));
             NotifyRedemptionQueueUpdate();
             Chat($"Queued '{args.Trim()}'. Total in queue: {pendingRedemptionQueue.Count}");
             Console.WriteLine($"Test: Queued '{args.Trim()}'. Queue depth: {pendingRedemptionQueue.Count}");
+            if (activeSceneName == STR_PlayersScene)
+                DrainRedemptionQueue();
         }
 
         void ReloadCommand(OnChatCommandReceivedArgs obj)

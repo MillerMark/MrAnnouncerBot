@@ -631,20 +631,21 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		const boxWidth = maxWidth + padding * 2 + 8;
 		const totalLines = 1 + this.redemptionQueueTitles.length;
-		const boxHeight = totalLines * lineHeight + padding * 2;
+		const boxHeight = totalLines * lineHeight + padding * 2 + 4;
 		const boxLeft = rightX - boxWidth;
 
+		context.beginPath();
+		(context as any).roundRect(boxLeft, topY, boxWidth, boxHeight, 8);
 		context.fillStyle = 'rgba(10, 8, 20, 0.78)';
-		context.fillRect(boxLeft, topY, boxWidth, boxHeight);
-
+		context.fill();
 		context.strokeStyle = 'rgba(220, 170, 30, 0.9)';
 		context.lineWidth = 2;
-		context.strokeRect(boxLeft, topY, boxWidth, boxHeight);
+		context.stroke();
 
 		context.fillStyle = '#dcaa1e';
 		context.font = `bold ${fontSize}px Arial`;
 		context.textAlign = 'right';
-		context.fillText(headerText, rightX - padding, topY + padding + fontSize);
+		context.fillText(headerText, rightX - padding - 2, topY + padding + fontSize - 6);
 
 		context.fillStyle = '#e8e8e8';
 		context.font = `${fontSize}px Arial`;
