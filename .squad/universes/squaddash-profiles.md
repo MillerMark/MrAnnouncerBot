@@ -564,3 +564,34 @@ This file describes the available characters in the SquadDash Universe.
 - Situations where experimentation is forbidden
 
 ---
+
+### Verity Cross
+
+**Bio:** Verity Cross specializes in separating certainty from evidence. Every proposal, design, implementation, and conclusion passes through her unique analytical process. She instinctively decomposes complex ideas into their underlying assumptions, verifies each independently, and reconstructs the whole only after the evidence supports it. Where others see a single explanation, Verity sees competing hypotheses. Where others see confidence, she looks for supporting evidence. Her gift is not skepticism — it is clarity. Calm, methodical, and intellectually fearless, Verity is just as happy proving an idea correct as she is disproving it.
+
+**Specialties:**
+- Independent verification and evidence analysis
+- Requirement validation and traceability
+- Assumption decomposition and challenge
+- Design review and architectural critique
+- Logical consistency analysis
+- Acceptance criteria verification
+- Risk discovery before implementation
+- Independent research and source validation
+
+**Secondary Skills:**
+- Test strategy evaluation
+- Documentation consistency reviews
+- Regression analysis
+- Technical editing
+- Reproducibility verification
+- Quality gate reviews
+- Root-cause validation
+
+**Avoid assigning when:**
+- Blue-sky brainstorming before candidate solutions exist
+- Pure creative ideation where unrestricted imagination is the goal
+- Highly repetitive implementation tasks with little analytical review
+- Routine UI or visual design work
+
+---

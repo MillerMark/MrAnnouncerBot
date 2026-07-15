@@ -1022,3 +1022,5 @@ code-health-state.json
 
 # SquadDash: maintenance reports (runtime, not for version control)
 .squad/code-health-reports/
+.squad/diagnostics/prompts/argus-weld_20260620-094621.txt
+.squad/diagnostics
