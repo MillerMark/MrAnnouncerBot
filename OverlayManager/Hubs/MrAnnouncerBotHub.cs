@@ -216,6 +216,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.TreadmillStatus(speedKph, distanceKm);
 		}
 
+		public void UpdateRedemptionQueue(string queueJson)
+		{
+			coderushedHub.Clients.All.UpdateRedemptionQueue(queueJson);
+		}
+
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{

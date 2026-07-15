@@ -45,6 +45,13 @@ function treadmillStatus(speedKph: number, distanceKm: number): void {
 	}
 }
 
+function updateRedemptionQueue(queueJson: string): void {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		const titles: string[] = JSON.parse(queueJson);
+		activeFrontGame.onUpdateRedemptionQueue(titles);
+	}
+}
+
 function animateSprinkles(commandData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.animateSprinkles(commandData);
@@ -446,6 +453,7 @@ function connectToSignalR(signalR) {
 		connection.on("PreloadImageFront", preloadImageFront);
 		connection.on("PreloadImageBack", preloadImageBack);
 		connection.on("TreadmillStatus", treadmillStatus);
+		connection.on("UpdateRedemptionQueue", updateRedemptionQueue);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
 		PartBackgroundLoader.initialize();

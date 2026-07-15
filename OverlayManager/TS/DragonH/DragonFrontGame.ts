@@ -407,6 +407,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	coinManager: CoinManager = new CoinManager();
 	animatedTextManager: AnimatedTextManager = new AnimatedTextManager();
 	treadmillStatus: TreadmillStatus = new TreadmillStatus(this.animatedTextManager);
+	private redemptionQueueTitles: string[] = [];
 
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	contestManager: ContestManager = new ContestManager(this.animatedTextManager);
@@ -593,6 +594,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 		this.screenHalfIndicator.draw(context, nowMs);
 		this.animatedTextManager.draw(context, nowMs);
+		this.drawRedemptionQueue(context);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -602,6 +604,56 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	onTreadmillStatus(speedKph: number, distanceKm: number): void {
 		this.treadmillStatus.update(speedKph, distanceKm);
+	}
+
+	onUpdateRedemptionQueue(titles: string[]): void {
+		this.redemptionQueueTitles = titles;
+	}
+
+	private drawRedemptionQueue(context: CanvasRenderingContext2D): void {
+		if (this.redemptionQueueTitles.length === 0)
+			return;
+
+		const rightX = 1890;
+		const topY = 110;
+		const lineHeight = 30;
+		const padding = 10;
+		const fontSize = 20;
+		const headerText = 'QUEUED REDEMPTIONS';
+
+		context.save();
+		context.font = `bold ${fontSize}px Arial`;
+		let maxWidth = context.measureText(headerText).width;
+		for (const title of this.redemptionQueueTitles) {
+			const w = context.measureText(`  ${title}`).width;
+			if (w > maxWidth) maxWidth = w;
+		}
+
+		const boxWidth = maxWidth + padding * 2 + 8;
+		const totalLines = 1 + this.redemptionQueueTitles.length;
+		const boxHeight = totalLines * lineHeight + padding * 2;
+		const boxLeft = rightX - boxWidth;
+
+		context.fillStyle = 'rgba(10, 8, 20, 0.78)';
+		context.fillRect(boxLeft, topY, boxWidth, boxHeight);
+
+		context.strokeStyle = 'rgba(220, 170, 30, 0.9)';
+		context.lineWidth = 2;
+		context.strokeRect(boxLeft, topY, boxWidth, boxHeight);
+
+		context.fillStyle = '#dcaa1e';
+		context.font = `bold ${fontSize}px Arial`;
+		context.textAlign = 'right';
+		context.fillText(headerText, rightX - padding, topY + padding + fontSize);
+
+		context.fillStyle = '#e8e8e8';
+		context.font = `${fontSize}px Arial`;
+		for (let i = 0; i < this.redemptionQueueTitles.length; i++) {
+			const y = topY + padding + fontSize + (i + 1) * lineHeight;
+			context.fillText(this.redemptionQueueTitles[i], rightX - padding, y);
+		}
+
+		context.restore();
 	}
 
 	protected updateClockFromDto(dto: any) {

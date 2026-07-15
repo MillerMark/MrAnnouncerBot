@@ -521,6 +521,7 @@ namespace MrAnnouncerBot
             {
                 pendingRedemptionQueue.Enqueue((channelPointAction, user));
                 Console.WriteLine($"Redemption queued during restricted scene '{activeSceneName}'. Queue depth: {pendingRedemptionQueue.Count}");
+                NotifyRedemptionQueueUpdate();
                 return;
             }
             ExecuteChannelPointActionNow(channelPointAction, user);
@@ -541,7 +542,18 @@ namespace MrAnnouncerBot
             if (pendingRedemptionQueue.Count == 0)
                 return;
             var (action, user) = pendingRedemptionQueue.Dequeue();
+            NotifyRedemptionQueueUpdate();
             ExecuteChannelPointActionNow(action, user);
+        }
+
+        void NotifyRedemptionQueueUpdate()
+        {
+            if (hubConnection == null) return;
+            var titles = pendingRedemptionQueue
+                .Select(item => item.action.Title ?? item.action.SceneToPlay ?? "(Unknown)")
+                .ToArray();
+            string json = JsonConvert.SerializeObject(titles);
+            hubConnection.InvokeAsync("UpdateRedemptionQueue", json);
         }
 
         private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)

@@ -54,5 +54,6 @@ namespace OverlayManager.Hubs
 		Task PreloadImageBack(string baseFileName, int indexStart, int indexStop, int digitCount);
 		Task PreloadImageFront(string baseFileName, int indexStart, int indexStop, int digitCount);
 		Task TreadmillStatus(double speedKph, double distanceKm);
+		Task UpdateRedemptionQueue(string queueJson);
 	}
 }
