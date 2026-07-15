@@ -79,6 +79,8 @@ namespace MrAnnouncerBot
         Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
         AllViewers allViewers = new AllViewers();
         private const string STR_ChannelName = "CodeRushed";
+        private const string STR_PlayersScene = "Players";
+        private const int AutoReturnToPlayersSeconds = 90;
         //private const string STR_TwitchUserName = "MrAnnouncerGuy";
         const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
         const string STR_CodeRushedUserId = "237584851";
@@ -91,6 +93,7 @@ namespace MrAnnouncerBot
         private string activeSceneName;
         private Timer checkChatRoomTimer;
         private Timer autoSaveTimer;
+        private Timer autoReturnToPlayersTimer;
         private OBSWebsocket obsWebsocket = new OBSWebsocket();
         private StudioPanel _studioPanel;
         private ZorkGame zork;
@@ -307,7 +310,7 @@ namespace MrAnnouncerBot
             else
                 sceneToPlay = scenesToPlay;
 
-            obsWebsocket.SetCurrentProgramScene(sceneToPlay);
+            SetProgramSceneWithAutoReturn(sceneToPlay);
         }
 
         private Task _treadmillPollTask = null;
@@ -514,10 +517,31 @@ namespace MrAnnouncerBot
         {
             if (channelPointAction == null)
                 return;
+            if (RestrictedSceneIsActive())
+            {
+                pendingRedemptionQueue.Enqueue((channelPointAction, user));
+                Console.WriteLine($"Redemption queued during restricted scene '{activeSceneName}'. Queue depth: {pendingRedemptionQueue.Count}");
+                return;
+            }
+            ExecuteChannelPointActionNow(channelPointAction, user);
+        }
+
+        void ExecuteChannelPointActionNow(ChannelPointAction channelPointAction, User user)
+        {
+            if (channelPointAction == null)
+                return;
             if (!string.IsNullOrWhiteSpace(channelPointAction.SceneToPlay))
                 QueueSceneToPlay(channelPointAction.SceneToPlay);
             if (!string.IsNullOrWhiteSpace(channelPointAction.Action))
                 _ = ExecuteEventActionsAsync(channelPointAction.Action);
+        }
+
+        void DrainRedemptionQueue()
+        {
+            if (pendingRedemptionQueue.Count == 0)
+                return;
+            var (action, user) = pendingRedemptionQueue.Dequeue();
+            ExecuteChannelPointActionNow(action, user);
         }
 
         private void CodeRushedEventSub_OnChannelPointsRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs e)
@@ -641,6 +665,7 @@ namespace MrAnnouncerBot
         Dictionary<string, DateTime> playedGreetingFromRory = new Dictionary<string, DateTime>();
 
         Queue<string> fanfareQueue = new Queue<string>();
+        Queue<(ChannelPointAction action, User user)> pendingRedemptionQueue = new Queue<(ChannelPointAction, User)>();
         List<FanfareDto> fanfares = new List<FanfareDto>();
         DateTime lastFanfareActivated = DateTime.Now;
         double lastFanfareDuration;
@@ -1252,6 +1277,11 @@ namespace MrAnnouncerBot
                 HookupCoreEvents(Twitch.RoryGptClient);
                 HookupCoreEvents(Twitch.MarksVoiceClient);
             }
+            if (activeSceneName == STR_PlayersScene)
+            {
+                CancelAutoReturnToPlayersTimer();
+                DrainRedemptionQueue();
+            }
             Console.WriteLine($"Active Scene: {activeSceneName}");
         }
 
@@ -1493,7 +1523,7 @@ namespace MrAnnouncerBot
             ActivatingScene(scene);
             try
             {
-                obsWebsocket.SetCurrentProgramScene(sceneName);
+                SetProgramSceneWithAutoReturn(sceneName);
             }
             catch (Exception e)
             {
@@ -1520,6 +1550,41 @@ namespace MrAnnouncerBot
         private bool RestrictedSceneIsActive()
         {
             return RestrictedScenes.Any(x => x.SceneName == activeSceneName);
+        }
+
+        void SetProgramSceneWithAutoReturn(string sceneName)
+        {
+            obsWebsocket.SetCurrentProgramScene(sceneName);
+            if (sceneName != STR_PlayersScene)
+                StartAutoReturnToPlayersTimer();
+            else
+                CancelAutoReturnToPlayersTimer();
+        }
+
+        void StartAutoReturnToPlayersTimer()
+        {
+            autoReturnToPlayersTimer?.Dispose();
+            autoReturnToPlayersTimer = new Timer(AutoReturnToPlayers, null, AutoReturnToPlayersSeconds * 1000, Timeout.Infinite);
+        }
+
+        void CancelAutoReturnToPlayersTimer()
+        {
+            autoReturnToPlayersTimer?.Dispose();
+            autoReturnToPlayersTimer = null;
+        }
+
+        void AutoReturnToPlayers(object state)
+        {
+            autoReturnToPlayersTimer = null;
+            Console.WriteLine($"Auto-returning to '{STR_PlayersScene}' scene after {AutoReturnToPlayersSeconds}s.");
+            try
+            {
+                obsWebsocket.SetCurrentProgramScene(STR_PlayersScene);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to auto-return to '{STR_PlayersScene}': {ex.Message}");
+            }
         }
 
         ProfanityFilter.ProfanityFilter profanityFilter;
