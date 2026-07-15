@@ -40,6 +40,8 @@ namespace DndCore
 
 		public static List<ItemEffect> GetAll(string spellName)
 		{
+			if (string.IsNullOrEmpty(spellName))
+				return new List<ItemEffect>();
 			if (spellEffects == null)
 				LoadData();
 			if (spellEffectsByName != null && spellEffectsByName.TryGetValue(spellName, out List<ItemEffect> cached))
