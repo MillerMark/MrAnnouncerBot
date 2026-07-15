@@ -1850,6 +1850,14 @@ namespace MrAnnouncerBot
                 }
             }
 
+            if (command.ToLower() == "testqueue")
+            {
+                int userLevel = allViewers.GetUserLevel(e.Command.ChatMessage);
+                if (userLevel >= AllViewers.ModeratorLevel)
+                    HandleTestQueueCommand(e.Command.ArgumentsAsString);
+                return;
+            }
+
             var scene = GetScene(command);
             if (scene != null)
                 ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
@@ -1873,6 +1881,27 @@ namespace MrAnnouncerBot
                 return $"\"{chatShortcut}\"";
             else
                 return chatShortcut;
+        }
+
+        void HandleTestQueueCommand(string args)
+        {
+            if (string.IsNullOrWhiteSpace(args))
+                args = "Test Reward";
+
+            if (args.Trim().Equals("clear", StringComparison.OrdinalIgnoreCase))
+            {
+                pendingRedemptionQueue.Clear();
+                NotifyRedemptionQueueUpdate();
+                Chat("Redemption queue cleared.");
+                Console.WriteLine("Test: Redemption queue cleared.");
+                return;
+            }
+
+            var fakeAction = new ChannelPointAction { Title = args.Trim() };
+            pendingRedemptionQueue.Enqueue((fakeAction, null));
+            NotifyRedemptionQueueUpdate();
+            Chat($"Queued '{args.Trim()}'. Total in queue: {pendingRedemptionQueue.Count}");
+            Console.WriteLine($"Test: Queued '{args.Trim()}'. Queue depth: {pendingRedemptionQueue.Count}");
         }
 
         void ReloadCommand(OnChatCommandReceivedArgs obj)
