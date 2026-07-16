@@ -1545,7 +1545,7 @@ namespace MrAnnouncerBot
 
         private void ActivateSceneIfPermitted(SceneDto scene, string displayName, int userLevel)
         {
-            if (RestrictedSceneIsActive() && userLevel < AllViewers.ModeratorLevel)
+            if (RestrictedSceneIsActive())
                 Chat(GetBreakMessage());
             else
                 ActivateScene(scene, displayName, userLevel);
