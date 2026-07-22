@@ -96,22 +96,33 @@ namespace ObsControl {
             }
         }
 
+        private static bool eventsHooked = false;
+        private static System.Threading.Timer reconnectTimer;
+
         public static void Connect() {
             if (obsWebsocket.IsConnected)
                 return;
             try {
-                obsWebsocket.ConnectAsync(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
-                obsWebsocket.CurrentProgramSceneChanged += ObsWebsocket_CurrentProgramSceneChanged;
-                obsWebsocket.StreamStateChanged += ObsWebsocket_StreamStateChanged;
-                obsWebsocket.RecordStateChanged += ObsWebsocket_RecordStateChanged;
-                obsWebsocket.Disconnected += ObsWebsocket_Disconnected;
-                obsWebsocket.SceneItemEnableStateChanged += ObsWebsocket_SceneItemEnableStateChanged;
+                if (!eventsHooked) {
+                    obsWebsocket.CurrentProgramSceneChanged += ObsWebsocket_CurrentProgramSceneChanged;
+                    obsWebsocket.StreamStateChanged += ObsWebsocket_StreamStateChanged;
+                    obsWebsocket.RecordStateChanged += ObsWebsocket_RecordStateChanged;
+                    obsWebsocket.Disconnected += ObsWebsocket_Disconnected;
+                    obsWebsocket.SceneItemEnableStateChanged += ObsWebsocket_SceneItemEnableStateChanged;
+                    eventsHooked = true;
+                }
+                Console.WriteLine("[ObsManager] Connecting to OBS websocket...");
+                obsWebsocket.ConnectAsync(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);
             }
             catch (AuthFailureException) {
-                Console.WriteLine("Authentication failed.");
+                Console.WriteLine("[ObsManager] Authentication failed.");
             }
             catch (ErrorResponseException ex) {
-                Console.WriteLine($"Connect failed. {ex.Message}");
+                Console.WriteLine($"[ObsManager] Connect failed: {ex.Message}");
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"[ObsManager] Connect error ({ex.Message}) — will retry in 5s");
+                reconnectTimer = new System.Threading.Timer(_ => Connect(), null, 5000, System.Threading.Timeout.Infinite);
             }
         }
 
@@ -120,7 +131,8 @@ namespace ObsControl {
         }
 
         private static void ObsWebsocket_Disconnected(object sender, OBSWebsocketDotNet.Communication.ObsDisconnectionInfo e) {
-            //System.Diagnostics.Debugger.Break();
+            Console.WriteLine("[ObsManager] Disconnected from OBS — will reconnect in 5s");
+            reconnectTimer = new System.Threading.Timer(_ => Connect(), null, 5000, System.Threading.Timeout.Infinite);
         }
 
         private static void ObsWebsocket_CurrentProgramSceneChanged(object sender, OBSWebsocketDotNet.Types.Events.ProgramSceneChangedEventArgs e) {
