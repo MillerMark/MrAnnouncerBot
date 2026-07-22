@@ -438,7 +438,16 @@ namespace MrAnnouncerBot
 
         private async Task ExecuteLabJackCommandAsync(string command)
         {
-            if (_studioPanel == null) return;
+            if (_studioPanel == null)
+            {
+                Console.WriteLine($"[StudioPanel] Command '{command}' skipped — not connected. Attempting lazy connect...");
+                await InitializeStudioPanelAsync().ConfigureAwait(false);
+                if (_studioPanel == null)
+                {
+                    Console.WriteLine($"[StudioPanel] Lazy connect failed — command '{command}' dropped.");
+                    return;
+                }
+            }
             var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2) return;
             string channel = parts[0];
@@ -503,9 +512,15 @@ namespace MrAnnouncerBot
                 ?.Action;
             if (action != null)
                 _ = ExecuteEventActionsAsync(action);
+            else
+                Console.WriteLine($"[ObsEvent] No action mapped for event '{eventName}'" + (parameters != null ? $" params='{parameters}'" : ""));
         }
 
-        void ObsManager_StreamStarted(object sender, EventArgs e) => ExecuteObsEvent("StreamStarted");
+        void ObsManager_StreamStarted(object sender, EventArgs e)
+        {
+            Console.WriteLine("[ObsEvent] StreamStarted received.");
+            ExecuteObsEvent("StreamStarted");
+        }
         void ObsManager_RecordingStarted(object sender, EventArgs e) => ExecuteObsEvent("RecordingStarted");
         void ObsManager_StreamEnded(object sender, EventArgs e) => ExecuteObsEvent("StreamEnded");
         void ObsManager_RecordingEnded(object sender, EventArgs e) => ExecuteObsEvent("RecordingEnded");
