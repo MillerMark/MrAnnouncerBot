@@ -521,7 +521,11 @@ namespace MrAnnouncerBot
             Console.WriteLine("[ObsEvent] StreamStarted received.");
             ExecuteObsEvent("StreamStarted");
         }
-        void ObsManager_RecordingStarted(object sender, EventArgs e) => ExecuteObsEvent("RecordingStarted");
+        void ObsManager_RecordingStarted(object sender, EventArgs e)
+        {
+            Console.WriteLine("[ObsEvent] RecordingStarted received.");
+            ExecuteObsEvent("RecordingStarted");
+        }
         void ObsManager_StreamEnded(object sender, EventArgs e) => ExecuteObsEvent("StreamEnded");
         void ObsManager_RecordingEnded(object sender, EventArgs e) => ExecuteObsEvent("RecordingEnded");
         void ObsManager_SceneChanged(object sender, string sceneName) => ExecuteObsEvent("SceneActivated", sceneName);
