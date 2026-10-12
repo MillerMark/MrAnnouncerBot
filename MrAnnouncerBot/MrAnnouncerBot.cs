@@ -126,7 +126,7 @@ namespace MrAnnouncerBot
             new BotCommand("dh", HandleDragonHCommand);
             new BotCommand("dhn", HandleDragonHNewTimeCommand);
             new BotCommand("book*", HandleBookCommand);
-            hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:64303/MrAnnouncerBotHub").Build();
+            hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:43003/MrAnnouncerBotHub").Build();
             if (hubConnection != null)
             {
                 //hubConnection.Closed += HubConnection_Closed;

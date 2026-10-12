@@ -25,7 +25,7 @@ namespace OverlayManager {
 		}
 
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-				WebHost.CreateDefaultBuilder(args).UseUrls("http://localhost:64303/").UseWebRoot(WebRootFolder)
+				WebHost.CreateDefaultBuilder(args).UseUrls("http://localhost:43003/").UseWebRoot(WebRootFolder)
 						.UseStartup<Startup>();
 	}
 }
